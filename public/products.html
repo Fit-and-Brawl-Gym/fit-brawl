@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Products</title>
+</head>
+
+<body>
+    <h2>Available Products</h2>
+    <ul id="product-list"></ul>
+
+    <script>
+        fetch("../api/product_api.php")
+            .then(res => res.json())
+            .then(data => {
+                let list = document.getElementById("product-list");
+                data.forEach(p => {
+                    let li = document.createElement("li");
+                    li.textContent = `${p.name} (${p.stock} pcs) - ${p.status}`;
+                    list.appendChild(li);
+                });
+            })
+            .catch(err => console.error("Error loading products:", err));
+    </script>
+</body>
+
+</html>
