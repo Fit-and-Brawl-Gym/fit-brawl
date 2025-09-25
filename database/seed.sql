@@ -4,9 +4,9 @@ USE fit_and_brawl_gym;
 -- WILL BE MODIFIED/REMOVED IN PRODUCTION --
 
 INSERT INTO users (username, password, role) VALUES
-('juan_member', 'pass123', 'member'),
-('ana_admin', 'pass456', 'admin'),
-('coach_pedro', 'pass789', 'trainer');
+('riezemabangis', 'pass123', 'member'),
+('mikell_admin', 'pass456', 'admin'),
+('coach_thei', 'pass789', 'trainer');
 
 -- Membership Plans
 INSERT INTO memberships (plan_name, price, duration) VALUES
@@ -17,7 +17,7 @@ INSERT INTO memberships (plan_name, price, duration) VALUES
 -- Trainers
 INSERT INTO trainers (name, specialization, schedule) VALUES
 ('Coach Thei', 'Muay Thai', 'Mon-Wed-Fri 6-8PM'),
-('Coach Liza', 'Boxing', 'Tue-Thu 7-9PM');
+('Coach Drei', 'Boxing', 'Tue-Thu 7-9PM');
 
 -- Reservations
 INSERT INTO reservations (user_id, trainer_id, class_type, datetime, status) VALUES
@@ -37,5 +37,5 @@ INSERT INTO products (name, stock, status) VALUES
 
 -- Feedback
 INSERT INTO feedback (user_id, message) VALUES
-(1, 'Great gym, coaches are really helpful!'),
+(1, 'Great gym, coaches are really helpful, pakiss nga!'),
 (1, 'Can we get more punching bags available?');
