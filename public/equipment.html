@@ -1,0 +1,15 @@
+<h2>Gym Equipment</h2>
+<ul id="equipment-list"></ul>
+
+<script>
+    fetch("../api/equipment_api.php")
+        .then(res => res.json())
+        .then(data => {
+            let list = document.getElementById("equipment-list");
+            data.forEach(eq => {
+                let li = document.createElement("li");
+                li.textContent = `${eq.name} - ${eq.status}`;
+                list.appendChild(li);
+            });
+        });
+</script>

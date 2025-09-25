@@ -1,0 +1,47 @@
+<h2>Your Reservations</h2>
+<ul id="reservation-list"></ul>
+
+<h3>Book a Reservation</h3>
+<form id="reservation-form">
+    <input type="number" id="user_id" placeholder="User ID" required>
+    <input type="number" id="trainer_id" placeholder="Trainer ID" required>
+    <select id="class_type">
+        <option>Boxing</option>
+        <option>Muay Thai</option>
+    </select>
+    <input type="datetime-local" id="datetime" required>
+    <button type="submit">Reserve</button>
+</form>
+
+<script>
+    // Fetch existing reservations
+    fetch("../api/reservations_api.php")
+        .then(res => res.json())
+        .then(data => {
+            let list = document.getElementById("reservation-list");
+            data.forEach(r => {
+                let li = document.createElement("li");
+                li.textContent = `${r.class_type} with Trainer ${r.trainer_id} at ${r.datetime} (${r.status})`;
+                list.appendChild(li);
+            });
+        });
+
+    // Create new reservation
+    document.getElementById("reservation-form").addEventListener("submit", e => {
+        e.preventDefault();
+        let payload = {
+            user_id: document.getElementById("user_id").value,
+            trainer_id: document.getElementById("trainer_id").value,
+            class_type: document.getElementById("class_type").value,
+            datetime: document.getElementById("datetime").value
+        };
+
+        fetch("../api/reservations_api.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+            .then(res => res.json())
+            .then(result => alert(result.message));
+    });
+</script>

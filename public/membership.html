@@ -1,0 +1,18 @@
+<h2>Membership Plans</h2>
+<div id="plans"></div>
+
+<script>
+    fetch("../api/membership_api.php")
+        .then(res => res.json())
+        .then(plans => {
+            let div = document.getElementById("plans");
+            plans.forEach(plan => {
+                div.innerHTML += `
+          <div>
+            <h3>${plan.plan_name}</h3>
+            <p>₱${plan.price} / ${plan.duration} days</p>
+          </div>
+        `;
+            });
+        });
+</script>
