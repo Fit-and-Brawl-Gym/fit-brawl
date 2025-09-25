@@ -1,6 +1,8 @@
 USE fit_and_brawl_gym;
 
--- Users (passwords are plain here; hash them in real app)
+-- !!! DUMMY VALUES ONLY !!! --
+-- WILL BE MODIFIED/REMOVED IN PRODUCTION --
+
 INSERT INTO users (username, password, role) VALUES
 ('juan_member', 'pass123', 'member'),
 ('ana_admin', 'pass456', 'admin'),
@@ -14,7 +16,7 @@ INSERT INTO memberships (plan_name, price, duration) VALUES
 
 -- Trainers
 INSERT INTO trainers (name, specialization, schedule) VALUES
-('Coach Pedro', 'Muay Thai', 'Mon-Wed-Fri 6-8PM'),
+('Coach Thei', 'Muay Thai', 'Mon-Wed-Fri 6-8PM'),
 ('Coach Liza', 'Boxing', 'Tue-Thu 7-9PM');
 
 -- Reservations
