@@ -1,0 +1,154 @@
+/* ========================================
+   CSS RESET - Modern Reset for Consistent Styling
+   Load this BEFORE your global.css file
+   ======================================== */
+
+/* 1. Use a more-intuitive box-sizing model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margin and padding */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. Prevent font size inflation on mobile */
+html {
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  /* Set a base font size for rem calculations */
+  font-size: 16px;
+}
+
+/* 4. Remove built-in form typography styles */
+input, button, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+/* 5. Improve text rendering */
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+}
+
+/* 6. Improve media defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* 7. Remove built-in form button styles */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* 8. Remove default button focus styles (you'll add custom ones) */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+/* 9. Remove default list styles */
+ul, ol {
+  list-style: none;
+}
+
+/* 10. Remove default link styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 11. Make sure table elements inherit font properties */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th, td {
+  text-align: left;
+  font-weight: inherit;
+}
+
+/* 12. Remove default fieldset and legend styles */
+fieldset {
+  border: none;
+}
+
+legend {
+  padding: 0;
+}
+
+/* 13. Remove default textarea resize handle styling */
+textarea {
+  resize: vertical;
+}
+
+/* 14. Remove default search input styles */
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 15. Remove default number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  appearance: none; /* Removes all default styling */
+}
+
+/* 16. Improve default cursor for interactive elements */
+button,
+a,
+label,
+select,
+summary,
+[role="button"] {
+  cursor: pointer;
+}
+
+/* 17. Ensure disabled elements have appropriate cursor */
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+/* 18. Remove default summary styles */
+summary {
+  display: list-item;
+}
+
+/* 19. Ensure hidden elements are actually hidden */
+[hidden] {
+  display: none !important;
+}
+
+/* 20. Improve readability for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
