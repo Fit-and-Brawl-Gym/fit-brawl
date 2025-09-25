@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Membership Plans</title>
+</head>
+
+<body>
+    <h1>Membership Plans</h1>
+
+    <div id="plans"></div>
+
+    <script>
+        fetch("../api/membership_api.php")
+            .then(res => res.json())
+            .then(plans => {
+                let div = document.getElementById("plans");
+                plans.forEach(plan => {
+                    div.innerHTML += `
+            <div>
+              <h2>${plan.plan_name}</h2>
+              <p>₱${plan.price} / ${plan.duration} days</p>
+            </div>
+          `;
+                });
+            });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Products</title>
+</head>
+
+<body>
+    <h1>Products for Sale</h1>
+
+    <ul id="product-list"></ul>
+
+    <script>
+        fetch("../api/product_api.php")
+            .then(res => res.json())
+            .then(data => {
+                let list = document.getElementById("product-list");
+                data.forEach(p => {
+                    list.innerHTML += `<li>${p.name} (${p.stock} pcs) - ${p.status}</li>`;
+                });
+            });
+    </script>
+</body>
+
+</html>

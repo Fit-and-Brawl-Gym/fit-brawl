@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Reservations</title>
+</head>
+
+<body>
+    <h1>My Reservations</h1>
+
+    <!-- List Reservations -->
+    <h2>Current Reservations</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Trainer</th>
+                <th>Class</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="reservation-list"></tbody>
+    </table>
+
+    <!-- Create Reservation -->
+    <h2>Book a Reservation</h2>
+    <form id="reservation-form">
+        <input type="number" id="user_id" placeholder="User ID" required>
+        <input type="number" id="trainer_id" placeholder="Trainer ID" required>
+        <select id="class_type">
+            <option>Boxing</option>
+            <option>Muay Thai</option>
+        </select>
+        <input type="datetime-local" id="datetime" required>
+        <button type="submit">Reserve</button>
+    </form>
+
+    <script>
+        // Fetch reservations
+        fetch("../api/reservations_api.php")
+            .then(res => res.json())
+            .then(data => {
+                let list = document.getElementById("reservation-list");
+                data.forEach(r => {
+                    list.innerHTML += `
+            <tr>
+              <td>${r.id}</td>
+              <td>${r.trainer_id}</td>
+              <td>${r.class_type}</td>
+              <td>${r.datetime}</td>
+              <td>${r.status}</td>
+            </tr>`;
+                });
+            });
+
+        // Create reservation
+        document.getElementById("reservation-form").addEventListener("submit", e => {
+            e.preventDefault();
+            let payload = {
+                user_id: document.getElementById("user_id").value,
+                trainer_id: document.getElementById("trainer_id").value,
+                class_type: document.getElementById("class_type").value,
+                datetime: document.getElementById("datetime").value
+            };
+
+            fetch("../api/reservations_api.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(result => alert(result.message));
+        });
+    </script>
+</body>
+
+</html>

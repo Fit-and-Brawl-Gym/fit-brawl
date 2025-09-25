@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+
+<body>
+    <h1>Admin Dashboard</h1>
+
+    <!-- Stats Overview -->
+    <div>
+        <h2>Overview</h2>
+        <p>Total Users: <span id="user-count">0</span></p>
+        <p>Total Reservations: <span id="reservation-count">0</span></p>
+    </div>
+
+    <!-- Equipment -->
+    <section>
+        <h2>Equipment Status</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody id="equipment-table"></tbody>
+        </table>
+    </section>
+
+    <!-- Products -->
+    <section>
+        <h2>Products Inventory</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody id="products-table"></tbody>
+        </table>
+    </section>
+
+    <!-- Users -->
+    <section>
+        <h2>Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody id="users-table"></tbody>
+        </table>
+    </section>
+
+    <!-- Reservations -->
+    <section>
+        <h2>Reservations</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Trainer</th>
+                    <th>Class</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="reservations-table"></tbody>
+        </table>
+    </section>
+
+    <!-- Feedback -->
+    <section>
+        <h2>Feedback</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="feedback-table"></tbody>
+        </table>
+    </section>
+
+    <script>
+        // Stats
+        fetch("../api/admin_api.php")
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("user-count").textContent = data.users;
+                document.getElementById("reservation-count").textContent = data.reservations;
+
+                let eqTable = document.getElementById("equipment-table");
+                data.equipment.forEach(e => {
+                    eqTable.innerHTML += `<tr><td>${e.status}</td><td>${e.count}</td></tr>`;
+                });
+
+                let prodTable = document.getElementById("products-table");
+                data.products.forEach(p => {
+                    prodTable.innerHTML += `<tr><td>${p.status}</td><td>${p.count}</td></tr>`;
+                });
+            });
+
+        // Users
+        fetch("../api/users_api.php")
+            .then(res => res.json())
+            .then(data => {
+                let uTable = document.getElementById("users-table");
+                data.forEach(u => {
+                    uTable.innerHTML += `<tr><td>${u.id}</td><td>${u.username}</td><td>${u.role}</td></tr>`;
+                });
+            });
+
+        // Reservations
+        fetch("../api/reservations_api.php")
+            .then(res => res.json())
+            .then(data => {
+                let rTable = document.getElementById("reservations-table");
+                data.forEach(r => {
+                    rTable.innerHTML += `
+            <tr>
+              <td>${r.id}</td>
+              <td>${r.user_id}</td>
+              <td>${r.trainer_id}</td>
+              <td>${r.class_type}</td>
+              <td>${r.datetime}</td>
+              <td>${r.status}</td>
+            </tr>`;
+                });
+            });
+
+        // Feedback
+        fetch("../api/feedback_api.php")
+            .then(res => res.json())
+            .then(data => {
+                let fTable = document.getElementById("feedback-table");
+                data.forEach(f => {
+                    fTable.innerHTML += `<tr><td>${f.username}</td><td>${f.message}</td><td>${f.date}</td></tr>`;
+                });
+            });
+    </script>
+</body>
+
+</html>
