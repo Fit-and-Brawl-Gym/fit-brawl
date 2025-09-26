@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
-    <link rel="stylesheet" href="public/css/pages/feedback.css">
+    <link rel="stylesheet" href="public/css/pages/feedback-form.css">
+    <link rel="stylesheet" href="public/css/components/form.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">
-    <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -41,30 +42,45 @@
     <!--Main-->
     <main>
         <div class="bg"></div>
-        <div class="feedback-container">
-            <div class="feedback-section">
-                <div class="feedback-card left">
-                    <img src="/images/review1-pfp.png" alt="Reynaldo Chee">
-                    <div class="bubble">
-                      <h3>Reynaldo Chee – Body Builder</h3>
-                      <p>The equipment are clean, very accommodating staffs, and the prices is not that bad</p>
+        <div class="contact-container">
+            <div class="glowing-bg"></div>
+            <div class="contact-section">
+                <div class="contact-header">
+                    <h1>Share your feedback</h1>
+                </div>
+                <div class="contact-details">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first-name">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon">
+                                    <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+                                </svg>
+                            </label>
+                            <input type="text" id="first-name" name="first-name" placeholder="Name (Optional)">
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name" class="email-label">
+                                <svg class="icon email-icon" xmlns="http://www.w3.org/2000/svg" 
+                                    viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2 
+                                    2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 
+                                    2 0 0 0-2-2zm0 4.2l-8 4.8-8-4.8V6l8 
+                                    4.8L20 6v2.2z"/>
+                                </svg>
+                            </label>
+                            <input type="text" id="last-name" name="last-name" placeholder="Email (Optional)">
+                        </div>
                     </div>
-                  </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Leave us a message..." required></textarea>
+                    </div>
+                    <div class="buttons">
+                        <a href="feedback.html">Cancel</a>
+                        <button type="submit">Submit</button>
+                    </div>
+                </div>
                 
-                  <div class="feedback-card right">
-                    <div class="bubble">
-                      <h3>Rieze Venzon – Gym Rat</h3>
-                      <p>Very cool ng ambiance, very presko, at magaganda tugtugan na pang motivation talaga!</p>
-                    </div>
-                    <img src="/images/review2-pfp.png" alt="Rieze Venzon">
-                  </div>
             </div>
-        </div>
-        <div class="feedback-button">
-            <a href="feedback-form.html" class="floating-btn">
-                Share your feedback!
-            </a>
-            
         </div>
     </main>
 
