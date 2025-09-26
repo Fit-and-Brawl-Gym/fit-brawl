@@ -1,0 +1,93 @@
+@font-face {
+  font-family: zuume-rough-bold;
+  src: url(fonts/zuume-rough-bold.ttf) format("truetype");
+}
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+.bg {
+  position: absolute;         
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("/images/contact-bg.png") no-repeat center center;
+  background-size: cover; 
+  z-index: -1; 
+ 
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  gap: 2rem;
+}
+
+.form-group{
+    font-family: 'poppins', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-content: space-between;
+  flex-direction: column;
+    --padding-left: 5px;
+    --font-size: 1.2rem;
+    position: relative;
+}
+.form-group input, .form-group textarea {
+     border: none;               
+     border-bottom: 1px solid #333;
+    background: transparent;     
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    outline: none;             
+    border-radius: 0;
+    padding: var(--padding-left);   
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-bottom-color: #002f3f; 
+}
+.form-group label{
+    font-size: 14px;
+    pointer-events: none;
+    text-transform: uppercase;
+    
+    position: absolute;
+    bottom: 5px;
+    left: var(--padding-left);
+    transition: transform 300ms ease-in-out,font-size 300ms ease-in-out,left 300ms ease-in-out,color 300ms ease-in-out;
+    letter-spacing: 1.2px;
+}
+
+.form-group:has(input:focus) label, .form-group:has(input:not(:placeholder-shown)) label {
+    transform:translateY(-22px);
+    font-size: calc(var(--font-size) - 0.4rem);
+    left: var(--padding-left);
+    color: #002f3f;;
+}
+
+input, textarea {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.submit-button {
+  text-align: center;
+  margin-top: 10px;
+}
+.submit-button button {
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  text-transform: uppercase;
+  padding: 0 50px;     
+  border: 2px solid white;
+  border-radius: 20px;     
+  background-color: #d5ba2b;
+  color: black;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
