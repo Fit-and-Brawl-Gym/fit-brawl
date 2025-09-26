@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
-    <link rel="stylesheet" href="public/css/pages/homepage.css">
+    <link rel="stylesheet" href="public/css/pages/contact.css">
+    <link rel="stylesheet" href="public/css/components/form.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">
     <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
@@ -40,9 +41,45 @@
 
     <!--Main-->
     <main>
-        <h1>Put contents here...</h1>
-    </main>
+        <div class="bg"></div>
+        <div class="contact-container">
+            <div class="glowing-bg"></div>
+            <div class="contact-section">
+                <div class="contact-header">
+                    <h1>Contact Us</h1>
+                </div>
+                <div class="contact-details">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first-name">First Name</label>
+                            <input type="text" id="first-name" name="first-name" placeholder="" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name">Last Name</label>
+                            <input type="text" id="last-name" name="last-name" placeholder="" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="" required>
+                        </div>
 
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Leave us a message..."></textarea>
+                    </div>
+                </div>
+                <div class="submit-button">
+                    <button type="submit">Submit</button>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <!--Footer-->
     <footer>
@@ -91,7 +128,7 @@
                 </div>
                 <div class="contact-text">
                     <p>Address: 1832 Oroquieta Rd, Santa Cruz, Manila, 1008 Metro Manila</p>
-                    <p>Email: <a href="mailto:ithelp@plm.edu.ph">Email: fitxbrawl@gmail.com</a></p>
+                    <p>Email: <a href="mailto:ithelp@plm.edu.ph">fitxbrawl@gmail.com</a></p>
                     <p>FXB Hotline: (02) 8 995-46-70</p>
                 </div>
             </div>
