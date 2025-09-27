@@ -11,20 +11,18 @@
 .wrapper{
     display: flex;
     align-items: center;
-    justify-content: space-between;
     background-color: #002f3f;
     padding: 16px 32px;
+    position: relative; /* For absolute positioning of nav */
 }
 
 .wrapper .title{
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 15px;
 }
 .wrapper .title a {
     text-decoration: none;
-    color: black;
 }
 .wrapper .title .logo {
     width: 60px;
@@ -36,13 +34,23 @@
     font-family: "zuume-rough-bold", sans-serif;
     font-weight: 600;
     text-transform: uppercase;
+    height: 48px;
+    width: auto;
 }
 .wrapper .title .logo-title span{
     color: #d5ba2b;
 
 }
 
+.fnb-logo {
+    width: 60px;
+    height: 60px;
+}
+
 .wrapper .nav-bar{
+    position: absolute;
+    left: 52%;
+    transform: translateX(-50%);
     padding: 8px 0;
 }
 .wrapper .nav-bar ul{
@@ -50,6 +58,9 @@
     align-items: center;
     justify-content: center;
     gap: 30px;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
 .wrapper .nav-bar ul li{
@@ -63,6 +74,7 @@
     color: #FFFFFF;
     font-weight: 500;
     position: relative;
+    transition: font-size 0.2s ease-in-out;
 }
 .wrapper .nav-bar ul li a::after {
     content: '';
@@ -76,14 +88,15 @@
     transition: transform 0.25s ease-out;
     transform-origin: bottom center;
 }
+.wrapper .nav-bar ul li a.active {
+    color: #d5ba2b;
+    font-weight: 700;
+}
 .wrapper .nav-bar ul li a:hover{
-    transition: 0.2s;
+    font-size: 17px;
     color: #d5ba2b;
 }
-.wrapper .nav-bar ul li a:hover::after {
-    transform: scaleX(1);
-    transform-origin: bottom center;
-}
+
 .bottom-border{
     width: 100%;
     height: 10px;
@@ -91,6 +104,27 @@
 }
 
 
+.account-link {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.account-icon {
+    width: 28px;
+    height: 28px;
+    filter: none; /* Removed invert(1) to keep original white color */
+    transition: filter 0.2s;
+}
+
+.account-link:hover .account-icon {
+    filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
+}
+
+.account-link.active .account-icon {
+    filter: invert(77%) sepia(95%) saturate(749%) hue-rotate(1deg) brightness(104%) contrast(105%);
+}
 
 main{
     height: 100vh;
