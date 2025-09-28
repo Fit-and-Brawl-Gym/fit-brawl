@@ -18,6 +18,13 @@
     z-index: -1; 
    
   }
+  main {
+  min-height: 100vh;            
+  display: flex;
+  justify-content: center;    
+  align-items: start;          
+  position: relative;
+}
   .feedback-section {
     display: flex;
     flex-direction: column;
