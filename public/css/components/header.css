@@ -119,11 +119,11 @@
 }
 
 .account-link:hover .account-icon {
-    filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
+  filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
 }
 
 .account-link.active .account-icon {
-    filter: invert(77%) sepia(95%) saturate(749%) hue-rotate(1deg) brightness(104%) contrast(105%);
+  filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
 }
 
 main{
