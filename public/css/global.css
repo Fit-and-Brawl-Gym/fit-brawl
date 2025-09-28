@@ -7,12 +7,8 @@
 
 /* Custom Font Face */
 @font-face {
-    font-family: 'FONTSPRING DEMO - Zuume Rough';
-    src: url('FONTSPRINGDEMO-ZuumeRoughBold.woff2') format('woff2'),
-         url('FONTSPRINGDEMO-ZuumeRoughBold.woff') format('woff');
-    font-weight: bold;
-    font-style: normal;
-    font-display: swap;
+  font-family: zuume-rough-bold;
+  src: url(fonts/zuume-rough-bold.ttf) format("truetype");
 }
 
 /* ========================================
@@ -21,11 +17,11 @@
 
 :root {
   /* Brand Colors */
-  --color-primary: ##002f3f; /* Dark teal from header */
+  --color-primary: #002f3f; /* Dark teal from header */
   --color-primary-light: #2d6b75;
   --color-primary-dark: #0f3238;
   --color-secondary: #4a7c87; /* Medium teal */
-  --color-accent: ##d5ba2b; /* Gold/Yellow from buttons and highlights */
+  --color-accent: #d5ba2b; /* Gold/Yellow from buttons and highlights */
   --color-accent-hover: #b8941f;
 
   /* Background Colors */
@@ -182,6 +178,12 @@ canvas {
   height: auto;
 }
 
+/* Override for specific images that need to be larger */
+.footer-logo-title {
+  max-width: none !important;
+  max-height: none !important;
+}
+
 /* Form Elements */
 input,
 button,
@@ -218,40 +220,3 @@ ul, ol {
   list-style: none;
 }
 
-/* ========================================
-   BASIC LAYOUT CONTAINERS
-   ======================================== */
-
-.container {
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: var(--spacing-4);
-  padding-right: var(--spacing-4);
-}
-
-@media (min-width: 576px) {
-  .container { max-width: var(--container-sm); }
-}
-
-@media (min-width: 768px) {
-  .container { max-width: var(--container-md); }
-}
-
-@media (min-width: 992px) {
-  .container { max-width: var(--container-lg); }
-}
-
-@media (min-width: 1200px) {
-  .container { max-width: var(--container-xl); }
-}
-
-@media (min-width: 1400px) {
-  .container { max-width: var(--container-xxl); }
-}
-
-.container-fluid {
-  width: 100%;
-  padding-left: var(--spacing-4);
-  padding-right: var(--spacing-4);
-}
