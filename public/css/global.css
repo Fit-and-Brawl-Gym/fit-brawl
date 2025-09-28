@@ -7,8 +7,8 @@
 
 /* Custom Font Face */
 @font-face {
-  font-family: zuume-rough-bold;
-  src: url(fonts/zuume-rough-bold.ttf) format("truetype");
+  font-family: 'Zuume Rough Bold';
+  src: url('../fonts/zuume-rough-bold.ttf') format("truetype");
 }
 
 /* ========================================
@@ -25,7 +25,7 @@
   --color-accent-hover: #b8941f;
 
   /* Background Colors */
-  --color-bg-dark: #0a1f24;
+  --color-bg-dark: #010d17;
   --color-bg-overlay: rgba(10, 31, 36, 0.8);
   --color-card-bg: rgba(26, 74, 82, 0.9);
   --color-modal-bg: rgba(0, 0, 0, 0.7);
@@ -48,7 +48,7 @@
 
   /* Typography */
   --font-family-primary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'FONTSPRING DEMO - Zuume Rough', 'Poppins', sans-serif;
+  --font-family-display: 'Zuume Rough Bold', 'Poppins', sans-serif;
 
   /* Font Sizes */
   --font-size-xs: 0.75rem;     /* 12px */
