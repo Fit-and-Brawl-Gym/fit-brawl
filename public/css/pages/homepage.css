@@ -1,0 +1,132 @@
+body {
+    background: #010d17 url('/images/homepage-boxer.png') no-repeat top -80px left 40% / auto 100%;
+}
+
+.homepage-hero {
+    position: relative;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 100px;
+    padding-bottom: 0;
+}
+
+.hero-content {
+    max-width: 600px;
+    margin-left: 5vw;
+    color: #fff;
+    z-index: 2;
+    position: relative;
+}
+
+.homepage-hero h1 {
+    font-family: 'zuume-rough-bold', 'Poppins', sans-serif;
+    font-size: 6rem;
+    font-weight: 900;
+    line-height: 1.1;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    margin-top: 3rem;
+}
+
+.homepage-hero .yellow {
+    color: #d5ba2b;
+}
+
+.hero-underline {
+    width: 100%;
+    max-width: 400px;
+    height: 4px;
+    background: #d5ba2b;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.sub-underline {
+    position: relative;
+    padding-left: 120px;
+}
+
+.sub-underline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100px;
+    height: 4px;
+    background: #d5ba2b;
+}
+
+.hero-sub {
+    font-size: 1.9rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    margin-top: 0.5rem;
+    color: #d5ba2b;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+.hero-btn {
+    display: inline-block;
+    background: #d5ba2b;
+    color: #0a2a36;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 0.8rem 2.2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s, color 0.2s;
+}
+
+.hero-btn:hover {
+    background: #ffe066;
+    color: #0a2a36;
+}
+
+.top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 800px;
+    height: 4px;
+}
+
+
+footer {
+    padding-top: 0;
+    margin-top: 0;
+}
+
+main {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.apostrophe {
+    font-family: 'Poppins', sans-serif;
+}
+
+@media (max-width: 900px) {
+    .homepage-hero h1 {
+        font-size: 2.8rem;
+    }
+    .hero-sub {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .homepage-hero h1 {
+        font-size: 1.8rem;
+    }
+    .hero-sub {
+        font-size: 1.2rem;
+    }
+}
+
+
