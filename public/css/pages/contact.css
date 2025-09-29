@@ -53,7 +53,7 @@
     font-size: 14px;
     pointer-events: none;
     text-transform: uppercase;
-    
+    color: black;
     position: absolute;
     bottom: 5px;
     left: var(--padding-left);
@@ -74,20 +74,30 @@ input, textarea {
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-
+textarea {
+  width: 100%;
+            
+  padding-top: 10px;         
+  resize: none;              
+}
 .submit-button {
   text-align: center;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 .submit-button button {
   font-family: 'Poppins', sans-serif;
   font-size: 16px;
   text-transform: uppercase;
-  padding: 0 50px;     
-  border: 2px solid white;
+  padding: 0px 50px;     
+  border: none;
   border-radius: 20px;     
   background-color: #d5ba2b;
   color: black;
+  font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+button:hover{
+    opacity: 0.8;
+    transition: 0.3s;
 }
