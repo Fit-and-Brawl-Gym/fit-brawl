@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
+    <link rel="stylesheet" href="public/css/global.css">
     <link rel="stylesheet" href="public/css/pages/feedback-form.css">
     <link rel="stylesheet" href="public/css/components/form.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">
-    <link rel="shortcut icon" href="" type="image/x-icon">
+    <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -19,9 +20,11 @@
     <header>
         <div class="wrapper">
             <div class="title">
-                <img src="images/fnb-logo-yellow.svg" alt="fxb-logo" />
-                <a href="">
-                    <p class="logo-title">FIT<span>X</span>BRAWL</p>
+                <a href="index.html">
+                    <img src="images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                </a>
+                <a href="index.html">
+                    <img src="images/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
 
             </div>
@@ -35,15 +38,17 @@
                     <li><a href="public/php/feedback.php" class="active">Feedback</a></li>
                 </ul>
             </nav>
+            <a href="login.html" class="account-link">
+                <img src="images/account-icon.svg" alt="Account" class="account-icon">
+            </a>
         </div>
-
     </header>
 
-    <!--Main-->
+     <!--Main-->
     <main>
         <div class="bg"></div>
+                    <div class="glowing-bg"></div>
         <div class="contact-container">
-            <div class="glowing-bg"></div>
             <div class="contact-section">
                 <div class="contact-header">
                     <h1>Share your feedback</h1>
@@ -84,7 +89,6 @@
         </div>
     </main>
 
-
     <!--Footer-->
     <footer>
         <div class="container">
@@ -104,6 +108,9 @@
                         <i class="fa-brands fa-instagram social-icon"></i>
                     </a>
                 </div>
+        <div class="container footer-flex">
+            <div class="footer-logo-block">
+                <img src="images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
             </div>
                <div class="links-section">
                 <div class="section-title">
@@ -126,27 +133,7 @@
                     </div>
                 </div>
             </div>
-            <div class="contact-section">
-                               <div class="section-title">
-                    <p>For more information, you may contact us at:</p>
-                </div>
-                <div class="contact-text">
-                    <p>Address: 1832 Oroquieta Rd, Santa Cruz, Manila, 1008 Metro Manila</p>
-                    <p>Email: <a href="mailto:ithelp@plm.edu.ph">Email: fitxbrawl@gmail.com</a></p>
-                    <p>FXB Hotline: (02) 8 995-46-70</p>
-                </div>
-            </div>
-               <div class="open-hours-section">
-       <div class="section-title">
-           <p>Opening Hours</p>
-       </div>
-       <div class="opening-text">
-           <p>Sunday-Friday: 9AM to 10PM</p>
-           <p>Saturday: 10PM to 7PM</p>
-       </div>
-   </div>
         </div>
-
         <div class="copyright">
             <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
         </div>
