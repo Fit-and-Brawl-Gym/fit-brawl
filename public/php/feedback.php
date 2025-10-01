@@ -1,3 +1,41 @@
+<?php
+header('Content-Type: application/json');
+include '../includes/db_connect.php';
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'POST') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $user_id = $data['user_id'];
+    $message = $data['message'];
+
+    $sql = "INSERT INTO feedback (user_id, message) VALUES (?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $user_id, $message);
+
+    if ($stmt->execute()) {
+        echo json_encode(["status" => "success", "message" => "Feedback submitted"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => $conn->error]);
+    }
+}
+
+elseif ($method === 'GET') {
+    $sql = "SELECT f.id, u.username, f.message, f.date
+            FROM feedback f
+            JOIN users u ON f.user_id = u.id
+            ORDER BY f.date DESC";
+    $result = $conn->query($sql);
+
+    $feedbacks = [];
+    while ($row = $result->fetch_assoc()) {
+        $feedbacks[] = $row;
+    }
+
+    echo json_encode($feedbacks);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +43,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
     <link rel="stylesheet" href="public/css/global.css">
-    <link rel="stylesheet" href="public/css/pages/contact.css">
-    <link rel="stylesheet" href="public/css/components/form.css">
+    <link rel="stylesheet" href="public/css/pages/feedback.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">
     <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
@@ -29,12 +66,12 @@
             </div>
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html" class="active">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                    <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php" class="active">Feedback</a></li>
                 </ul>
             </nav>
             <a href="login.html" class="account-link">
@@ -46,45 +83,33 @@
     <!--Main-->
     <main>
         <div class="bg"></div>
-        <div class="glowing-bg"></div>
-        <div class="contact-container">
-            <div class="contact-section">
-                <div class="contact-header">
-                    <h1>Contact Us</h1>
-                </div>
-                <div class="contact-details">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="first-name">First Name</label>
-                            <input type="text" id="first-name" name="first-name" placeholder="" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="last-name">Last Name</label>
-                            <input type="text" id="last-name" name="last-name" placeholder="" required>
-                        </div>
+        <div class="feedback-container">
+            <div class="feedback-section">
+                <div class="feedback-card left">
+                    <img src="/images/review1-pfp.png" alt="Reynaldo Chee">
+                    <div class="bubble">
+                      <h3>Reynaldo Chee – Body Builder</h3>
+                      <p>The equipment are clean, very accommodating staffs, and the prices is not that bad</p>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="" required>
-                        </div>
+                  </div>
 
-                        <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" placeholder="" required>
-                        </div>
+                  <div class="feedback-card right">
+                    <div class="bubble">
+                      <h3>Rieze Venzon – Gym Rat</h3>
+                      <p>Very cool ng ambiance, very presko, at magaganda tugtugan na pang motivation talaga!</p>
                     </div>
-                    <div class="form-group">
-                        <textarea id="message" name="message" placeholder="Leave us a message..."></textarea>
-                    </div>
-                    <div class="submit-button">
-                        <button type="submit">Submit</button>
-                    </div>
-                </div>
-                
+                    <img src="/images/review2-pfp.png" alt="Rieze Venzon">
+                  </div>
             </div>
         </div>
+        <div class="feedback-button">
+            <a href="feedback-form.html" class="floating-btn">
+                Share your feedback!
+            </a>
+
+        </div>
     </main>
+
 
     <!--Footer-->
     <footer>
@@ -95,12 +120,12 @@
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
                 <ul class="footer-menu-list">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                    <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php">Feedback</a></li>
                 </ul>
             </div>
             <div class="footer-contact-block">
