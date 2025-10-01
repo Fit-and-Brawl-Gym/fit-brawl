@@ -1,3 +1,18 @@
+<?php
+header('Content-Type: application/json');
+include '../includes/db_connect.php';
+
+$sql = "SELECT id, plan_name, price, duration FROM memberships";
+$result = $conn->query($sql);
+
+$plans = [];
+while ($row = $result->fetch_assoc()) {
+    $plans[] = $row;
+}
+
+echo json_encode($plans);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +20,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
     <link rel="stylesheet" href="public/css/global.css">
-    <link rel="stylesheet" href="public/css/pages/homepage.css">
+    <link rel="stylesheet" href="public/css/pages/membership.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">
     <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
@@ -28,8 +43,8 @@
             </div>
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="index.html" class="active">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="membership.html" class="active">Membership</a></li>
                     <li><a href="equipment.html">Equipment</a></li>
                     <li><a href="products.html">Products</a></li>
                     <li><a href="contact.html">Contact</a></li>
@@ -44,17 +59,7 @@
 
     <!--Main-->
     <main>
-        <section class="homepage-hero">
-            <div class="hero-content">
-                <div class="hero-underline top-line"></div>
-                <h1>
-                    BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
-                    BUILT FOR <span class="yellow">BATTLE</span>
-                </h1>
-                <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
-                <a href="membership.html" class="hero-btn">Be a Member</a>
-            </div>
-        </section>
+        <h1>Put contents here...</h1>
     </main>
 
 
