@@ -26,15 +26,16 @@
                 <a href="index.html">
                     <img src="images/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
+
             </div>
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html" >Contact</a></li>
-                    <li><a href="feedback.html" class="active">Feedback</a></li>
+                <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php" class="active">Feedback</a></li>
                 </ul>
             </nav>
             <a href="login.html" class="account-link">
@@ -64,11 +65,11 @@
                         </div>
                         <div class="form-group">
                             <label for="last-name" class="email-label">
-                                <svg class="icon email-icon" xmlns="http://www.w3.org/2000/svg" 
+                                <svg class="icon email-icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2 
-                                    2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 
-                                    2 0 0 0-2-2zm0 4.2l-8 4.8-8-4.8V6l8 
+                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2
+                                    2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2
+                                    2 0 0 0-2-2zm0 4.2l-8 4.8-8-4.8V6l8
                                     4.8L20 6v2.2z"/>
                                 </svg>
                             </label>
@@ -79,45 +80,57 @@
                         <textarea id="message" name="message" placeholder="Leave us a message..." required></textarea>
                     </div>
                     <div class="buttons">
-                        <a href="feedback.html">Cancel</a>
+                        <a href="feedback.php">Cancel</a>
                         <button type="submit">Submit</button>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </main>
 
     <!--Footer-->
     <footer>
+        <div class="container">
+            <div class="logo-section">
+                <div class="logo-container">
+                    <img src="images/fnb-logo-yellow.svg" alt="fxb-logo" />
+
+                </div>
+                <div class="title">
+                    <p class="logo-title">FIT<span>X</span>BRAWL</p>
+                </div>
+                <div class="social-icons">
+                    <a href="" target="_blank">
+                        <i class="fa-brands fa-facebook social-icon"></i>
+                    </a>
+                    <a href="" target="_blank">
+                        <i class="fa-brands fa-instagram social-icon"></i>
+                    </a>
+                </div>
         <div class="container footer-flex">
             <div class="footer-logo-block">
                 <img src="images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
             </div>
-            <div class="footer-menu-block">
-                <div class="footer-menu-title">MENU</div>
-                <ul class="footer-menu-list">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
-                </ul>
-            </div>
-            <div class="footer-contact-block">
-                <div class="footer-contact-title">CONTACT</div>
-                <div class="footer-contact-details">
-                    1832 Oroquieta Rd, Santa Cruz, Manila,<br>
-                    1008 Metro Manila<br><br>
-                    Gmail: fitxbrawl@gmail.com
+               <div class="links-section">
+                <div class="section-title">
+                    <p>Quick Links:</p>
                 </div>
-            </div>
-            <div class="footer-hours-block">
-                <div class="footer-hours-title">OPENING HOURS</div>
-                <div class="footer-hours-details">
-                    Sun–Fri: 9AM to 10PM<br>
-                    Saturday: 10AM to 7PM
+                <div class="quick-links">
+                    <div class="links-column">
+                        <ul>
+                            <li><a href="index.php">Home</a></li>
+                            <li><a href="membership.php">Membership</a></li>
+                            <li><a href="equipment.php">Equipment</a></li>
+                            <li><a href="products.php">Products</a></li>
+                        </ul>
+                    </div>
+                    <div class="links-column">
+                        <ul>
+                            <li><a href="contact.php">Contact</a></li>
+                            <li><a href="feedback.php">Feedback</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

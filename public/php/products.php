@@ -1,3 +1,18 @@
+<?php
+header('Content-Type: application/json');
+include '../includes/db_connect.php';
+
+$sql = "SELECT id, name, stock, status FROM products";
+$result = $conn->query($sql);
+
+$products = [];
+while ($row = $result->fetch_assoc()) {
+    $products[] = $row;
+}
+
+echo json_encode($products);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,12 +43,12 @@
             </div>
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html" class="active">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php" class="active">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php">Feedback</a></li>
                 </ul>
             </nav>
             <a href="login.html" class="account-link">

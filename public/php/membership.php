@@ -1,3 +1,18 @@
+<?php
+header('Content-Type: application/json');
+include '../../includes/db_connect.php';
+
+$sql = "SELECT id, plan_name, price, duration FROM memberships";
+$result = $conn->query($sql);
+
+$plans = [];
+while ($row = $result->fetch_assoc()) {
+    $plans[] = $row;
+}
+
+echo json_encode($plans);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,12 +43,12 @@
             </div>
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html" class="active">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php" class="active">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php">Feedback</a></li>
                 </ul>
             </nav>
             <a href="login.html" class="account-link">

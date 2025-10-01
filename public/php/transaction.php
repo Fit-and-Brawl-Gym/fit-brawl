@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
     <link rel="stylesheet" href="public/css/global.css">
-    <link rel="stylesheet" href="public/css/pages/homepage.css">
+    <link rel="stylesheet" href="public/css/pages/transaction.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">
     <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
@@ -28,7 +28,7 @@
             </div>
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="index.html">Home</a></li>
                     <li><a href="membership.html">Membership</a></li>
                     <li><a href="equipment.html">Equipment</a></li>
                     <li><a href="products.html">Products</a></li>
@@ -44,17 +44,7 @@
 
     <!--Main-->
     <main>
-        <section class="homepage-hero">
-            <div class="hero-content">
-                <div class="hero-underline top-line"></div>
-                <h1>
-                    BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
-                    BUILT FOR <span class="yellow">BATTLE</span>
-                </h1>
-                <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
-                <a href="membership.html" class="hero-btn">Be a Member</a>
-            </div>
-        </section>
+        <h1>Put contents here...</h1>
     </main>
 
 
@@ -67,12 +57,12 @@
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
                 <ul class="footer-menu-list">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                    <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php">Feedback</a></li>
                 </ul>
             </div>
             <div class="footer-contact-block">
