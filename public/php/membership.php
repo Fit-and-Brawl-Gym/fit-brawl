@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include '../includes/db_connect.php';
+include '../../includes/db_connect.php';
 
 $sql = "SELECT id, plan_name, price, duration FROM memberships";
 $result = $conn->query($sql);
