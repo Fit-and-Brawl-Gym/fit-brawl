@@ -75,7 +75,7 @@
                         <textarea id="message" name="message" placeholder="Leave us a message..." required></textarea>
                     </div>
                     <div class="buttons">
-                        <a href="feedback.html">Cancel</a>
+                        <a href="feedback.php">Cancel</a>
                         <button type="submit">Submit</button>
                     </div>
                 </div>
@@ -112,16 +112,16 @@
                 <div class="quick-links">
                     <div class="links-column">
                         <ul>
-                            <li><a href="index.html">Home</a></li>
-                            <li><a href="membership.html">Membership</a></li>
-                            <li><a href="equipment.html">Equipment</a></li>
-                            <li><a href="products.html">Products</a></li>
+                            <li><a href="index.php">Home</a></li>
+                            <li><a href="membership.php">Membership</a></li>
+                            <li><a href="equipment.php">Equipment</a></li>
+                            <li><a href="products.php">Products</a></li>
                         </ul>
                     </div>
                     <div class="links-column">
                         <ul>
-                            <li><a href="contact.html">Contact</a></li>
-                            <li><a href="feedback.html">Feedback</a></li>
+                            <li><a href="contact.php">Contact</a></li>
+                            <li><a href="feedback.php">Feedback</a></li>
                         </ul>
                     </div>
                 </div>
