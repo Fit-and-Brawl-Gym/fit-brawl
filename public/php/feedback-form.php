@@ -23,7 +23,7 @@
                 <a href="">
                     <p class="logo-title">FIT<span>X</span>BRAWL</p>
                 </a>
-                
+
             </div>
             <nav class="nav-bar">
                 <ul>
@@ -36,7 +36,7 @@
                 </ul>
             </nav>
         </div>
-       
+
     </header>
 
     <!--Main-->
@@ -60,11 +60,11 @@
                         </div>
                         <div class="form-group">
                             <label for="last-name" class="email-label">
-                                <svg class="icon email-icon" xmlns="http://www.w3.org/2000/svg" 
+                                <svg class="icon email-icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2 
-                                    2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 
-                                    2 0 0 0-2-2zm0 4.2l-8 4.8-8-4.8V6l8 
+                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2
+                                    2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2
+                                    2 0 0 0-2-2zm0 4.2l-8 4.8-8-4.8V6l8
                                     4.8L20 6v2.2z"/>
                                 </svg>
                             </label>
@@ -79,7 +79,7 @@
                         <button type="submit">Submit</button>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </main>
@@ -91,7 +91,7 @@
             <div class="logo-section">
                 <div class="logo-container">
                     <img src="images/fnb-logo-yellow.svg" alt="fxb-logo" />
-                
+
                 </div>
                 <div class="title">
                     <p class="logo-title">FIT<span>X</span>BRAWL</p>
@@ -146,7 +146,7 @@
        </div>
    </div>
         </div>
-     
+
         <div class="copyright">
             <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
         </div>

@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
-    <link rel="stylesheet" href="public/css/global.css">
-    <link rel="stylesheet" href="public/css/pages/membership.css">
+    <link rel="stylesheet" href="public/css/pages/feedback.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">
     <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
@@ -29,11 +28,11 @@
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html" class="active">Membership</a></li>
+                    <li><a href="membership.html">Membership</a></li>
                     <li><a href="equipment.html">Equipment</a></li>
                     <li><a href="products.html">Products</a></li>
                     <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                    <li><a href="feedback.html" class="active">Feedback</a></li>
                 </ul>
             </nav>
             <a href="login.html" class="account-link">
@@ -44,7 +43,32 @@
 
     <!--Main-->
     <main>
-        <h1>Put contents here...</h1>
+        <div class="bg"></div>
+        <div class="feedback-container">
+            <div class="feedback-section">
+                <div class="feedback-card left">
+                    <img src="/images/review1-pfp.png" alt="Reynaldo Chee">
+                    <div class="bubble">
+                      <h3>Reynaldo Chee – Body Builder</h3>
+                      <p>The equipment are clean, very accommodating staffs, and the prices is not that bad</p>
+                    </div>
+                  </div>
+
+                  <div class="feedback-card right">
+                    <div class="bubble">
+                      <h3>Rieze Venzon – Gym Rat</h3>
+                      <p>Very cool ng ambiance, very presko, at magaganda tugtugan na pang motivation talaga!</p>
+                    </div>
+                    <img src="/images/review2-pfp.png" alt="Rieze Venzon">
+                  </div>
+            </div>
+        </div>
+        <div class="feedback-button">
+            <a href="feedback-form.html" class="floating-btn">
+                Share your feedback!
+            </a>
+
+        </div>
     </main>
 
 
