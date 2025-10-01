@@ -42,6 +42,7 @@ elseif ($method === 'GET') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
+    <link rel="stylesheet" href="public/css/global.css">
     <link rel="stylesheet" href="public/css/pages/feedback.css">
     <link rel="stylesheet" href="public/css/components/footer.css">
     <link rel="stylesheet" href="public/css/components/header.css">

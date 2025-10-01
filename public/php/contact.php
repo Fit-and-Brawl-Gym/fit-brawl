@@ -46,8 +46,8 @@
     <!--Main-->
     <main>
         <div class="bg"></div>
+        <div class="glowing-bg"></div>
         <div class="contact-container">
-            <div class="glowing-bg"></div>
             <div class="contact-section">
                 <div class="contact-header">
                     <h1>Contact Us</h1>
@@ -77,10 +77,11 @@
                     <div class="form-group">
                         <textarea id="message" name="message" placeholder="Leave us a message..."></textarea>
                     </div>
+                    <div class="submit-button">
+                        <button type="submit">Submit</button>
+                    </div>
                 </div>
-                <div class="submit-button">
-                    <button type="submit">Submit</button>
-                </div>
+                
             </div>
         </div>
     </main>
