@@ -28,12 +28,12 @@
             </div>
             <nav class="nav-bar">
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                    <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php">Feedback</a></li>
                 </ul>
             </nav>
             <a href="login.html" class="account-link active">
@@ -101,12 +101,12 @@
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
                 <ul class="footer-menu-list">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                    <li><a href="public/php/index.php">Home</a></li>
+                    <li><a href="public/php/membership.php">Membership</a></li>
+                    <li><a href="public/php/equipment.php">Equipment</a></li>
+                    <li><a href="public/php/products.php">Products</a></li>
+                    <li><a href="public/php/contact.php">Contact</a></li>
+                    <li><a href="public/php/feedback.php">Feedback</a></li>
                 </ul>
             </div>
             <div class="footer-contact-block">
