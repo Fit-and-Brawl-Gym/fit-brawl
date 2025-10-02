@@ -1,59 +1,138 @@
-.products-section {
-    padding: 2rem;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
+:root{
+  --teal-700: #0f4f52;
+  --accent: #f3c948;
+  --muted: #9fb2b3;
+  --card-bg: linear-gradient(180deg, rgba(3,37,38,0.94), rgba(6,45,49,0.86));
+  --glass: rgba(255,255,255,0.03);
+  --radius: 12px;
 }
 
-.products-title {
-    font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
+/* panel */
+.products-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.12));
+  padding: 26px;
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(2,8,10,0.45);
+  margin: 0 auto 40px;
 }
 
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
+/* heading */
+.products-panel .panel-header,
+.products-panel > .panel-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.products-panel .panel-header h2 { color: var(--teal-700); font-weight:800; font-size:22px; margin:0; }
+
+/* categories row */
+.categories-row,
+.products-panel .categories-row {
+  display:flex;
+  justify-content:center;
+  gap:18px;
+  flex-wrap:wrap;
+  margin-bottom: 20px;
+}
+.category-chip {
+  text-align:center;
+  border:3px solid var(--teal-700);
+  border-radius:10px;
+  padding:14px 18px;
+  width:150px;
+  cursor:pointer;
+  background: var(--glass);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.category-chip img { width:60px; height:60px; object-fit:cover; display:block; margin:0 auto 8px; }
+.category-chip p { margin:0; color:#cbe6e6; font-weight:600; font-size:14px; }
+.category-chip:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+.category-chip.active { outline:3px solid rgba(243,201,72,0.12); box-shadow: 0 8px 22px rgba(15,79,82,0.1); }
+
+/* controls */
+.controls {
+  display:flex;
+  gap:14px;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:24px;
+}
+.controls .search { flex:1; max-width:740px; }
+input[type="search"],
+select#statusFilter {
+  width:100%;
+  padding:10px 14px;
+  border-radius:8px;
+  border:0;
+  font-size:15px;
+  background: rgba(255,255,255,0.02);
+  color: #e8f1f2;
 }
 
-.product-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* grid and cards */
+.grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:18px;
+}
+.card, .product-card {
+  background: var(--card-bg);
+  padding:14px;
+  border-radius:12px;
+  min-height:220px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  border: 2px solid rgba(255,255,255,0.03);
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.card:hover, .product-card:hover { transform: translateY(-6px); box-shadow: 0 14px 34px rgba(2,8,10,0.45); }
+
+/* product image */
+.product-image {
+  width:100%;
+  height:140px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border-radius:8px;
+  background: rgba(255,255,255,0.02);
+  margin-bottom:10px;
+}
+.product-image img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* title */
+.card h4, .product-card h3 {
+  margin:8px 0 6px;
+  font-weight:700;
+  font-size:16px;
+  color:#e6f6f7;
+  text-align:center;
 }
 
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+/* status badges */
+.badge, .status {
+  padding:8px 12px;
+  border-radius:10px;
+  font-weight:700;
+  font-size:13px;
+}
+.in { background: #39b54a; color:#04220f; }
+.low { background: #f2b02e; color:#072016; }
+.out { background: #e24a4a; color:#fff; }
+
+/* small helpers */
+.no-products {
+  grid-column: 1/-1;
+  padding:36px;
+  color:var(--muted);
+  text-align:center;
 }
 
-.product-card img {
-    width: 100%;
-    border-radius: 10px;
-    object-fit: cover;
-    margin-bottom: 1rem;
-}
-
-.product-card h3 {
-    font-size: 1.1rem;
-    margin: 0.5rem 0;
-}
-
-.status {
-    font-weight: 600;
-    margin-top: 0.3rem;
-}
-
-.status.in-stock {
-    color: green;
-}
-
-.status.low-stock {
-    color: orange;
-}
-
-.status.out-of-stock {
-    color: red;
+/* responsive tweaks */
+@media (max-width:780px){
+  .category-chip { width:120px; padding:12px; }
+  .product-image { height:120px; }
 }
