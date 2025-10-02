@@ -73,19 +73,19 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         <!-- Categories -->
          <div class="categories-row">
             <div class="category-chip" data-cat="supplements">
-                <img src="../images/supplements.png" alt="Supplements">
+                <img src="../../images/supplements.png" alt="Supplements">
                 <p>Supplements</p>
             </div>
         <div class="category-chip" data-cat="hydration">
-            <img src="../images/hydration-and-drinks.png" alt="Hydration & Drinks">
+            <img src="../../images/hydration-and-drinks.png" alt="Hydration & Drinks">
             <p>Supplements</p>
             </div>
         <div class="category-chip" data-cat="snacks">
-            <img src="../images/snacks.png" alt="Snacks">
+            <img src="../../images/snacks.png" alt="Snacks">
             <p>Snacks</p>
             </div>
         <div class="category-chip" data-cat="boxing-gloves">
-            <img src="../images/boxing-gloves.png" alt="Boxing and Muay Thai Gloves">
+            <img src="../../images/boxing-gloves.png" alt="Boxing and Muay Thai Gloves">
             <p>Boxing and Muay Thai</p>
             </div>
          </div>
