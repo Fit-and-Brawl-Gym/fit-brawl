@@ -1,6 +1,6 @@
 .signup-main {
     min-height: calc(100vh - 120px);
-    background: #010d17 url('/images/login-bg.png') no-repeat center top / cover;
+    background: #010d17 url('../../../images/sign-up_bg.png') no-repeat center top / cover;
     position: relative;
 }
 
