@@ -63,7 +63,11 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
     <!--Main-->
     <main>
-        <h1>Put contents here...</h1>
+        <section class="products-section">
+            <h1 class="products-title">Our Products</h1>
+            <div class="products-grid" id="productsGrid">
+            </div>
+        </section>
     </main>
 
     <!--Footer-->
