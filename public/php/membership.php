@@ -1,16 +1,20 @@
 <?php
-header('Content-Type: application/json');
-include '../../includes/db_connect.php';
+// Check if this is an API request
+if (isset($_GET['api']) && $_GET['api'] === 'true') {
+    header('Content-Type: application/json');
+    include '../../includes/db_connect.php';
 
-$sql = "SELECT id, plan_name, price, duration FROM memberships";
-$result = $conn->query($sql);
+    $sql = "SELECT id, plan_name, price, duration FROM memberships";
+    $result = $conn->query($sql);
 
-$plans = [];
-while ($row = $result->fetch_assoc()) {
-    $plans[] = $row;
+    $memberships = [];
+    while ($row = $result->fetch_assoc()) {
+        $memberships[] = $row;
+    }
+
+    echo json_encode($memberships);
+    exit;
 }
-
-echo json_encode($plans);
 ?>
 
 <!DOCTYPE html>
@@ -18,12 +22,12 @@ echo json_encode($plans);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fit and Brawl</title>
-    <link rel="stylesheet" href="public/css/global.css">
-    <link rel="stylesheet" href="public/css/pages/membership.css">
-    <link rel="stylesheet" href="public/css/components/footer.css">
-    <link rel="stylesheet" href="public/css/components/header.css">
-    <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
+    <title>Fit and Brawl - Membership</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/pages/membership.css">
+    <link rel="stylesheet" href="../css/components/footer.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -34,25 +38,25 @@ echo json_encode($plans);
     <header>
         <div class="wrapper">
             <div class="title">
-                <a href="index.html">
-                    <img src="images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                <a href="index.php">
+                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
-                <a href="index.html">
-                    <img src="images/header-title.svg" alt="FITXBRAWL" class="logo-title">
+                <a href="index.php">
+                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
             <nav class="nav-bar">
                 <ul>
-                <li><a href="public/php/index.php">Home</a></li>
-                    <li><a href="public/php/membership.php" class="active">Membership</a></li>
-                    <li><a href="public/php/equipment.php">Equipment</a></li>
-                    <li><a href="public/php/products.php">Products</a></li>
-                    <li><a href="public/php/contact.php">Contact</a></li>
-                    <li><a href="public/php/feedback.php">Feedback</a></li>
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="membership.php" class="active">Membership</a></li>
+                    <li><a href="equipment.php">Equipment</a></li>
+                    <li><a href="products.php">Products</a></li>
+                    <li><a href="contact.php">Contact</a></li>
+                    <li><a href="feedback.php">Feedback</a></li>
                 </ul>
             </nav>
-            <a href="login.html" class="account-link">
-                <img src="images/account-icon.svg" alt="Account" class="account-icon">
+            <a href="login.php" class="account-link">
+                <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
             </a>
         </div>
     </header>
@@ -62,22 +66,21 @@ echo json_encode($plans);
         <h1>Put contents here...</h1>
     </main>
 
-
     <!--Footer-->
     <footer>
         <div class="container footer-flex">
             <div class="footer-logo-block">
-                <img src="images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
+                <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
             </div>
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
                 <ul class="footer-menu-list">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="membership.html">Membership</a></li>
-                    <li><a href="equipment.html">Equipment</a></li>
-                    <li><a href="products.html">Products</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="feedback.html">Feedback</a></li>
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="equipment.php">Equipment</a></li>
+                    <li><a href="products.php">Products</a></li>
+                    <li><a href="contact.php">Contact</a></li>
+                    <li><a href="feedback.php">Feedback</a></li>
                 </ul>
             </div>
             <div class="footer-contact-block">
@@ -100,5 +103,22 @@ echo json_encode($plans);
             <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        // Load membership data
+        fetch('membership.php?api=true')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('membership-container');
+                container.innerHTML = data.map(plan => `
+                    <div class="membership-card">
+                        <h3>${plan.plan_name}</h3>
+                        <p>Price: $${plan.price}</p>
+                        <p>Duration: ${plan.duration} days</p>
+                    </div>
+                `).join('');
+            })
+            .catch(error => console.error('Error loading memberships:', error));
+    </script>
 </body>
 </html>
