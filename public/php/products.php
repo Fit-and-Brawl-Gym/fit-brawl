@@ -105,3 +105,8 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     </footer>
 </body>
 </html>
+<script>
+fetch("../api/product_api.php")
+  .then(res => res.json())
+  .then(console.log);
+</script>
