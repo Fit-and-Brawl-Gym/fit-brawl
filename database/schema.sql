@@ -1,6 +1,6 @@
 -- Create database
-CREATE DATABASE IF NOT EXISTS bruh_and_brawl_gym;
-USE bruh_and_brawl_gym;
+CREATE DATABASE IF NOT EXISTS fit_and_brawl_gym;
+USE fit_and_brawl_gym;
 
 -- =====================
 -- USERS TABLE
