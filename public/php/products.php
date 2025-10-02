@@ -22,7 +22,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fit and Brawl</title>
+    <title>Fit and Brawl - Products</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/pages/products.css">
     <link rel="stylesheet" href="../css/components/footer.css">
@@ -62,12 +62,58 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     </header>
 
     <!--Main-->
-    <main>
-        <section class="products-section">
-            <h1 class="products-title">Our Products</h1>
-            <div class="products-grid" id="productsGrid">
+    <main class = "container">
+        <div class="products-panel">
+
+        <!-- Products Heading -->
+         <div class="panel-header">
+            <h2>Products</h2>
+         </div>
+
+        <!-- Categories -->
+         <div class="categories-row">
+            <div class="category-chip" data-cat="supplements">
+                <img src="../images/supplements.png" alt="Supplements">
+                <p>Supplements</p>
             </div>
-        </section>
+        <div class="category-chip" data-cat="hydration">
+            <img src="../images/hydration-and-drinks.png" alt="Hydration & Drinks">
+            <p>Supplements</p>
+            </div>
+        <div class="category-chip" data-cat="snacks">
+            <img src="../images/snacks.png" alt="Snacks">
+            <p>Snacks</p>
+            </div>
+        <div class="category-chip" data-cat="boxing-gloves">
+            <img src="../images/boxing-gloves.png" alt="Boxing and Muay Thai Gloves">
+            <p>Boxing and Muay Thai</p>
+            </div>
+         </div>
+
+        <!-- Search Product -->
+        <div class="controls">
+        <div class="search">
+            <input type="search" id="q" placeholder="Search products..." aria-label="Search products">
+        </div>
+        <div style="width:210px">
+            <select id="statusFilter">
+            <option value="all">Filter by Status</option>
+            <option value="in">In Stock</option>
+            <option value="low">Low on Stock</option>
+            <option value="out">Out of Stock</option>
+            </select>
+        </div>
+        </div>
+
+        <!-- Grid -->
+        <div id="grid" class="grid"></div>
+
+        </div>
+
+    </main>
+
+        </div>
+
     </main>
 
     <!--Footer-->
