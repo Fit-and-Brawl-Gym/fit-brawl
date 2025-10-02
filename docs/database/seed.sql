@@ -23,11 +23,6 @@ INSERT INTO reservations (user_id, trainer_id, class_type, datetime, status) VAL
 (1, 2, 'Boxing', '2025-10-02 19:00:00', 'Confirmed');
 
 -- Equipment
-INSERT INTO equipment (name, status) VALUES
-('Boxing Gloves', 'Available'),
-('Punching Bag', 'Maintenance');
-
--- Products (Consumables)
 INSERT INTO products (name, stock, status) VALUES
 ('Whey Protein', 20, 'In Stock'),
 ('Hand Wraps', 0, 'Out of Stock'),
