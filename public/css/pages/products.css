@@ -142,7 +142,6 @@ main.container {
 
 .controls .search {
   flex: 1;
-  max-width: 800px;
   min-width: 250px;
 }
 
