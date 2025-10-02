@@ -31,18 +31,6 @@
   z-index: 1;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('../../../images/products-bg.jpg') center/cover;
-  opacity: 0.15;
-  z-index: 0;
-}
-
 body {
   background: var(--color-secondary);
   height: auto;
@@ -154,7 +142,7 @@ main.container {
 
 .controls .search {
   flex: 1;
-  max-width: 600px;
+  max-width: 800px;
   min-width: 250px;
 }
 
