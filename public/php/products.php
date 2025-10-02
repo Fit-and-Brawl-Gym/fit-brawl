@@ -61,6 +61,15 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         </div>
     </header>
 
+      <!-- HERO -->
+        <section class="hero">
+            <div style="max-width:1200px;margin:0 auto;padding:6px 24px">
+            <h1 class="title"><strong style="color:var(--accent)">ESSENTIALS</strong> FOR EVERY</h1>
+            <h1 class="title"><strong style="color:var(--accent)">REP, SET,</strong> AND <strong style="color:var(--accent)">GOAL!</strong></h1>
+            <p class="subtitle">Check the available <strong style="color:var(--accent)">PRODUCTS</strong> in our store!</p>
+            </div>
+        </section>
+
     <!--Main-->
     <main class = "container">
         <div class="products-panel">
