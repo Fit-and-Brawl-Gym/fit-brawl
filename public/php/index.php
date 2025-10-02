@@ -1,5 +1,5 @@
-<!DOCTYPE php>
-<php lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,7 +37,7 @@
                 </ul>
             </nav>
             <a href="login.php" class="account-link">
-                <img src="images/account-icon.svg" alt="Account" class="account-icon">
+                <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
             </a>
         </div>
     </header>
@@ -57,12 +57,11 @@
         </section>
     </main>
 
-
     <!--Footer-->
     <footer>
         <div class="container footer-flex">
             <div class="footer-logo-block">
-                <img src="images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
+                <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
             </div>
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
@@ -96,4 +95,4 @@
         </div>
     </footer>
 </body>
-</php>
+</html>
