@@ -140,11 +140,6 @@ main.container {
   flex-wrap: wrap;
 }
 
-.controls .search {
-  flex: 1;
-  min-width: 250px;
-}
-
 input[type="search"],
 select#statusFilter {
   width: 100%;
