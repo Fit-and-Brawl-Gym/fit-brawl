@@ -35,12 +35,23 @@
     }
 
     function createProductCard(product) {
-        const imageUrl = product.image || `../../images/${product.name.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+        // Use specific product image if available, otherwise generate from name
+        let imageSrc = product.image;
+
+        if (!imageSrc) {
+            // Generate image path from product name (e.g., "Whey Protein Powder" -> "whey-protein-powder.jpg")
+            const imageName = product.name.toLowerCase().replace(/\s+/g, '-');
+            imageSrc = `../../images/${imageName}.jpg`;
+        }
+ 
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
             <div class="product-image">
-                <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" loading="lazy">
+                <img src="${escapeHtml(imageSrc)}"
+                     alt="${escapeHtml(product.name)}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='../../images/default-product.svg';">
             </div>
             <h4>${escapeHtml(product.name)}</h4>
             <div>${getStatusBadge(product.status)}</div>
@@ -103,7 +114,7 @@
         }
         applyFilters();
     }
-    
+
     function debounce(fn, wait = 200){
         let t = null;
         return function(...args){
@@ -129,7 +140,7 @@
         try {
             const response = await fetch(apiUrl, { cache: 'no-store' });
             if (!response.ok) throw new Error('Network response failed');
-            
+
             const data = await response.json();
             return data.map(item => ({
                 id: item.id || item.product_id || null,

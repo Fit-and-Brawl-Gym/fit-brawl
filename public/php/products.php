@@ -62,11 +62,11 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     </header>
 
     <!-- HERO -->
-    <section class="hero">
+    <section class="products-hero">
         <div style="max-width:1200px;margin:0 auto;padding:6px 24px">
-        <h1 class="title"><strong style="color:var(--accent)">ESSENTIALS</strong> FOR EVERY</h1>
-        <h1 class="title"><strong style="color:var(--accent)">REP, SET,</strong> AND <strong style="color:var(--accent)">GOAL!</strong></h1>
-        <p class="subtitle"> Check the available <strong style="color:var(--accent)">PRODUCTS</strong> in our store!</p>
+        <h1 class="title"><strong style="color:var(--color-accent)">ESSENTIALS</strong> FOR EVERY</h1>
+        <h1 class="title"><strong style="color:var(--color-accent)">REP, SET,</strong> AND <strong style="color:var(--color-accent)">GOAL<span class="exclamation">!</span></strong></h1>
+        <p class="subtitle"> Check the available <strong style="color:var(--color-accent)">PRODUCTS</strong> in our store!</p>
         </div>
     </section>
 
@@ -82,19 +82,19 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         <!-- Categories -->
          <div class="categories-row">
             <div class="category-chip" data-cat="supplements">
-                <img src="../../images/supplements.png" alt="Supplements">
+                <img src="../../images/supplements-icon.svg" alt="Supplements">
                 <p>Supplements</p>
             </div>
             <div class="category-chip" data-cat="hydration">
-                <img src="../../images/hydration-and-drinks.png" alt="Hydration & Drinks">
-                <p>Supplements</p>
+                <img src="../../images/hydration-icon.svg" alt="Hydration & Drinks">
+                <p>Hydration and Drinks</p>
                 </div>
             <div class="category-chip" data-cat="snacks">
-                <img src="../../images/snacks.png" alt="Snacks">
+                <img src="../../images/snacks-icon.svg" alt="Snacks">
                 <p>Snacks</p>
                 </div>
-            <div class="category-chip" data-cat="boxing-gloves">
-                <img src="../../images/boxing-gloves.png" alt="Boxing and Muay Thai Gloves">
+            <div class="category-chip" data-cat="boxing gloves">
+                <img src="../../images/boxing-icon.svg" alt="Boxing and Muay Thai Gloves">
                 <p>Boxing and Muay Thai</p>
                 </div>
          </div>
