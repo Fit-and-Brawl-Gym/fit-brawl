@@ -112,9 +112,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
     </main>
 
-        </div>
-
-    </main>
+    <script src="../js/products.js"></script>
 
     <!--Footer-->
     <footer>
