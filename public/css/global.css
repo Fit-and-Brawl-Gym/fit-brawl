@@ -166,6 +166,8 @@ body {
   background-color: var(--color-bg-dark);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
 }
 
 /* Media Elements */
@@ -218,5 +220,11 @@ a {
 /* Lists */
 ul, ol {
   list-style: none;
+}
+
+/* Add this if main has height restrictions */
+main {
+  height: auto;
+  min-height: 0;
 }
 
