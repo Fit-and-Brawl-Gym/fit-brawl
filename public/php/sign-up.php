@@ -86,7 +86,7 @@
                         <label class="checkbox-container">
                             <input type="checkbox" required>
                             <span class="checkmark"></span>
-                            Agree to <a href="#" class="terms-link">Terms and Conditions</a>
+                            Agree to&nbsp;<a href="#" class="terms-link">Terms and Conditions</a>
                         </label>
                     </div>
 
