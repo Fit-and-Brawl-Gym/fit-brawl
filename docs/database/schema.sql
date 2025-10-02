@@ -47,7 +47,7 @@ CREATE TABLE reservations (
 );
 
 -- =====================
--- EQUIPMENT TABLE 
+-- EQUIPMENT TABLE
 -- =====================
 CREATE TABLE equipment (
     id INT AUTO_INCREMENT PRIMARY KEY,
