@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
-    <link rel="stylesheet" href="public/css/global.css">
-    <link rel="stylesheet" href="public/css/pages/feedback-form.css">
-    <link rel="stylesheet" href="public/css/components/form.css">
-    <link rel="stylesheet" href="public/css/components/footer.css">
-    <link rel="stylesheet" href="public/css/components/header.css">
-    <link rel="shortcut icon" href="logo/plm-logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/pages/feedback-form.css">
+    <link rel="stylesheet" href="../css/components/form.css">
+    <link rel="stylesheet" href="../css/components/footer.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -20,26 +20,26 @@
     <header>
         <div class="wrapper">
             <div class="title">
-                <a href="index.html">
-                    <img src="images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                <a href="index.php">
+                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
-                <a href="index.html">
-                    <img src="images/header-title.svg" alt="FITXBRAWL" class="logo-title">
+                <a href="index.php">
+                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
 
             </div>
             <nav class="nav-bar">
                 <ul>
-                <li><a href="public/php/index.php">Home</a></li>
-                    <li><a href="public/php/membership.php">Membership</a></li>
-                    <li><a href="public/php/equipment.php">Equipment</a></li>
-                    <li><a href="public/php/products.php">Products</a></li>
-                    <li><a href="public/php/contact.php">Contact</a></li>
-                    <li><a href="public/php/feedback.php" class="active">Feedback</a></li>
+                <li><a href="index.php">Home</a></li>
+                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="equipment.php">Equipment</a></li>
+                    <li><a href="products.php">Products</a></li>
+                    <li><a href="contact.php">Contact</a></li>
+                    <li><a href="feedback.php" class="active">Feedback</a></li>
                 </ul>
             </nav>
-            <a href="login.html" class="account-link">
-                <img src="images/account-icon.svg" alt="Account" class="account-icon">
+            <a href="login.php" class="account-link">
+                <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
             </a>
         </div>
     </header>
@@ -47,7 +47,7 @@
      <!--Main-->
     <main>
         <div class="bg"></div>
-                    <div class="glowing-bg"></div>
+            <div class="glowing-bg"></div>
         <div class="contact-container">
             <div class="contact-section">
                 <div class="contact-header">
@@ -91,46 +91,34 @@
 
     <!--Footer-->
     <footer>
-        <div class="container">
-            <div class="logo-section">
-                <div class="logo-container">
-                    <img src="images/fnb-logo-yellow.svg" alt="fxb-logo" />
-
-                </div>
-                <div class="title">
-                    <p class="logo-title">FIT<span>X</span>BRAWL</p>
-                </div>
-                <div class="social-icons">
-                    <a href="" target="_blank">
-                        <i class="fa-brands fa-facebook social-icon"></i>
-                    </a>
-                    <a href="" target="_blank">
-                        <i class="fa-brands fa-instagram social-icon"></i>
-                    </a>
-                </div>
-        <div class="container footer-flex">
+    <div class="container footer-flex">
             <div class="footer-logo-block">
-                <img src="images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
+                <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
             </div>
-               <div class="links-section">
-                <div class="section-title">
-                    <p>Quick Links:</p>
+            <div class="footer-menu-block">
+                <div class="footer-menu-title">MENU</div>
+                <ul class="footer-menu-list">
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="equipment.php">Equipment</a></li>
+                    <li><a href="products.php">Products</a></li>
+                    <li><a href="contact.php">Contact</a></li>
+                    <li><a href="feedback.php">Feedback</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact-block">
+                <div class="footer-contact-title">CONTACT</div>
+                <div class="footer-contact-details">
+                    1832 Oroquieta Rd, Santa Cruz, Manila,<br>
+                    1008 Metro Manila<br><br>
+                    Gmail: fitxbrawl@gmail.com
                 </div>
-                <div class="quick-links">
-                    <div class="links-column">
-                        <ul>
-                            <li><a href="index.php">Home</a></li>
-                            <li><a href="membership.php">Membership</a></li>
-                            <li><a href="equipment.php">Equipment</a></li>
-                            <li><a href="products.php">Products</a></li>
-                        </ul>
-                    </div>
-                    <div class="links-column">
-                        <ul>
-                            <li><a href="contact.php">Contact</a></li>
-                            <li><a href="feedback.php">Feedback</a></li>
-                        </ul>
-                    </div>
+            </div>
+            <div class="footer-hours-block">
+                <div class="footer-hours-title">OPENING HOURS</div>
+                <div class="footer-hours-details">
+                    Sun–Fri: 9AM to 10PM<br>
+                    Saturday: 10AM to 7PM
                 </div>
             </div>
         </div>
