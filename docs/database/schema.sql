@@ -52,7 +52,7 @@ CREATE TABLE reservations (
 CREATE TABLE equipment (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    status ENUM('Available', 'In Use', 'Maintenance') DEFAULT 'Available'
+    status ENUM('Available', 'Out of Order', 'Maintenance') DEFAULT 'Available'
 );
 
 -- =====================
