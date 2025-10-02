@@ -31,6 +31,12 @@ INSERT INTO equipment (name, status) VALUES
 ('Rowing Machine 1', 'Available'),
 ('Rowing Machine 2', 'Out of Order');
 
+-- Products (Consumables)
+INSERT INTO products (name, stock, status) VALUES
+('Whey Protein', 20, 'In Stock'),
+('Hand Wraps', 0, 'Out of Stock'),
+('Energy Drink', 5, 'Low Stock');
+
 -- Feedback
 INSERT INTO feedback (user_id, message) VALUES
 (1, 'Great gym, coaches are really helpful!'),
