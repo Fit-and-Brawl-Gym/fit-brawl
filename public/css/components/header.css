@@ -114,10 +114,40 @@
 .account-icon {
     width: 28px;
     height: 28px;
-    filter: none; /* Removed invert(1) to keep original white color */
+    filter: none; 
     transition: filter 0.2s;
 }
+.account-dropdown {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
 
+.account-dropdown .dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #fff;
+    min-width: 150px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.account-dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f0f0f0;
+}
 .account-link:hover .account-icon {
   filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
 }
