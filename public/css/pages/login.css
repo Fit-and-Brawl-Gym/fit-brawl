@@ -121,7 +121,16 @@
     cursor: pointer;
     color: #333;
 }
-
+.error-box {
+    background-color: #ff4d4d;
+    color: white;           
+    padding: 12px 15px;       
+    border-radius: 5px;       
+    margin-bottom: 15px;      
+    text-align: center;       
+    font-weight: bold;        
+    font-family: 'Poppins', sans-serif;
+}
 .checkbox-container input {
     margin-right: 8px;
 }
@@ -171,6 +180,10 @@
     color: #d5ba2b;
 }
 
+
+
+
+
 @media (max-width: 1024px) {
     .login-hero {
         flex-direction: column;
@@ -202,4 +215,9 @@
     .login-hero {
         padding: 1rem;
     }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

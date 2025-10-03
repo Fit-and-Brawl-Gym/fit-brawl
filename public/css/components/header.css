@@ -114,7 +114,7 @@
 .account-icon {
     width: 28px;
     height: 28px;
-    filter: none; 
+    filter: none;
     transition: filter 0.2s;
 }
 .account-dropdown {

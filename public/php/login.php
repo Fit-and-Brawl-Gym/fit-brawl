@@ -1,3 +1,48 @@
+<?php
+session_start();
+require_once '../../includes/db_connect.php';
+
+$error = '';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['name'] = $user['username'];
+            $_SESSION['email'] = $user['email'];
+            $_SESSION['role'] = $user['role'];
+
+            // Remember Me
+            if (isset($_POST['remember'])) {
+                setcookie('email', $email, time() + (86400 * 30), "/");
+                setcookie('password', $user['password'], time() + (86400 * 30), "/");
+            } else {
+                setcookie('email', '', time() - 3600, "/");
+                setcookie('password', '', time() - 3600, "/");
+            }
+
+            // Redirect based on role
+            if ($user['role'] === 'admin') {
+                header("Location: admin_page.php");
+            } else {
+                header("Location: index.php");
+            }
+            exit;
+        }
+    }
+
+    $error = "Incorrect email or password.";
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,14 +50,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/login.css">
-    <link rel="stylesheet" href="../css/components/footer.css"> 
+    <link rel="stylesheet" href="../css/pages/login.css?v=1">
+    <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
+
 </head>
 <body>
     <!--Header-->
@@ -71,19 +117,23 @@
                     <h2>Sign in to access your account</h2>
                 </div>
 
-                <form class="login-form">
+                <form method="post" class="login-form" id="loginForm">
                     <h3>ARE YOU READY TO FOR THE NEXT CHALLENGE?</h3>
-
+                    <?php if(!empty($error)) : ?>
+                        <div class="error-box"><?= htmlspecialchars($error) ?></div>
+                    <?php endif; ?>
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" placeholder="Email" required>
+                        <input type="email" name="email" placeholder="Email"
+                        value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
                     </div>
 
                     <div class="input-group password-group">
                         <div class="icon-left">
                             <i class="fas fa-key"></i>
                         </div>
-                        <input type="password" id="password" placeholder="Password" required>
+                        <input type="password" name="password" id="password" placeholder="Password"
+                        value="<?= htmlspecialchars($_COOKIE['password'] ?? '') ?>" required>
                     </div>
 
                     <div class="form-options">
@@ -95,7 +145,7 @@
                         <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
                     </div>
 
-                    <button type="submit" class="login-btn">Log-in</button>
+                    <button type="submit" name="login" class="login-btn">Log-in</button>
 
                     <p class="signup-link">
                         Don't have an account yet? <a href="sign-up.php">Create an account.</a>
@@ -142,5 +192,8 @@
             <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
         </div>
     </footer>
+
+
+
 </body>
 </html>
