@@ -1,4 +1,38 @@
+<?php
+session_start();
+require_once '../../includes/config.php';
 
+$error = '';
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $current_password = $_POST['current_password'] ?? '';
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    // Fetch user
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email=?");
+    $stmt->bind_param("s", $_SESSION['email']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+
+    if ($user && password_verify($current_password, $user['password'])) {
+        if ($new_password === $confirm_password) {
+            $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
+            $update = $conn->prepare("UPDATE users SET password=? WHERE email=?");
+            $update->bind_param("ss", $hashedPassword, $_SESSION['email']);
+            $update->execute();
+
+            $success = "Password updated successfully.";
+        } else {
+            $error = "New passwords do not match.";
+        }
+    } else {
+        $error = "Current password is incorrect.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,42 +79,53 @@
 
     <!--Main-->
     <main class="change-password-main">
-        <section class="change-password-hero">
-            <div class="hero-content">
-                <div class="hero-line"></div>
-                <h1 class="hero-title">
-                    STRONG TODAY <span class="yellow">  STRONGER </span> TOMORROW
-                </h1>
-                <div class="hero-underline"></div>
+    <section class="change-password-hero">
+        <div class="hero-content">
+            <div class="hero-line"></div>
+            <h1 class="hero-title">
+                STRONG TODAY <span class="yellow"> STRONGER </span> TOMORROW
+            </h1>
+            <div class="hero-underline"></div>
+        </div>
+
+        <div class="change-password-modal">
+            <div class="modal-header">
+                <h2>Change your password</h2>
             </div>
 
-            <div class="change-password-modal">
-                <div class="modal-header">
-                    <h2>Change your password</h2>
+            <form method="POST" class="change-password-form">
+                <h3>A LITTLE STEP BACK BEFORE THE BEST VERSION OF YOU!</h3>
+
+                <!-- Current password -->
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <input type="password" name="current_password" placeholder="Current Password" required>
                 </div>
 
-                <form class="change-password-form">
-                    <h3>A LITTLE STEPBACK BEFORE THE BEST VERSION OF YOU!</h3>
-
-                    <div class="input-group password-group">
-                        <div class="icon-left">
-                            <i class="fas fa-key"></i>
-                        </div>
-                        <input type="password" id="password" placeholder="New Password" required>
+                <!-- New password -->
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-key"></i>
                     </div>
+                    <input type="password" name="new_password" placeholder="New Password" required>
+                </div>
 
-                    <div class="input-group password-group">
-                        <div class="icon-left">
-                            <i class="fas fa-key"></i>
-                        </div>
-                        <input type="password" id="password" placeholder="Re-enter New Password" required>
+                <!-- Confirm new password -->
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-key"></i>
                     </div>
+                    <input type="password" name="confirm_password" placeholder="Re-enter New Password" required>
+                </div>
 
-                    <button type="submit" class="change-password-btn">Change Password</button>
-                </form>
-            </div>
-        </section>
-    </main>
+                <button type="submit" class="change-password-btn">Change Password</button>
+                <a href="user_profile.php" class="btn-cancel">Cancel</a>
+            </form>
+        </div>
+    </section>
+</main>
 
     <!--Footer-->
     <footer>
