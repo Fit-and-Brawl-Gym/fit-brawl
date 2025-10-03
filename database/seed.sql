@@ -1,10 +1,10 @@
 USE fit_and_brawl_gym;
 
 -- Users (passwords are plain here; hash them in real app)
-INSERT INTO users (username, password, role) VALUES
-('juan_member', 'pass123', 'member'),
-('ana_admin', 'pass456', 'admin'),
-('coach_pedro', 'pass789', 'trainer');
+INSERT INTO users (username, email, password, role) VALUES
+('juan_member', 'juan@gmail.com', 'pass123', 'member'),
+('ana_admin','ana@gmail.com', 'pass456', 'admin'),
+('coach_pedro','coach@gmail.com', 'pass789', 'trainer');
 
 -- Membership Plans
 INSERT INTO memberships (plan_name, price, duration) VALUES
