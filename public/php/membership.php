@@ -76,9 +76,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             </button>
 
             <div class="plans-container" id="plansContainer">
-                <!-- Member Plans -->
-                <div class="plans-slide active" data-category="member">
-                    <div class="plan-card">
+                <div class="plans-viewport">
+                    <!-- All plans in order -->
+                    <div class="plan-card" data-plan="brawler" data-category="member">
                         <h3 class="plan-name">BRAWLER</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN MUAY THAI</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
@@ -90,7 +90,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
 
-                    <div class="plan-card featured">
+                    <div class="plan-card gladiator-plan" data-plan="gladiator" data-category="member">
                         <div class="popular-badge">POPULAR CHOICE!!</div>
                         <h3 class="plan-name">GLADIATOR</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN BOXING AND MMA</p>
@@ -104,10 +104,10 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                             <li>Jakuzzi Access</li>
                             <li>Locker Access</li>
                         </ul>
-                        <button class="select-btn featured-btn">SELECT PLAN</button>
+                        <button class="select-btn gladiator-btn">SELECT PLAN</button>
                     </div>
 
-                    <div class="plan-card">
+                    <div class="plan-card" data-plan="champion" data-category="member">
                         <h3 class="plan-name">CHAMPION</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN BOXING</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
@@ -118,11 +118,8 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                         </ul>
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
-                </div>
 
-                <!-- Non-Member Plans -->
-                <div class="plans-slide" data-category="non-member">
-                    <div class="plan-card">
+                    <div class="plan-card" data-plan="clash" data-category="non-member">
                         <h3 class="plan-name">CLASH</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN MMA</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
@@ -134,7 +131,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
 
-                    <div class="plan-card">
+                    <div class="plan-card" data-plan="resolution" data-category="non-member">
                         <h3 class="plan-name">RESOLUTION</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
                         <div class="plan-price">
@@ -145,10 +142,6 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                             <li>Gym Equipment Access with Face Recognition</li>
                         </ul>
                         <button class="select-btn">SELECT PLAN</button>
-                    </div>
-
-                    <div class="plan-card empty-slot">
-                        <!-- Empty slot for alignment -->
                     </div>
                 </div>
             </div>
@@ -161,7 +154,10 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         <!-- Pricing Tables -->
         <section class="pricing-section">
             <div class="pricing-header" id="pricingHeader">
-                <h2>FOR MEMBERS</h2>
+                <div class="pricing-toggle">
+                    <button class="toggle-btn active" data-table="member">FOR MEMBERS</button>
+                    <button class="toggle-btn" data-table="non-member">FOR NON<span class="toggle-hyphen">-</span>MEMBERS</button>
+                </div>
             </div>
 
             <!-- Members Table -->
@@ -254,6 +250,52 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                 <a href="contact.php" class="contact-btn">CONTACT US NOW<span class="exclamation-mark">!</span></a>
             </div>
         </section>
+
+        <!-- Service Selection Modal -->
+        <div class="service-modal" id="serviceModal">
+            <div class="modal-overlay" id="modalOverlay"></div>
+            <div class="modal-content">
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Select Service</h2>
+                </div>
+
+                <div class="modal-body">
+                    <div class="service-info">
+                        <div class="info-row">
+                            <span class="info-label">Price:</span>
+                            <span class="info-value price" id="modalPrice">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Service:</span>
+                            <span class="info-value" id="modalService">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Benefits:</span>
+                            <span class="info-value" id="modalBenefits">-</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="action-btn purchase-btn" id="purchaseBtn">
+                            <i class="fas fa-shopping-cart"></i>
+                            Proceed to Transaction
+                        </button>
+                        <button class="action-btn inquire-btn" id="inquireBtn">
+                            <i class="fas fa-question-circle"></i>
+                            Inquire
+                        </button>
+                        <button class="action-btn cancel-btn" id="cancelBtn">
+                            <i class="fas fa-times-circle"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!--Footer-->
