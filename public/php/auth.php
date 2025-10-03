@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include '../includes/db_connect.php';
+require_once '../../includes/db_connect.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -9,12 +9,12 @@ if ($method === 'POST') {
 
     if (isset($data['action']) && $data['action'] === 'login') {
         // LOGIN
-        $username = $data['username'];
+        $email = $data['email'];
         $password = $data['password'];
 
-        $sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+        $sql = "SELECT * FROM users WHERE email = ? AND password = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $username, $password);
+        $stmt->bind_param("ss", $email, $password);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -29,11 +29,12 @@ if ($method === 'POST') {
     elseif (isset($data['action']) && $data['action'] === 'signup') {
         // SIGNUP
         $username = $data['username'];
+        $email = $data['email'];
         $password = $data['password'];
 
-        $sql = "INSERT INTO users (username, password, role) VALUES (?, ?, 'member')";
+        $sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, 'member')";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $username, $password);
+        $stmt->bind_param("sss", $username, $email, $password);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "User registered"]);

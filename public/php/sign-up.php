@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     }
 
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $role = "member"; 
+    $role = "member";
 
 
     $checkEmail = $conn->query("SELECT email FROM users WHERE email = '$email'");
@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         exit();
     } else {
 
-        if ($conn->query("INSERT INTO users (username, email, password, role) 
+        if ($conn->query("INSERT INTO users (username, email, password, role)
                           VALUES ('$name', '$email', '$password', '$role')")) {
             $_SESSION['success_message'] = "Account created successfully. Please login.";
             header("Location: login.php");
