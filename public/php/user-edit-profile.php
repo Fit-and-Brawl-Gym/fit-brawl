@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['email'] = $email;
     $_SESSION['avatar'] = $avatar;
 
-    header("Location: user-profile.php"); // go back to profile
+    header("Location: user_profile.php"); // go back to profile
     exit;
 }
 ?>
