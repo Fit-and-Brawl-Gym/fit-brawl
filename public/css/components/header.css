@@ -119,7 +119,7 @@
     height: 40px;      
     object-fit: cover;  
     border-radius: 50%; 
-    border: 2px solid #FFD700;
+
 }
 .account-dropdown {
     position: relative;
