@@ -16,7 +16,9 @@
     position: relative; /* For absolute positioning of nav */
 }
 
+
 .wrapper .title{
+    margin-right: auto; /* push logo to far left */
     display: flex;
     align-items: center;
     gap: 15px;
@@ -50,6 +52,7 @@
 .wrapper .nav-bar{
     position: absolute;
     left: 52%;
+    margin: 0 auto; /* keep nav in center */
     transform: translateX(-50%);
     padding: 8px 0;
 }
@@ -104,7 +107,7 @@
 }
 
 
-.account-link {
+.account-link, .account-dropdown {
     margin-left: auto;
     display: flex;
     align-items: center;

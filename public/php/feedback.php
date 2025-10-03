@@ -1,5 +1,8 @@
 <?php
 // Check if this is an API request
+
+session_start();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
     header('Content-Type: application/json');
     include '../../includes/db_connect.php';
@@ -83,8 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
                 <div class="account-dropdown">
                     <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
                     <div class="dropdown-menu">
-                        <p>Hello, <?= htmlspecialchars($_SESSION['name']) ?></p>
-                        <a href="profile.php">Profile</a>
+                        <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
                     </div>
                 </div>
