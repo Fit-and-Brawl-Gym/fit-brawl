@@ -15,8 +15,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $role = "member";
-
-
+    
+    $checkUser = $conn->query("SELECT username FROM users WHERE username = '$name'");
+    if ($checkUser->num_rows > 0) {
+        $_SESSION['register_error'] = "Username already exists.";
+        header("Location: sign-up.php");
+        exit();
+    }
     $checkEmail = $conn->query("SELECT email FROM users WHERE email = '$email'");
     if ($checkEmail->num_rows > 0) {
         $_SESSION['register_error'] = "Email already exists.";
