@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../includes/config.php';
+require_once '../../includes/db_connect.php';
 
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
