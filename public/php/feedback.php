@@ -78,9 +78,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
                     <li><a href="feedback.php" class="active">Feedback</a></li>
                 </ul>
             </nav>
-            <a href="login.php" class="account-link">
-                <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
-            </a>
+            <?php if(isset($_SESSION['email'])): ?>
+                <!-- Logged-in dropdown -->
+                <div class="account-dropdown">
+                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                    <div class="dropdown-menu">
+                        <p>Hello, <?= htmlspecialchars($_SESSION['name']) ?></p>
+                        <a href="profile.php">Profile</a>
+                        <a href="logout.php">Logout</a>
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- Not logged-in -->
+                <a href="login.php" class="account-link">
+                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                </a>
+            <?php endif; ?>
         </div>
     </header>
 
