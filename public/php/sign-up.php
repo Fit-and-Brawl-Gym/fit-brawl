@@ -1,3 +1,47 @@
+<?php
+session_start();
+require_once '../../includes/config.php';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
+    $name = $conn->real_escape_string($_POST['name']);
+    $email = $conn->real_escape_string($_POST['email']);
+
+
+    if ($_POST['password'] !== $_POST['confirm_password']) {
+        $_SESSION['register_error'] = "Passwords do not match.";
+        header("Location: sign-up.php");
+        exit();
+    }
+
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $role = "member"; 
+
+
+    $checkEmail = $conn->query("SELECT email FROM users WHERE email = '$email'");
+    if ($checkEmail->num_rows > 0) {
+        $_SESSION['register_error'] = "Email already exists.";
+        header("Location: sign-up.php");
+        exit();
+    } else {
+
+        if ($conn->query("INSERT INTO users (username, email, password, role) 
+                          VALUES ('$name', '$email', '$password', '$role')")) {
+            $_SESSION['success_message'] = "Account created successfully. Please login.";
+            header("Location: login.php");
+            exit();
+        } else {
+            $_SESSION['register_error'] = "Database error: " . $conn->error;
+
+            exit();
+        }
+    }
+}
+
+
+function showError($error) {
+    return !empty($error) ? "<p class='error-message'>$error</p>" : "";
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,13 +49,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/sign-up.css">
+    <link rel="stylesheet" href="../css/pages/sign-up.css?v=1">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -59,27 +103,30 @@
                     <h2>Create an account</h2>
                 </div>
 
-                <form class="signup-form">
+                <form action="sign-up.php" method="post" class="signup-form">
                     <h3>ARE YOU READY TO BECOME THE BETTER VERSION OF YOURSELF?</h3>
+
+                    <?= showError($_SESSION['register_error'] ?? ''); ?>
+                    <?php unset($_SESSION['register_error']); ?>
 
                     <div class="input-group">
                         <i class="fas fa-user"></i>
-                        <input type="text" placeholder="Name" required>
+                        <input type="text" name="name" placeholder="Name" required>
                     </div>
 
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" placeholder="Email" required>
+                        <input type="email" name="email" placeholder="Email" required>
                     </div>
 
                     <div class="input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" placeholder="Password" required>
+                        <input type="password" name="password" placeholder="Password" required>
                     </div>
 
                     <div class="input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" placeholder="Confirmation Password" required>
+                        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
                     </div>
 
                     <div class="form-options">
@@ -90,7 +137,7 @@
                         </label>
                     </div>
 
-                    <button type="submit" class="signup-btn">Sign up</button>
+                    <button type="submit" name="signup" class="signup-btn">Sign up</button>
 
                     <p class="login-link">
                         Already have an account? <a href="login.php">Sign in here.</a>

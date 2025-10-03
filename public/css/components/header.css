@@ -114,7 +114,7 @@
 .account-icon {
     width: 28px;
     height: 28px;
-    filter: none; /* Removed invert(1) to keep original white color */
+    filter: none;
     transition: filter 0.2s;
 }
 
