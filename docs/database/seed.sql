@@ -1,29 +1,39 @@
 USE fit_and_brawl_gym;
 
--- Users (passwords are plain here; hash them in real app)
+-- =====================
+-- SEED DATA FOR USERS
+-- =====================
 INSERT INTO users (username, email, password, role) VALUES
-('juan_member', 'juan@gmail.com', 'pass123', 'member'),
-('ana_admin','ana@gmail.com', 'pass456', 'admin'),
-('coach_pedro','coach@gmail.com', 'pass789', 'trainer');
+('admin', 'admin@fitxbrawl.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
+('john_doe', 'john.doe@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'member'),
+('jane_smith', 'jane.smith@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'member'),
+('trainer_mike', 'mike.trainer@fitxbrawl.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'trainer');
 
--- Membership Plans
+-- =====================
+-- SEED DATA FOR MEMBERSHIPS
+-- =====================
 INSERT INTO memberships (plan_name, price, duration) VALUES
 ('Brawler', 1000.00, 30),
 ('Gladiator', 2500.00, 90),
 ('Champion', 9000.00, 365);
 
--- Trainers
+-- =====================
+-- SEED DATA FOR TRAINERS
+-- =====================
 INSERT INTO trainers (name, specialization, schedule) VALUES
 ('Coach Pedro', 'Muay Thai', 'Mon-Wed-Fri 6-8PM'),
 ('Coach Liza', 'Boxing', 'Tue-Thu 7-9PM');
 
--- Reservations
+-- =====================
+-- SEED DATA FOR RESERVATIONS
+-- =====================
 INSERT INTO reservations (user_id, trainer_id, class_type, datetime, status) VALUES
 (1, 1, 'Muay Thai', '2025-09-30 18:00:00', 'Confirmed'),
 (1, 2, 'Boxing', '2025-10-02 19:00:00', 'Confirmed');
 
--- Equipment
-DELETE FROM equipment;
+-- =====================
+-- SEED DATA FOR EQUIPMENT
+-- =====================
 INSERT INTO equipment (name, status) VALUES
 ('Treadmill 1', 'Available'),
 ('Treadmill 2', 'Maintenance'),
@@ -31,13 +41,17 @@ INSERT INTO equipment (name, status) VALUES
 ('Rowing Machine 1', 'Available'),
 ('Rowing Machine 2', 'Out of Order');
 
--- Products (Consumables)
+-- =====================
+-- SEED DATA FOR PRODUCTS
+-- =====================
 INSERT INTO products (name, stock, status) VALUES
 ('Whey Protein', 20, 'In Stock'),
 ('Hand Wraps', 0, 'Out of Stock'),
 ('Energy Drink', 5, 'Low Stock');
 
--- Feedback
+-- =====================
+-- SEED DATA FOR FEEDBACK
+-- =====================
 INSERT INTO feedback (user_id, message) VALUES
 (1, 'Great gym, coaches are really helpful!'),
 (1, 'Can we get more punching bags available?');
