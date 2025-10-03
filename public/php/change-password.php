@@ -1,54 +1,47 @@
 <?php
-// Check if this is an API request
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
-    header('Content-Type: application/json');
-    include '../../includes/db_connect.php';
+session_start();
+require_once '../../includes/db_connect.php';
 
-    $method = $_SERVER['REQUEST_METHOD'];
+$error = '';
+$success = '';
 
-    if ($method === 'POST') {
-        $data = json_decode(file_get_contents("php://input"), true);
-        $user_id = $data['user_id'];
-        $message = $data['message'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $current_password = $_POST['current_password'] ?? '';
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
-        $sql = "INSERT INTO feedback (user_id, message) VALUES (?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $user_id, $message);
+    // Fetch user
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email=?");
+    $stmt->bind_param("s", $_SESSION['email']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
 
-        if ($stmt->execute()) {
-            echo json_encode(["status" => "success", "message" => "Feedback submitted"]);
+    if ($user && password_verify($current_password, $user['password'])) {
+        if ($new_password === $confirm_password) {
+            $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
+            $update = $conn->prepare("UPDATE users SET password=? WHERE email=?");
+            $update->bind_param("ss", $hashedPassword, $_SESSION['email']);
+            $update->execute();
+
+            $success = "Password updated successfully.";
         } else {
-            echo json_encode(["status" => "error", "message" => $conn->error]);
+            $error = "New passwords do not match.";
         }
+    } else {
+        $error = "Current password is incorrect.";
     }
-
-    elseif ($method === 'GET') {
-        $sql = "SELECT f.id, u.username, f.message, f.date
-                FROM feedback f
-                JOIN users u ON f.user_id = u.id
-                ORDER BY f.date DESC";
-        $result = $conn->query($sql);
-
-        $feedbacks = [];
-        while ($row = $result->fetch_assoc()) {
-            $feedbacks[] = $row;
-        }
-
-        echo json_encode($feedbacks);
-    }
-    exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fit and Brawl</title>
+    <title>Change Password - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/feedback.css">
-    <link rel="stylesheet" href="../css/components/footer.css">
+    <link rel="stylesheet" href="../css/pages/change-password.css">
+    <link rel="stylesheet" href="../css/components/footer.css"> 
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -75,57 +68,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php" class="active">Feedback</a></li>
+                    <li><a href="feedback.php">Feedback</a></li>
                 </ul>
             </nav>
-            <?php if(isset($_SESSION['email'])): ?>
-                <!-- Logged-in dropdown -->
-                <div class="account-dropdown">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
-                    <div class="dropdown-menu">
-                        <p>Hello, <?= htmlspecialchars($_SESSION['name']) ?></p>
-                        <a href="profile.php">Profile</a>
-                        <a href="logout.php">Logout</a>
-                    </div>
-                </div>
-            <?php else: ?>
-                <!-- Not logged-in -->
-                <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
-                </a>
-            <?php endif; ?>
+            <a href="login.php" class="account-link active">
+                <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+            </a>
         </div>
     </header>
 
     <!--Main-->
-    <main>
-        <div class="bg"></div>
-        <div class="feedback-container">
-            <div class="feedback-section">
-                <div class="feedback-card left">
-                    <img src="../../images/review1-pfp.png" alt="Reynaldo Chee">
-                    <div class="bubble">
-                      <h3>Reynaldo Chee – Body Builder</h3>
-                      <p>The equipment are clean, very accommodating staffs, and the prices is not that bad</p>
-                    </div>
-                  </div>
+    <main class="change-password-main">
+    <section class="change-password-hero">
+        <div class="hero-content">
+            <div class="hero-line"></div>
+            <h1 class="hero-title">
+                STRONG TODAY <span class="yellow"> STRONGER </span> TOMORROW
+            </h1>
+            <div class="hero-underline"></div>
+        </div>
 
-                  <div class="feedback-card right">
-                    <div class="bubble">
-                      <h3>Rieze Venzon – Gym Rat</h3>
-                      <p>Very cool ng ambiance, very presko, at magaganda tugtugan na pang motivation talaga!</p>
-                    </div>
-                    <img src="../../images/review2-pfp.png" alt="Rieze Venzon">
-                  </div>
+        <div class="change-password-modal">
+            <div class="modal-header">
+                <h2>Change your password</h2>
             </div>
-        </div>
-        <div class="feedback-button">
-            <a href="feedback-form.php" class="floating-btn">
-                Share your feedback!
-            </a>
 
+            <form method="POST" class="change-password-form">
+                <h3>A LITTLE STEP BACK BEFORE THE BEST VERSION OF YOU!</h3>
+
+                <!-- Current password -->
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <input type="password" name="current_password" placeholder="Current Password" required>
+                </div>
+
+                <!-- New password -->
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <input type="password" name="new_password" placeholder="New Password" required>
+                </div>
+
+                <!-- Confirm new password -->
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <input type="password" name="confirm_password" placeholder="Re-enter New Password" required>
+                </div>
+
+                <button type="submit" class="change-password-btn">Change Password</button>
+                <a href="user_profile.php" class="btn-cancel">Cancel</a>
+            </form>
         </div>
-    </main>
+    </section>
+</main>
 
     <!--Footer-->
     <footer>

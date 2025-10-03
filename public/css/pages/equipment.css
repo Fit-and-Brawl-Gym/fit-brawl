@@ -51,8 +51,8 @@ main h1 {
     font-weight: 600;
 }
 
-.status-in-use {
-    color: #ffc107;
+.status-out-of-order {
+    color: #473f3f;
     font-weight: 600;
 }
 
