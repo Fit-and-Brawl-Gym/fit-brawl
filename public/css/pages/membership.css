@@ -46,36 +46,22 @@
     position: relative;
     max-width: 1200px;
     margin: 3rem auto;
-    padding: 0 5rem;
+    padding: 0 6rem;
 }
 
 .plans-container {
     overflow: visible;
     position: relative;
-    padding: 3rem 0;
+    padding: 4rem 0;
 }
 
-.plans-slide {
-    display: none;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    animation: slideIn 0.5s ease;
-    align-items: stretch;
-}
-
-.plans-slide.active {
-    display: grid;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+.plans-viewport {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    min-height: 650px;
 }
 
 /* Plan Cards */
@@ -84,29 +70,71 @@
     border-radius: 15px;
     padding: 2rem 1.5rem;
     text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
+    transition: all 0.5s linear;
+    position: absolute;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    width: 320px;
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
 }
 
-.plan-card:hover {
-    transform: translateY(-10px);
+.plan-card.hidden {
+    opacity: 0;
+    transform: scale(0.7);
+    pointer-events: none;
 }
 
-.plan-card.featured {
+.plan-card.left {
+    left: 0;
+    opacity: 1;
+    transform: scale(0.9) translateX(0);
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.plan-card.center {
+    left: 50%;
+    transform: translateX(-50%) scale(1.15);
+    opacity: 1;
+    z-index: 3;
+    pointer-events: auto;
+}
+
+.plan-card.right {
+    right: 0;
+    opacity: 1;
+    transform: scale(0.9) translateX(0);
+    z-index: 1;
+    pointer-events: auto;
+}
+
+/* Gladiator specific styling (always gold) */
+.plan-card.gladiator-plan {
     background: linear-gradient(135deg, #d5ba2b 0%, #b89f24 100%);
-    border-color: #d5ba2b;
-    transform: scale(1.12);
-    box-shadow: 0 0 40px rgba(213, 186, 43, 0.5);
-    padding: 3rem 2rem 2rem;
-    margin: -1.5rem 0.8rem;
-    z-index: 2;
 }
 
-.plan-card.featured:hover {
-    transform: scale(1.15) translateY(-10px);
+.plan-card.gladiator-plan.center {
+    box-shadow: 0 0 50px rgba(213, 186, 43, 0.6);
+}
+
+.plan-card.gladiator-plan .plan-name,
+.plan-card.gladiator-plan .plan-subtitle,
+.plan-card.gladiator-plan .plan-price,
+.plan-card.gladiator-plan .plan-price span,
+.plan-card.gladiator-plan .plan-features li {
+    color: #002f3f;
+}
+
+.plan-card.gladiator-plan .plan-features li {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Featured size for center card (non-Gladiator) */
+.plan-card.featured-size.center {
+    box-shadow: 0 0 40px rgba(74, 124, 135, 0.5);
 }
 
 .plan-card.empty-slot {
@@ -235,11 +263,11 @@
 .select-btn:hover {
     background: var(--color-accent);
     color: var(--color-primary);
-    border: 2px solid var(--color-accent)
+    border: 2px solid var(--color-accent);
     transform: scale(1.05);
 }
 
-.featured-btn {
+.gladiator-btn {
     background: #002f3f;
     color: #d5ba2b;
     border-color: #002f3f;
@@ -249,7 +277,7 @@
     font-weight: 700;
 }
 
-.featured-btn:hover {
+.gladiator-btn:hover {
     background: white;
     color: #002f3f;
     border-color: white;
@@ -274,18 +302,24 @@
     z-index: 10;
 }
 
-.carousel-btn:hover {
+.carousel-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5 !important;
+}
+
+.carousel-btn:hover:not(:disabled) {
     background: var(--color-primary);
     color: var(--color-accent);
     border: 2px solid var(--color-primary);
+    transform: translateY(-50%) scale(1.1);
 }
 
 .carousel-btn.prev {
-    left: 0;
+    left: 1rem;
 }
 
 .carousel-btn.next {
-    right: 0;
+    right: 1rem;
 }
 
 /* Pricing Section */
@@ -316,6 +350,43 @@
     font-family: 'Poppins', sans-serif;
     font-weight: 550;
     font-size: 3.5rem;
+}
+
+.pricing-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    background: rgba(26, 74, 82, 0.5);
+    border-radius: 15px 15px 0 0;
+    padding: 0.5rem;
+}
+
+.toggle-btn {
+    font-family: 'zuume-rough-bold', sans-serif;
+    font-size: 1.8rem;
+    color: #f8f9fa;
+    background: transparent;
+    border: none;
+    padding: 1rem 2.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    position: relative;
+}
+
+.toggle-btn:hover {
+    color: #d5ba2b;
+}
+
+.toggle-btn.active {
+    background: #d5ba2b;
+    color: #002f3f;
+}
+
+.toggle-btn .toggle-hyphen {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
 }
 
 .pricing-table-container {
@@ -397,14 +468,198 @@
     background: transparent;
 }
 
+.pricing-table tbody tr {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
 .pricing-table tbody tr:hover {
-    background: rgba(213, 186, 43, 0.1);
+    background: rgba(213, 186, 43, 0.2);
+    transform: translateX(5px);
 }
 
 .price-cell {
     color: #d5ba2b;
     font-weight: 700;
     font-size: 1.2rem;
+}
+
+/* Service Selection Modal */
+.service-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-modal.active {
+    display: flex;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    border-radius: 20px;
+    max-width: 600px;
+    width: 90%;
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--color-accent);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.modal-close:hover {
+    background: var(--color-accent);
+    color: var(--color-primary);
+    transform: rotate(90deg);
+}
+
+.modal-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.modal-title {
+    font-family: 'zuume-rough-bold', sans-serif;
+    font-size: 2.5rem;
+    color: var(--color-accent);
+    margin: 0;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.service-info {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    font-size: 0.9rem;
+    color: var(--color-accent);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: var(--color-text-light);
+    line-height: 1.6;
+}
+
+.info-value.price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.action-btn {
+    font-family: 'zuume-rough-bold', sans-serif;
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+}
+
+.purchase-btn {
+    background: var(--color-accent);
+    color: var(--color-primary);
+}
+
+.purchase-btn:hover {
+    background: #b8941f;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(213, 186, 43, 0.4);
+}
+
+.inquire-btn {
+    background: var(--color-secondary);
+    color: white;
+}
+
+.inquire-btn:hover {
+    background: var(--color-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(74, 124, 135, 0.4);
+}
+
+.cancel-btn {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: var(--color-text-light);
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Contact CTA */
@@ -453,7 +708,7 @@
 @media (max-width: 1200px) {
     .plans-carousel {
         max-width: 1000px;
-        padding: 0 4rem;
+        padding: 0 5rem;
     }
 
     .pricing-section {
@@ -461,33 +716,30 @@
         padding: 0 4rem;
     }
 
-    .plans-slide {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
+    .plan-card {
+        width: 280px;
     }
 
-    .plan-card.empty-slot {
-        display: none;
+    .plan-card.left {
+        left: 0;
     }
 
-    .plan-card.featured {
-        transform: scale(1.08);
-        margin: -1.2rem 0.6rem;
+    .plan-card.right {
+        right: 0;
     }
 
-    .plan-card.featured:hover {
-        transform: scale(1.11) translateY(-10px);
+    .carousel-btn.prev {
+        left: 0.5rem;
+    }
+
+    .carousel-btn.next {
+        right: 0.5rem;
     }
 }
 
 @media (max-width: 768px) {
-    .plans-slide {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-
     .plans-carousel {
-        padding: 0 3rem;
+        padding: 0 4rem;
     }
 
     .pricing-section {
@@ -498,22 +750,44 @@
         padding: 2rem 0;
     }
 
+    .plans-viewport {
+        min-height: 550px;
+        gap: 0.5rem;
+    }
+
+    .plan-card {
+        width: 240px;
+    }
+
+    .plan-card.left {
+        left: 0;
+        transform: scale(0.8);
+    }
+
+    .plan-card.right {
+        right: 0;
+        transform: scale(0.8);
+    }
+
+    .plan-card.center {
+        transform: translateX(-50%) scale(1.05);
+    }
+
     .carousel-btn {
         width: 40px;
         height: 40px;
     }
 
+    .carousel-btn.prev {
+        left: 0.25rem;
+    }
+
+    .carousel-btn.next {
+        right: 0.25rem;
+    }
+
     .hero-title {
         font-size: 2.5rem;
-    }
-
-    .plan-card.featured {
-        transform: scale(1.03);
-        margin: -0.8rem 0;
-    }
-
-    .plan-card.featured:hover {
-        transform: scale(1.06) translateY(-10px);
     }
 
     .popular-badge {
@@ -522,13 +796,18 @@
         top: -18px;
     }
 
-    .pricing-header h2 {
-        font-size: 2rem;
-        padding: 0.8rem 1.2rem;
+    .pricing-toggle {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
-    .pricing-header h2 .hyphen {
-        font-size: 2.3rem;
+    .toggle-btn {
+        font-size: 1.4rem;
+        padding: 0.8rem 1.5rem;
+    }
+
+    .toggle-btn .toggle-hyphen {
+        font-size: 1.6rem;
     }
 
     .pricing-table-scroll {
@@ -552,5 +831,23 @@
 
     .contact-btn .exclamation-mark {
         font-size: 1.4rem;
+    }
+
+    .modal-content {
+        padding: 2rem 1.5rem;
+        max-width: 95%;
+    }
+
+    .modal-title {
+        font-size: 2rem;
+    }
+
+    .action-btn {
+        font-size: 1.1rem;
+        padding: 0.9rem 1.5rem;
+    }
+
+    .info-value.price {
+        font-size: 1.6rem;
     }
 }
