@@ -42,7 +42,8 @@ session_start();
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+             alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
@@ -61,7 +62,8 @@ session_start();
     <main class="profile-main">
     <!-- Sidebar (Left) -->
     <aside class="profile-sidebar">
-        <img src="../../images/account-icon.png" alt="Profile Picture" class="profile-avatar">
+        <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar'] ?? 'default-avatar.png') ?>" 
+         alt="Profile Picture" class="profile-avatar">
         <h2><?= htmlspecialchars($_SESSION['name'] ?? 'Username') ?></h2>
         <p class="profile-email"><?= htmlspecialchars($_SESSION['email'] ?? 'user@example.com') ?></p>
         
