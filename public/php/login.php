@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../../includes/config.php';
+require_once '../../includes/db_connect.php';
 
 $error = '';
 
@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $result = $stmt->get_result();  
+    $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
@@ -22,8 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             // Remember Me
             if (isset($_POST['remember'])) {
-                setcookie('email', $email, time() + (86400 * 30), "/"); 
-                setcookie('password', $user['password'], time() + (86400 * 30), "/"); 
+                setcookie('email', $email, time() + (86400 * 30), "/");
+                setcookie('password', $user['password'], time() + (86400 * 30), "/");
             } else {
                 setcookie('email', '', time() - 3600, "/");
                 setcookie('password', '', time() - 3600, "/");
@@ -51,14 +51,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <title>Login - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/pages/login.css?v=1">
-    <link rel="stylesheet" href="../css/components/footer.css"> 
+    <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-    
+
 </head>
 <body>
     <!--Header-->
@@ -111,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <?php endif; ?>
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="Email" 
+                        <input type="email" name="email" placeholder="Email"
                         value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
                     </div>
 
@@ -181,6 +181,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </footer>
 
 
-    
+
 </body>
 </html>
