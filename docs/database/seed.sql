@@ -35,8 +35,11 @@ INSERT INTO reservations (user_id, trainer_id, class_type, datetime, status) VAL
 -- SEED DATA FOR EQUIPMENT
 -- =====================
 INSERT INTO equipment (name, status) VALUES
-('Boxing Gloves', 'Available'),
-('Punching Bag', 'Maintenance');
+('Treadmill 1', 'Available'),
+('Treadmill 2', 'Maintenance'),
+('Bench Press', 'Available'),
+('Rowing Machine 1', 'Available'),
+('Rowing Machine 2', 'Out of Order');
 
 -- =====================
 -- SEED DATA FOR PRODUCTS

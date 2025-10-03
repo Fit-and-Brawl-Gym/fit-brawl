@@ -82,9 +82,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <li><a href="feedback.php">Feedback</a></li>
                 </ul>
             </nav>
-            <a href="login.php" class="account-link active">
-                <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
-            </a>
+            <?php if(isset($_SESSION['email'])): ?>
+                <!-- Logged-in dropdown -->
+                <div class="account-dropdown">
+                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                    <div class="dropdown-menu">
+                        <p>Hello, <?= htmlspecialchars($_SESSION['name']) ?></p>
+                        <a href="profile.php">Profile</a>
+                        <a href="logout.php">Logout</a>
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- Not logged-in -->
+                <a href="login.php" class="account-link">
+                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                </a>
+            <?php endif; ?>
         </div>
     </header>
 
@@ -129,7 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             <span class="checkmark"></span>
                             Remember me
                         </label>
-                        <a href="#" class="forgot-password">Forgot Password?</a>
+                        <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
                     </div>
 
                     <button type="submit" name="login" class="login-btn">Log-in</button>
