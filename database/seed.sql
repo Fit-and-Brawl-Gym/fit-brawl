@@ -3,11 +3,10 @@ USE fit_and_brawl_gym;
 -- =====================
 -- SEED DATA FOR USERS
 -- =====================
-INSERT INTO users (username, email, password, role) VALUES
-('admin', 'admin@fitxbrawl.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('john_doe', 'john.doe@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'member'),
-('jane_smith', 'jane.smith@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'member'),
-('trainer_mike', 'mike.trainer@fitxbrawl.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'trainer');
+INSERT INTO users (username, password, role) VALUES
+('juan_member', 'pass123', 'member'),
+('ana_admin', 'pass456', 'admin'),
+('coach_pedro', 'pass789', 'trainer');
 
 -- =====================
 -- SEED DATA FOR MEMBERSHIPS
