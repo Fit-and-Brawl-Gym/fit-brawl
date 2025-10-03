@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Fit and Brawl</title>
+    <title>Change Password - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/login.css">
+    <link rel="stylesheet" href="../css/pages/change-password.css">
     <link rel="stylesheet" href="../css/components/footer.css"> 
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
@@ -44,8 +44,8 @@
     </header>
 
     <!--Main-->
-    <main class="login-main">
-        <section class="login-hero">
+    <main class="change-password-main">
+        <section class="change-password-hero">
             <div class="hero-content">
                 <div class="hero-line"></div>
                 <h1 class="hero-title">
@@ -54,40 +54,29 @@
                 <div class="hero-underline"></div>
             </div>
 
-            <div class="login-modal">
+            <div class="change-password-modal">
                 <div class="modal-header">
-                    <h2>Sign in to access your account</h2>
+                    <h2>Change your password</h2>
                 </div>
 
-                <form class="login-form">
-                    <h3>ARE YOU READY TO FOR THE NEXT CHALLENGE?</h3>
+                <form class="change-password-form">
+                    <h3>A LITTLE STEPBACK BEFORE THE BEST VERSION OF YOU!</h3>
 
-                    <div class="input-group">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" placeholder="Email" required>
+                    <div class="input-group password-group">
+                        <div class="icon-left">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <input type="password" id="password" placeholder="New Password" required>
                     </div>
 
                     <div class="input-group password-group">
                         <div class="icon-left">
                             <i class="fas fa-key"></i>
                         </div>
-                        <input type="password" id="password" placeholder="Password" required>
+                        <input type="password" id="password" placeholder="Re-enter New Password" required>
                     </div>
 
-                    <div class="form-options">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="remember">
-                            <span class="checkmark"></span>
-                            Remember me
-                        </label>
-                        <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
-                    </div>
-
-                    <button type="submit" class="login-btn">Log-in</button>
-
-                    <p class="signup-link">
-                        Don't have an account yet? <a href="sign-up.php">Create an account.</a>
-                    </p>
+                    <button type="submit" class="change-password-btn">Change Password</button>
                 </form>
             </div>
         </section>
