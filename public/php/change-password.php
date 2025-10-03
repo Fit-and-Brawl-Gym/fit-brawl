@@ -55,7 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="wrapper">
             <div class="title">
                 <a href="index.php">
-                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+             alt="Account" class="account-icon">
                 </a>
                 <a href="index.php">
                     <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">

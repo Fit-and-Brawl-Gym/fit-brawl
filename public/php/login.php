@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION['name'] = $user['username'];
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
-
+             $_SESSION['avatar'] = $user['avatar']; 
             // Remember Me
             if (isset($_POST['remember'])) {
                 setcookie('email', $email, time() + (86400 * 30), "/");
@@ -85,7 +85,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+             alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
