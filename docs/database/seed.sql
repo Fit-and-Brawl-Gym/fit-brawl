@@ -44,10 +44,15 @@ INSERT INTO equipment (name, status) VALUES
 -- =====================
 -- SEED DATA FOR PRODUCTS
 -- =====================
-INSERT INTO products (name, stock, status) VALUES
-('Whey Protein', 20, 'In Stock'),
-('Hand Wraps', 0, 'Out of Stock'),
-('Energy Drink', 5, 'Low Stock');
+INSERT INTO `products` (`id`, `name`, `stock`, `status`) VALUES
+(1, 'Whey Protein Powder', 20, 'In Stock'),
+(2, 'Mouth Guards', 0, 'Out of Stock'),
+(3, 'Bottled Water', 5, 'Low Stock'),
+(4, 'Resistance Bands', 10, 'In Stock'),
+(5, 'Recovery Bar', 0, 'Out of Stock'),
+(6, 'Muscle Roller', 5, 'Low Stock'),
+(7, 'Ice Pack', 25, 'Out of Stock'),
+(8, 'Workout Supplement', 10, 'In Stock');
 
 -- =====================
 -- SEED DATA FOR FEEDBACK
