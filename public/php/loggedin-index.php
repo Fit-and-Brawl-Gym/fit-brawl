@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// Redirect non-logged-in users to regular homepage
+if(!isset($_SESSION['email'])) {
+    header("Location: index.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,7 +48,7 @@ session_start();
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
              alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
