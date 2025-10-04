@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// Redirect non-logged-in users to login page
+if(!isset($_SESSION['email'])) {
+    header("Location: login.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +15,7 @@ session_start();
     <title>Login - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/pages/user-profile.css">
-    <link rel="stylesheet" href="../css/components/footer.css"> 
+    <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +48,7 @@ session_start();
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
              alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
@@ -62,11 +68,11 @@ session_start();
     <main class="profile-main">
     <!-- Sidebar (Left) -->
     <aside class="profile-sidebar">
-        <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar'] ?? 'default-avatar.png') ?>" 
+        <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar'] ?? 'default-avatar.png') ?>"
          alt="Profile Picture" class="profile-avatar">
         <h2><?= htmlspecialchars($_SESSION['name'] ?? 'Username') ?></h2>
         <p class="profile-email"><?= htmlspecialchars($_SESSION['email'] ?? 'user@example.com') ?></p>
-        
+
         <a href="user-edit-profile.php" class="btn-edit">Edit Profile</a>
         <a href="logout.php" class="btn-logout">Logout</a>
     </aside>

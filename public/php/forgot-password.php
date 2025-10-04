@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// Redirect logged-in users to homepage
+if(isset($_SESSION['email'])) {
+    header("Location: loggedin-index.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +15,7 @@ session_start();
     <title>Forgot Password - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/pages/forgot-password.css">
-    <link rel="stylesheet" href="../css/components/footer.css"> 
+    <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +48,7 @@ session_start();
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
              alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
