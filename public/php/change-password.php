@@ -1,5 +1,12 @@
 <?php
 session_start();
+
+// Redirect non-logged-in users to login page
+if(!isset($_SESSION['email'])) {
+    header("Location: login.php");
+    exit;
+}
+
 require_once '../../includes/db_connect.php';
 
 $error = '';
@@ -41,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Change Password - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/pages/change-password.css">
-    <link rel="stylesheet" href="../css/components/footer.css"> 
+    <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="wrapper">
             <div class="title">
                 <a href="index.php">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
              alt="Account" class="account-icon">
                 </a>
                 <a href="index.php">
