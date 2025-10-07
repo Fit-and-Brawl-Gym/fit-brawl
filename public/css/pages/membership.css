@@ -332,6 +332,7 @@
 .pricing-header {
     text-align: center;
     margin-bottom: 0;
+    position: relative;
 }
 
 .pricing-header h2 {
@@ -359,6 +360,7 @@
     background: rgba(26, 74, 82, 0.5);
     border-radius: 15px 15px 0 0;
     padding: 0.5rem;
+    position: relative;
 }
 
 .toggle-btn {
@@ -387,6 +389,43 @@
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: 2rem;
+}
+
+.signup-notice {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, var(--color-success) 0%, #20b038 100%);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    opacity: 0;
+    transition: var(--transition-base);
+    pointer-events: none;
+    margin-right: 32px;
+}
+
+.signup-notice.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.signup-notice[data-logged-in="true"] {
+    background: linear-gradient(90deg, #17a2b8 0%, #138496 100%);
+}
+
+.signup-notice-icon {
+    font-size: var(--font-size-lg);
+}
+
+.signup-notice-text {
+    color: var(--color-white);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
 }
 
 .pricing-table-container {
@@ -808,6 +847,13 @@
 
     .toggle-btn .toggle-hyphen {
         font-size: 1.6rem;
+    }
+
+    .signup-notice {
+        position: static;
+        transform: none;
+        margin-top: var(--spacing-3);
+        justify-content: center;
     }
 
     .pricing-table-scroll {
