@@ -65,8 +65,9 @@
     padding: 1rem;
     margin: -2rem -2rem 2rem -2rem;
     border-radius: 20px 20px 0 0;
-    font-size: 2rem;
+    font-size: 2.3rem;
     font-weight: 600;
+    font-family: 'zuume-rough-bold', sans-serif;
 }
 
 .signup-form h3 {
@@ -215,12 +216,12 @@
 
 .error-message {
     background-color: #ff4d4d;
-    color: white;           
-    padding: 12px 15px;       
-    border-radius: 5px;       
-    margin-bottom: 15px;      
-    text-align: center;       
-    font-weight: bold;        
+    color: white;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
     font-family: 'Poppins', sans-serif;
 }
 @media (max-width: 1024px) {

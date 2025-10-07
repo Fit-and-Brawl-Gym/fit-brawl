@@ -1,0 +1,226 @@
+.terms-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.terms-modal-overlay.active {
+    display: flex;
+}
+
+.terms-modal-container {
+    background: white;
+    width: 90%;
+    max-width: 1100px;
+    max-height: 90vh;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+}
+
+.terms-modal-header {
+    background: #002f3f;
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.terms-modal-header h2 {
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: 600;
+    font-family: 'zuume-rough-bold', sans-serif;
+}
+
+.terms-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.terms-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.terms-modal-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.terms-sidebar {
+    width: 280px;
+    background: #f8f9fa;
+    padding: 30px 20px;
+    overflow-y: auto;
+    border-right: 1px solid #ddd;
+}
+
+.terms-sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.terms-sidebar nav li {
+    margin-bottom: 15px;
+}
+
+.terms-sidebar nav a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: block;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.terms-sidebar nav a:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.terms-sidebar nav a.active {
+    font-weight: 700;
+    color: #002f3f;
+    background: #e9ecef;
+}
+
+.terms-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    color: #333;
+}
+
+.terms-content h3 {
+    color: #002f3f;
+    font-size: 1.5rem;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #d5ba2b;
+}
+
+.terms-content h3:first-child {
+    margin-top: 0;
+}
+
+.terms-content p {
+    line-height: 1.8;
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.terms-content ul {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.terms-content li {
+    margin-bottom: 10px;
+    line-height: 1.8;
+}
+
+.terms-last-updated {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.terms-intro {
+    margin-bottom: 30px;
+    line-height: 1.8;
+}
+
+.terms-modal-footer {
+    background: #f8f9fa;
+    padding: 20px 40px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.terms-accept-btn,
+.terms-decline-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.terms-accept-btn {
+    background: #002f3f;
+    color: white;
+}
+
+.terms-accept-btn:hover {
+    background: #004d66;
+}
+
+.terms-decline-btn {
+    background: transparent;
+    color: #666;
+    border: 2px solid #ddd;
+}
+
+.terms-decline-btn:hover {
+    background: #f8f9fa;
+    border-color: #999;
+}
+
+@media (max-width: 768px) {
+    .terms-modal-body {
+        flex-direction: column;
+    }
+
+    .terms-sidebar {
+        width: 100%;
+        max-height: 150px;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .terms-content {
+        padding: 20px;
+    }
+
+    .terms-modal-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .terms-accept-btn,
+    .terms-decline-btn {
+        width: 100%;
+    }
+}
