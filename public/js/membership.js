@@ -112,32 +112,53 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tableType === 'member') {
             memberTable.classList.add('active');
             nonMemberTable.classList.remove('active');
+            // Hide signup notice for members table
+            const signupNotice = document.getElementById('signupNotice');
+            if (signupNotice) {
+                signupNotice.classList.remove('show');
+            }
         } else {
             memberTable.classList.remove('active');
             nonMemberTable.classList.add('active');
+            // Show signup notice for non-members table only if user is NOT logged in
+            const signupNotice = document.getElementById('signupNotice');
+            if (signupNotice) {
+                const isLoggedIn = signupNotice.getAttribute('data-logged-in') === 'true';
+                if (!isLoggedIn) {
+                    signupNotice.classList.add('show');
+                } else {
+                    signupNotice.classList.remove('show');
+                }
+            }
         }
     }
 
     // Modal functionality
-    function openModal(price, service, benefits) {
+    function openModal(price, service, benefits, tableType) {
         modalPrice.textContent = price;
         modalService.textContent = service;
         modalBenefits.textContent = benefits;
         serviceModal.classList.add('active');
         document.body.style.overflow = 'hidden';
+
+        // Store table type for later use
+        serviceModal.dataset.tableType = tableType;
     }
 
     function closeModal() {
         serviceModal.classList.remove('active');
         document.body.style.overflow = '';
+        delete serviceModal.dataset.tableType;
     }
 
     // Add click handlers to table rows
     function addTableRowHandlers() {
         const tables = document.querySelectorAll('.pricing-table tbody');
 
-        tables.forEach(table => {
+        tables.forEach((table, index) => {
             const rows = table.querySelectorAll('tr');
+            // Determine if this is member or non-member table
+            const tableType = index === 0 ? 'member' : 'non-member';
 
             rows.forEach(row => {
                 row.style.cursor = 'pointer';
@@ -148,8 +169,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     const service = cells[1].textContent.trim();
                     const benefits = cells[2].textContent.trim();
 
-                    openModal(price, service, benefits);
+                    openModal(price, service, benefits, tableType);
                 });
+            });
+        });
+    }
+
+    // Add click handlers for "Select Plan" buttons
+    function addPlanSelectionHandlers() {
+        const selectPlanButtons = document.querySelectorAll('.select-btn');
+
+        selectPlanButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Get plan type from parent card's data-plan attribute
+                const planCard = this.closest('.plan-card');
+                const planType = planCard ? planCard.getAttribute('data-plan') : 'gladiator';
+
+                // For resolution plan, default to regular variant
+                if (planType === 'resolution-regular' || planType === 'resolution-student') {
+                    window.location.href = `transaction.php?plan=resolution&variant=regular&billing=monthly`;
+                } else {
+                    // Redirect to transaction page with plan parameter
+                    window.location.href = `transaction.php?plan=${planType}&billing=monthly`;
+                }
             });
         });
     }
@@ -157,9 +201,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modal action handlers
     purchaseBtn.addEventListener('click', function() {
         const service = modalService.textContent;
-        const price = modalPrice.textContent;
-        alert(`Proceeding to purchase: ${service} for ${price}`);
-        // TODO: Redirect to payment page or add to cart
+        const tableType = serviceModal.dataset.tableType || 'non-member';
+
+        // Map service to plan type
+        let planType = '';
+
+        if (service.includes('Day Pass: Gym Access')) {
+            if (service.includes('Student')) {
+                planType = 'daypass-gym-student';
+            } else {
+                planType = 'daypass-gym';
+            }
+        } else if (service.includes('Training: Boxing')) {
+            planType = 'training-boxing';
+        } else if (service.includes('Training: Muay Thai')) {
+            planType = 'training-muaythai';
+        } else if (service.includes('Training: MMA')) {
+            planType = 'training-mma';
+        }
+
+        // Redirect to transaction page with table type to determine pricing
+        window.location.href = `transaction_service.php?service=${encodeURIComponent(planType)}&type=${encodeURIComponent(tableType)}`;
+
         closeModal();
     });
 
@@ -195,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize
     updateCarousel();
     addTableRowHandlers();
+    addPlanSelectionHandlers();
 
     // Optional: Add keyboard navigation
     document.addEventListener('keydown', function(e) {

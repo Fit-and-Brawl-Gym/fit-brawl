@@ -1,6 +1,10 @@
 <?php
 // Check if this is an API request
 session_start();
+
+// Check if user is logged in
+$isLoggedIn = isset($_SESSION['email']);
+
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
     include '../../includes/db_connect.php';
@@ -59,7 +63,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
              alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
@@ -145,7 +149,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
 
-                    <div class="plan-card" data-plan="resolution" data-category="non-member">
+                    <div class="plan-card" data-plan="resolution-regular" data-category="non-member">
                         <h3 class="plan-name">RESOLUTION</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
                         <div class="plan-price">
@@ -172,6 +176,16 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                     <button class="toggle-btn active" data-table="member">FOR MEMBERS</button>
                     <button class="toggle-btn" data-table="non-member">FOR NON<span class="toggle-hyphen">-</span>MEMBERS</button>
                 </div>
+                <?php if (!$isLoggedIn): ?>
+                <div class="signup-notice" id="signupNotice" data-logged-in="false">
+                    <span class="signup-notice-text">Sign up now and save 30 PHP <br> on all services!</span>
+                </div>
+                <?php else: ?>
+                <div class="signup-notice" id="signupNotice" data-logged-in="true" style="opacity: 0; pointer-events: none;">
+                    <span class="signup-notice-icon">✓</span>
+                    <span class="signup-notice-text">You're getting member pricing!</span>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- Members Table -->
@@ -350,6 +364,10 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         </div>
     </footer>
 
+    <script>
+        // Pass login status to JavaScript
+        window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
+    </script>
     <script src="../js/membership.js"></script>
 </body>
 </html>
