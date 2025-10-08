@@ -115,12 +115,19 @@
 }
 
 .account-icon {
-    width: 40px;  
-    height: 40px;      
-    object-fit: cover;  
-    border-radius: 50%; 
-
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    cursor: pointer;
 }
+
+/* Gold border for logged-in users */
+.account-dropdown .account-icon {
+    border: 3px solid #d5ba2b;
+    padding: 2px;
+}
+
 .account-dropdown {
     position: relative;
     display: inline-block;
@@ -131,6 +138,7 @@
     display: none;
     position: absolute;
     right: 0;
+    top: 50px;
     background-color: #fff;
     min-width: 150px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -138,7 +146,8 @@
     z-index: 1000;
 }
 
-.account-dropdown:hover .dropdown-menu {
+/* Show dropdown when active class is added via JS */
+.account-dropdown.active .dropdown-menu {
     display: block;
 }
 
@@ -152,6 +161,7 @@
 .dropdown-menu a:hover {
     background-color: #f0f0f0;
 }
+
 .account-link:hover .account-icon {
   filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
 }

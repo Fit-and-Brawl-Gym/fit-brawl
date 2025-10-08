@@ -100,6 +100,13 @@ function formatPlanName($planName) {
     }
     return $planName;
 }
+
+// Determine avatar source for logged-in users
+$avatarSrc = '../../images/account-icon.svg';
+if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
+    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
+    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -116,6 +123,7 @@ function formatPlanName($planName) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
+    <script src="../js/header-dropdown.js"></script>
 </head>
 <body>
     <!--Header-->
@@ -132,7 +140,7 @@ function formatPlanName($planName) {
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="membership.php" class="active">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
@@ -141,7 +149,7 @@ function formatPlanName($planName) {
             </nav>
             <?php if(isset($_SESSION['email'])): ?>
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
+                    <img src="<?= $avatarSrc ?>"
                          alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
@@ -150,7 +158,7 @@ function formatPlanName($planName) {
                 </div>
             <?php else: ?>
                 <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>
@@ -515,5 +523,7 @@ function formatPlanName($planName) {
 
     <script src="../js/transaction.js"></script>
 </body>
-</html>
 
+
+
+</html>
