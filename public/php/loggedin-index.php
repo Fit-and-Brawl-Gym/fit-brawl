@@ -7,8 +7,26 @@ if(!isset($_SESSION['email'])) {
     exit;
 }
 
+// Check if user has active membership
+$hasActiveMembership = false;
+if(isset($_SESSION['user_id'])) {
+    require_once '../../includes/db_connect.php';
+    $user_id = $_SESSION['user_id'];
+    $membership_query = "SELECT id FROM user_memberships
+                        WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE()
+                        LIMIT 1";
+    $stmt = $conn->prepare($membership_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $hasActiveMembership = $result->num_rows > 0;
+}
+
+// Set membership link based on subscription status
+$membershipLink = $hasActiveMembership ? 'reservations.php' : 'membership.php';
+
 $avatarSrc = '../../images/account-icon.svg';
-if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
+if (isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
 }
@@ -45,7 +63,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php" class="active">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
