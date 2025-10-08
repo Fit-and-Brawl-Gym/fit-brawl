@@ -124,6 +124,20 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script>
+        const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
+        const yearlyPrice = <?php echo json_encode($yearlyPrice); ?>;
+            const resolutionPrices = {
+            student: {
+                monthly: <?php echo json_encode($plans['resolution-student']['monthly']); ?>,
+                yearly: <?php echo json_encode($plans['resolution-student']['yearly']); ?>
+            },
+            regular: {
+                monthly: <?php echo json_encode($plans['resolution-regular']['monthly']); ?>,
+                yearly: <?php echo json_encode($plans['resolution-regular']['yearly']); ?>
+            }
+      };
+    </script>
 </head>
 <body>
     <!--Header-->
