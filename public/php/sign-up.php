@@ -120,6 +120,7 @@ function showError($error) {
     <link rel="stylesheet" href="../css/pages/sign-up.css?v=1">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/components/terms-modal.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -151,7 +152,7 @@ function showError($error) {
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
              alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
@@ -268,5 +269,113 @@ function showError($error) {
             <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Terms and Conditions Modal -->
+    <div class="terms-modal-overlay">
+        <div class="terms-modal-container">
+            <div class="terms-modal-header">
+                <h2>Terms and Condition</h2>
+                <button class="terms-close-btn">&times;</button>
+            </div>
+
+            <div class="terms-modal-body">
+                <div class="terms-sidebar">
+                    <nav>
+                        <ul>
+                            <li><a href="#use-of-website" class="active">1. Use of Our Website</a></li>
+                            <li><a href="#booking-scheduling">2. Booking and Scheduling</a></li>
+                            <li><a href="#payments-fees">3. Payments and Fees</a></li>
+                            <li><a href="#cancellations-refunds">4. Cancellations and Refunds</a></li>
+                            <li><a href="#health-safety">5. Health and Safety</a></li>
+                            <li><a href="#memberships">6. Memberships and Subscriptions</a></li>
+                            <li><a href="#intellectual-property">7. Intellectual Property</a></li>
+                            <li><a href="#limitation-liability">8. Limitation of Liability</a></li>
+                            <li><a href="#privacy-policy">9. Privacy Policy</a></li>
+                            <li><a href="#changes-terms">10. Changes to These Terms</a></li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <div class="terms-content">
+                    <p class="terms-last-updated">Last Updated: October 7, 2025</p>
+                    <p class="terms-intro">Welcome to Fit and Brawl! These Terms and Conditions ("Terms") govern your use of our website, [Wala pang website link], and all related services offered by Fit and Brawl. By accessing or using our website, scheduling sessions, or purchasing services, you agree to comply with these Terms.</p>
+
+                    <h3 id="use-of-website">1. Use of Our Website</h3>
+                    <ul>
+                        <li>You must be at least 18 years old (or have parental consent) to create an account and use our online services.</li>
+                        <li>You agree to provide accurate, complete, and current information when creating an account or booking sessions.</li>
+                        <li>You are responsible for maintaining the confidentiality of your account and password.</li>
+                    </ul>
+
+                    <h3 id="booking-scheduling">2. Booking and Scheduling</h3>
+                    <ul>
+                        <li>You may schedule workouts, classes, or personal training sessions through our website.</li>
+                        <li>All bookings are subject to availability and confirmation by our staff.</li>
+                        <li>You agree to arrive on time for your scheduled sessions. Late arrivals may result in reduced session time.</li>
+                    </ul>
+
+                    <h3 id="payments-fees">3. Payments and Fees</h3>
+                    <ul>
+                        <li>All payments must be made through our secure online payment system.</li>
+                        <li>Prices for services are listed on our website and may change without prior notice.</li>
+                        <li>Payments are non-refundable except as required by law or under specific promotional terms.</li>
+                    </ul>
+
+                    <h3 id="cancellations-refunds">4. Cancellations and Refunds</h3>
+                    <ul>
+                        <li>You may cancel or reschedule a session at least 24 hours before the appointment time.</li>
+                        <li>Late cancellations or "no-shows" may result in a cancellation fee or forfeiture of the session.</li>
+                        <li>Refund requests will be reviewed and processed at our discretion.</li>
+                    </ul>
+
+                    <h3 id="health-safety">5. Health and Safety</h3>
+                    <ul>
+                        <li>By using our services, you confirm that you are physically fit and have consulted a medical professional if needed.</li>
+                        <li>You agree to follow all gym rules, safety guidelines, and instructions from our trainers.</li>
+                        <li>We are not responsible for any injuries, accidents, or health issues that occur during participation in our programs.</li>
+                    </ul>
+
+                    <h3 id="memberships">6. Memberships and Subscriptions</h3>
+                    <ul>
+                        <li>If you purchase a membership, you agree to the terms of your selected plan (duration, renewal, and cancellation policies).</li>
+                        <li>Membership fees are billed according to the plan you choose.</li>
+                        <li>Automatic renewals may apply unless you cancel before the renewal date.</li>
+                    </ul>
+
+                    <h3 id="intellectual-property">7. Intellectual Property</h3>
+                    <ul>
+                        <li>All content on this website (text, images, logos, videos, etc.) is the property of Fit and Brawl and is protected by copyright law.</li>
+                        <li>You may not reproduce, distribute, or modify any content without our written consent.</li>
+                    </ul>
+
+                    <h3 id="limitation-liability">8. Limitation of Liability</h3>
+                    <ul>
+                        <li>Fit and Brawl is not liable for any indirect, incidental, or consequential damages arising from your use of our website or services.</li>
+                        <li>We do not guarantee that our website will always be available, error-free, or secure.</li>
+                    </ul>
+
+                    <h3 id="privacy-policy">9. Privacy Policy</h3>
+                    <ul>
+                        <li>We respect your privacy and will not share your data with third parties except as required by law.</li>
+                    </ul>
+
+                    <h3 id="changes-terms">10. Changes to These Terms</h3>
+                    <ul>
+                        <li>We may update these Terms from time to time.</li>
+                        <li>Any changes will be posted on this page with an updated "Last Updated" date.</li>
+                        <li>Continued use of our website or services after such changes means you accept the revised Terms.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="terms-modal-footer">
+                <button class="terms-decline-btn">Decline</button>
+                <button class="terms-accept-btn">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/terms-modal.js"></script>
 </body>
 </html>
+```

@@ -1,6 +1,30 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
+
+$error = '';
+$success = '';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+    
+    // Check if email exists in database
+    $stmt = $conn->prepare("SELECT email FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        // Store email in session and redirect to verification page
+        $_SESSION['reset_email'] = $email;
+        header("Location: verification.php");  // Changed from change-password.php
+        exit;
+    } else {
+        $error = "Email address not found in our records.";
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +33,7 @@ session_start();
     <title>Forgot Password - Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/pages/forgot-password.css">
-    <link rel="stylesheet" href="../css/components/footer.css"> 
+    <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +66,7 @@ session_start();
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
+                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
              alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
@@ -74,12 +98,16 @@ session_start();
                     <h2>Enter email to verify your account</h2>
                 </div>
 
-                <form class="forgot-password-form">
+                <?php if ($error): ?>
+                    <div class="error-message"><?php echo $error; ?></div>
+                <?php endif; ?>
+
+                <form class="forgot-password-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                     <h3>A LITTLE STEPBACK BEFORE THE BEST VERSION OF YOU!</h3>
 
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" placeholder="Email" required>
+                        <input type="email" name="email" placeholder="Email" required>
                     </div>
 
                     <button type="submit" class="forgot-password-btn">Continue</button>
