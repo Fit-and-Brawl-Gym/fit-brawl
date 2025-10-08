@@ -12,8 +12,14 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
-    avatar VARCHAR(255) DEFAULT 'default-avatar.png'
+    avatar VARCHAR(255) DEFAULT 'default-avatar.png',
+    otp VARCHAR(6) DEFAULT NULL,
+    otp_expiry DATETIME DEFAULT NULL
 );
+-- Add verification fields (safe as separate command)
+ALTER TABLE users 
+ADD COLUMN is_verified TINYINT(1) DEFAULT 0 AFTER avatar,
+ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL AFTER is_verified;
 
 -- =====================
 -- MEMBERSHIPS TABLE
@@ -80,6 +86,14 @@ CREATE TABLE user_reservations (
     reservation_id INT NOT NULL,
     booking_status ENUM('confirmed', 'cancelled', 'completed') DEFAULT 'confirmed',
     booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    class_type VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    max_slots INT NOT NULL DEFAULT 1,
+    remaining_slots INT NOT NULL DEFAULT 1,
+    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
     UNIQUE KEY unique_user_booking (user_id, reservation_id)
@@ -114,3 +128,5 @@ CREATE TABLE feedback (
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+

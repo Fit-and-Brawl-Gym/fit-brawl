@@ -2,11 +2,31 @@
 session_start();
 require_once '../../includes/db_connect.php';
 
+// Include PHPMailer for email sending
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+require '../../vendor/autoload.php'; // Make sure PHPMailer is installed via Composer
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $name = $conn->real_escape_string($_POST['name']);
     $email = $conn->real_escape_string($_POST['email']);
 
+    //Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['register_error'] = "Please enter a valid email address.";
+        header("Location: sign-up.php");
+        exit();
+    }
 
+    //Check if email domain exists
+    $emailDomain = substr(strrchr($email, "@"), 1);
+    if (!checkdnsrr($emailDomain, "MX")) {
+        $_SESSION['register_error'] = "Invalid email domain. Please use a real email address.";
+        header("Location: sign-up.php");
+        exit();
+    }
+
+    //Check password match
     if ($_POST['password'] !== $_POST['confirm_password']) {
         $_SESSION['register_error'] = "Passwords do not match.";
         header("Location: sign-up.php");
@@ -16,37 +36,80 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $role = "member";
 
+    //Check duplicates
     $checkUser = $conn->query("SELECT username FROM users WHERE username = '$name'");
     if ($checkUser->num_rows > 0) {
         $_SESSION['register_error'] = "Username already exists.";
         header("Location: sign-up.php");
         exit();
     }
+
     $checkEmail = $conn->query("SELECT email FROM users WHERE email = '$email'");
     if ($checkEmail->num_rows > 0) {
         $_SESSION['register_error'] = "Email already exists.";
         header("Location: sign-up.php");
         exit();
-    } else {
+    }
 
-        if ($conn->query("INSERT INTO users (username, email, password, role)
-                          VALUES ('$name', '$email', '$password', '$role')")) {
-            $_SESSION['success_message'] = "Account created successfully. Please login.";
-            header("Location: login.php");
+    //Generate a unique verification token
+    $verificationToken = bin2hex(random_bytes(32));
+
+    //Insert user with verification token
+    $insertQuery = $conn->prepare("
+        INSERT INTO users (username, email, password, role, verification_token, is_verified)
+        VALUES (?, ?, ?, ?, ?, 0)
+    ");
+    $insertQuery->bind_param("sssss", $name, $email, $password, $role, $verificationToken);
+
+    if ($insertQuery->execute()) {
+        //Send verification email
+        $verificationLink = "http://localhost/fit-brawl/public/php/verify-email.php?token=" . $verificationToken;
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com'; // your SMTP host
+            $mail->SMTPAuth = true;
+            $mail->Username = 'fitxbrawl.gym@gmail.com'; // your Gmail
+            $mail->Password = 'oxck mxfc cpoj wpra';   // use Gmail App Password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            $mail->setFrom('fitxbrawl.gym@gmail.com', 'Fit & Brawl Gym');
+            $mail->addAddress($email, $name);
+            $mail->isHTML(true);
+            $mail->Subject = 'Verify Your Email - Fit & Brawl Gym';
+            $mail->Body = "
+                <h2>Welcome to Fit & Brawl Gym, $name!</h2>
+                <p>Click the link below to verify your email:</p>
+                <a href='$verificationLink'>$verificationLink</a>
+                <p>This link will confirm your account registration.</p>
+            ";
+
+            $mail->send();
+
+            $_SESSION['success_message'] = "Account created! Please check your email to verify your account.";
+            header("Location: sign-up.php");
             exit();
-        } else {
-            $_SESSION['register_error'] = "Database error: " . $conn->error;
 
+        } catch (Exception $e) {
+            $_SESSION['register_error'] = "Account created but verification email could not be sent. Error: " . $mail->ErrorInfo;
+            header("Location: sign-up.php");
             exit();
         }
+
+    } else {
+        $_SESSION['register_error'] = "Database error: " . $conn->error;
+        header("Location: sign-up.php");
+        exit();
     }
 }
-
 
 function showError($error) {
     return !empty($error) ? "<p class='error-message'>$error</p>" : "";
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,7 +190,10 @@ function showError($error) {
 
                     <?= showError($_SESSION['register_error'] ?? ''); ?>
                     <?php unset($_SESSION['register_error']); ?>
-
+                    <?php if (isset($_SESSION['success_message'])): ?>
+                    <p class="success-message"><?= $_SESSION['success_message']; ?></p>
+                    <?php unset($_SESSION['success_message']); ?>
+                    <?php endif; ?>
                     <div class="input-group">
                         <i class="fas fa-user"></i>
                         <input type="text" name="name" placeholder="Name" required>
