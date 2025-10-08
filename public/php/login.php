@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($user['role'] === 'admin') {
                 header("Location: admin_page.php");
             } else {
-                header("Location: index.php");
+                header("Location: loggedin-index.php");
             }
             exit;
         } else {
