@@ -198,32 +198,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Modal action handlers
+    // Service name to key mapping
+    const serviceMapping = {
+        'Day Pass: Gym Access': 'daypass-gym',
+        'Day Pass: Student Access': 'daypass-gym-student',
+        'Training: Boxing': 'training-boxing',
+        'Training: Muay Thai': 'training-muaythai',
+        'Training: MMA': 'training-mma'
+    };
+
+    // Update the purchase button click handler
     purchaseBtn.addEventListener('click', function() {
-        const service = modalService.textContent;
-        const tableType = serviceModal.dataset.tableType || 'non-member';
+        const serviceName = modalService.textContent;
+        const serviceKey = serviceMapping[serviceName];
+        const currentTable = document.querySelector('.pricing-toggle .toggle-btn.active').dataset.table;
 
-        // Map service to plan type
-        let planType = '';
-
-        if (service.includes('Day Pass: Gym Access')) {
-            if (service.includes('Student')) {
-                planType = 'daypass-gym-student';
-            } else {
-                planType = 'daypass-gym';
-            }
-        } else if (service.includes('Training: Boxing')) {
-            planType = 'training-boxing';
-        } else if (service.includes('Training: Muay Thai')) {
-            planType = 'training-muaythai';
-        } else if (service.includes('Training: MMA')) {
-            planType = 'training-mma';
+        if (serviceKey) {
+            window.location.href = `transaction_service.php?service=${serviceKey}&type=${currentTable}`;
+        } else {
+            console.error('Unknown service:', serviceName);
+            alert('Service not found. Please try again.');
         }
-
-        // Redirect to transaction page with table type to determine pricing
-        window.location.href = `transaction_service.php?service=${encodeURIComponent(planType)}&type=${encodeURIComponent(tableType)}`;
-
-        closeModal();
     });
 
     inquireBtn.addEventListener('click', function() {
