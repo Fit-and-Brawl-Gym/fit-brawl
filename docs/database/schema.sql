@@ -13,6 +13,10 @@ CREATE TABLE users (
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
     avatar VARCHAR(255) DEFAULT 'default-avatar.png'
 );
+-- Add verification fields (safe as separate command)
+ALTER TABLE users 
+ADD COLUMN is_verified TINYINT(1) DEFAULT 0 AFTER avatar,
+ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL AFTER is_verified;
 
 -- =====================
 -- MEMBERSHIPS TABLE
