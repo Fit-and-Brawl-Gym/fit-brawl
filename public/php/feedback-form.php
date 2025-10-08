@@ -1,5 +1,12 @@
 <?php
 session_start();
+
+// Determine avatar source for logged-in users
+$avatarSrc = '../../images/account-icon.svg';
+if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
+    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
+    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+}
 ?>
 
 <!DOCTYPE html>
@@ -18,6 +25,7 @@ session_start();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
+    <script src="../js/header-dropdown.js"></script>
 </head>
 <body>
     <!--Header-->
@@ -45,8 +53,8 @@ session_start();
             <?php if(isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>" 
-             alt="Account" class="account-icon">
+                    <img src="<?= $avatarSrc ?>"
+                         alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
@@ -55,7 +63,7 @@ session_start();
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>
@@ -84,8 +92,7 @@ session_start();
                             <label for="last-name" class="email-label">
                                 <svg class="icon email-icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2
-                                    2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2
+                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2
                                     2 0 0 0-2-2zm0 4.2l-8 4.8-8-4.8V6l8
                                     4.8L20 6v2.2z"/>
                                 </svg>
