@@ -42,6 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
     exit;
 }
 
+require_once '../../includes/db_connect.php';
+
+// Check membership status for header
+require_once '../../includes/membership_check.php';
+
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
@@ -82,7 +87,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>

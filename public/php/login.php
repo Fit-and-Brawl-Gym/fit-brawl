@@ -1,61 +1,55 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
 
-// Redirect logged-in users to homepage
-if(isset($_SESSION['email'])) {
-    header("Location: loggedin-index.php");
+// If already logged in, redirect
+if (isset($_SESSION['email'])) {
+    header('Location: index.php');
     exit;
 }
 
-require_once '../../includes/db_connect.php';
+// Check membership status for header
+require_once '../../includes/membership_check.php';
 
 $error = '';
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
 
-    // Prepare query
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    if (empty($email) || empty($password)) {
+        $error = 'Please enter both email and password';
+    } else {
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
 
-        //Check if account is verified
-        if ($user['is_verified'] == 0) {
-            $error = "⚠️ Please verify your email before logging in.";
-        }
-        //Then verify password
-        elseif (password_verify($password, $user['password'])) {
-            $_SESSION['name'] = $user['username'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['avatar'] = $user['avatar'];
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['avatar'] = $user['avatar'];
 
-            //Remember Me option
-            if (isset($_POST['remember'])) {
-                setcookie('email', $email, time() + (86400 * 30), "/");
-                setcookie('password', $user['password'], time() + (86400 * 30), "/");
-            } else {
-                setcookie('email', '', time() - 3600, "/");
-                setcookie('password', '', time() - 3600, "/");
-            }
-
-            //Redirect by role
-            if ($user['role'] === 'admin') {
-                header("Location: admin_page.php");
+                // Check if there's a redirect URL stored
+                if (isset($_SESSION['redirect_after_login'])) {
+                    $redirect = $_SESSION['redirect_after_login'];
+                    unset($_SESSION['redirect_after_login']);
+                    header('Location: ' . $redirect);
+                } else {
+                    header('Location: index.php');
+                }
+                exit;
             } else {
                 header("Location: loggedin-index.php");
             }
-            exit;
         } else {
-            $error = "Incorrect email or password.";
+            $error = 'Invalid email or password';
         }
-    } else {
-        $error = "Incorrect email or password.";
     }
 }
 ?>
@@ -93,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
@@ -215,3 +209,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 </body>
 </html>
+
