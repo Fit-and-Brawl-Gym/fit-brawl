@@ -1,52 +1,53 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
 
-// Redirect logged-in users to homepage
-if(isset($_SESSION['email'])) {
-    header("Location: loggedin-index.php");
+// If already logged in, redirect
+if (isset($_SESSION['email'])) {
+    header('Location: index.php');
     exit;
 }
 
-require_once '../../includes/db_connect.php';
-
 $error = '';
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    if (empty($email) || empty($password)) {
+        $error = 'Please enter both email and password';
+    } else {
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['name'] = $user['username'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
-             $_SESSION['avatar'] = $user['avatar'];
-            // Remember Me
-            if (isset($_POST['remember'])) {
-                setcookie('email', $email, time() + (86400 * 30), "/");
-                setcookie('password', $user['password'], time() + (86400 * 30), "/");
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['avatar'] = $user['avatar'];
+
+                // Check if there's a redirect URL stored
+                if (isset($_SESSION['redirect_after_login'])) {
+                    $redirect = $_SESSION['redirect_after_login'];
+                    unset($_SESSION['redirect_after_login']);
+                    header('Location: ' . $redirect);
+                } else {
+                    header('Location: index.php');
+                }
+                exit;
             } else {
-                setcookie('email', '', time() - 3600, "/");
-                setcookie('password', '', time() - 3600, "/");
+                $error = 'Invalid email or password';
             }
-
-            // Redirect based on role
-            if ($user['role'] === 'admin') {
-                header("Location: admin_page.php");
-            } else {
-                header("Location: index.php");
-            }
-            exit;
+        } else {
+            $error = 'Invalid email or password';
         }
     }
-
-    $error = "Incorrect email or password.";
 }
 ?>
 

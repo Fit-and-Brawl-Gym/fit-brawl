@@ -183,23 +183,15 @@ document.addEventListener('DOMContentLoaded', function() {
         submitReceiptBtn.textContent = 'SUBMITTING...';
         submitReceiptBtn.disabled = true;
 
-        // TODO: Send to backend
-        // For now, simulate submission
-        setTimeout(() => {
-            alert('Payment receipt submitted successfully! We will verify your payment and activate your membership soon.');
-            window.location.href = '../membership.php?success=1';
-        }, 1500);
-
-        // Actual AJAX call would look like:
-        /*
-        fetch('process_subscription.php', {
+        // Send to backend
+        fetch('api/process_subscription.php', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Payment receipt submitted successfully!');
+                alert('Payment receipt submitted successfully! Your membership is now active.');
                 window.location.href = 'membership.php?success=1';
             } else {
                 alert('Error: ' + data.message);
@@ -208,11 +200,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
+            console.error('Error:', error);
             alert('An error occurred. Please try again.');
             submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
             submitReceiptBtn.disabled = false;
         });
-        */
     });
 
     // Event listeners
