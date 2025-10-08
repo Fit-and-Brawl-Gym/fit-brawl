@@ -1,4 +1,3 @@
--- SQLBook: Code
 -- Create database
 CREATE DATABASE IF NOT EXISTS fit_and_brawl_gym;
 USE fit_and_brawl_gym;
@@ -58,10 +57,8 @@ CREATE TABLE trainers (
 );
 
 -- =====================
--- RESERVATIONS TABLE (UPDATED)
+-- RESERVATIONS TABLE 
 -- =====================
-DROP TABLE IF EXISTS user_reservations;
-DROP TABLE IF EXISTS reservations;
 
 CREATE TABLE reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -128,5 +125,3 @@ CREATE TABLE feedback (
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
-
