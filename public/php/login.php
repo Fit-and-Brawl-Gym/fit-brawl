@@ -7,7 +7,6 @@ if (isset($_SESSION['email'])) {
     header('Location: index.php');
     exit;
 }
-
 // Check membership status for header
 require_once '../../includes/membership_check.php';
 
@@ -209,4 +208,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
-
