@@ -150,7 +150,7 @@ select#statusFilter {
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 15px;
   background: rgba(15, 79, 82, 0.3);
-  color: #fff;
+  color: #f5f7f8;
   margin-bottom: 20px;
   backdrop-filter: blur(8px);
   transition: all 0.2s ease;
