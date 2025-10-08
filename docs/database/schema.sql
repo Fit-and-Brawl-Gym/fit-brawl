@@ -12,6 +12,8 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
     avatar VARCHAR(255) DEFAULT 'default-avatar.png'
+    otp VARCHAR(6) DEFAULT NULL,
+    otp_expiry DATETIME DEFAULT NULL; 
 );
 -- Add verification fields (safe as separate command)
 ALTER TABLE users 
@@ -45,9 +47,14 @@ CREATE TABLE reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     trainer_id INT NOT NULL,
-    class_type ENUM('Boxing', 'Muay Thai') NOT NULL,
-    datetime DATETIME NOT NULL,
-    status ENUM('Confirmed', 'Cancelled', 'Completed') DEFAULT 'Confirmed',
+    class_type VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    max_slots INT NOT NULL DEFAULT 1,
+    remaining_slots INT NOT NULL DEFAULT 1,
+    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE
 );
@@ -81,3 +88,5 @@ CREATE TABLE feedback (
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+

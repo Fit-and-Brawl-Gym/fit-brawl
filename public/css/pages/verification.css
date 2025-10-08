@@ -1,6 +1,6 @@
 .verification-main {
     min-height: calc(100vh - 120px);
-    background: #010d17 url('../../../images/login-bg.png') no-repeat center top / cover;
+    background: #010d17 url('../../../images/sign-up_bg.png') no-repeat center top / cover;
     position: relative;
 }
 
@@ -50,12 +50,12 @@
 }
 
 .verification-modal {
-    flex: 0 0 400px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
+    background: white;
     padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
+    border-radius: 22px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 450px;
 }
 
 .modal-header h2 {
@@ -72,7 +72,7 @@
 .verification-form h3 {
     text-align: center;
     color: #333;
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: 700;
     margin-bottom: 2rem;
     text-transform: uppercase;
@@ -80,7 +80,10 @@
 
 .input-group {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .input-group i {
@@ -89,22 +92,47 @@
     top: 50%;
     transform: translateY(-50%);
     color: #666;
-    font-size: 1.1rem;
 }
 
 .input-group input {
-    width: 100%;
-    padding: 12px 15px 12px 50px;
-    border: 2px solid #ddd;
-    border-radius: 25px;
+    flex: 1;
+    padding: 12px 15px 12px 45px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
     font-size: 1rem;
-    background: #f8f9fa;
-    transition: border-color 0.3s;
+    letter-spacing: 8px;
+    text-align: center;
 }
 
-.input-group input:focus {
-    outline: none;
-    border-color: #d5ba2b;
+.verification-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.otp-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.otp-input-wrapper i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    z-index: 1;
+}
+
+.otp-input-wrapper input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    letter-spacing: 4px;
+    text-align: center;
 }
 
 .form-options {
@@ -115,7 +143,7 @@
     font-size: 0.9rem;
 }
 
-.verification-btn {
+.verify-btn {
     width: 100%;
     background: #d5ba2b;
     color: #333;
@@ -126,11 +154,92 @@
     font-weight: 700;
     cursor: pointer;
     transition: background 0.3s;
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
 }
 
-.verification-btn:hover {
+.verify-btn:hover {
     background: #b8941f;
+}
+
+.otp-input-group {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.otp-input-group input {
+    width: 200px;
+    height: 40px;
+    font-size: 24px;
+    text-align: center;
+    letter-spacing: 20px;
+    padding-left: 20px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.success-message {
+    background-color: rgba(0, 255, 0, 0.1);
+    color: #008000;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.error-message {
+    background-color: rgba(255, 0, 0, 0.1);
+    color: #ff0000;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.resend-btn {
+    min-width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid var(--accent-color);
+    background: #d5ba2b;
+    color: #333;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.resend-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.resend-btn.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.resend-btn i {
+    font-size: 1.2rem;
+}
+
+.resend-btn:hover {
+    background: #b8941f;
+}
+
+.resend-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#countdown {
+    text-align: center;
+    margin-top: 10px;
+    color: #666;
 }
 
 @media (max-width: 1024px) {
