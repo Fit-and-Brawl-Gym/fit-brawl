@@ -15,6 +15,10 @@ CREATE TABLE users (
     otp VARCHAR(6) DEFAULT NULL,
     otp_expiry DATETIME DEFAULT NULL
 );
+-- Add verification fields (safe as separate command)
+ALTER TABLE users 
+ADD COLUMN is_verified TINYINT(1) DEFAULT 0 AFTER avatar,
+ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL AFTER is_verified;
 
 -- =====================
 -- MEMBERSHIPS TABLE
