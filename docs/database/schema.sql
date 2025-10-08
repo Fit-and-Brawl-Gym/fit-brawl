@@ -1,3 +1,4 @@
+-- SQLBook: Code
 -- Create database
 CREATE DATABASE IF NOT EXISTS fit_and_brawl_gym;
 USE fit_and_brawl_gym;
@@ -31,6 +32,22 @@ CREATE TABLE memberships (
 );
 
 -- =====================
+-- USER MEMBERSHIPS TABLE (NEW)
+-- =====================
+CREATE TABLE user_memberships (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    membership_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    billing_type ENUM('monthly', 'yearly') DEFAULT 'monthly',
+    status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (membership_id) REFERENCES memberships(id) ON DELETE CASCADE
+);
+
+-- =====================
 -- TRAINERS TABLE
 -- =====================
 CREATE TABLE trainers (
@@ -41,12 +58,34 @@ CREATE TABLE trainers (
 );
 
 -- =====================
--- RESERVATIONS TABLE
+-- RESERVATIONS TABLE (UPDATED)
 -- =====================
+DROP TABLE IF EXISTS user_reservations;
+DROP TABLE IF EXISTS reservations;
+
 CREATE TABLE reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
     trainer_id INT NOT NULL,
+    class_type ENUM('Boxing', 'Muay Thai', 'MMA') NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    max_slots INT NOT NULL DEFAULT 10,
+    status ENUM('available', 'full', 'cancelled') DEFAULT 'available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_session (trainer_id, class_type, date, start_time)
+);
+
+-- =====================
+-- USER RESERVATIONS TABLE (NEW)
+-- =====================
+CREATE TABLE user_reservations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    reservation_id INT NOT NULL,
+    booking_status ENUM('confirmed', 'cancelled', 'completed') DEFAULT 'confirmed',
+    booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     class_type VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
     start_time TIME NOT NULL,
@@ -56,7 +95,8 @@ CREATE TABLE reservations (
     status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE
+    FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_booking (user_id, reservation_id)
 );
 
 -- =====================
