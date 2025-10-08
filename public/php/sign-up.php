@@ -2,14 +2,22 @@
 session_start();
 require_once '../../includes/db_connect.php';
 
-// Include PHPMailer for email sending
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-require '../../vendor/autoload.php'; // Make sure PHPMailer is installed via Composer
+require '../../vendor/autoload.php'; 
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
-    $name = $conn->real_escape_string($_POST['name']);
-    $email = $conn->real_escape_string($_POST['email']);
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $password_input = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    //Validate inputs
+    if (empty($name) || empty($email) || empty($password_input) || empty($confirm_password)) {
+        $_SESSION['register_error'] = "All fields are required.";
+        header("Location: sign-up.php");
+        exit();
+    }
 
     //Validate email format
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -27,34 +35,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     }
 
     //Check password match
-    if ($_POST['password'] !== $_POST['confirm_password']) {
+    if ($password_input !== $confirm_password) {
         $_SESSION['register_error'] = "Passwords do not match.";
         header("Location: sign-up.php");
         exit();
     }
 
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    //Hash password
+    $password = password_hash($password_input, PASSWORD_DEFAULT);
     $role = "member";
 
-    //Check duplicates
-    $checkUser = $conn->query("SELECT username FROM users WHERE username = '$name'");
-    if ($checkUser->num_rows > 0) {
-        $_SESSION['register_error'] = "Username already exists.";
+    //Check for duplicate username or email 
+    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+    $stmt->bind_param("ss", $name, $email);
+    $stmt->execute();
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0) {
+        $_SESSION['register_error'] = "Username or email already exists.";
         header("Location: sign-up.php");
         exit();
     }
 
-    $checkEmail = $conn->query("SELECT email FROM users WHERE email = '$email'");
-    if ($checkEmail->num_rows > 0) {
-        $_SESSION['register_error'] = "Email already exists.";
-        header("Location: sign-up.php");
-        exit();
-    }
-
-    //Generate a unique verification token
     $verificationToken = bin2hex(random_bytes(32));
 
-    //Insert user with verification token
+    // Insert user with verification token
     $insertQuery = $conn->prepare("
         INSERT INTO users (username, email, password, role, verification_token, is_verified)
         VALUES (?, ?, ?, ?, ?, 0)
@@ -62,16 +67,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $insertQuery->bind_param("sssss", $name, $email, $password, $role, $verificationToken);
 
     if ($insertQuery->execute()) {
-        //Send verification email
         $verificationLink = "http://localhost/fit-brawl/public/php/verify-email.php?token=" . $verificationToken;
 
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com'; // your SMTP host
+            $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'fitxbrawl.gym@gmail.com'; // your Gmail
-            $mail->Password = 'oxck mxfc cpoj wpra';   // use Gmail App Password
+            $mail->Username = 'fitxbrawl.gym@gmail.com';
+            $mail->Password = 'oxck mxfc cpoj wpra'; // TODO: Use environment variable for security
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
 
@@ -105,10 +109,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     }
 }
 
+
 function showError($error) {
     return !empty($error) ? "<p class='error-message'>$error</p>" : "";
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
