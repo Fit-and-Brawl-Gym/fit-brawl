@@ -1,42 +1,38 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
 
-// Redirect non-logged-in users to login page
-if(!isset($_SESSION['email'])) {
-    header("Location: login.php");
+// Check if user came from verification process
+if(!isset($_SESSION['reset_email'])) {
+    header("Location: forgot-password.php");
     exit;
 }
-
-require_once '../../includes/db_connect.php';
 
 $error = '';
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $current_password = $_POST['current_password'] ?? '';
-    $new_password = $_POST['new_password'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
-
-    // Fetch user
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email=?");
-    $stmt->bind_param("s", $_SESSION['email']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-
-    if ($user && password_verify($current_password, $user['password'])) {
-        if ($new_password === $confirm_password) {
-            $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
-            $update = $conn->prepare("UPDATE users SET password=? WHERE email=?");
-            $update->bind_param("ss", $hashedPassword, $_SESSION['email']);
-            $update->execute();
-
-            $success = "Password updated successfully.";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $new_password = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
+    
+    if ($new_password === $confirm_password) {
+        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+        $email = $_SESSION['reset_email'];
+        
+        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+        $stmt->bind_param("ss", $hashed_password, $email);
+        
+        if ($stmt->execute()) {
+            // Clear reset email session
+            unset($_SESSION['reset_email']);
+            $_SESSION['password_changed'] = true;
+            header("Location: login.php");
+            exit;
         } else {
-            $error = "New passwords do not match.";
+            $error = "Error updating password. Please try again.";
         }
     } else {
-        $error = "Current password is incorrect.";
+        $error = "Passwords do not match!";
     }
 }
 ?>
@@ -116,14 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" class="change-password-form">
                 <h3>A LITTLE STEP BACK BEFORE THE BEST VERSION OF YOU!</h3>
-
-                <!-- Current password -->
-                <div class="input-group password-group">
-                    <div class="icon-left">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <input type="password" name="current_password" placeholder="Current Password" required>
-                </div>
 
                 <!-- New password -->
                 <div class="input-group password-group">

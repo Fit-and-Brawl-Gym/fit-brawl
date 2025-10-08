@@ -12,6 +12,8 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
     avatar VARCHAR(255) DEFAULT 'default-avatar.png'
+    otp VARCHAR(6) DEFAULT NULL,
+    otp_expiry DATETIME DEFAULT NULL; 
 );
 
 -- =====================
@@ -77,3 +79,5 @@ CREATE TABLE feedback (
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+
