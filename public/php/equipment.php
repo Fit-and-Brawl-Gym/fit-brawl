@@ -33,7 +33,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl - Equipment</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/equipment.css">
+    <link rel="stylesheet" href="../css/pages/equipment.css?=v1">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
@@ -83,13 +83,20 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
             <?php endif; ?>
         </div>
     </header>
+        <div class="bg"></div>
+ <!-- HERO -->
+    <section class="equipment-hero">
+        <div style="max-width:1200px;margin:0 auto;padding:6px 24px">
+        <h1 class="title"><strong style="color:var(--color-accent)">PLAN</strong> YOUR WORKOUT</h1>
+        <h1 class="title">WITH <strong style="color:var(--color-accent)">CONFIDENCE</strong></h1>
+        <p class="subtitle"> Choose the <strong style="color:var(--color-accent)">EQUIPMENT</strong> best for you!</p>
+        </div>
+    </section>
 
     <!--Main-->
     <main>
-        <h1>Gym Equipment</h1>
-        <div id="equipment-container">
-            <!-- Equipment list will be loaded here -->
-        </div>
+        <div class="bg"></div>
+        
     </main>
 
     <!--Footer-->
@@ -130,20 +137,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </footer>
 
-    <script>
-        // Load equipment data
-        fetch('equipment.php?api=true')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('equipment-container');
-                container.innerHTML = data.map(item => `
-                    <div class="equipment-card">
-                        <h3>${item.name}</h3>
-                        <p>Status: <span class="status-${item.equipment_status.toLowerCase().replace(/\s+/g, '-')}">${item.equipment_status}</span></p>
-                    </div>
-                `).join('');
-            })
-            .catch(error => console.error('Error loading equipment:', error));
-    </script>
+    <script src="../js/equipment.js"></script>
 </body>
 </html>
