@@ -47,8 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = 'Invalid email or password';
         }
-    } else {
-        $error = "Incorrect email or password.";
     }
 }
 ?>
