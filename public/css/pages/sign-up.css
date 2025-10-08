@@ -80,7 +80,7 @@
 }
 .success-message {
     color: #2ecc71;
-    background-color: #e8f8f2;
+    background-color: transparent;
     border: 1px solid #2ecc71;
     padding: 10px;
     border-radius: 6px;
@@ -89,8 +89,8 @@
     text-align: center;
 }
 .error-message {
-    color: #e74c3c;
-    background-color: #fdecea;
+    background-color: transparent;
+    color: #ff4d4d;
     border: 1px solid #e74c3c;
     padding: 10px;
     border-radius: 6px;
@@ -233,16 +233,6 @@
     color: #d5ba2b;
 }
 
-.error-message {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 12px 15px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    text-align: center;
-    font-weight: bold;
-    font-family: 'Poppins', sans-serif;
-}
 @media (max-width: 1024px) {
     .signup-hero {
         flex-direction: column;

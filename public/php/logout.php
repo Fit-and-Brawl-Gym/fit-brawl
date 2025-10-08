@@ -1,12 +1,20 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
+
+$user_id = $_SESSION['user_id'] ?? null;
+
+if ($user_id) {
+    $stmt = $conn->prepare("DELETE FROM remember_password WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+}
+
+
 session_unset();
 session_destroy();
 
-// Delete remember-me cookies if any
-setcookie('email', '', time() - 3600, "/");
-setcookie('password', '', time() - 3600, "/");
-
-header("Location: index.php");
+// Redirect to login
+header("Location: login.php");
 exit;
 ?>

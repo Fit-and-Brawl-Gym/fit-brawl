@@ -1,20 +1,44 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
 
-// Redirect non-logged-in users to regular homepage
+
+if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
+    $token = $_SESSION['remember_password'];
+
+    $result = $conn->query("SELECT * FROM remember_password");
+    while ($row = $result->fetch_assoc()) {
+        if (password_verify($token, $row['token_hash'])) {
+            $stmtUser = $conn->prepare("SELECT * FROM users WHERE id = ?");
+            $stmtUser->bind_param("i", $row['user_id']);
+            $stmtUser->execute();
+            $user = $stmtUser->get_result()->fetch_assoc();
+
+            if ($user) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['name'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['avatar'] = $user['avatar'];
+            }
+            break;
+        }
+    }
+}
+
+// Redirect non-logged-in users
 if(!isset($_SESSION['email'])) {
     header("Location: index.php");
     exit;
 }
 
-// Check if user has active membership
+// Check active membership
 $hasActiveMembership = false;
 if(isset($_SESSION['user_id'])) {
-    require_once '../../includes/db_connect.php';
     $user_id = $_SESSION['user_id'];
     $membership_query = "SELECT id FROM user_memberships
-                        WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE()
-                        LIMIT 1";
+                         WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE()
+                         LIMIT 1";
     $stmt = $conn->prepare($membership_query);
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -22,15 +46,18 @@ if(isset($_SESSION['user_id'])) {
     $hasActiveMembership = $result->num_rows > 0;
 }
 
-// Set membership link based on subscription status
+
+// Set membership link
 $membershipLink = $hasActiveMembership ? 'reservations.php' : 'membership.php';
 
+// Set avatar source
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
