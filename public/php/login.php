@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 exit;
             } else {
-                header("Location: loggedin-index.php");
+                $error = 'Invalid email or password';
             }
         } else {
             $error = 'Invalid email or password';
