@@ -8,6 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
 
+    // Prepare query
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -15,12 +16,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        if (password_verify($password, $user['password'])) {
+
+        //Check if account is verified
+        if ($user['is_verified'] == 0) {
+            $error = "⚠️ Please verify your email before logging in.";
+        }
+        //Then verify password
+        elseif (password_verify($password, $user['password'])) {
             $_SESSION['name'] = $user['username'];
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
-             $_SESSION['avatar'] = $user['avatar']; 
-            // Remember Me
+            $_SESSION['avatar'] = $user['avatar'];
+
+            //Remember Me option
             if (isset($_POST['remember'])) {
                 setcookie('email', $email, time() + (86400 * 30), "/");
                 setcookie('password', $user['password'], time() + (86400 * 30), "/");
@@ -29,19 +37,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 setcookie('password', '', time() - 3600, "/");
             }
 
-            // Redirect based on role
+            //Redirect by role
             if ($user['role'] === 'admin') {
                 header("Location: admin_page.php");
             } else {
                 header("Location: index.php");
             }
             exit;
+        } else {
+            $error = "Incorrect email or password.";
         }
+    } else {
+        $error = "Incorrect email or password.";
     }
-
-    $error = "Incorrect email or password.";
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
