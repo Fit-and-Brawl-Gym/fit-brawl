@@ -19,6 +19,20 @@ CREATE TABLE users (
 ALTER TABLE users 
 ADD COLUMN is_verified TINYINT(1) DEFAULT 0 AFTER avatar,
 ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL AFTER is_verified;
+-- =====================
+-- REMEMBER PASSWORD TOKENS TABLE
+-- =====================
+CREATE TABLE remember_password (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+); 
 
 -- =====================
 -- MEMBERSHIPS TABLE

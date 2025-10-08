@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    // Prepare query
+    // Fetch user
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -17,33 +17,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
 
-        //Check if account is verified
         if ($user['is_verified'] == 0) {
-            $error = "⚠️ Please verify your email before logging in.";
+            $error = "Please verify your email before logging in.";
         }
-        //Then verify password
         elseif (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
             $_SESSION['name'] = $user['username'];
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['avatar'] = $user['avatar'];
 
-            //emember Me option
+            // Remember Me
             if (isset($_POST['remember'])) {
-                setcookie('email', $email, time() + (86400 * 30), "/");
-                setcookie('password', $user['password'], time() + (86400 * 30), "/");
-            } else {
-                setcookie('email', '', time() - 3600, "/");
-                setcookie('password', '', time() - 3600, "/");
+                $token = bin2hex(random_bytes(32));
+                $token_hash = password_hash($token, PASSWORD_DEFAULT);
+
+                $stmtToken = $conn->prepare("INSERT INTO remember_password (user_id, token_hash) VALUES (?, ?)");
+                if (!$stmtToken) die("Prepare failed: " . $conn->error);
+
+                $stmtToken->bind_param("is", $user['id'], $token_hash);
+                if (!$stmtToken->execute()) die("Insert token failed: " . $stmtToken->error);
+
+                $_SESSION['remember_password'] = $token;
             }
 
-            //Redirect by role
             if ($user['role'] === 'admin') {
                 header("Location: admin_page.php");
             } else {
                 header("Location: loggedin-index.php");
             }
             exit;
+
         } else {
             $error = "Incorrect email or password.";
         }
@@ -52,6 +56,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
+
+
 
 
 <!DOCTYPE html>
@@ -143,13 +149,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <div class="icon-left">
                             <i class="fas fa-key"></i>
                         </div>
-                        <input type="password" name="password" id="password" placeholder="Password"
-                        value="<?= htmlspecialchars($_COOKIE['password'] ?? '') ?>" required>
+                        <input type="password" name="password" id="password" placeholder="Password" required>
                     </div>
 
                     <div class="form-options">
                         <label class="checkbox-container">
-                            <input type="checkbox" id="remember">
+                            <input type="checkbox" id="remember" name="remember">
                             <span class="checkmark"></span>
                             Remember me
                         </label>
