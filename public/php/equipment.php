@@ -6,7 +6,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
     include '../../includes/db_connect.php';
 
-    $sql = "SELECT id, name, equipment_status FROM equipment";
+    $sql = "SELECT id, name, equipment FROM equipment";
     $result = $conn->query($sql);
 
     $equipment = [];
@@ -137,6 +137,21 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </footer>
 
+    <script>
+        // Load equipment data
+        fetch('equipment.php?api=true')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('equipment-container');
+                container.innerHTML = data.map(item => `
+                    <div class="equipment-card">
+                        <h3>${item.name}</h3>
+                        <p>Status: <span class="status-${item.equipment.toLowerCase().replace(/\s+/g, '-')}">${item.equipment}</span></p>
+                    </div>
+                `).join('');
+            })
+            .catch(error => console.error('Error loading equipment:', error));
+    </script>
     <script src="../js/equipment.js"></script>
 </body>
 </html>
