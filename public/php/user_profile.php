@@ -9,6 +9,9 @@ if(!isset($_SESSION['email'])) {
 
 require_once '../../includes/db_connect.php';
 
+// Check membership status for header
+require_once '../../includes/membership_check.php';
+
 // Fetch user data
 $email = $_SESSION['email'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -61,7 +64,7 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>

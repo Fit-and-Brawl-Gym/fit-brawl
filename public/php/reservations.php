@@ -6,6 +6,9 @@ require_once '../../includes/db_connect.php';
 $isLoggedIn = isset($_SESSION['email']);
 $userName = $isLoggedIn && isset($_SESSION['username']) ? $_SESSION['username'] : '';
 
+// Check membership status for header
+require_once '../../includes/membership_check.php';
+
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
@@ -71,7 +74,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php" class="active">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>" class="active">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
