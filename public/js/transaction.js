@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Elements
     const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
     const receiptModal = document.getElementById('receiptModal');
@@ -19,40 +19,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Billing toggle functionality
     billingBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const billing = this.getAttribute('data-billing');
             const urlParams = new URLSearchParams(window.location.search);
             const plan = urlParams.get('plan') || 'gladiator';
 
-            window.location.href = `transaction.php?plan=${plan}&billing=${billing}`;
         });
     });
 
     // Billing toggle functionality with radio buttons
     const billingRadios = document.querySelectorAll('input[name="billing"]');
     billingRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
+        radio.addEventListener('change', function () {
             if (this.checked) {
                 const billing = this.value;
-                const urlParams = new URLSearchParams(window.location.search);
-                const plan = urlParams.get('plan') || 'gladiator';
-
-                window.location.href = `transaction.php?plan=${plan}&billing=${billing}`;
+                // Update price display here
+                // Example:
+                // document.querySelector('.plan-price .price-amount').textContent = billing === 'monthly' ? monthlyPrice : yearlyPrice;
             }
         });
     });
 
     // Variant toggle functionality (for Resolution plan)
-    const variantRadios = document.querySelectorAll('input[name="variant"]');
-    variantRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.checked) {
-                const variant = this.value;
-                const urlParams = new URLSearchParams(window.location.search);
-                const billing = urlParams.get('billing') || 'monthly';
-
-                window.location.href = `transaction.php?plan=resolution&variant=${variant}&billing=${billing}`;
-            }
+    document.querySelectorAll('input[name="variant"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            updatePlanPrice();
         });
     });
 
@@ -87,24 +78,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // File upload area click
-    fileUploadArea.addEventListener('click', function() {
+    fileUploadArea.addEventListener('click', function () {
         receiptFileInput.click();
     });
 
     // Drag and drop functionality
-    fileUploadArea.addEventListener('dragover', function(e) {
+    fileUploadArea.addEventListener('dragover', function (e) {
         e.preventDefault();
         this.style.borderColor = 'var(--color-accent)';
         this.style.background = 'rgba(213, 186, 43, 0.1)';
     });
 
-    fileUploadArea.addEventListener('dragleave', function(e) {
+    fileUploadArea.addEventListener('dragleave', function (e) {
         e.preventDefault();
         this.style.borderColor = 'rgba(213, 186, 43, 0.5)';
         this.style.background = 'rgba(255, 255, 255, 0.05)';
     });
 
-    fileUploadArea.addEventListener('drop', function(e) {
+    fileUploadArea.addEventListener('drop', function (e) {
         e.preventDefault();
         this.style.borderColor = 'rgba(213, 186, 43, 0.5)';
         this.style.background = 'rgba(255, 255, 255, 0.05)';
@@ -116,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // File input change
-    receiptFileInput.addEventListener('change', function(e) {
+    receiptFileInput.addEventListener('change', function (e) {
         if (this.files.length > 0) {
             handleFileSelect(this.files[0]);
         }
@@ -143,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show preview for images
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 previewImage.src = e.target.result;
                 previewImage.style.display = 'block';
             };
@@ -158,13 +149,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Remove file
-    removeFileBtn.addEventListener('click', function(e) {
+    removeFileBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         resetFileUpload();
     });
 
     // Submit receipt
-    submitReceiptBtn.addEventListener('click', function() {
+    submitReceiptBtn.addEventListener('click', function () {
         if (!selectedFile) {
             alert('Please select a file first.');
             return;
@@ -222,9 +213,71 @@ document.addEventListener('DOMContentLoaded', function() {
     receiptModalOverlay.addEventListener('click', closeModal);
 
     // ESC key to close modal
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && receiptModal.classList.contains('active')) {
             closeModal();
         }
     });
+});
+
+document.querySelectorAll('input[name="billing"]').forEach(radio => {
+    radio.addEventListener('change', function (e) {
+        // Update displayed prices and info here
+        // Do NOT reload the page or submit the form
+        // Example: update price display
+        // document.querySelector('.plan-price .price-amount').textContent = ...;
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[name="billing"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
+            const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
+            if (this.value === 'monthly') {
+                priceAmount.textContent = monthlyPrice;
+                pricePeriod.textContent = '/MONTH';
+            } else {
+                priceAmount.textContent = yearlyPrice;
+                pricePeriod.textContent = '/YEAR';
+            }
+        });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Billing radio change
+    document.querySelectorAll('input[name="billing"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            updatePlanPrice();
+        });
+    });
+
+    // Variant radio change (for Resolution plan)
+    document.querySelectorAll('input[name="variant"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            updatePlanPrice();
+        });
+    });
+
+    function updatePlanPrice() {
+        const billing = document.querySelector('input[name="billing"]:checked').value;
+        const variantRadio = document.querySelector('input[name="variant"]:checked');
+        const variant = variantRadio ? variantRadio.value : null;
+        const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
+        const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
+
+        // If Resolution plan
+        if (variant && resolutionPrices[variant]) {
+            priceAmount.textContent = resolutionPrices[variant][billing];
+            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
+        } else {
+            // For other plans, use global monthlyPrice/yearlyPrice
+            priceAmount.textContent = billing === 'yearly' ? yearlyPrice : monthlyPrice;
+            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
+        }
+    }
+
+    // Initial load
+    updatePlanPrice();
 });
