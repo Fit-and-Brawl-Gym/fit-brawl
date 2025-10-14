@@ -40,6 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mkdir($targetDir, 0777, true);
         }
 
+        // Check file size (2MB limit)
+        $maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        if ($_FILES['avatar']['size'] > $maxSize) {
+            $_SESSION['error'] = "File size exceeds 2MB limit. Please choose a smaller image.";
+            header("Location: user_profile.php");
+            exit;
+        }
+
         $fileExtension = strtolower(pathinfo($_FILES["avatar"]["name"], PATHINFO_EXTENSION));
         $newFileName = uniqid() . '.' . $fileExtension;
         $targetFile = $targetDir . $newFileName;
@@ -49,7 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (in_array($fileExtension, $allowedTypes)) {
             if (move_uploaded_file($_FILES["avatar"]["tmp_name"], $targetFile)) {
                 $avatar = $newFileName;
+            } else {
+                $_SESSION['error'] = "Failed to upload avatar image.";
+                header("Location: user_profile.php");
+                exit;
             }
+        } else {
+            $_SESSION['error'] = "Invalid file type. Only JPG, JPEG, PNG, and GIF are allowed.";
+            header("Location: user_profile.php");
+            exit;
         }
     }
 
