@@ -161,6 +161,7 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
                             </div>
                             <input type="file" name="avatar" id="avatarInput" accept="image/*">
                         </div>
+                        <small class="file-size-hint">Maximum file size: 2MB</small>
                         <button type="button" class="btn-remove-avatar <?= $hasCustomAvatar ? 'show' : '' ?>" id="removeAvatarBtn">
                             <i class="fas fa-trash"></i> Remove Photo
                         </button>
