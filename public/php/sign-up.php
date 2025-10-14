@@ -1,7 +1,8 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
-
+include_once __DIR__ . '/../../includes/env_loader.php';
+loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 require '../../vendor/autoload.php'; 
@@ -72,14 +73,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = getenv('EMAIL_HOST');
             $mail->SMTPAuth = true;
-            $mail->Username = 'fitxbrawl.gym@gmail.com';
-            $mail->Password = 'oxck mxfc cpoj wpra'; // TODO: Use environment variable for security
+            $mail->Username = getenv('EMAIL_USER');
+            $mail->Password = getenv('EMAIL_PASS');
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
+            $mail->Port = getenv('EMAIL_PORT');
 
-            $mail->setFrom('fitxbrawl.gym@gmail.com', 'Fit & Brawl Gym');
+            $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
             $mail->addAddress($email, $name);
             $mail->isHTML(true);
             $mail->Subject = 'Verify Your Email - Fit & Brawl Gym';
