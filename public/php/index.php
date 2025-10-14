@@ -24,11 +24,17 @@ if(isset($_SESSION['email'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
 </head>
 <body>
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
@@ -77,6 +83,53 @@ if(isset($_SESSION['email'])) {
                 </h1>
                 <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
                 <a href="membership.php" class="hero-btn">Be a Member</a>
+            </div>
+        </section>
+
+        <!-- Gym Overview Section -->
+        <section class="gym-overview">
+            <div class="overview-container">
+                <h2 class="overview-title">
+                    <span class="title-with-line">Our Story</span>
+                </h2>
+                <h3 class="overview-subtitle">
+                    FORGED BY A <span class="highlight">FIGHTER.</span> BUILT FOR <span class="highlight">YOU.</span>
+                </h3>
+                <p class="overview-description">
+                    Our story begins with our CEO, an MMA player and dedicated advocate for holistic health. They founded Fit and Brawl not just as a gym, but as a commitment to a training philosophy: that the discipline and intensity of combat sports are the fastest, most effective path to a sustainably healthy body. We teach you how to fight, and in the process, transform your life.
+                </p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <img src="../../images/fm-icon.svg" alt="Fighter's Mindset">
+                        </div>
+                        <h4 class="feature-title">THE FIGHTER'S MINDSET</h4>
+                        <p class="feature-text">
+                            We teach the discipline and mental toughness forged by our MMA-trained founder. Apply this winning attitude to every challenge in your life.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <img src="../../images/wbw-icon.svg" alt="Whole-body Wellness">
+                        </div>
+                        <h4 class="feature-title">WHOLE-BODY WELLNESS</h4>
+                        <p class="feature-text">
+                            Our training regimen is designed by an athlete focused on sustainable health. Get strength and conditioning that lasts, not just show muscles.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <img src="../../images/act-icon.svg" alt="Authentic Combat Training">
+                        </div>
+                        <h4 class="feature-title">AUTHENTIC COMBAT TRAINING</h4>
+                        <p class="feature-text">
+                            Perfect your strike, kick, and clinch. We offer high-quality, authentic Boxing, MMA, and Muay Thai instruction for all levels, from beginner to pro.
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
