@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
+include_once __DIR__ . '/env_loader.php';
+loadEnv(__DIR__ . '/env');
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -10,15 +12,15 @@ function sendOTPEmail($email, $otp) {
     try {
         // Server settings
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = getenv('EMAIL_HOST');
         $mail->SMTPAuth = true;
-        $mail->Username = 'fitxbrawl.gym@gmail.com';
-        $mail->Password = 'upqm ussn guky lfnj';
+        $mail->Username = getenv('EMAIL_USER');
+        $mail->Password = getenv('EMAIL_PASS');
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+        $mail->Port = getenv('EMAIL_PORT');
 
         // Recipients
-        $mail->setFrom('fitxbrawl.gym@gmail.com', 'Fit X Brawl'); // Use same email as Username
+        $mail->setFrom(getenv('EMAIL_USER'), 'Fit X Brawl'); // Use same email as Username
         $mail->addAddress($email);
 
         // Content
