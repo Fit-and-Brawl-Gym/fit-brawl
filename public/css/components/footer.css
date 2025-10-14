@@ -6,6 +6,7 @@ footer {
     position: relative;
     overflow: hidden;
     font-family: "Poppins", sans-serif;
+    z-index: 1; /* ensure footer sits below content with higher z-index */
 }
 
 footer::before {
