@@ -14,6 +14,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
     <link rel="stylesheet" href="../../css/pages/homepage.css">
     <link rel="stylesheet" href="../../css/components/footer.css">
     <link rel="stylesheet" href="../../css/components/header.css">
+    <link rel="shortcut icon" href="../../../images/fnb-icon.png" type="image/x-icon">
 </head>
 <body>
     <header>
