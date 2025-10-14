@@ -317,6 +317,14 @@ body {
     height: 100%;
 }
 
+.file-size-hint {
+    display: block;
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    font-style: italic;
+}
+
 .btn-remove-avatar {
     background: transparent;
     color: #ff4c4c;
