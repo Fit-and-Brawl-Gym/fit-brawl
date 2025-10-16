@@ -2,7 +2,7 @@
 session_start();
 
 // Redirect non-logged-in users to login page
-if(!isset($_SESSION['email'])) {
+if (!isset($_SESSION['email'])) {
     header("Location: login.php");
     exit;
 }
@@ -11,6 +11,16 @@ require_once '../../includes/db_connect.php';
 
 // Check membership status for header
 require_once '../../includes/membership_check.php';
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
 
 // Fetch user data
 $email = $_SESSION['email'];
@@ -35,6 +45,7 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,16 +54,30 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
     <link rel="stylesheet" href="../css/pages/user-profile.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap"
+        rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
+    <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
 </head>
+
 <body>
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
@@ -72,8 +97,7 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
                 </ul>
             </nav>
             <div class="account-dropdown">
-                <img src="<?= $avatarSrc ?>"
-                     alt="Account" class="account-icon">
+                <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon">
                 <div class="dropdown-menu">
                     <a href="user_profile.php">Profile</a>
                     <a href="logout.php">Logout</a>
@@ -87,8 +111,8 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
         <!-- Profile Header -->
         <section class="profile-header">
             <div class="profile-avatar-container">
-                <img src="<?= $avatarSrc ?>"
-                     alt="Profile Picture" class="profile-avatar <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
+                <img src="<?= $avatarSrc ?>" alt="Profile Picture"
+                    class="profile-avatar <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
             </div>
             <div class="profile-info">
                 <h1><?= htmlspecialchars($user['username']) ?></h1>
@@ -145,7 +169,8 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
 
         <!-- Edit Profile Section (Initially Hidden) -->
         <section class="edit-profile-section" id="editProfileSection">
-            <h3 style="color: #d5ba2b; font-family: 'zuume-rough-bold', sans-serif; font-size: 2rem; margin-bottom: 30px; text-transform: uppercase;">
+            <h3
+                style="color: #d5ba2b; font-family: 'zuume-rough-bold', sans-serif; font-size: 2rem; margin-bottom: 30px; text-transform: uppercase;">
                 Edit Profile
             </h3>
             <form method="POST" action="update_profile.php" enctype="multipart/form-data" class="edit-profile-form">
@@ -153,15 +178,17 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
                 <div class="form-group full-width">
                     <label>Profile Picture</label>
                     <div class="avatar-upload">
-                        <img src="<?= $avatarSrc ?>"
-                             alt="Avatar Preview" class="avatar-preview <?= !$hasCustomAvatar ? 'default-icon' : '' ?>" id="avatarPreview">
+                        <img src="<?= $avatarSrc ?>" alt="Avatar Preview"
+                            class="avatar-preview <?= !$hasCustomAvatar ? 'default-icon' : '' ?>" id="avatarPreview">
                         <div class="upload-btn-wrapper">
                             <div class="upload-btn">
                                 <i class="fas fa-camera"></i> Choose Photo
                             </div>
                             <input type="file" name="avatar" id="avatarInput" accept="image/*">
                         </div>
-                        <button type="button" class="btn-remove-avatar <?= $hasCustomAvatar ? 'show' : '' ?>" id="removeAvatarBtn">
+                        <small class="file-size-hint">Maximum file size: 2MB</small>
+                        <button type="button" class="btn-remove-avatar <?= $hasCustomAvatar ? 'show' : '' ?>"
+                            id="removeAvatarBtn">
                             <i class="fas fa-trash"></i> Remove Photo
                         </button>
                         <input type="hidden" name="remove_avatar" id="removeAvatarFlag" value="0">
@@ -171,29 +198,28 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
                 <!-- Username -->
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" name="username" id="username"
-                           value="<?= htmlspecialchars($user['username']) ?>" required>
+                    <input type="text" name="username" id="username" value="<?= htmlspecialchars($user['username']) ?>"
+                        required>
                 </div>
 
                 <!-- Email -->
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" name="email" id="email"
-                           value="<?= htmlspecialchars($user['email']) ?>" required>
+                    <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>"
+                        required>
                 </div>
 
                 <!-- New Password -->
                 <div class="form-group">
                     <label for="new_password">New Password (Leave blank to keep current)</label>
-                    <input type="password" name="new_password" id="new_password"
-                           placeholder="Enter new password">
+                    <input type="password" name="new_password" id="new_password" placeholder="Enter new password">
                 </div>
 
                 <!-- Confirm Password -->
                 <div class="form-group">
                     <label for="confirm_password">Confirm New Password</label>
                     <input type="password" name="confirm_password" id="confirm_password"
-                           placeholder="Confirm new password">
+                        placeholder="Confirm new password">
                 </div>
 
                 <!-- Form Actions -->
@@ -250,4 +276,5 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
     <script src="../js/header-dropdown.js"></script>
     <script src="../js/user-profile.js"></script>
 </body>
+
 </html>

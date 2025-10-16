@@ -16,10 +16,10 @@ $success = '';
 if(!isset($_SESSION['otp_sent'])) {
     $otp = sprintf("%06d", random_int(0, 999999));
     $expiry = date('Y-m-d H:i:s', strtotime('5 minutes'));
-    
+
     $stmt = $conn->prepare("UPDATE users SET otp = ?, otp_expiry = ? WHERE email = ?");
     $stmt->bind_param("sss", $otp, $expiry, $_SESSION['reset_email']);
-    
+
     if($stmt->execute() && sendOTPEmail($_SESSION['reset_email'], $otp)) {
         $_SESSION['otp_sent'] = true;
     } else {
@@ -31,20 +31,20 @@ if(!isset($_SESSION['otp_sent'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $entered_otp = $_POST['otp'];
     $email = $_SESSION['reset_email'];
-    
+
     $stmt = $conn->prepare("SELECT otp, otp_expiry FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
-    
+
     if($user && $user['otp'] == $entered_otp) {
         if(strtotime($user['otp_expiry']) >= time()) {
             // Clear OTP and session storage
             $stmt = $conn->prepare("UPDATE users SET otp = NULL, otp_expiry = NULL WHERE email = ?");
             $stmt->bind_param("s", $email);
             $stmt->execute();
-            
+
             echo "<script>sessionStorage.removeItem('otpExpiryTime');</script>";
             header("Location: change-password.php");
             exit;
@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="../css/pages/verification.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -136,16 +136,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <form class="verification-form" method="POST">
                     <h3>CHECK YOUR EMAIL FOR THE <br>VERIFICATION CODE</h3>
-                    
+
                     <div class="verification-input-container">
                         <div class="otp-input-wrapper">
                             <i class="fas fa-key"></i>
-                            <input type="text" 
-                                name="otp" 
-                                id="otp" 
-                                maxlength="6" 
-                                placeholder="000000" 
-                                required 
+                            <input type="text"
+                                name="otp"
+                                id="otp"
+                                maxlength="6"
+                                placeholder="000000"
+                                required
                                 pattern="\d{6}">
                         </div>
                         <button type="button" id="resend-otp" class="resend-btn">
