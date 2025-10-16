@@ -140,14 +140,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
-<<<<<<< Updated upstream
     <script src="../js/hamburger-menu.js"></script>
-=======
->>>>>>> Stashed changes
-    <?php if(SessionManager::isLoggedIn()): ?>
-    <link rel="stylesheet" href="../css/components/session-warning.css">
-    <script src="../js/session-timeout.js"></script>
-    <?php endif; ?>
     <?php if(SessionManager::isLoggedIn()): ?>
     <link rel="stylesheet" href="../css/components/session-warning.css">
     <script src="../js/session-timeout.js"></script>
