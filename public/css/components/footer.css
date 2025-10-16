@@ -115,3 +115,8 @@ footer .copyright {
     z-index: 2;
 }
 
+@media (max-width: 600px) {
+    .footer-logo-title {
+      margin-left: -10px;
+    }
+}
