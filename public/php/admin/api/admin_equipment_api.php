@@ -13,72 +13,63 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-$action = $_GET['action'] ?? ($_POST['action'] ?? 'fetch');
+$method = $_SERVER['REQUEST_METHOD'];
 
-try {
-    if ($action === 'fetch') {
-        $stmt = $conn->prepare("SELECT id, name, IFNULL(category, '') AS category, IFNULL(description, '') AS description, status FROM equipment ORDER BY id DESC");
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $rows = [];
-        while ($r = $res->fetch_assoc()) $rows[] = $r;
-        echo json_encode($rows);
+// CREATE or UPDATE
+if ($method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    $id = isset($input['id']) && $input['id'] !== '' ? (int) $input['id'] : null;
+    $name = trim($input['name'] ?? '');
+    $category = trim($input['category'] ?? '');
+    $status = trim($input['status'] ?? 'Available');
+    $description = trim($input['description'] ?? '');
+
+    if (empty($name) || empty($category)) {
+        echo json_encode(['success' => false, 'message' => 'Name and category are required']);
         exit;
     }
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        echo json_encode(['success' => false, 'message' => 'Invalid method']);
-        exit;
+    if ($id) {
+        // UPDATE
+        $stmt = $conn->prepare("UPDATE equipment SET name = ?, category = ?, status = ?, description = ? WHERE id = ?");
+        $stmt->bind_param('ssssi', $name, $category, $status, $description, $id);
+    } else {
+        // CREATE
+        $stmt = $conn->prepare("INSERT INTO equipment (name, category, status, description) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param('ssss', $name, $category, $status, $description);
     }
 
-    if ($action === 'add') {
-        $name = trim($_POST['name'] ?? '');
-        $status = trim($_POST['status'] ?? 'Available');
-        $category = trim($_POST['category'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-
-        if ($name === '') {
-            echo json_encode(['success' => false, 'message' => 'Name required']);
-            exit;
-        }
-
-        $stmt = $conn->prepare("INSERT INTO equipment (name, category, description, status) VALUES (?,?,?,?)");
-        $stmt->bind_param('ssss', $name, $category, $description, $status);
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'id' => $conn->insert_id, 'name' => $name, 'category' => $category, 'description' => $description, 'status' => $status]);
-        } else {
-            echo json_encode(['success' => false, 'message' => $conn->error]);
-        }
-        exit;
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Equipment saved successfully']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
     }
-
-    if ($action === 'update') {
-        $id = intval($_POST['id'] ?? 0);
-        $status = trim($_POST['status'] ?? '');
-        if ($id <= 0 || $status === '') {
-            echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
-            exit;
-        }
-        $stmt = $conn->prepare("UPDATE equipment SET status = ? WHERE id = ?");
-        $stmt->bind_param('si', $status, $id);
-        if ($stmt->execute()) echo json_encode(['success' => true]); else echo json_encode(['success' => false, 'message' => $conn->error]);
-        exit;
-    }
-
-    if ($action === 'delete') {
-        $id = intval($_POST['id'] ?? 0);
-        if ($id <= 0) { echo json_encode(['success' => false, 'message' => 'Invalid id']); exit; }
-        $stmt = $conn->prepare("DELETE FROM equipment WHERE id = ?");
-        $stmt->bind_param('i', $id);
-        if ($stmt->execute()) echo json_encode(['success' => true]); else echo json_encode(['success' => false, 'message' => $conn->error]);
-        exit;
-    }
-
-    echo json_encode(['success' => false, 'message' => 'Unknown action']);
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    $stmt->close();
+    exit;
 }
 
-?>
+// DELETE
+if ($method === 'DELETE') {
+    $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
+    if ($id <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("DELETE FROM equipment WHERE id = ?");
+    $stmt->bind_param('i', $id);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Equipment deleted successfully']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+    }
+    $stmt->close();
+    exit;
+}
+
+http_response_code(405);
+echo json_encode(['success' => false, 'message' => 'Method not allowed']);
 
