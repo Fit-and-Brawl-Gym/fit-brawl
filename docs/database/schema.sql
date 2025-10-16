@@ -48,7 +48,7 @@ CREATE TABLE memberships (
 -- USER MEMBERSHIPS TABLE (COMBINED)
 -- Merges subscription requests and active membership records
 -- =====================
-CREATE TABLE subscriptions (
+CREATE TABLE user_memberships (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     plan_id INT DEFAULT NULL,

@@ -3,10 +3,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 🔔 Count unread contact messages
+// 🔔 Count unread contact messages (safe: check if table exists)
 include_once('../../../includes/db_connect.php');
-$countResult = $conn->query("SELECT COUNT(*) AS unread FROM inquiries WHERE status='Unread'");
-$unreadCount = $countResult->fetch_assoc()['unread'] ?? 0;
+$unreadCount = 0;
+if ($conn->query("SHOW TABLES LIKE 'inquiries'")->num_rows) {
+    $countResult = $conn->query("SELECT COUNT(*) AS unread FROM inquiries WHERE status='Unread'");
+    if ($countResult) {
+        $unreadCount = (int) ($countResult->fetch_assoc()['unread'] ?? 0);
+    }
+}
 
 // Optional: check if user is admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
