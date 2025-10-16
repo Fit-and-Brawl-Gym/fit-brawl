@@ -13,7 +13,9 @@ CREATE TABLE users (
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
     avatar VARCHAR(255) DEFAULT 'default-avatar.png',
     otp VARCHAR(6) DEFAULT NULL,
-    otp_expiry DATETIME DEFAULT NULL
+    otp_expiry DATETIME DEFAULT NULL,
+    otp_attempts INT DEFAULT 0,
+    last_otp_request TIMESTAMP DEFAULT NULL
 );
 -- Add verification fields (safe as separate command)
 ALTER TABLE users 
