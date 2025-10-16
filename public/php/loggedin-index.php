@@ -5,6 +5,10 @@ require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
 
 // Check if user is logged in
 if (!SessionManager::isLoggedIn()) {
@@ -87,6 +91,10 @@ if (isset($_SESSION['avatar'])) {
     <script src="../js/hamburger-menu.js"></script>
 =======
 >>>>>>> Stashed changes
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
     <?php if(SessionManager::isLoggedIn()): ?>
     <link rel="stylesheet" href="../css/components/session-warning.css">
     <script src="../js/session-timeout.js"></script>

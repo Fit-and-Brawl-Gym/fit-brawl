@@ -67,6 +67,10 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
     <link rel="stylesheet" href="../css/components/session-warning.css">
     <script src="../js/session-timeout.js"></script>
     <?php endif; ?>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
 </head>
 <body>
     <!--Header-->
