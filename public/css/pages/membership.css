@@ -393,9 +393,9 @@
 
 .signup-notice {
     position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 50%;
+    top: -2.2rem; /* place above the toggle */
+    transform: translateX(-50%);
     background: linear-gradient(90deg, var(--color-success) 0%, #20b038 100%);
     padding: var(--spacing-2) var(--spacing-4);
     border-radius: var(--radius-lg);
@@ -405,7 +405,6 @@
     opacity: 0;
     transition: var(--transition-base);
     pointer-events: none;
-    margin-right: 32px;
 }
 
 .signup-notice.show {
@@ -547,6 +546,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.8);
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
 }
 
@@ -745,6 +745,25 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
+    .membership-main {
+        background-image:none;
+    }
+
+    .membership-main::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        min-height: 70vh;
+        background: url('../../../images/subscription-bg.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 100%;
+        width: 100%;
+    }
+
     .plans-carousel {
         max-width: 1000px;
         padding: 0 5rem;
@@ -777,8 +796,52 @@
 }
 
 @media (max-width: 768px) {
+    .membership-main {
+        background-image:none;
+    }
+
+    .membership-main::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        min-height: 70vh;
+        background: url('../../../images/subscription-bg.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        height: 100%;
+        width: 100%;
+    }
+
+    .membership-hero {
+        padding: 2rem 1rem 3rem;
+    }
+
+    .hero-title .exclamation {
+        font-size: 40px;
+    }
+
     .plans-carousel {
         padding: 0 4rem;
+        min-height: 600px;
+    }
+    .plan-name {
+        font-size: 3.5rem;
+    }
+
+    .plan-card.featured-size.center  {
+        height: 600px;
+    }
+
+    .plan-card.gladiator-plan.center {
+      height: 650px;
+    }
+
+    .plan-card {
+      width: 300px;
+      height: 580px;
     }
 
     .pricing-section {
@@ -790,12 +853,16 @@
     }
 
     .plans-viewport {
-        min-height: 550px;
+        min-height: 500px;
         gap: 0.5rem;
     }
 
     .plan-card {
         width: 240px;
+    }
+
+    .select-btn {
+        padding: 0.5rem 1.2rem;
     }
 
     .plan-card.left {
@@ -818,11 +885,11 @@
     }
 
     .carousel-btn.prev {
-        left: 0.25rem;
+        left: 1rem;
     }
 
     .carousel-btn.next {
-        right: 0.25rem;
+        right: 1rem;
     }
 
     .hero-title {
@@ -850,10 +917,14 @@
     }
 
     .signup-notice {
-        position: static;
-        transform: none;
-        margin-top: var(--spacing-3);
+        position: absolute;
+        left: 50%;
+        top: -1.2rem;
+        transform: translateX(-50%);
+        margin: 0;
         justify-content: center;
+        max-width: 90%;
+        padding: 0.4rem 0.8rem;
     }
 
     .pricing-table-scroll {
@@ -864,6 +935,11 @@
     .pricing-table td {
         padding: 1rem;
         font-size: 0.9rem;
+    }
+
+    .pricing-table td:nth-child(3) {
+        font-size: 0.85rem;
+        line-height: 1.2;
     }
 
     .contact-text {
@@ -895,5 +971,13 @@
 
     .info-value.price {
         font-size: 1.6rem;
+    }
+}
+
+/* Extra small screens adjustments */
+@media (max-width: 480px) {
+    .pricing-table td:nth-child(3) {
+        font-size: 0.78rem;
+        line-height: 1.15;
     }
 }
