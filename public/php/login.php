@@ -1,6 +1,10 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+require_once '../../includes/session_manager.php';
+
+// Initialize session manager
+SessionManager::initialize();
 
 $error = '';
 
@@ -21,6 +25,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $error = "Please verify your email before logging in.";
         }
         elseif (password_verify($password, $user['password'])) {
+            // Start the session using SessionManager
+            SessionManager::startSession($email);
+
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['name'] = $user['username'];
             $_SESSION['email'] = $user['email'];
