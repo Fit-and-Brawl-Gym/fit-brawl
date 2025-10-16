@@ -2,12 +2,12 @@
 
 session_start();
 require_once '../../includes/db_connect.php';
-
+require_once '../../includes/session_manager.php';
 if ((isset($_GET['api']) && $_GET['api'] === 'true')) {
         header('Content-Type: application/json');
         include '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php'; 
 }
+
 // Initialize session manager
 SessionManager::initialize();
 
