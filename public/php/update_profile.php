@@ -9,10 +9,10 @@ if (!isset($_SESSION['email'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $newPassword = trim($_POST['new_password']);
-    $confirmPassword = trim($_POST['confirm_password']);
+    $username = test_input($_POST['username']);
+    $email = test_input($_POST['email']);
+    $newPassword = test_input($_POST['new_password']);
+    $confirmPassword = test_input($_POST['confirm_password']);
     $removeAvatar = isset($_POST['remove_avatar']) && $_POST['remove_avatar'] === '1';
 
     // Get current user
@@ -102,4 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: user_profile.php");
     exit;
 }
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>

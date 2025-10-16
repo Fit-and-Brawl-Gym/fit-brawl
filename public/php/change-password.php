@@ -12,8 +12,8 @@ $error = '';
 $success = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
+    $new_password = test_input($_POST['new_password']);
+    $confirm_password = test_input($_POST['confirm_password']);
 
     if ($new_password === $confirm_password) {
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
@@ -35,6 +35,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Passwords do not match!";
     }
 }
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

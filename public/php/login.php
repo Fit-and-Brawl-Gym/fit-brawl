@@ -9,8 +9,8 @@ SessionManager::initialize();
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $email = test_input($_POST['email'] ?? '');
+    $password = test_input($_POST['password'] ?? '');
 
     // Fetch user
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -62,6 +62,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Incorrect email or password.";
     }
 }
+
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
 
 

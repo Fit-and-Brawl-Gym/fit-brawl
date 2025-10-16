@@ -6,7 +6,7 @@ $error = '';
 $success = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+    $email = test_input(filter_var($_POST['email'], FILTER_SANITIZE_EMAIL));
 
     // Check if email exists in database
     $stmt = $conn->prepare("SELECT email FROM users WHERE email = ?");
@@ -23,6 +23,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Email address not found in our records.";
     }
 }
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
 
 <!DOCTYPE html>
