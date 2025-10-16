@@ -33,6 +33,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
 </head>
 
 <script>
@@ -74,6 +75,11 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">

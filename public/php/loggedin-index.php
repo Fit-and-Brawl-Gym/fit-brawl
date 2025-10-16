@@ -32,7 +32,7 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-// Check active membership
+// Check active membership — support current `user_memberships` schema (membership_status, request_status)
 $hasActiveMembership = false;
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -60,6 +60,41 @@ if (isset($_SESSION['user_id'])) {
         }
         $stmt->close();
     }
+    // Detect which status column exists in user_memberships
+    $statusColumn = null;
+    $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'");
+    if ($check && $check->num_rows > 0) {
+        $statusColumn = 'membership_status';
+    } else {
+        $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'status'");
+        if ($check && $check->num_rows > 0) {
+            $statusColumn = 'status';
+        } else {
+            $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'");
+            if ($check && $check->num_rows > 0) {
+                $statusColumn = 'request_status';
+            }
+        }
+    }
+
+    // Build appropriate query depending on available column
+    if ($statusColumn === 'membership_status' || $statusColumn === 'status') {
+        // membership_status/status values expected: 'active', 'expired', 'cancelled'
+        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND " . $statusColumn . " = 'active' AND end_date >= CURDATE() LIMIT 1";
+    } elseif ($statusColumn === 'request_status') {
+        // request_status values: 'pending','approved','rejected'
+        // treat approved subscriptions with a valid end_date as active
+        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND request_status = 'approved' AND end_date >= CURDATE() LIMIT 1";
+    } else {
+        // Fallback: no status columns found, check end_date only
+        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND end_date >= CURDATE() LIMIT 1";
+    }
+
+    $stmt = $conn->prepare($membership_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $hasActiveMembership = ($result && $result->num_rows > 0);
 }
 
 
@@ -93,12 +128,18 @@ if (isset($_SESSION['avatar'])) {
         rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
 </head>
 
 <body>
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
