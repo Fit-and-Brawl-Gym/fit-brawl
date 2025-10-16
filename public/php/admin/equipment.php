@@ -7,10 +7,28 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
   exit();
 }
 
-// Fetch all equipment
-$sql = "SELECT * FROM equipment ORDER BY category, name";
+// Fetch all equipment (order by columns that exist)
+$orderCols = [];
+$hasCategory = ($conn->query("SHOW COLUMNS FROM equipment LIKE 'category'")->num_rows > 0);
+$hasName = ($conn->query("SHOW COLUMNS FROM equipment LIKE 'name'")->num_rows > 0);
+if ($hasCategory) $orderCols[] = 'category';
+if ($hasName) $orderCols[] = 'name';
+if (empty($orderCols)) $orderCols[] = 'id';
+
+$sql = "SELECT * FROM equipment" . (count($orderCols) ? " ORDER BY " . implode(', ', $orderCols) : '');
 $result = $conn->query($sql);
 $equipment = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+
+// Normalize rows so template keys exist
+$expectedKeys = ['id','name','category','status','description'];
+foreach ($equipment as &$it) {
+  foreach ($expectedKeys as $k) {
+    if (!array_key_exists($k, $it)) {
+      $it[$k] = ($k === 'id') ? 0 : '';
+    }
+  }
+}
+unset($it);
 ?>
 
 <!DOCTYPE html>

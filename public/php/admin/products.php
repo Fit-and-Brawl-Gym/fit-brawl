@@ -8,10 +8,30 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-// Fetch all products
-$sql = "SELECT * FROM products ORDER BY category, name";
+// Fetch all products (build ORDER BY only using columns that exist)
+$orderCols = [];
+// check commonly used columns
+$hasCategory = ($conn->query("SHOW COLUMNS FROM products LIKE 'category'")->num_rows > 0);
+$hasName = ($conn->query("SHOW COLUMNS FROM products LIKE 'name'")->num_rows > 0);
+if ($hasCategory) $orderCols[] = 'category';
+if ($hasName) $orderCols[] = 'name';
+if (empty($orderCols)) $orderCols[] = 'id';
+
+$sql = "SELECT * FROM products" . (count($orderCols) ? " ORDER BY " . implode(', ', $orderCols) : '');
 $result = $conn->query($sql);
 $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+
+// Normalize product rows so missing columns don't break the template
+$expectedKeys = ['id','name','category','brand','price','image','stock','status'];
+foreach ($products as &$p) {
+    foreach ($expectedKeys as $k) {
+        if (!array_key_exists($k, $p)) {
+            // sensible defaults
+            $p[$k] = ($k === 'price') ? 0.00 : (($k === 'stock') ? 0 : '');
+        }
+    }
+}
+unset($p);
 ?>
 
 <!DOCTYPE html>
