@@ -108,6 +108,17 @@
     transition: 0.3s;
 }
 
+.status{
+    color: #2ecc71;
+    background-color: transparent;
+    border: 1px solid #2ecc71;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+}
 /* Responsive: Tablet */
 @media (max-width: 1024px) {
   .form-row {
