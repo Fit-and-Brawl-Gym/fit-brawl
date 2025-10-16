@@ -13,7 +13,9 @@ CREATE TABLE users (
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
     avatar VARCHAR(255) DEFAULT 'default-avatar.png',
     otp VARCHAR(6) DEFAULT NULL,
-    otp_expiry DATETIME DEFAULT NULL
+    otp_expiry DATETIME DEFAULT NULL,
+    otp_attempts INT DEFAULT 0,
+    last_otp_request TIMESTAMP DEFAULT NULL
 );
 -- Add verification fields (safe as separate command)
 ALTER TABLE users
@@ -48,7 +50,7 @@ CREATE TABLE memberships (
 -- USER MEMBERSHIPS TABLE (COMBINED)
 -- Merges subscription requests and active membership records
 -- =====================
-CREATE TABLE user_memberships (
+CREATE TABLE subscriptions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     plan_id INT DEFAULT NULL,
@@ -126,10 +128,12 @@ CREATE TABLE user_reservations (
 -- EQUIPMENT TABLE
 -- =====================
 CREATE TABLE equipment (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    status ENUM('Available', 'Out of Order', 'Maintenance') DEFAULT 'Available'
-);
+    category VARCHAR(100) NOT NULL,
+    status ENUM('Available', 'Maintenance', 'Out of Order') DEFAULT 'Available',
+    description VARCHAR(255) DEFAULT NULL
+)
 
 -- =====================
 -- PRODUCTS TABLE (Consumables Only)
@@ -150,4 +154,14 @@ CREATE TABLE feedback (
     message TEXT NOT NULL,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- =====================
+-- ADMIN ACTION LOGS TABLE
+-- =====================
+CREATE TABLE admin_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  admin_id INT NOT NULL,
+  action TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
