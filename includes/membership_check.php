@@ -6,56 +6,46 @@ if (isset($_SESSION['user_id'])) {
         require_once __DIR__ . '/db_connect.php';
     }
 
-    $user_id = $_SESSION['user_id'] ?? null;
-    if (!$user_id) {
-        return false;
+    $user_id = (int) ($_SESSION['user_id'] ?? 0);
+    if ($user_id <= 0) {
+        // no valid user id
+        $membershipLink = 'membership.php';
+        return;
     }
 
-    $query = "SELECT id FROM user_memberships WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE() LIMIT 1";
-    $stmt = $conn->prepare($query);
-    if ($stmt === false) {
-        // Debug: log the SQL error and stop gracefully
-        error_log('membership_check prepare failed: ' . $conn->error);
-        return false;
-    }
+    $membership_query = null;
 
-    $stmt->bind_param('i', $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $hasActiveMembership = ($result && $result->num_rows > 0);
-    $stmt->close();
-    $user_id = $_SESSION['user_id'];
-
-    // Detect which status column exists
-    $statusColumn = null;
-    $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'");
-    if ($check && $check->num_rows > 0) {
-        $statusColumn = 'membership_status';
-    } else {
-        $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'status'");
-        if ($check && $check->num_rows > 0) {
-            $statusColumn = 'status';
+    // Prefer combined user_memberships table
+    if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
+        // detect available status-like column
+        if ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'")->num_rows) {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND membership_status = 'active' AND end_date >= CURDATE() LIMIT 1";
+        } elseif ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'status'")->num_rows) {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE() LIMIT 1";
+        } elseif ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'")->num_rows) {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND request_status = 'approved' AND end_date >= CURDATE() LIMIT 1";
         } else {
-            $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'");
-            if ($check && $check->num_rows > 0) {
-                $statusColumn = 'request_status';
-            }
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND end_date >= CURDATE() LIMIT 1";
         }
     }
 
-    if ($statusColumn === 'membership_status' || $statusColumn === 'status') {
-        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND " . $statusColumn . " = 'active' AND end_date >= CURDATE() LIMIT 1";
-    } elseif ($statusColumn === 'request_status') {
-        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND request_status = 'approved' AND end_date >= CURDATE() LIMIT 1";
-    } else {
-        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND end_date >= CURDATE() LIMIT 1";
+    // Fallback to legacy subscriptions table
+    if (!$membership_query && $conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+        $membership_query = "SELECT id FROM subscriptions WHERE user_id = ? AND status IN ('Approved','approved') LIMIT 1";
     }
 
-    $stmt = $conn->prepare($membership_query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $hasActiveMembership = ($result && $result->num_rows > 0);
+    if ($membership_query) {
+        $stmt = $conn->prepare($membership_query);
+        if ($stmt) {
+            $stmt->bind_param('i', $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $hasActiveMembership = ($result && $result->num_rows > 0);
+            $stmt->close();
+        } else {
+            error_log('membership_check prepare failed: ' . $conn->error);
+        }
+    }
 }
 
 // Set membership link based on subscription status

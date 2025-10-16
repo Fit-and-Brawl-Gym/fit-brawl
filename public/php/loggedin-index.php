@@ -1,11 +1,11 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Check if user is logged in
 if (!SessionManager::isLoggedIn()) {
@@ -42,69 +42,51 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-// Check active membership — support current `user_memberships` schema (membership_status, request_status)
+// Check active membership — safely detect schema and query accordingly
 $hasActiveMembership = false;
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
 
-    // Try possible membership tables/queries (handles schema vs seed inconsistency)
-    $queries = [
-        "SELECT id FROM user_memberships WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE() LIMIT 1",
-        "SELECT id FROM subscriptions WHERE user_id = ? AND status = 'Approved' LIMIT 1"
-    ];
-
-    foreach ($queries as $membership_query) {
-        $stmt = $conn->prepare($membership_query);
-        if ($stmt === false) {
-            // prepare failed (table/column may not exist) — try the next query
-            continue;
-        }
-
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result && $result->num_rows > 0) {
-            $hasActiveMembership = true;
-            $stmt->close();
-            break;
-        }
-        $stmt->close();
-    }
-    // Detect which status column exists in user_memberships
-    $statusColumn = null;
-    $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'");
-    if ($check && $check->num_rows > 0) {
-        $statusColumn = 'membership_status';
-    } else {
-        $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'status'");
-        if ($check && $check->num_rows > 0) {
+    // Prefer user_memberships (combined table) when it exists
+    if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
+        // Detect which status-like column exists
+        $statusColumn = null;
+        if ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'")->num_rows) {
+            $statusColumn = 'membership_status';
+        } elseif ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'status'")->num_rows) {
             $statusColumn = 'status';
+        } elseif ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'")->num_rows) {
+            $statusColumn = 'request_status';
+        }
+
+        if ($statusColumn === 'membership_status' || $statusColumn === 'status') {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND " . $statusColumn . " = 'active' AND end_date >= CURDATE() LIMIT 1";
+        } elseif ($statusColumn === 'request_status') {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND request_status = 'approved' AND end_date >= CURDATE() LIMIT 1";
         } else {
-            $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'");
-            if ($check && $check->num_rows > 0) {
-                $statusColumn = 'request_status';
-            }
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND end_date >= CURDATE() LIMIT 1";
+        }
+
+        $stmt = $conn->prepare($membership_query);
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $hasActiveMembership = ($result && $result->num_rows > 0);
+            $stmt->close();
+        }
+
+    // Fallback: legacy subscriptions table
+    } elseif ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+        $stmt = $conn->prepare("SELECT id FROM subscriptions WHERE user_id = ? AND status IN ('Approved','approved') LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $hasActiveMembership = ($result && $result->num_rows > 0);
+            $stmt->close();
         }
     }
-
-    // Build appropriate query depending on available column
-    if ($statusColumn === 'membership_status' || $statusColumn === 'status') {
-        // membership_status/status values expected: 'active', 'expired', 'cancelled'
-        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND " . $statusColumn . " = 'active' AND end_date >= CURDATE() LIMIT 1";
-    } elseif ($statusColumn === 'request_status') {
-        // request_status values: 'pending','approved','rejected'
-        // treat approved subscriptions with a valid end_date as active
-        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND request_status = 'approved' AND end_date >= CURDATE() LIMIT 1";
-    } else {
-        // Fallback: no status columns found, check end_date only
-        $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND end_date >= CURDATE() LIMIT 1";
-    }
-
-    $stmt = $conn->prepare($membership_query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $hasActiveMembership = ($result && $result->num_rows > 0);
 }
 
 
