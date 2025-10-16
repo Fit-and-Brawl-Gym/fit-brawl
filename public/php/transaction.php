@@ -124,6 +124,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
     <script>
         const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
         const yearlyPrice = <?php echo json_encode($yearlyPrice); ?>;
@@ -143,6 +144,11 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
