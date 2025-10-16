@@ -168,3 +168,13 @@ CREATE TABLE admin_logs (
   action TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- =====================
+-- ACTIVITY LOGS TABLE
+-- =====================
+CREATE TABLE activity_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  role ENUM('member', 'trainer', 'admin') NOT NULL,
+  action VARCHAR(50) NOT NULL,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
