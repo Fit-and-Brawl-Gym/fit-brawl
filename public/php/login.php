@@ -1,6 +1,10 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+require_once '../../includes/session_manager.php';
+
+// Initialize session manager
+SessionManager::initialize();
 
 $error = '';
 
@@ -21,6 +25,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $error = "Please verify your email before logging in.";
         }
         elseif (password_verify($password, $user['password'])) {
+            // Start the session using SessionManager
+            SessionManager::startSession($email);
+
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['name'] = $user['username'];
             $_SESSION['email'] = $user['email'];
@@ -42,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             if ($user['role'] === 'admin') {
-                header("Location: admin_page.php");
+                header("Location: admin/admin.php");
             } else {
                 header("Location: loggedin-index.php");
             }
@@ -70,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="stylesheet" href="../css/pages/login.css?v=1">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
