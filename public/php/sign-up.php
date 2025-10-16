@@ -8,10 +8,10 @@ use PHPMailer\PHPMailer\Exception;
 require '../../vendor/autoload.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $password_input = $_POST['password'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
+    $name = test_input($_POST['name']);
+    $email = test_input($_POST['email']);
+    $password_input = test_input($_POST['password'] ?? '');
+    $confirm_password = test_input($_POST['confirm_password'] ?? '');
 
     //Validate inputs
     if (empty($name) || empty($email) || empty($password_input) || empty($confirm_password)) {
@@ -109,7 +109,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         exit();
     }
 }
-
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
 
 function showError($error) {
     return !empty($error) ? "<p class='error-message'>$error</p>" : "";
