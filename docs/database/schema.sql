@@ -57,7 +57,7 @@ CREATE TABLE subscriptions (
     admin_id INT DEFAULT NULL,               -- who approved or rejected
     date_submitted DATETIME DEFAULT CURRENT_TIMESTAMP,
     date_approved DATETIME DEFAULT NULL,
-    remarks VARCHAR(255) DEFAULT NULL,
+    remarks TEXT DEFAULT NULL,
     
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (plan_id) REFERENCES memberships(id) ON DELETE CASCADE,
@@ -145,4 +145,14 @@ CREATE TABLE feedback (
     message TEXT NOT NULL,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- =====================
+-- ADMIN ACTION LOGS TABLE
+-- =====================
+CREATE TABLE admin_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  admin_id INT NOT NULL,
+  action TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

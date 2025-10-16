@@ -8,8 +8,8 @@ include_once('../../../includes/init.php');
 
 // Optional: Check admin privileges
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../login.php");
-    exit();
+  header("Location: ../login.php");
+  exit();
 }
 
 // Fetch dashboard stats
@@ -17,29 +17,35 @@ $totalMembers = $totalTrainers = $pendingSubs = $pendingRes = 0;
 
 // Total Members
 $result = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role = 'member'");
-if ($result) $totalMembers = $result->fetch_assoc()['total'];
+if ($result)
+  $totalMembers = $result->fetch_assoc()['total'];
 
 // Total Trainers
 $result = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role = 'trainer'");
-if ($result) $totalTrainers = $result->fetch_assoc()['total'];
+if ($result)
+  $totalTrainers = $result->fetch_assoc()['total'];
 
 // Pending Subscriptions
 $result = $conn->query("SELECT COUNT(*) AS total FROM subscriptions WHERE status = 'Pending'");
-if ($result) $pendingSubs = $result->fetch_assoc()['total'];
+if ($result)
+  $pendingSubs = $result->fetch_assoc()['total'];
 
 // Pending Reservations (optional if you have table)
 if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
-    $result = $conn->query("SELECT COUNT(*) AS total FROM reservations WHERE status = 'Pending'");
-    if ($result) $pendingRes = $result->fetch_assoc()['total'];
+  $result = $conn->query("SELECT COUNT(*) AS total FROM reservations WHERE status = 'Pending'");
+  if ($result)
+    $pendingRes = $result->fetch_assoc()['total'];
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard | Fit & Brawl Gym</title>
   <link rel="stylesheet" href="css/admin.css">
 </head>
+
 <body>
 
   <?php include_once('admin_sidebar.php'); ?>
@@ -92,20 +98,23 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
           ");
           if ($logs && $logs->num_rows > 0):
             while ($row = $logs->fetch_assoc()):
-          ?>
+              ?>
+              <tr>
+                <td><?= htmlspecialchars($row['username'] ?? 'Unknown') ?></td>
+                <td><?= htmlspecialchars($row['action']) ?></td>
+                <td><?= htmlspecialchars($row['timestamp']) ?></td>
+              </tr>
+            <?php endwhile; else: ?>
             <tr>
-              <td><?= htmlspecialchars($row['username'] ?? 'Unknown') ?></td>
-              <td><?= htmlspecialchars($row['action']) ?></td>
-              <td><?= htmlspecialchars($row['timestamp']) ?></td>
+              <td colspan="3" align="center">No recent activity.</td>
             </tr>
-          <?php endwhile; else: ?>
-            <tr><td colspan="3" align="center">No recent activity.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
     </section>
   </main>
 
-    <?php include_once('admin_footer.php'); ?>
+  <?php include_once('admin_footer.php'); ?>
 </body>
+
 </html>
