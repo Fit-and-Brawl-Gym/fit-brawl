@@ -19,7 +19,7 @@ main {
     width: 600px;
     position: relative;
     z-index: 1;
-    margin: 100px auto;
+    margin: 100px 20px;
     background: transparent;
     border-radius: 20px;
     box-shadow: 0 0 60px 30px rgba(206, 168, 43, 0.6);
