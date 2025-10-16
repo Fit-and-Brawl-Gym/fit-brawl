@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
         echo json_encode($feedbacks);
         exit;
 }
-
+}
 // Check membership status for header
 require_once '../../includes/membership_check.php';
 
