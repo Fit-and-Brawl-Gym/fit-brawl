@@ -1,6 +1,17 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
 
 // Check if user is logged in
 $isLoggedIn = isset($_SESSION['email']);
@@ -58,6 +69,10 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+<?php endif; ?>
 </head>
 <body>
     <!--Header-->
