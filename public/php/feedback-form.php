@@ -3,6 +3,61 @@ session_start();
 
 require_once '../../includes/db_connect.php';
 
+
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(["status" => "error", "message" => "You must be logged in"]); //TODO: Show Modal instead of text
+    exit;
+}
+
+
+$status = '';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+   $user_id = $_SESSION['user_id'];
+    $username = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+    $index = $_SESSION['anonymous_index'] ?? 1;
+
+    
+
+    $sql = "SELECT avatar FROM users WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result && $row = $result->fetch_assoc()) {
+       if (empty($username )){
+        $username = "Anonymous $index";
+        $user_avatar = "../../images/profile-icon.svg";
+    } else{
+        $user_avatar = $row['avatar'];
+    }
+    if (empty($email)){
+        $email = "anon@gmail.com";
+    }
+ 
+    if (empty($message)) {
+        echo json_encode(["status" => "error", "message" => "Message cannot be empty"]);
+        exit;
+    }   
+        $_SESSION['anonymous_index'] = $index + 1;
+        $sql = "INSERT INTO feedback (user_id, username, email, avatar, message, date) 
+                VALUES (?, ?, ?, ?, ?, NOW())";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("issss", $user_id, $username, $email, $user_avatar, $message);
+
+        if ($stmt->execute()) {
+            $status = "Thanks for your feedback!";
+        } else {
+           $status = "Error: " . $stmt->error;
+        }
+    } else {
+        $status = "Error: User not found.";
+    }
+}
+
 // Check membership status for header
 require_once '../../includes/membership_check.php';
 
@@ -83,7 +138,11 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                 <div class="contact-header">
                     <h1>Share your feedback</h1>
                 </div>
-                <div class="contact-details">
+                <form method="post" class="feedback-form" id="feedbackForm">
+                    <div class="contact-details">
+                    <?php if(!empty($status)) : ?>
+                        <div class="status"><?= htmlspecialchars($status) ?></div>
+                    <?php endif; ?>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="first-name">
@@ -91,7 +150,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                                     <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
                                 </svg>
                             </label>
-                            <input type="text" id="first-name" name="first-name" placeholder="Name (Optional)">
+                            <input type="text" id="name" name="name" placeholder="Name (Optional)">
                         </div>
                         <div class="form-group">
                             <label for="last-name" class="email-label">
@@ -102,7 +161,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                                     4.8L20 6v2.2z"/>
                                 </svg>
                             </label>
-                            <input type="text" id="last-name" name="last-name" placeholder="Email (Optional)">
+                            <input type="text" id="email" name="email" placeholder="Email (Optional)">
                         </div>
                     </div>
                     <div class="form-group">
@@ -110,10 +169,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                     </div>
                     <div class="buttons">
                         <a href="feedback.php">Cancel</a>
-                        <button type="submit">Submit</button>
+                        <button type="submit" name="feedback" class="feedback-btn">Submit</button>
                     </div>
-                </div>
-
+                    </div>
+                </form>
             </div>
         </div>
     </main>

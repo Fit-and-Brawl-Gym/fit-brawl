@@ -1,35 +1,13 @@
 <?php
-// Check if this is an API request
 
 session_start();
+require_once '../../includes/db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
-    header('Content-Type: application/json');
-    include '../../includes/db_connect.php';
+if ((isset($_GET['api']) && $_GET['api'] === 'true')) {
+        header('Content-Type: application/json');
+        include '../../includes/db_connect.php';
 
-    $method = $_SERVER['REQUEST_METHOD'];
-
-    if ($method === 'POST') {
-        $data = json_decode(file_get_contents("php://input"), true);
-        $user_id = $data['user_id'];
-        $message = $data['message'];
-
-        $sql = "INSERT INTO feedback (user_id, message) VALUES (?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $user_id, $message);
-
-        if ($stmt->execute()) {
-            echo json_encode(["status" => "success", "message" => "Feedback submitted"]);
-        } else {
-            echo json_encode(["status" => "error", "message" => $conn->error]);
-        }
-    }
-
-    elseif ($method === 'GET') {
-        $sql = "SELECT f.id, u.username, f.message, f.date
-                FROM feedback f
-                JOIN users u ON f.user_id = u.id
-                ORDER BY f.date DESC";
+        $sql = "SELECT username, message, avatar FROM feedback ORDER BY date DESC";
         $result = $conn->query($sql);
 
         $feedbacks = [];
@@ -38,11 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
         }
 
         echo json_encode($feedbacks);
-    }
-    exit;
+        exit;
 }
-
-require_once '../../includes/db_connect.php';
 
 // Check membership status for header
 require_once '../../includes/membership_check.php';
@@ -62,7 +37,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/feedback.css">
+    <link rel="stylesheet" href="../css/pages/feedback.css?=v2">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
@@ -115,24 +90,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
     <!--Main-->
     <main>
-        <div class="bg"></div>
-        <div class="feedback-container">
-            <div class="feedback-section">
-                <div class="feedback-card left">
-                    <img src="../../images/review1-pfp.png" alt="Reynaldo Chee">
-                    <div class="bubble">
-                      <h3>Reynaldo Chee – Body Builder</h3>
-                      <p>The equipment are clean, very accommodating staffs, and the prices is not that bad</p>
-                    </div>
-                  </div>
 
-                  <div class="feedback-card right">
-                    <div class="bubble">
-                      <h3>Rieze Venzon – Gym Rat</h3>
-                      <p>Very cool ng ambiance, very presko, at magaganda tugtugan na pang motivation talaga!</p>
-                    </div>
-                    <img src="../../images/review2-pfp.png" alt="Rieze Venzon">
-                  </div>
+        <div class="feedback-container">
+            <div class="feedback-section" id="feedback-section">
+                
             </div>
         </div>
         <div class="feedback-button">
@@ -180,5 +141,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
             <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="../js/feedback.js"></script>
 </body>
 </html>
