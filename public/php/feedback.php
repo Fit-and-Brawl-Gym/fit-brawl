@@ -7,7 +7,7 @@ if ((isset($_GET['api']) && $_GET['api'] === 'true')) {
         header('Content-Type: application/json');
         include '../../includes/db_connect.php';
 require_once '../../includes/session_manager.php'; 
-
+}
 // Initialize session manager
 SessionManager::initialize();
 
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
         echo json_encode($feedbacks);
         exit;
 }
-}
+
 // Check membership status for header
 require_once '../../includes/membership_check.php';
 
