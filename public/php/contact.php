@@ -16,12 +16,77 @@ if (!SessionManager::isLoggedIn()) {
     header('Location: login.php');
     exit;
 }
+$status = "";
+$fnameErr = $lnameErr = $emailErr = $phoneErr = $messageErr = "";
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $user_id = $_SESSION['user_id'] ?? null;
+    $fname = test_input($_POST['first-name'] ?? '');
+    $lname = test_input($_POST['last-name'] ?? '');
+    $email = test_input($_POST['email'] ?? '');
+    $phoneNum = test_input($_POST['phone'] ?? '');
+    $message = test_input($_POST['message'] ?? '');
+
+    if (empty($fname)){
+        $fnameErr = "First name is required";
+    } else{
+        if (!preg_match("/^[a-zA-Z-' ]*$/",$fname)) {
+            $nameErr = "Only letters and white space allowed";
+        }
+    }
+    if (empty($lname)){
+        $lnameErr = "Last name is required";
+    } else{
+        if (!preg_match("/^[a-zA-Z-' ]*$/",$lname)) {
+            $nameErr = "Only letters and white space allowed";
+        }
+    }
+    if (empty($email)){
+        $emailErr = "Email is required";
+    } else{
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $emailErr = "Invalid email format";
+        }
+    }
+    if (empty($phoneNum)) {
+        $phoneErr = "Phone number is required";
+    } else{
+        if (!preg_match("/^[0-9]{10,15}$/", $phoneNum)) {
+            $phoneErr = "Invalid phone number format";
+        }
+    }
+    if (empty($message)) {
+        $messageErr = "Message is required";
+
+    }   
+
+    if (empty($fnameErr) && empty($lnameErr) && empty($emailErr) && empty($phoneErr) && empty($messageErr)) {
+    $sql = "INSERT INTO contact (first_name, last_name, email, phone_number, message, date_submitted) 
+            VALUES (?, ?, ?, ?, ?, NOW())";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssss", $fname, $lname, $email, $phoneNum, $message);
+
+    if ($stmt->execute()) {
+        $status = "Your message has been sent successfully.";
+
+        $fname = $lname = $email = $phoneNum = $message = '';
+    } else {
+        $status = "Database error: " . $stmt->error;
+    }
+}
+}
 
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+}
+
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
 }
 ?>
 <!DOCTYPE html>
@@ -50,41 +115,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <script src="../js/session-timeout.js"></script>
     <?php endif; ?>
 </head>
-
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const form = document.querySelector(".contact-details");
-        const submitBtn = form.querySelector("button");
-        const messageField = document.getElementById("message");
-
-        submitBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-
-            const data = {
-                first_name: document.getElementById("first-name").value,
-                last_name: document.getElementById("last-name").value,
-                email: document.getElementById("email").value,
-                phone: document.getElementById("phone").value,
-                message: messageField.value,
-            };
-
-            const res = await fetch("api/contact_api.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(data),
-            });
-
-            const json = await res.json();
-
-            if (json.success) {
-                alert("✅ Your inquiry has been sent successfully!");
-                form.reset();
-            } else {
-                alert("❌ Failed to send inquiry. Please try again.");
-            }
-        });
-    });
-</script>
 
 <body>
     <!--Header-->
@@ -140,36 +170,55 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                 <div class="contact-header">
                     <h1>Contact Us</h1>
                 </div>
+                <form method="post" class="contact-form" id="contactForm">
                 <div class="contact-details">
+                    <?php if(!empty($status)) : ?>
+                        <div class="success"><?= htmlspecialchars($status) ?></div>
+                    <?php endif; ?>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="first-name">First Name</label>
-                            <input type="text" id="first-name" name="first-name" placeholder="" required>
+                            <input type="text" id="first-name" name="first-name" placeholder="" value="<?= htmlspecialchars($fname ?? '') ?>">
+                            <?php if(!empty($fnameErr)) : ?>
+                        <div class="status"><?= htmlspecialchars($fnameErr) ?></div>
+                    <?php endif; ?>
                         </div>
                         <div class="form-group">
                             <label for="last-name">Last Name</label>
-                            <input type="text" id="last-name" name="last-name" placeholder="" required>
+                            <input type="text" id="last-name" name="last-name" placeholder="" value="<?= htmlspecialchars($lname ?? '') ?>">
+                            <?php if(!empty($lnameErr)) : ?>
+                        <div class="status"><?= htmlspecialchars($lnameErr) ?></div>
+                    <?php endif; ?>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="" required>
+                            <input type="email" id="email" name="email" placeholder="" value="<?= htmlspecialchars($email ?? '') ?>">
+                            <?php if(!empty($emailErr)) : ?>
+                        <div class="status"><?= htmlspecialchars($emailErr) ?></div>
+                    <?php endif; ?>
                         </div>
 
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" placeholder="" required>
+                            <input type="tel" id="phone" name="phone" placeholder="" value="<?= htmlspecialchars($phoneNum ?? '') ?>">
+                            <?php if(!empty($phoneErr)) : ?>
+                        <div class="status"><?= htmlspecialchars($phoneErr) ?></div>
+                    <?php endif; ?>
                         </div>
                     </div>
                     <div class="form-group">
-                        <textarea id="message" name="message" placeholder="Leave us a message..."></textarea>
+                        <textarea id="message" name="message" placeholder="Leave us a message..." value="<?= htmlspecialchars($message ?? '') ?>"></textarea>
+                        <?php if(!empty($messageErr)) : ?>
+                        <div class="status"><?= htmlspecialchars($messageErr) ?></div>
+                    <?php endif; ?>
                     </div>
                     <div class="submit-button">
                         <button type="submit">Submit</button>
                     </div>
                 </div>
-
+            </form>
             </div>
         </div>
     </main>
