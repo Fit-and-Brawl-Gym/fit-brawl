@@ -23,6 +23,17 @@ require_once '../../includes/db_connect.php';
 // Check membership status for header
 require_once '../../includes/membership_check.php';
 
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
