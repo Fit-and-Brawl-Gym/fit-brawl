@@ -11,11 +11,11 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
-    avatar VARCHAR(255) DEFAULT 'default-avatar.png',
+    avatar VARCHAR(255) DEFAULT 'profile-icon.svg',
     otp VARCHAR(6) DEFAULT NULL,
     otp_expiry DATETIME DEFAULT NULL
 );
--- Add verification fields (safe as separate command)
+-- Added verification fields
 ALTER TABLE users 
 ADD COLUMN is_verified TINYINT(1) DEFAULT 0 AFTER avatar,
 ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL AFTER is_verified;
@@ -135,6 +135,9 @@ CREATE TABLE products (
 CREATE TABLE feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    avatar VARCHAR(255) DEFAULT 'profile-icon.svg',
     message TEXT NOT NULL,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

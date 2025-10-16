@@ -102,6 +102,7 @@ INSERT INTO `products` (`id`, `name`, `stock`, `status`) VALUES
 -- =====================
 -- SEED DATA FOR FEEDBACK
 -- =====================
-INSERT INTO feedback (user_id, message) VALUES
-(1, 'Great gym, coaches are really helpful!'),
-(1, 'Can we get more punching bags available?');
+INSERT INTO feedback (user_id, username, avatar, message, date) VALUES
+(1, 'Rieze Andrei', 'default-avatar.png', 'Great gym, coaches are really helpful!', '2025-09-15'),
+(2, 'John Doe', 'john.png', 'Loving the new MMA classes!', '2025-09-16'),
+(3, 'Jane Smith', 'jane.png', 'Could use more evening class options.', '2025-09-17'),
