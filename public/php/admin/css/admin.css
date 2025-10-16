@@ -1208,6 +1208,80 @@ header p {
     color: #721c24;
 }
 
+/* =========================== */
+/* MODAL STYLES                */
+/* =========================== */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 24px;
+    border-radius: 12px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content h3 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+    color: #1a1d2e;
+}
+
+.modal-content p {
+    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #1a1d2e;
+}
+
+.modal-content button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.modal-content button:hover {
+    opacity: 0.9;
+}
+
+.btn-secondary {
+    background: #e6eef0;
+    color: #333;
+}
+
+.btn-primary {
+    background: #1a1d2e;
+    color: #fff;
+}
+
 /* Responsive table */
 @media (max-width: 1024px) {
     .products-table {
