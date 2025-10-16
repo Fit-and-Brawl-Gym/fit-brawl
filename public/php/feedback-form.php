@@ -13,10 +13,10 @@ if (!isset($_SESSION['user_id'])) {
 $status = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-   $user_id = $_SESSION['user_id'];
-    $username = trim($_POST['name'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $message = trim($_POST['message'] ?? '');
+   $user_id = test_input($_SESSION['user_id']);
+    $username = test_input($_POST['name'] ?? '');
+    $email = test_input($_POST['email'] ?? '');
+    $message = test_input($_POST['message'] ?? '');
     $index = $_SESSION['anonymous_index'] ?? 1;
 
     
@@ -78,6 +78,14 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
 }
+
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
 
 <!DOCTYPE html>
