@@ -1,6 +1,16 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
 
 // Get service details from URL parameters
 $service = isset($_GET['service']) ? $_GET['service'] : 'daypass-gym';
@@ -131,6 +141,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
     <script src="../js/hamburger-menu.js"></script>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
 </head>
 <body>
     <!--Header-->

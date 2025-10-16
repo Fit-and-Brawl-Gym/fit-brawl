@@ -3,6 +3,17 @@
 
 session_start();
 
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
     header('Content-Type: application/json');
     include '../../includes/db_connect.php';
@@ -72,6 +83,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
     <script src="../js/hamburger-menu.js"></script>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
 </head>
 <body>
     <!--Header-->

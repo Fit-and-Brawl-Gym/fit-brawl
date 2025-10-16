@@ -1,6 +1,16 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
 
 // Get plan details from URL parameters or session
 $plan = isset($_GET['plan']) ? $_GET['plan'] : 'gladiator';
@@ -139,6 +149,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
             }
       };
     </script>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
 </head>
 <body>
     <!--Header-->
