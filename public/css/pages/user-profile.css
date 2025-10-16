@@ -387,7 +387,6 @@ body {
     border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .profile-header {
         flex-direction: column;
@@ -408,5 +407,27 @@ body {
 
     .avatar-upload {
         flex-direction: column;
+    }
+}
+
+@media (max-width: 600px) {
+    .form-actions {
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-cancel {
+        order: 1;
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .btn-save {
+        order: 2;
+        width: 100%;
+        max-width: 320px;
     }
 }
