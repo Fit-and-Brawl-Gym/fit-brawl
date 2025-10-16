@@ -16,7 +16,7 @@ CREATE TABLE users (
     otp_expiry DATETIME DEFAULT NULL
 );
 -- Add verification fields (safe as separate command)
-ALTER TABLE users 
+ALTER TABLE users
 ADD COLUMN is_verified TINYINT(1) DEFAULT 0 AFTER avatar,
 ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL AFTER is_verified;
 -- =====================
@@ -32,7 +32,7 @@ CREATE TABLE remember_password (
         REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-); 
+);
 
 -- =====================
 -- MEMBERSHIPS TABLE
@@ -45,19 +45,31 @@ CREATE TABLE memberships (
 );
 
 -- =====================
--- USER MEMBERSHIPS TABLE (NEW)
+-- USER MEMBERSHIPS TABLE (COMBINED)
+-- Merges subscription requests and active membership records
 -- =====================
 CREATE TABLE user_memberships (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    membership_id INT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    billing_type ENUM('monthly', 'yearly') DEFAULT 'monthly',
-    status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
+    plan_id INT DEFAULT NULL,
+    duration INT DEFAULT NULL COMMENT 'Duration in days (used to compute end_date if needed)',
+    qr_proof VARCHAR(255) DEFAULT NULL,
+    admin_id INT DEFAULT NULL,
+    date_submitted DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_approved DATETIME DEFAULT NULL,
+    remarks VARCHAR(255) DEFAULT NULL,
+    request_status ENUM('pending','approved','rejected') DEFAULT 'pending',
+    start_date DATE DEFAULT NULL,
+    end_date DATE DEFAULT NULL,
+    billing_type ENUM('monthly','yearly') DEFAULT 'monthly',
+    membership_status ENUM('active','expired','cancelled') DEFAULT NULL,
+    source_table ENUM('user_memberships','subscriptions') DEFAULT NULL,
+    source_id INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (membership_id) REFERENCES memberships(id) ON DELETE CASCADE
+    FOREIGN KEY (plan_id) REFERENCES memberships(id) ON DELETE SET NULL,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- =====================
@@ -71,7 +83,7 @@ CREATE TABLE trainers (
 );
 
 -- =====================
--- RESERVATIONS TABLE 
+-- RESERVATIONS TABLE
 -- =====================
 
 CREATE TABLE reservations (

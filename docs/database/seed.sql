@@ -29,9 +29,10 @@ INSERT INTO trainers (id, name, specialization, schedule) VALUES
 -- =====================
 -- SEED DATA FOR USER MEMBERSHIPS (NEW)
 -- =====================
-INSERT INTO user_memberships (user_id, membership_id, start_date, end_date, billing_type, status) VALUES
-(2, 2, '2025-07-15', '2025-10-15', 'monthly', 'active'),
-(3, 1, '2025-08-01', '2025-09-01', 'monthly', 'active');
+-- Example seeded subscriptions / memberships
+INSERT INTO user_memberships (user_id, plan_id, duration, date_submitted, date_approved, start_date, end_date, billing_type, request_status, membership_status, source_table, source_id) VALUES
+(2, 2, 30, '2025-07-15 00:00:00', '2025-07-15 00:00:00', '2025-07-15', '2025-10-15', 'monthly', 'approved', 'active', 'seed', 1),
+(3, 1, 30, '2025-08-01 00:00:00', '2025-08-01 00:00:00', '2025-08-01', '2025-09-01', 'monthly', 'approved', 'active', 'seed', 2);
 
 -- =====================
 -- SEED DATA FOR RESERVATIONS (UPDATED)
@@ -68,13 +69,7 @@ INSERT INTO user_reservations (user_id, reservation_id, booking_status) VALUES
 (2, 7, 'confirmed'),
 (3, 2, 'confirmed'),
 (3, 4, 'confirmed');
-INSERT INTO reservations (user_id, trainer_id, class_type, date, start_time, end_time, max_slots, remaining_slots, status)
-VALUES
-(1, 1, 'Boxing', '2025-09-15', '17:00:00', '19:00:00', 10, 5, 'scheduled'),
-(2, 1, 'Muay Thai', '2025-09-18', '18:00:00', '20:00:00', 8, 2, 'scheduled'),
-(3, 2, 'Boxing', '2025-09-20', '16:00:00', '18:00:00', 12, 12, 'scheduled'),
-(1, 2, 'Muay Thai', '2025-09-22', '17:00:00', '19:00:00', 10, 0, 'completed'),
-(2, 1, 'Boxing', '2025-09-25', '17:00:00', '19:00:00', 10, 7, 'scheduled');
+
 
 -- =====================
 -- SEED DATA FOR EQUIPMENT
