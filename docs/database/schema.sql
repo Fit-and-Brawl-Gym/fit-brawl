@@ -45,19 +45,24 @@ CREATE TABLE memberships (
 );
 
 -- =====================
--- USER MEMBERSHIPS TABLE (NEW)
+-- USER MEMBERSHIPS TABLE 
 -- =====================
-CREATE TABLE user_memberships (
+CREATE TABLE subscriptions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    membership_id INT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    billing_type ENUM('monthly', 'yearly') DEFAULT 'monthly',
-    status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    plan_id INT NOT NULL,
+    duration INT NOT NULL,
+    qr_proof VARCHAR(255) DEFAULT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    admin_id INT DEFAULT NULL,               -- who approved or rejected
+    date_submitted DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_approved DATETIME DEFAULT NULL,
+    remarks VARCHAR(255) DEFAULT NULL,
+    
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (membership_id) REFERENCES memberships(id) ON DELETE CASCADE
+    FOREIGN KEY (plan_id) REFERENCES memberships(id) ON DELETE CASCADE,
+    FOREIGN KEY (duration) REFERENCES memberships(duration) on DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- =====================
@@ -114,10 +119,12 @@ CREATE TABLE user_reservations (
 -- EQUIPMENT TABLE
 -- =====================
 CREATE TABLE equipment (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    status ENUM('Available', 'Out of Order', 'Maintenance') DEFAULT 'Available'
-);
+    category VARCHAR(100) NOT NULL,
+    status ENUM('Available', 'Maintenance', 'Out of Order') DEFAULT 'Available',
+    description VARCHAR(255) DEFAULT NULL
+)
 
 -- =====================
 -- PRODUCTS TABLE (Consumables Only)
