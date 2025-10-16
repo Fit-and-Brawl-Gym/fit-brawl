@@ -27,7 +27,7 @@ if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
 }
 
 // Redirect non-logged-in users
-if(!isset($_SESSION['email'])) {
+if (!isset($_SESSION['email'])) {
     header("Location: index.php");
     exit;
 }
@@ -37,6 +37,29 @@ $hasActiveMembership = false;
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
 
+    // Try possible membership tables/queries (handles schema vs seed inconsistency)
+    $queries = [
+        "SELECT id FROM user_memberships WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE() LIMIT 1",
+        "SELECT id FROM subscriptions WHERE user_id = ? AND status = 'Approved' LIMIT 1"
+    ];
+
+    foreach ($queries as $membership_query) {
+        $stmt = $conn->prepare($membership_query);
+        if ($stmt === false) {
+            // prepare failed (table/column may not exist) — try the next query
+            continue;
+        }
+
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $result->num_rows > 0) {
+            $hasActiveMembership = true;
+            $stmt->close();
+            break;
+        }
+        $stmt->close();
+    }
     // Detect which status column exists in user_memberships
     $statusColumn = null;
     $check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'");
@@ -88,6 +111,7 @@ if (isset($_SESSION['avatar'])) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -99,11 +123,14 @@ if (isset($_SESSION['avatar'])) {
     <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
     <script src="../js/hamburger-menu.js"></script>
 </head>
+
 <body>
     <!--Header-->
     <header>
@@ -131,11 +158,10 @@ if (isset($_SESSION['avatar'])) {
                     <li><a href="feedback.php">Feedback</a></li>
                 </ul>
             </nav>
-            <?php if(isset($_SESSION['email'])): ?>
+            <?php if (isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>"
-             alt="Account" class="account-icon">
+                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
@@ -203,4 +229,5 @@ if (isset($_SESSION['avatar'])) {
         </div>
     </footer>
 </body>
+
 </html>

@@ -3,17 +3,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const resendBtn = document.getElementById('resend-otp');
     const countdownEl = document.getElementById('countdown');
     
-    // Get expiry time from session storage or set new one
+    // Get original expiry time from session storage
+    let originalExpiryTime = sessionStorage.getItem('originalOtpExpiryTime');
     let expiryTime = sessionStorage.getItem('otpExpiryTime');
-    if (!expiryTime) {
-        expiryTime = Date.now() + (300 * 1000); // 5 minutes in milliseconds
+
+    // Set initial expiry time only if both timers don't exist
+    if (!originalExpiryTime && !expiryTime) {
+        originalExpiryTime = Date.now() + (300 * 1000); // 5 minutes
+        expiryTime = originalExpiryTime;
+        sessionStorage.setItem('originalOtpExpiryTime', originalExpiryTime);
         sessionStorage.setItem('otpExpiryTime', expiryTime);
     }
-
-    // Clear session storage when leaving the page
-    window.addEventListener('beforeunload', function() {
-        sessionStorage.removeItem('otpExpiryTime');
-    });
 
     function updateCountdown() {
         const now = Date.now();
@@ -24,55 +24,68 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (timeLeft > 0) {
             countdownEl.innerHTML = `OTP expires in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            setTimeout(updateCountdown, 1000);
+            requestAnimationFrame(updateCountdown);
+            resendBtn.disabled = true;
         } else {
             countdownEl.innerHTML = 'OTP has expired';
             resendBtn.disabled = false;
+            // Only remove current expiry time, keep original
             sessionStorage.removeItem('otpExpiryTime');
         }
     }
 
-    // Update resend button click handler
     resendBtn.addEventListener('click', async function() {
-        resendBtn.disabled = true;
-        
         try {
+            resendBtn.disabled = true;
             const response = await fetch('resend-otp.php', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const data = await response.json();
             
             if (data.success) {
-                // Set new expiry time to 5 minutes
+                // Use the original timer duration
                 expiryTime = Date.now() + (300 * 1000);
                 sessionStorage.setItem('otpExpiryTime', expiryTime);
                 updateCountdown();
-                
-                // Show success message
-                const successMsg = document.createElement('div');
-                successMsg.className = 'success-message';
-                successMsg.textContent = 'New OTP sent to your email';
-                
-                const form = document.querySelector('.verification-form');
-                form.insertBefore(successMsg, form.firstChild);
-                
-                setTimeout(() => successMsg.remove(), 3000);
+                showMessage('New OTP sent to your email', 'success');
             } else {
                 throw new Error(data.error || 'Failed to send OTP');
             }
         } catch (error) {
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'error-message';
-            errorMsg.textContent = error.message;
-            
-            const form = document.querySelector('.verification-form');
-            form.insertBefore(errorMsg, form.firstChild);
-            
-            setTimeout(() => errorMsg.remove(), 3000);
+            console.error('Error:', error);
+            showMessage(error.message, 'error');
+            resendBtn.disabled = false;
         }
     });
 
+    function showMessage(message, type) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `${type}-message`;
+        msgDiv.textContent = message;
+        
+        const form = document.querySelector('.verification-form');
+        form.insertBefore(msgDiv, form.firstChild);
+        
+        setTimeout(() => msgDiv.remove(), 3000);
+    }
+
     // Start countdown
     updateCountdown();
+
+    // Clear ALL session storage only when verification is successful
+    // This should be triggered by the PHP verification success
+    window.addEventListener('unload', function(event) {
+        if (window.location.href.includes('change-password.php')) {
+            sessionStorage.removeItem('originalOtpExpiryTime');
+            sessionStorage.removeItem('otpExpiryTime');
+        }
+    });
 });

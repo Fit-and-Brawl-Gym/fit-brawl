@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             if ($user['role'] === 'admin') {
-                header("Location: admin_page.php");
+                header("Location: admin/admin.php");
             } else {
                 header("Location: loggedin-index.php");
             }
