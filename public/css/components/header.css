@@ -210,10 +210,16 @@ main{
 
 /* Responsive Design */
 /* Tablets (769px to 1024px) */
+@media (max-width: 1200px) {
+    .logo-title {
+      display: none;
+  }
+}
 @media (max-width: 1024px) and (min-width: 769px) {
     .wrapper .title .logo-title {
         display: none;
     }
+
 
     .wrapper .title {
         margin-right: auto;
@@ -264,18 +270,30 @@ main{
         justify-content: flex-start;
     }
 
+    .wrapper {
+        display: flex;
+        align-items: center;
+    }
+
     .wrapper .title {
         order: 0;
         margin: 0 auto;
         gap: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateY(4px);
     }
 
     .wrapper .title .fnb-logo {
-        display: none;
+        display: inline-block;
+        width: 40px;
+        height: 40px;
     }
 
     .wrapper .title .logo-title {
         height: 36px;
+        display: inline-block;
     }
 
     .wrapper .nav-bar {
