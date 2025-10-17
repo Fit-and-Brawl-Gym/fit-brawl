@@ -6,7 +6,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
     include '../../includes/db_connect.php';
 
-    $sql = "SELECT id, name, equipment_status FROM equipment";
+    $sql = "SELECT id, name, status, category, description, image_path FROM equipment";
     $result = $conn->query($sql);
 
     $equipment = [];
@@ -33,7 +33,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl - Equipment</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/equipment.css?=v1">
+    <link rel="stylesheet" href="../css/pages/equipment.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
@@ -95,111 +95,80 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
     <!--Main-->
     <main>
+          <div class="bg"></div>
         <div class="equipment-panel">
-            <!-- equipment Heading -->
-            <div class="panel-header">
-                <h2>Equipment Availability</h2>
+        <!-- equipment Heading -->
+         <div class="panel-header">
+            <h2>equipment availability</h2>
+         </div>
+
+        <!-- Categories -->
+         <div class="categories-row">
+            <div class="category-chip" data-cat="supplements">
+                <img src="../../images/cardio-icon.svg" alt="Cardio Icon">
+                <p>Cardio</p>
             </div>
-
-            <!-- Categories -->
-            <div class="categories-row">
-                <div class="category-chip" data-cat="cardio">
-                    <img src="../../images/cardio-icon.svg" alt="Cardio Icon">
-                    <p>Cardio</p>
-                </div>
-                <div class="category-chip" data-cat="flexibility">
-                    <img src="../../images/flexibility-icon.svg" alt="Flexibility Icon">
-                    <p>Flexibility</p>
-                </div>
-                <div class="category-chip" data-cat="core">
-                    <img src="../../images/core-icon.svg" alt="Core Icon">
-                    <p>Core</p>
-                </div>
-                <div class="category-chip" data-cat="strength">
-                    <img src="../../images/strength-icon.svg" alt="Strength Icon">
-                    <p>Strength Training</p>
-                </div>
-                <div class="category-chip" data-cat="functional">
-                    <img src="../../images/functional-icon.svg" alt="Functional Icon">
-                    <p>Functional Training</p>
-                </div>
+            <div class="category-chip" data-cat="hydration">
+                <img src="../../images/flexibility-icon.svg" alt="Flexibility Icon">
+                <p>Flexibility</p>
             </div>
-
-            <!-- Search & Filter -->
-            <div class="controls">
-                <div class="search">
-                    <input type="search" id="q" placeholder="Search" aria-label="Search equipment">
-                </div>
-                <div style="width:210px">
-                    <select id="statusFilter">
-                        <option value="all">Filter by Status</option>
-                        <option value="available">Available</option>
-                        <option value="maintenance">Maintenance</option>
-                        <option value="out-of-order">Out of order</option>
-                    </select>
-                </div>
+            <div class="category-chip" data-cat="snacks">
+                <img src="../../images/core-icon.svg" alt="Core Icon">
+                <p>Core</p>
             </div>
-
-            <!-- Equipment Lists -->
-            <div id="equipment-container">
-
-                <!-- Card: Treadmill #1 -->
-                <div class="equipment-card">
-                    <div class="equipment-header">
-                        <div class="equipment-title"><h3>Treadmill #1</h3></div>
-                        <div class="equipment-status">
-                            <h4 class="label">Status</h4>
-                            <span class="status-dot available"></span>
-                            <span class="status-text">Available</span>
-                        </div>
-                        <div class="equipment-category">
-                            <h4 class="label">Category</h4>
-                            <span class="category">Cardio, Functional Training</span>
-                        </div>
-                        <div class="equipment-icon"><img src="../../images/cardio-icon.svg" alt="Cardio"></div>
-                    </div>
-
-                    <div class="equipment-dropdown">
-                        <img src="../../images/threadmill-bg.png" alt="Treadmill" class="equipment-image">
-                        <div class="equipment-desc">Treadmills are good for improving cardiovascular health, promoting weight loss through calorie burning, and strengthening lower body muscles like the quads, hamstrings, and glutes.</div>
-                    </div>
-                </div>
-
-                <!-- Card: Treadmill #2 -->
-                <div class="equipment-card">
-                    <div class="equipment-header">
-                        <div class="equipment-title"><h3>Treadmill #2</h3></div>
-                        <div class="equipment-status">
-                            <h4 class="label">Status</h4>
-                            <span class="status-dot maintenance"></span>
-                            <span class="status-text">Maintenance</span>
-                        </div>
-                        <div class="equipment-category">
-                            <h4 class="label">Category</h4>
-                            <span class="category">Cardio, Functional Training</span>
-                        </div>
-                        <div class="equipment-icon"><img src="../../images/cardio-icon.svg" alt="Cardio"></div>
-                    </div>
-                </div>
-                <!-- Card: Bench Press -->
-                <div class="equipment-card">
-                    <div class="equipment-header">
-                        <div class="equipment-title"><h3>Bench Press</h3></div>
-                        <div class="equipment-status">
-                            <h4 class="label">Status</h4>
-                            <span class="status-dot maintenance"></span>
-                            <span class="status-text">Maintenance</span>
-                        </div>
-                        <div class="equipment-category">
-                            <h4 class="label">Category</h4>
-                            <span class="category">Strength Training</span>
-                        </div>
-                        <div class="equipment-icon"><img src="../../images/strength-icon.svg" alt="Cardio"></div>
-                    </div>
-                </div>
-
+            <div class="category-chip" data-cat="boxing gloves">
+                <img src="../../images/strength-icon.svg" alt="Strength Icon">
+                <p>Strength Training</p>
             </div>
+            <div class="category-chip" data-cat="boxing gloves">
+                <img src="../../images/functional-icon.svg" alt="Functional Icon">
+                <p>Functional Training</p>
+            </div>
+         </div>
 
+        <!-- Search Product -->
+        <div class="controls">
+        <div class="search">
+            <input type="search" id="q" placeholder="Search equipment..." aria-label="Search equipment">
+        </div>
+        <div style="width:210px">
+            <select id="statusFilter">
+            <option value="all">Filter by Status</option>
+            <option value="available">Available</option>
+            <option value="out-of-order">Out of order</option>
+            <option value="low">Maintenance</option>
+            </select>
+        </div>
+        </div>
+        <!-- Equipment Lists -->
+        <div id="equipment-container">
+            <div class="equipment-card">
+    <div class="equipment-header">
+      <div class="equipment-title">
+        <h3>Treadmill #1</h3>
+      </div>
+      <div class="equipment-status">
+        <h4 class="label">Status</h4>
+        <span class="status-dot available"></span>
+        <span class="status-text">Available</span>
+      </div>
+      <div class="equipment-category">
+        <h4 class="label">Category</h4>
+        <span class="category">Cardio, Functional Training</span>
+      </div>
+      <div class="equipment-icon">
+        <img src="../../images/cardio-icon.svg" alt="Cardio Icon">
+      </div>
+    </div>
+
+    <div class="equipment-dropdown">
+      <img src="../../images/threadmill-bg.png" alt="Treadmill" class="equipment-image">
+      <p class="equipment-desc">
+        Treadmills are good for improving cardiovascular health, promoting weight loss through calorie burning,
+        and strengthening lower body muscles like the quads, hamstrings, and glutes.
+      </p>
+    </div>
+  </div>
         </div>
     </main>
 
@@ -241,6 +210,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </footer>
 
-    <script src="../js/equipment.js"></script>
+    <script src="../js/equipment.js?=v1"></script>
 </body>
 </html>

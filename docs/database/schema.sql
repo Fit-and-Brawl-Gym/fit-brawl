@@ -54,8 +54,12 @@ CREATE TABLE reservations (
 CREATE TABLE equipment (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    status ENUM('Available', 'Out of Order', 'Maintenance') DEFAULT 'Available'
+    status ENUM('Available', 'Maintenance', 'Out of Order') NOT NULL DEFAULT 'Available',
+    category VARCHAR(50) DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    image_path VARCHAR(255) DEFAULT NULL
 );
+
 
 -- =====================
 -- PRODUCTS TABLE (Consumables Only)

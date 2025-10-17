@@ -18,11 +18,13 @@
     z-index: -1;
   }
   main {
-  min-height: 100vh;
+    min-height: 100vh;
+   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: start;
+  flex-direction: column;
+  justify-content: start;
   position: relative;
+  padding-bottom: 150px; 
 }
   .feedback-section {
     display: flex;
