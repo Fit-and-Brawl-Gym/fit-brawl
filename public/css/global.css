@@ -153,7 +153,6 @@
 /* HTML & Body */
 html {
   line-height: var(--line-height-normal);
-  -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }
 
