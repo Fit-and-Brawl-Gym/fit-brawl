@@ -1,0 +1,783 @@
+.reservations-page {
+    background: url('../../../images/reservation-bg.png') center/cover no-repeat fixed;
+    position: relative;
+    padding: var(--spacing-3) 0 var(--spacing-12) 0;
+    height: auto;
+}
+
+.reservations-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 20, 30, 0.85);
+    z-index: 1;
+}
+
+h1.page-title {
+    font-family: 'zuume-rough-bold', sans-serif;
+    font-size: var(--font-size-5xl);
+}
+
+.reservations-container {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-4);
+}
+
+/* ========================================
+   PAGE HEADER
+   ======================================== */
+
+.page-header {
+    text-align: center;
+    margin-bottom: var(--spacing-4);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+}
+
+.header-logo {
+    width: 32px;
+    height: 32px;
+}
+
+.page-title {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-2xl);
+    color: var(--color-accent);
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.membership-status {
+    background: rgba(26, 74, 82, 0.6);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2) var(--spacing-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--color-text-light);
+    font-size: 0.8rem;
+}
+
+.status-badge i {
+    color: var(--color-success);
+    font-size: var(--font-size-base);
+}
+
+.upgrade-btn {
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-base);
+    font-weight: var(--font-weight-semibold);
+    font-size: 0.8rem;
+    transition: var(--transition-base);
+}
+
+.upgrade-btn:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+}
+
+.login-prompt {
+    background: rgba(26, 74, 82, 0.6);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2);
+    color: var(--color-text-light);
+    font-size: 0.8rem;
+}
+
+.login-prompt a {
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
+/* ========================================
+   STATS SECTION
+   ======================================== */
+
+.stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.stat-card {
+    background: rgba(26, 74, 82, 0.7);
+    border: 1px solid rgba(213, 186, 43, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    transition: var(--transition-base);
+}
+
+.stat-card:hover {
+    border-color: var(--color-accent);
+}
+
+.stat-icon {
+    width: 38px;
+    height: 38px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-icon i {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-dark);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0;
+}
+
+.stat-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin-bottom: 0;
+}
+
+.stat-subtext {
+    font-size: 0.7rem;
+    color: var(--color-text-light);
+}
+
+/* ========================================
+   SCHEDULING SECTION
+   ======================================== */
+
+.scheduling-section {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: var(--spacing-4);
+}
+
+/* ========================================
+   LEFT COLUMN - FILTERS
+   ======================================== */
+
+.scheduling-left {
+    background: rgba(26, 74, 82, 0.8);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+    height: fit-content;
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.section-title {
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-1);
+}
+
+.class-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-1);
+}
+
+.filter-btn {
+    flex: 1;
+    min-width: 70px;
+    padding: var(--spacing-1) var(--spacing-2);
+    background: rgba(45, 107, 117, 0.5);
+    border: 2px solid transparent;
+    border-radius: var(--radius-base);
+    color: var(--color-text-light);
+    font-weight: var(--font-weight-medium);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.filter-btn:hover {
+    border-color: var(--color-accent);
+    background: rgba(45, 107, 117, 0.8);
+}
+
+.filter-btn.active {
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+    border-color: var(--color-accent);
+}
+
+.coach-select-wrapper,
+.time-select-wrapper {
+    position: relative;
+}
+
+.coach-select,
+.time-select {
+    width: 100%;
+    padding: var(--spacing-1) var(--spacing-2);
+    background: rgba(45, 107, 117, 0.5);
+    border: 2px solid rgba(213, 186, 43, 0.3);
+    border-radius: var(--radius-base);
+    color: var(--color-text-light);
+    font-size: 0.75rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d5ba2b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-2) center;
+    padding-right: var(--spacing-6);
+}
+
+.coach-select:focus,
+.time-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+/* ========================================
+   DATE SELECTOR / CALENDAR
+   ======================================== */
+
+.date-selector {
+    background: rgba(15, 50, 56, 0.5);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2);
+}
+
+.date-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-2);
+}
+
+.date-nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-accent);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    padding: var(--spacing-1);
+    transition: var(--transition-fast);
+}
+
+.date-nav-btn:hover {
+    color: var(--color-accent-hover);
+    transform: scale(1.1);
+}
+
+.current-month {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-light);
+}
+
+#monthDisplay {
+    font-size: var(--font-size-lg);
+    color: var(--color-accent);
+}
+
+#monthName {
+    font-size: var(--font-size-sm);
+}
+
+#yearDisplay {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    padding: 2px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    color: var(--color-text-light);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    position: relative;
+}
+
+.calendar-day:hover:not(.inactive) {
+    background: rgba(213, 186, 43, 0.2);
+}
+
+.calendar-day.inactive {
+    color: var(--color-text-muted);
+    opacity: 0.3;
+    cursor: default;
+}
+
+.calendar-day.selected {
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+    font-weight: var(--font-weight-bold);
+}
+
+.calendar-day.has-session::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+}
+
+/* ========================================
+   RIGHT COLUMN - SCHEDULE & BOOKINGS
+   ======================================== */
+
+.scheduling-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+/* ========================================
+   MONTHLY SCHEDULE
+   ======================================== */
+
+.monthly-schedule {
+    background: rgba(26, 74, 82, 0.8);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+    position: relative;
+}
+
+.schedule-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-3);
+}
+
+.schedule-header h2 {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    color: var(--color-accent);
+    margin: 0;
+}
+
+.month-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    color: var(--color-text-light);
+    cursor: pointer;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    transition: var(--transition-base);
+    font-size: 0.8rem;
+    position: relative;
+}
+
+.month-nav:hover {
+    background: rgba(213, 186, 43, 0.1);
+}
+
+.month-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--spacing-1);
+    background: rgba(15, 50, 56, 0.98);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2);
+    display: none;
+    flex-direction: column;
+    gap: var(--spacing-1);
+    min-width: 150px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: var(--shadow-xl);
+}
+
+.month-dropdown.active {
+    display: flex;
+}
+
+/* Custom Scrollbar for Month Dropdown */
+.month-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.month-dropdown::-webkit-scrollbar-track {
+    background: rgba(45, 107, 117, 0.3);
+    border-radius: var(--radius-base);
+}
+
+.month-dropdown::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
+    border-radius: var(--radius-base);
+    border: 2px solid rgba(15, 50, 56, 0.98);
+}
+
+.month-dropdown::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-hover);
+}
+
+/* Firefox Scrollbar */
+.month-dropdown {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) rgba(45, 107, 117, 0.3);
+}
+
+.month-option {
+    padding: var(--spacing-2) var(--spacing-3);
+    color: var(--color-text-light);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-size: 0.8rem;
+}
+
+.month-option:hover {
+    background: rgba(213, 186, 43, 0.2);
+    color: var(--color-accent);
+}
+
+.month-option.current {
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+    font-weight: var(--font-weight-bold);
+}
+
+.schedule-calendar {
+    margin-bottom: var(--spacing-3);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: var(--spacing-1);
+}
+
+.weekday {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-accent);
+    padding: 2px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.schedule-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(45, 107, 117, 0.3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-base);
+    padding: 2px;
+    cursor: pointer;
+    transition: var(--transition-base);
+    position: relative;
+}
+
+.schedule-day:hover:not(.inactive) {
+    border-color: var(--color-accent);
+    background: rgba(45, 107, 117, 0.5);
+}
+
+.schedule-day.inactive {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.day-number {
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+    font-weight: var(--font-weight-medium);
+}
+
+.day-indicator {
+    margin-top: 1px;
+    display: flex;
+    gap: 1px;
+}
+
+.indicator-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: var(--radius-full);
+    background: var(--color-success);
+}
+
+.indicator-dot.warning {
+    background: var(--color-warning);
+}
+
+/* ========================================
+   SCHEDULE DETAILS POPUP
+   ======================================== */
+
+.schedule-details {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 50, 56, 0.98);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    max-width: 350px;
+    width: 90%;
+    z-index: 10;
+    box-shadow: var(--shadow-2xl);
+}
+
+.close-details {
+    position: absolute;
+    top: var(--spacing-2);
+    right: var(--spacing-2);
+    background: transparent;
+    border: none;
+    color: var(--color-text-light);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.close-details:hover {
+    color: var(--color-accent);
+}
+
+.schedule-details h3 {
+    font-size: var(--font-size-base);
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-2);
+}
+
+.schedule-details p {
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-1);
+    font-size: 0.8rem;
+}
+
+.slots-count {
+    color: var(--color-success);
+    font-weight: var(--font-weight-bold);
+}
+
+.schedule-training-btn {
+    width: 100%;
+    padding: var(--spacing-2);
+    background: var(--color-accent);
+    border: none;
+    border-radius: var(--radius-base);
+    color: var(--color-text-dark);
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-1);
+    margin-top: var(--spacing-3);
+    transition: var(--transition-base);
+}
+
+.schedule-training-btn:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   BOOKED SESSIONS
+   ======================================== */
+
+.booked-sessions {
+    background: rgba(26, 74, 82, 0.8);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+}
+
+.booked-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+}
+
+.booked-header i {
+    font-size: var(--font-size-lg);
+    color: var(--color-accent);
+}
+
+.booked-header h3 {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    color: var(--color-accent);
+    margin: 0;
+}
+
+.sessions-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: var(--spacing-2);
+}
+
+.session-card {
+    background: rgba(45, 107, 117, 0.4);
+    border: 2px solid rgba(213, 186, 43, 0.2);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-2);
+    transition: var(--transition-base);
+}
+
+.session-card:hover {
+    border-color: var(--color-accent);
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.session-class {
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+}
+
+.session-date {
+    font-size: 0.75rem;
+    color: var(--color-text-light);
+}
+
+.session-time {
+    font-size: 0.7rem;
+    color: var (--color-text-muted);
+}
+
+.session-status {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-semibold);
+    margin-top: 2px;
+}
+
+.session-status.status-confirmed {
+    color: var(--color-success);
+}
+
+.session-status.status-not-confirmed {
+    color: var(--color-error);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 1200px) {
+    .scheduling-section {
+        grid-template-columns: 220px 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .scheduling-section {
+        grid-template-columns: 1fr;
+    }
+
+    .scheduling-left {
+        position: static;
+    }
+
+    .stats-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .header-logo {
+        width: 28px;
+        height: 28px;
+    }
+
+    .membership-status {
+        flex-direction: column;
+        gap: var(--spacing-3);
+    }
+
+    .sessions-list {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-details {
+        padding: var(--spacing-3);
+    }
+}

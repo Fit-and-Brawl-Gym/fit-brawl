@@ -1,20 +1,109 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
+require_once '../../includes/session_manager.php';
 
-// Redirect non-logged-in users to regular homepage
-if(!isset($_SESSION['email'])) {
+// Initialize session manager
+SessionManager::initialize();
+require_once '../../includes/session_manager.php';
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
+if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
+    $token = $_SESSION['remember_password'];
+
+    $result = $conn->query("SELECT * FROM remember_password");
+    while ($row = $result->fetch_assoc()) {
+        if (password_verify($token, $row['token_hash'])) {
+            $stmtUser = $conn->prepare("SELECT * FROM users WHERE id = ?");
+            $stmtUser->bind_param("i", $row['user_id']);
+            $stmtUser->execute();
+            $user = $stmtUser->get_result()->fetch_assoc();
+
+            if ($user) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['name'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['avatar'] = $user['avatar'];
+            }
+            break;
+        }
+    }
+}
+
+// Redirect non-logged-in users
+if (!isset($_SESSION['email'])) {
     header("Location: index.php");
     exit;
 }
 
+// Check active membership — safely detect schema and query accordingly
+$hasActiveMembership = false;
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    // Prefer user_memberships (combined table) when it exists
+    if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
+        // Detect which status-like column exists
+        $statusColumn = null;
+        if ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'")->num_rows) {
+            $statusColumn = 'membership_status';
+        } elseif ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'status'")->num_rows) {
+            $statusColumn = 'status';
+        } elseif ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'")->num_rows) {
+            $statusColumn = 'request_status';
+        }
+
+        if ($statusColumn === 'membership_status' || $statusColumn === 'status') {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND " . $statusColumn . " = 'active' AND end_date >= CURDATE() LIMIT 1";
+        } elseif ($statusColumn === 'request_status') {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND request_status = 'approved' AND end_date >= CURDATE() LIMIT 1";
+        } else {
+            $membership_query = "SELECT id FROM user_memberships WHERE user_id = ? AND end_date >= CURDATE() LIMIT 1";
+        }
+
+        $stmt = $conn->prepare($membership_query);
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $hasActiveMembership = ($result && $result->num_rows > 0);
+            $stmt->close();
+        }
+
+    // Fallback: legacy subscriptions table
+    } elseif ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+        $stmt = $conn->prepare("SELECT id FROM subscriptions WHERE user_id = ? AND status IN ('Approved','approved') LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $hasActiveMembership = ($result && $result->num_rows > 0);
+            $stmt->close();
+        }
+    }
+}
+
+
+// Set membership link
+$membershipLink = $hasActiveMembership ? 'reservations.php' : 'membership.php';
+
+// Set avatar source
 $avatarSrc = '../../images/account-icon.svg';
-if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
+if (isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,17 +112,30 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <link rel="stylesheet" href="../css/pages/loggedin-homepage.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
 </head>
+
 <body>
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
@@ -45,18 +147,17 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php" class="active">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
                     <li><a href="feedback.php">Feedback</a></li>
                 </ul>
             </nav>
-            <?php if(isset($_SESSION['email'])): ?>
+            <?php if (isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>"
-             alt="Account" class="account-icon">
+                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
@@ -124,4 +225,5 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </footer>
 </body>
+
 </html>

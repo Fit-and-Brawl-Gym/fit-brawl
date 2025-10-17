@@ -1,44 +1,47 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
 
-// Redirect non-logged-in users to login page
-if(!isset($_SESSION['email'])) {
-    header("Location: login.php");
+// Check if user came from verification process
+if(!isset($_SESSION['reset_email'])) {
+    header("Location: forgot-password.php");
     exit;
 }
-
-require_once '../../includes/db_connect.php';
 
 $error = '';
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $current_password = $_POST['current_password'] ?? '';
-    $new_password = $_POST['new_password'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $new_password = test_input($_POST['new_password']);
+    $confirm_password = test_input($_POST['confirm_password']);
 
-    // Fetch user
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email=?");
-    $stmt->bind_param("s", $_SESSION['email']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
+    if ($new_password === $confirm_password) {
+        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+        $email = $_SESSION['reset_email'];
 
-    if ($user && password_verify($current_password, $user['password'])) {
-        if ($new_password === $confirm_password) {
-            $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
-            $update = $conn->prepare("UPDATE users SET password=? WHERE email=?");
-            $update->bind_param("ss", $hashedPassword, $_SESSION['email']);
-            $update->execute();
+        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+        $stmt->bind_param("ss", $hashed_password, $email);
 
-            $success = "Password updated successfully.";
+        if ($stmt->execute()) {
+            // Clear reset email session
+            unset($_SESSION['reset_email']);
+            $_SESSION['password_changed'] = true;
+            header("Location: login.php");
+            exit;
         } else {
-            $error = "New passwords do not match.";
+            $error = "Error updating password. Please try again.";
         }
     } else {
-        $error = "Current password is incorrect.";
+        $error = "Passwords do not match!";
     }
 }
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../css/pages/change-password.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -116,14 +119,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" class="change-password-form">
                 <h3>A LITTLE STEP BACK BEFORE THE BEST VERSION OF YOU!</h3>
-
-                <!-- Current password -->
-                <div class="input-group password-group">
-                    <div class="icon-left">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <input type="password" name="current_password" placeholder="Current Password" required>
-                </div>
 
                 <!-- New password -->
                 <div class="input-group password-group">

@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    
+
 }
   html, body{
   min-height: 100%;
@@ -94,6 +94,7 @@ main {
   width: 150px;
   cursor: pointer;
   background: var(--color-secondary);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
 }
@@ -158,11 +159,12 @@ select#statusFilter {
   background: rgba(15, 79, 82, 0.3);
   color: #f5f7f8;
   margin-bottom: 20px;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
 .search {
-  flex: 7; 
+  flex: 7;
 }
 
 .filter {
@@ -262,7 +264,7 @@ select#statusFilter option {
 }
 
 .equipment-card.active .equipment-dropdown {
-  
+
   max-height: 300px;
   opacity: 1;
   margin-top: 1rem;
@@ -279,8 +281,8 @@ select#statusFilter option {
 
 .equipment-dropdown .equipment-desc {
     flex: 6;
-  color: #ffffff !important;   
-  font-size: 1.5rem !important; 
+  color: #ffffff !important;
+  font-size: 1.5rem !important;
   line-height: 1.6;
   font-weight: 400;
 }

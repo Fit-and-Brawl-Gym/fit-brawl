@@ -1,12 +1,37 @@
 <?php
 session_start();
+require_once '../../includes/db_connect.php';
 
-// Redirect logged-in users to homepage
-if(isset($_SESSION['email'])) {
-    header("Location: loggedin-index.php");
-    exit;
+$error = '';
+$success = '';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = test_input(filter_var($_POST['email'], FILTER_SANITIZE_EMAIL));
+
+    // Check if email exists in database
+    $stmt = $conn->prepare("SELECT email FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // Store email in session and redirect to verification page
+        $_SESSION['reset_email'] = $email;
+        header("Location: verification.php");  // Changed from change-password.php
+        exit;
+    } else {
+        $error = "Email address not found in our records.";
+    }
 }
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +42,7 @@ if(isset($_SESSION['email'])) {
     <link rel="stylesheet" href="../css/pages/forgot-password.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -80,12 +105,16 @@ if(isset($_SESSION['email'])) {
                     <h2>Enter email to verify your account</h2>
                 </div>
 
-                <form class="forgot-password-form">
+                <?php if ($error): ?>
+                    <div class="error-message"><?php echo $error; ?></div>
+                <?php endif; ?>
+
+                <form class="forgot-password-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                     <h3>A LITTLE STEPBACK BEFORE THE BEST VERSION OF YOU!</h3>
 
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" placeholder="Email" required>
+                        <input type="email" name="email" placeholder="Email" required>
                     </div>
 
                     <button type="submit" class="forgot-password-btn">Continue</button>

@@ -1,52 +1,127 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+include_once __DIR__ . '/../../includes/env_loader.php';
+loadEnv(__DIR__ . '/../../.env');
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+require '../../vendor/autoload.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
-    $name = $conn->real_escape_string($_POST['name']);
-    $email = $conn->real_escape_string($_POST['email']);
+    $name = test_input($_POST['name']);
+    $email = test_input($_POST['email']);
+    $password_input = test_input($_POST['password'] ?? '');
+    $confirm_password = test_input($_POST['confirm_password'] ?? '');
 
+    //Validate inputs
+    if (empty($name) || empty($email) || empty($password_input) || empty($confirm_password)) {
+        $_SESSION['register_error'] = "All fields are required.";
+        header("Location: sign-up.php");
+        exit();
+    }
 
-    if ($_POST['password'] !== $_POST['confirm_password']) {
+    //Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['register_error'] = "Please enter a valid email address.";
+        header("Location: sign-up.php");
+        exit();
+    }
+
+    //Check if email domain exists
+    $emailDomain = substr(strrchr($email, "@"), 1);
+    if (!checkdnsrr($emailDomain, "MX")) {
+        $_SESSION['register_error'] = "Invalid email domain. Please use a real email address.";
+        header("Location: sign-up.php");
+        exit();
+    }
+
+    //Check password match
+    if ($password_input !== $confirm_password) {
         $_SESSION['register_error'] = "Passwords do not match.";
         header("Location: sign-up.php");
         exit();
     }
 
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    //Hash password
+    $password = password_hash($password_input, PASSWORD_DEFAULT);
     $role = "member";
 
-    $checkUser = $conn->query("SELECT username FROM users WHERE username = '$name'");
-    if ($checkUser->num_rows > 0) {
-        $_SESSION['register_error'] = "Username already exists.";
+    //Check for duplicate username or email
+    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+    $stmt->bind_param("ss", $name, $email);
+    $stmt->execute();
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0) {
+        $_SESSION['register_error'] = "Username or email already exists.";
         header("Location: sign-up.php");
         exit();
     }
-    $checkEmail = $conn->query("SELECT email FROM users WHERE email = '$email'");
-    if ($checkEmail->num_rows > 0) {
-        $_SESSION['register_error'] = "Email already exists.";
-        header("Location: sign-up.php");
-        exit();
-    } else {
 
-        if ($conn->query("INSERT INTO users (username, email, password, role)
-                          VALUES ('$name', '$email', '$password', '$role')")) {
-            $_SESSION['success_message'] = "Account created successfully. Please login.";
-            header("Location: login.php");
+    $verificationToken = bin2hex(random_bytes(32));
+
+    // Insert user with verification token
+    $insertQuery = $conn->prepare("
+        INSERT INTO users (username, email, password, role, verification_token, is_verified)
+        VALUES (?, ?, ?, ?, ?, 0)
+    ");
+    $insertQuery->bind_param("sssss", $name, $email, $password, $role, $verificationToken);
+
+    if ($insertQuery->execute()) {
+        $verificationLink = "http://localhost/fit-brawl/public/php/verify-email.php?token=" . $verificationToken;
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = getenv('EMAIL_HOST');
+            $mail->SMTPAuth = true;
+            $mail->Username = getenv('EMAIL_USER');
+            $mail->Password = getenv('EMAIL_PASS');
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = getenv('EMAIL_PORT');
+
+            $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+            $mail->addAddress($email, $name);
+            $mail->isHTML(true);
+            $mail->Subject = 'Verify Your Email - Fit & Brawl Gym';
+            $mail->Body = "
+                <h2>Welcome to Fit & Brawl Gym, $name!</h2>
+                <p>Click the link below to verify your email:</p>
+                <a href='$verificationLink'>$verificationLink</a>
+                <p>This link will confirm your account registration.</p>
+            ";
+
+            $mail->send();
+
+            $_SESSION['success_message'] = "Account created! Please check your email to verify your account.";
+            header("Location: sign-up.php");
             exit();
-        } else {
-            $_SESSION['register_error'] = "Database error: " . $conn->error;
 
+        } catch (Exception $e) {
+            $_SESSION['register_error'] = "Account created but verification email could not be sent. Error: " . $mail->ErrorInfo;
+            header("Location: sign-up.php");
             exit();
         }
+
+    } else {
+        $_SESSION['register_error'] = "Database error: " . $conn->error;
+        header("Location: sign-up.php");
+        exit();
     }
 }
-
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
 
 function showError($error) {
     return !empty($error) ? "<p class='error-message'>$error</p>" : "";
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,7 +133,7 @@ function showError($error) {
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="stylesheet" href="../css/components/terms-modal.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -127,7 +202,10 @@ function showError($error) {
 
                     <?= showError($_SESSION['register_error'] ?? ''); ?>
                     <?php unset($_SESSION['register_error']); ?>
-
+                    <?php if (isset($_SESSION['success_message'])): ?>
+                    <p class="success-message"><?= $_SESSION['success_message']; ?></p>
+                    <?php unset($_SESSION['success_message']); ?>
+                    <?php endif; ?>
                     <div class="input-group">
                         <i class="fas fa-user"></i>
                         <input type="text" name="name" placeholder="Name" required>

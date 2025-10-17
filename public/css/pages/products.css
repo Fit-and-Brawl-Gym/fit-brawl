@@ -41,13 +41,13 @@ main.container {
   max-width: 1200px;
   margin: -20px auto 50px;
   padding: 0 24px;
-  min-height: auto;
   height: auto;
 }
 
 /* panel */
 .products-panel {
   background: rgba(0, 20, 30, 0.6);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   padding: 32px;
   border-radius: 16px;
@@ -88,6 +88,7 @@ main.container {
   width: 140px;
   cursor: pointer;
   background: var(--color-secondary);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
 }
@@ -149,6 +150,7 @@ select#statusFilter {
   font-size: 15px;
   background: rgba(15, 79, 82, 0.3);
   color: #fff;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
@@ -177,6 +179,7 @@ select#statusFilter option {
 
 .card, .product-card {
   background: rgba(15, 79, 82, 0.6);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   padding: 18px;
   border-radius: 14px;
@@ -261,13 +264,25 @@ select#statusFilter option {
 }
 
 /* responsive tweaks */
+@media (max-width: 1200px) {
+  .products-hero {
+    background-size: cover;
+  }
+
 @media (max-width: 768px) {
+  .products-hero {
+    background-size: cover;
+  }
   .products-hero .title {
     font-size: 2.5rem;
   }
 
   .products-hero .subtitle {
     font-size: 1.1rem;
+  }
+
+  .products-hero .title .exclamation {
+    font-size: 40px;
   }
 
   .category-chip {
@@ -296,4 +311,5 @@ select#statusFilter option {
   select#statusFilter {
     width: 100%;
   }
+}
 }

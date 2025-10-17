@@ -123,8 +123,9 @@
     color: #333;
 }
 .error-box {
-    background-color: #ff4d4d;
-    color: white;
+    border: 1px solid #ff4d4d;
+    background-color: transparent;
+    color: #ff4d4d;
     padding: 12px 15px;
     border-radius: 5px;
     margin-bottom: 15px;
