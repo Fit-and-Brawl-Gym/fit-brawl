@@ -9,10 +9,10 @@ if (!isset($_SESSION['email'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $newPassword = trim($_POST['new_password']);
-    $confirmPassword = trim($_POST['confirm_password']);
+    $username = test_input($_POST['username']);
+    $email = test_input($_POST['email']);
+    $newPassword = test_input($_POST['new_password']);
+    $confirmPassword = test_input($_POST['confirm_password']);
     $removeAvatar = isset($_POST['remove_avatar']) && $_POST['remove_avatar'] === '1';
 
     // Get current user
@@ -40,6 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mkdir($targetDir, 0777, true);
         }
 
+        // Check file size (2MB limit)
+        $maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        if ($_FILES['avatar']['size'] > $maxSize) {
+            $_SESSION['error'] = "File size exceeds 2MB limit. Please choose a smaller image.";
+            header("Location: user_profile.php");
+            exit;
+        }
+
         $fileExtension = strtolower(pathinfo($_FILES["avatar"]["name"], PATHINFO_EXTENSION));
         $newFileName = uniqid() . '.' . $fileExtension;
         $targetFile = $targetDir . $newFileName;
@@ -49,7 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (in_array($fileExtension, $allowedTypes)) {
             if (move_uploaded_file($_FILES["avatar"]["tmp_name"], $targetFile)) {
                 $avatar = $newFileName;
+            } else {
+                $_SESSION['error'] = "Failed to upload avatar image.";
+                header("Location: user_profile.php");
+                exit;
             }
+        } else {
+            $_SESSION['error'] = "Invalid file type. Only JPG, JPEG, PNG, and GIF are allowed.";
+            header("Location: user_profile.php");
+            exit;
         }
     }
 
@@ -86,4 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: user_profile.php");
     exit;
 }
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>

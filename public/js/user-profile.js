@@ -27,6 +27,22 @@ document.addEventListener('DOMContentLoaded', function() {
         avatarInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Check file size (2MB limit)
+                const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+                if (file.size > maxSize) {
+                    alert('File size exceeds 2MB limit. Please choose a smaller image.');
+                    avatarInput.value = ''; // Clear the input
+                    return;
+                }
+
+                // Check file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPG, JPEG, PNG, or GIF).');
+                    avatarInput.value = ''; // Clear the input
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     avatarPreview.src = e.target.result;

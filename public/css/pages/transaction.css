@@ -806,6 +806,10 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+    .transaction-page {
+        height: auto;
+    }
+
     .transaction-content {
         grid-template-columns: 1fr;
         gap: var(--spacing-6);
@@ -818,6 +822,7 @@
 
 @media (max-width: 768px) {
     .transaction-page {
+        height: auto;
         padding: var(--spacing-12) var(--spacing-4) var(--spacing-6);
     }
 

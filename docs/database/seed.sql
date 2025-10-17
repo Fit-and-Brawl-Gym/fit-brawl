@@ -18,18 +18,63 @@ INSERT INTO memberships (plan_name, price, duration) VALUES
 ('Champion', 9000.00, 365);
 
 -- =====================
--- SEED DATA FOR TRAINERS
+-- SEED DATA FOR TRAINERS (MUST COME BEFORE RESERVATIONS)
 -- =====================
-INSERT INTO trainers (name, specialization, schedule) VALUES
-('Coach Pedro', 'Muay Thai', 'Mon-Wed-Fri 6-8PM'),
-('Coach Liza', 'Boxing', 'Tue-Thu 7-9PM');
+DELETE FROM trainers;
+INSERT INTO trainers (id, name, specialization, schedule) VALUES
+(1, 'Coach Carlo', 'Muay Thai', 'Mon-Wed-Fri 6-8PM'),
+(2, 'Coach Rieze', 'Boxing', 'Tue-Thu 7-9PM'),
+(3, 'Coach Thei', 'MMA', 'Mon-Fri 5-7PM');
 
 -- =====================
--- SEED DATA FOR RESERVATIONS
+-- SEED DATA FOR USER MEMBERSHIPS (NEW)
 -- =====================
-INSERT INTO reservations (user_id, trainer_id, class_type, datetime, status) VALUES
-(1, 1, 'Muay Thai', '2025-09-30 18:00:00', 'Confirmed'),
-(1, 2, 'Boxing', '2025-10-02 19:00:00', 'Confirmed');
+INSERT INTO user_memberships (user_id, membership_id, start_date, end_date, billing_type, status) VALUES
+(2, 2, '2025-07-15', '2025-10-15', 'monthly', 'active'),
+(3, 1, '2025-08-01', '2025-09-01', 'monthly', 'active');
+
+-- =====================
+-- SEED DATA FOR RESERVATIONS (UPDATED)
+-- =====================
+DELETE FROM user_reservations;
+DELETE FROM reservations;
+
+INSERT INTO reservations (trainer_id, class_type, date, start_time, end_time, max_slots, status) VALUES
+-- September 2025 sessions
+(2, 'Boxing', '2025-09-01', '17:00:00', '19:00:00', 10, 'available'),
+(1, 'Muay Thai', '2025-09-02', '09:00:00', '11:00:00', 8, 'available'),
+(3, 'MMA', '2025-09-03', '13:00:00', '15:00:00', 12, 'available'),
+(2, 'Boxing', '2025-09-04', '15:00:00', '17:00:00', 10, 'available'),
+(1, 'Muay Thai', '2025-09-08', '17:00:00', '19:00:00', 10, 'available'),
+(3, 'MMA', '2025-09-09', '19:00:00', '21:00:00', 8, 'available'),
+(2, 'Boxing', '2025-09-10', '13:00:00', '15:00:00', 10, 'available'),
+(1, 'Muay Thai', '2025-09-11', '17:00:00', '19:00:00', 10, 'available'),
+(3, 'MMA', '2025-09-15', '17:00:00', '19:00:00', 10, 'available'),
+(2, 'Boxing', '2025-09-16', '09:00:00', '11:00:00', 12, 'available'),
+(1, 'Muay Thai', '2025-09-17', '13:00:00', '15:00:00', 10, 'available'),
+(3, 'MMA', '2025-09-18', '15:00:00', '17:00:00', 8, 'available'),
+(2, 'Boxing', '2025-09-22', '17:00:00', '19:00:00', 10, 'available'),
+(1, 'Muay Thai', '2025-09-23', '19:00:00', '21:00:00', 10, 'available'),
+(3, 'MMA', '2025-09-24', '13:00:00', '15:00:00', 12, 'available'),
+(2, 'Boxing', '2025-09-25', '17:00:00', '19:00:00', 10, 'available'),
+(1, 'Muay Thai', '2025-09-29', '17:00:00', '19:00:00', 10, 'available'),
+(3, 'MMA', '2025-09-30', '09:00:00', '11:00:00', 8, 'available');
+
+-- =====================
+-- SEED DATA FOR USER RESERVATIONS (NEW)
+-- =====================
+INSERT INTO user_reservations (user_id, reservation_id, booking_status) VALUES
+(2, 1, 'confirmed'),
+(2, 7, 'confirmed'),
+(3, 2, 'confirmed'),
+(3, 4, 'confirmed');
+INSERT INTO reservations (user_id, trainer_id, class_type, date, start_time, end_time, max_slots, remaining_slots, status)
+VALUES
+(1, 1, 'Boxing', '2025-09-15', '17:00:00', '19:00:00', 10, 5, 'scheduled'),
+(2, 1, 'Muay Thai', '2025-09-18', '18:00:00', '20:00:00', 8, 2, 'scheduled'),
+(3, 2, 'Boxing', '2025-09-20', '16:00:00', '18:00:00', 12, 12, 'scheduled'),
+(1, 2, 'Muay Thai', '2025-09-22', '17:00:00', '19:00:00', 10, 0, 'completed'),
+(2, 1, 'Boxing', '2025-09-25', '17:00:00', '19:00:00', 10, 7, 'scheduled');
 
 -- =====================
 -- SEED DATA FOR EQUIPMENT
@@ -52,12 +97,13 @@ INSERT INTO `products` (`id`, `name`, `stock`, `status`) VALUES
 (4, 'Resistance Bands', 10, 'In Stock'),
 (5, 'Recovery Bar', 0, 'Out of Stock'),
 (6, 'Muscle Roller', 5, 'Low Stock'),
-(7, 'Ice Pack', 25, 'Out of Stock'),
+(7, 'Ice Pack', 25, 'In Stock'),
 (8, 'Workout Supplement', 10, 'In Stock');
 
 -- =====================
 -- SEED DATA FOR FEEDBACK
 -- =====================
-INSERT INTO feedback (user_id, message) VALUES
-(1, 'Great gym, coaches are really helpful!'),
-(1, 'Can we get more punching bags available?');
+INSERT INTO feedback (user_id, username, avatar, message, date) VALUES
+(1, 'Rieze Andrei', 'default-avatar.png', 'Great gym, coaches are really helpful!', '2025-09-15'),
+(2, 'John Doe', 'john.png', 'Loving the new MMA classes!', '2025-09-16'),
+(3, 'Jane Smith', 'jane.png', 'Could use more evening class options.', '2025-09-17'),

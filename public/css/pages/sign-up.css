@@ -78,7 +78,26 @@
     margin-bottom: 2rem;
     text-transform: uppercase;
 }
-
+.success-message {
+    color: #2ecc71;
+    background-color: transparent;
+    border: 1px solid #2ecc71;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    text-align: center;
+}
+.error-message {
+    background-color: transparent;
+    color: #ff4d4d;
+    border: 1px solid #e74c3c;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-weight: 500;
+    text-align: center;
+}
 .input-group {
     position: relative;
     margin-bottom: 1.5rem;
@@ -214,16 +233,6 @@
     color: #d5ba2b;
 }
 
-.error-message {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 12px 15px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    text-align: center;
-    font-weight: bold;
-    font-family: 'Poppins', sans-serif;
-}
 @media (max-width: 1024px) {
     .signup-hero {
         flex-direction: column;

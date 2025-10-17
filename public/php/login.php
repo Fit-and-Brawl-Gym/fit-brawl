@@ -1,20 +1,18 @@
 <?php
 session_start();
-
-// Redirect logged-in users to homepage
-if(isset($_SESSION['email'])) {
-    header("Location: loggedin-index.php");
-    exit;
-}
-
 require_once '../../includes/db_connect.php';
+require_once '../../includes/session_manager.php';
+
+// Initialize session manager
+SessionManager::initialize();
 
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $email = test_input($_POST['email'] ?? '');
+    $password = test_input($_POST['password'] ?? '');
 
+    // Fetch user
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -22,33 +20,60 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        if (password_verify($password, $user['password'])) {
+
+        if ($user['is_verified'] == 0) {
+            $error = "Please verify your email before logging in.";
+        }
+        elseif (password_verify($password, $user['password'])) {
+            // Start the session using SessionManager
+            SessionManager::startSession($email);
+
+            $_SESSION['user_id'] = $user['id'];
             $_SESSION['name'] = $user['username'];
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
-             $_SESSION['avatar'] = $user['avatar'];
+            $_SESSION['avatar'] = $user['avatar'];
+
             // Remember Me
             if (isset($_POST['remember'])) {
-                setcookie('email', $email, time() + (86400 * 30), "/");
-                setcookie('password', $user['password'], time() + (86400 * 30), "/");
-            } else {
-                setcookie('email', '', time() - 3600, "/");
-                setcookie('password', '', time() - 3600, "/");
+                $token = bin2hex(random_bytes(32));
+                $token_hash = password_hash($token, PASSWORD_DEFAULT);
+
+                $stmtToken = $conn->prepare("INSERT INTO remember_password (user_id, token_hash) VALUES (?, ?)");
+                if (!$stmtToken) die("Prepare failed: " . $conn->error);
+
+                $stmtToken->bind_param("is", $user['id'], $token_hash);
+                if (!$stmtToken->execute()) die("Insert token failed: " . $stmtToken->error);
+
+                $_SESSION['remember_password'] = $token;
             }
 
-            // Redirect based on role
             if ($user['role'] === 'admin') {
-                header("Location: admin_page.php");
+                header("Location: admin/admin.php");
             } else {
-                header("Location: index.php");
+                header("Location: loggedin-index.php");
             }
             exit;
-        }
-    }
 
-    $error = "Incorrect email or password.";
+        } else {
+            $error = "Incorrect email or password.";
+        }
+    } else {
+        $error = "Incorrect email or password.";
+    }
 }
+
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -60,7 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="stylesheet" href="../css/pages/login.css?v=1">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -82,7 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <nav class="nav-bar">
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
@@ -139,13 +164,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <div class="icon-left">
                             <i class="fas fa-key"></i>
                         </div>
-                        <input type="password" name="password" id="password" placeholder="Password"
-                        value="<?= htmlspecialchars($_COOKIE['password'] ?? '') ?>" required>
+                        <input type="password" name="password" id="password" placeholder="Password" required>
                     </div>
 
                     <div class="form-options">
                         <label class="checkbox-container">
-                            <input type="checkbox" id="remember">
+                            <input type="checkbox" id="remember" name="remember">
                             <span class="checkmark"></span>
                             Remember me
                         </label>

@@ -151,13 +151,13 @@
         } catch (error) {
             console.warn('Could not load products from API, using fallback data.', error);
             return [
-                { id: 1, name: "Whey Protein Powder", cat: "supplements", status: "in", image: "../../images/whey.jpg" },
+                { id: 1, name: "Whey Protein Powder", cat: "supplements", status: "in", image: "../../images/whey-protein-powder.jpg" },
                 { id: 2, name: "Pre-Workout Supplement", cat: "supplements", status: "low", image: "../../images/workout-supplement.jpg" },
-                { id: 3, name: "Bottled Water", cat: "hydration", status: "in", image: "../../images/bottled-water.jpeg" },
+                { id: 3, name: "Bottled Water", cat: "hydration", status: "in", image: "../../images/bottled-water.jpg" },
                 { id: 4, name: "Recovery Bar", cat: "snacks", status: "in", image: "../../images/recovery-bar.jpg" },
-                { id: 5, name: "Muscle Roller", cat: "equipment", status: "in", image: "../../images/muscle-roller.jpeg" },
+                { id: 5, name: "Muscle Roller", cat: "equipment", status: "in", image: "../../images/muscle-roller.jpg" },
                 { id: 6, name: "Ice Pack", cat: "equipment", status: "low", image: "../../images/ice-pack.jpg" },
-                { id: 7, name: "Resistance Bands", cat: "equipment", status: "out", image: "../../images/resistance-bands.jpeg" },
+                { id: 7, name: "Resistance Bands", cat: "equipment", status: "out", image: "../../images/resistance-bands.jpg" },
                 { id: 8, name: "Mouth Guards", cat: "boxing", status: "in", image: "../../images/mouth-guards.jpg" }
             ];
         }
