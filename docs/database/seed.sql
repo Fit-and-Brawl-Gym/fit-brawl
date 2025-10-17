@@ -79,12 +79,13 @@ VALUES
 -- =====================
 -- SEED DATA FOR EQUIPMENT
 -- =====================
-INSERT INTO equipment (name, status) VALUES
-('Treadmill 1', 'Available'),
-('Treadmill 2', 'Maintenance'),
-('Bench Press', 'Available'),
-('Rowing Machine 1', 'Available'),
-('Rowing Machine 2', 'Out of Order');
+INSERT INTO equipment (name, status, category, description, image_path) VALUES
+('Treadmill 1', 'Available', 'Cardio', 'Great for improving endurance and burning calories.', 'threadmill-bg.png'),
+('Treadmill 2', 'Maintenance', 'Cardio', 'Currently under maintenance.', 'threadmill-bg.png'),
+('Bench Press', 'Available', 'Strength Training', 'Build upper body strength and chest muscles.', 'bench-press.png'),
+('Rowing Machine 1', 'Available', 'Cardio', 'Enhances stamina and targets the entire body.', 'rowing-machine.png'),
+('Rowing Machine 2', 'Out of Order', 'Cardio', 'Currently not operational.', 'rowing-machine.png');
+
 
 -- =====================
 -- SEED DATA FOR PRODUCTS

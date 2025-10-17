@@ -130,10 +130,12 @@ CREATE TABLE user_reservations (
 CREATE TABLE equipment (
     id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    category VARCHAR(100) NOT NULL,
-    status ENUM('Available', 'Maintenance', 'Out of Order') DEFAULT 'Available',
-    description VARCHAR(255) DEFAULT NULL
-)
+    status ENUM('Available', 'Maintenance', 'Out of Order') NOT NULL DEFAULT 'Available',
+    category VARCHAR(50) DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    image_path VARCHAR(255) DEFAULT NULL
+);
+
 
 -- =====================
 -- PRODUCTS TABLE (Consumables Only)
