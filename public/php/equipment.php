@@ -142,33 +142,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
         <!-- Equipment Lists -->
         <div id="equipment-container">
-            <div class="equipment-card">
-    <div class="equipment-header">
-      <div class="equipment-title">
-        <h3>Treadmill #1</h3>
-      </div>
-      <div class="equipment-status">
-        <h4 class="label">Status</h4>
-        <span class="status-dot available"></span>
-        <span class="status-text">Available</span>
-      </div>
-      <div class="equipment-category">
-        <h4 class="label">Category</h4>
-        <span class="category">Cardio, Functional Training</span>
-      </div>
-      <div class="equipment-icon">
-        <img src="../../images/cardio-icon.svg" alt="Cardio Icon">
-      </div>
-    </div>
-
-    <div class="equipment-dropdown">
-      <img src="../../images/threadmill-bg.png" alt="Treadmill" class="equipment-image">
-      <p class="equipment-desc">
-        Treadmills are good for improving cardiovascular health, promoting weight loss through calorie burning,
-        and strengthening lower body muscles like the quads, hamstrings, and glutes.
-      </p>
-    </div>
-  </div>
+           
         </div>
     </main>
 
