@@ -178,3 +178,16 @@ CREATE TABLE activity_log (
   action VARCHAR(50) NOT NULL,
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- =====================
+-- CONTACT TABLE
+-- =====================
+CREATE TABLE contact (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone_number VARCHAR(20),
+    message TEXT NOT NULL,
+    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
