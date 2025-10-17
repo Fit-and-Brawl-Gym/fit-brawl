@@ -1,12 +1,91 @@
 <?php
 session_start();
 
+require_once '../../includes/db_connect.php';
+
+
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(["status" => "error", "message" => "You must be logged in"]); //TODO: Show Modal instead of text
+    exit;
+}
+
+
+$status = '';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+   $user_id = test_input($_SESSION['user_id']);
+    $username = test_input($_POST['name'] ?? '');
+    $email = test_input($_POST['email'] ?? '');
+    $message = test_input($_POST['message'] ?? '');
+    $index = $_SESSION['anonymous_index'] ?? 1;
+
+    
+
+    $sql = "SELECT avatar FROM users WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result && $row = $result->fetch_assoc()) {
+       if (empty($username )){
+        $username = "Anonymous $index";
+        $user_avatar = "../../images/profile-icon.svg";
+    } else{
+        $user_avatar = $row['avatar'];
+    }
+    if (empty($email)){
+        $email = "anon@gmail.com";
+    }
+ 
+    if (empty($message)) {
+        echo json_encode(["status" => "error", "message" => "Message cannot be empty"]);
+        exit;
+    }   
+        $_SESSION['anonymous_index'] = $index + 1;
+        $sql = "INSERT INTO feedback (user_id, username, email, avatar, message, date) 
+                VALUES (?, ?, ?, ?, ?, NOW())";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("issss", $user_id, $username, $email, $user_avatar, $message);
+
+        if ($stmt->execute()) {
+            $status = "Thanks for your feedback!";
+        } else {
+           $status = "Error: " . $stmt->error;
+        }
+    } else {
+        $status = "Error: User not found.";
+    }
+}
+
+// Check membership status for header
+require_once '../../includes/membership_check.php';
+
+require_once '../../includes/session_manager.php'; 
+
+// Initialize session manager
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
 }
+
+function test_input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -20,17 +99,27 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <link rel="stylesheet" href="../css/components/form.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../logo/plm-logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
+    <?php if(SessionManager::isLoggedIn()): ?>
+    <link rel="stylesheet" href="../css/components/session-warning.css">
+    <script src="../js/session-timeout.js"></script>
+    <?php endif; ?>
 </head>
 <body>
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
@@ -43,7 +132,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
             <nav class="nav-bar">
                 <ul>
                 <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
+                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
                     <li><a href="equipment.php">Equipment</a></li>
                     <li><a href="products.php">Products</a></li>
                     <li><a href="contact.php">Contact</a></li>
@@ -78,7 +167,11 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                 <div class="contact-header">
                     <h1>Share your feedback</h1>
                 </div>
-                <div class="contact-details">
+                <form method="post" class="feedback-form" id="feedbackForm">
+                    <div class="contact-details">
+                    <?php if(!empty($status)) : ?>
+                        <div class="status"><?= htmlspecialchars($status) ?></div>
+                    <?php endif; ?>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="first-name">
@@ -86,7 +179,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                                     <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
                                 </svg>
                             </label>
-                            <input type="text" id="first-name" name="first-name" placeholder="Name (Optional)">
+                            <input type="text" id="name" name="name" placeholder="Name (Optional)">
                         </div>
                         <div class="form-group">
                             <label for="last-name" class="email-label">
@@ -97,7 +190,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                                     4.8L20 6v2.2z"/>
                                 </svg>
                             </label>
-                            <input type="text" id="last-name" name="last-name" placeholder="Email (Optional)">
+                            <input type="text" id="email" name="email" placeholder="Email (Optional)">
                         </div>
                     </div>
                     <div class="form-group">
@@ -105,10 +198,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                     </div>
                     <div class="buttons">
                         <a href="feedback.php">Cancel</a>
-                        <button type="submit">Submit</button>
+                        <button type="submit" name="feedback" class="feedback-btn">Submit</button>
                     </div>
-                </div>
-
+                    </div>
+                </form>
             </div>
         </div>
     </main>
