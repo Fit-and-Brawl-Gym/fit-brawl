@@ -4,16 +4,20 @@
     box-sizing: border-box;
 
 }
-.bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url('../../../images/equipment-products-bg.png') no-repeat center center;
-  background-size: cover;
-  z-index: -1;
+  html, body{
+  min-height: 100%;
+   margin: 0;
+  padding: 0;
+  
   }
+  body {
+    display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: url('../../../images/equipment-products-bg.png') no-repeat center center fixed;
+  background-size: cover;
+}
+
 /* Hero section */
 .equipment-hero {
   background: var(--color-primary) url('../../../images/products-h1-bg.png') no-repeat center top / 100% auto;
@@ -51,11 +55,13 @@
 
 
 main {
-     min-height: calc(100vh - 120px);
-    padding: 3rem 2rem;
-    background: transparent;
-    position: relative;
-    z-index: 1;
+  min-height: 100vh;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  position: relative;
+  padding-bottom: 150px; 
 
 }
 
@@ -151,7 +157,7 @@ select#statusFilter {
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 15px;
   background: rgba(15, 79, 82, 0.3);
-  color: #fff;
+  color: #f5f7f8;
   margin-bottom: 20px;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
@@ -198,9 +204,11 @@ select#statusFilter option {
 }
 
 .equipment-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 100px; 
   align-items: center;
-  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
 }
 
 .equipment-card:hover {
