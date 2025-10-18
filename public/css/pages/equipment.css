@@ -8,7 +8,7 @@
   min-height: 100%;
    margin: 0;
   padding: 0;
-  
+
   }
   body {
     display: flex;
@@ -20,7 +20,7 @@
 
 /* Hero section */
 .equipment-hero {
-  background: var(--color-primary) url('../../../images/products-h1-bg.png') no-repeat center top / 100% auto;
+  background: var(--color-primary) url('../../../images/products-h1-bg.png') no-repeat center top / auto 120%;
   margin-top: 20px;
   text-align: left;
   position: relative;
@@ -61,20 +61,21 @@ main {
   flex-direction: column;
   margin-top: 20px;
   position: relative;
-  padding-bottom: 150px; 
+  padding-bottom: 150px;
 
 }
 
 .panel-header h2 {
+    font-family: 'zuume-rough-bold', sans-serif;
     text-align: center;
     color: white;
     padding: 10px;
     width: 600px;
     margin: auto;
-    border-radius: 20px;
+    border-radius: 10px;
     background-color: #002f3f;
-    font-size: 2rem;
-    margin-bottom: 3rem;
+    font-size: 2.5rem;
+    margin-bottom: 2.5rem;
     font-weight: 700;
 }
 /* categories row */
@@ -84,6 +85,10 @@ main {
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 32px;
+  max-width: 840px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 .category-chip {
@@ -117,24 +122,30 @@ main {
 }
 
 .category-chip:hover p {
-  color: var(--color-accent);
+  color: white;
 }
 
 .category-chip:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  background: rgba(15, 79, 82, 0.6);
+  background: var(--color-primary-dark);
   border-color: var(--color-accent);
 }
 
 .category-chip:hover img {
-  filter: brightness(2.9);
+  filter: brightness(1000);
 }
 
 .category-chip.active {
-  background: rgba(243, 201, 72, 0.2);
-  border-color: var(--color-accent);
-  box-shadow: 0 4px 16px rgba(243, 201, 72, 0.3);
+  background: var(--color-accent);
+  border: none;
+}
+
+.category-chip.active p {
+  color: var(--color-text-dark);
+  font-weight: 700;
+}
+
+.category-chip.active img {
+  filter: brightness(1000);
 }
 
 /* controls */
@@ -143,32 +154,42 @@ main {
   gap: 16px;
   align-items: center;
   justify-content: center;
-  margin-bottom: 32px;
-  max-width: 1200px;
-  margin: auto;
+  max-width: 840px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
   flex-wrap: wrap;
 }
 
 input[type="search"],
 select#statusFilter {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   width: 100%;
   padding: 12px 16px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 15px;
-  background: rgba(15, 79, 82, 0.3);
+  background: var(--color-secondary);
   color: #f5f7f8;
   margin-bottom: 20px;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
+select#statusFilter {
+  background-image: url('../../../images/arrow-down.svg') !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 15px !important;
+}
 .search {
-  flex: 7;
+  flex: 4 1 0;
 }
 
 .filter {
-  flex: 3;
+  flex: 1 1 0;
 }
 input[type="search"]:focus,
 select#statusFilter:focus {
@@ -201,20 +222,17 @@ select#statusFilter option {
   transition: all 0.3s ease;
   overflow: hidden;
   cursor: pointer;
+  max-width: 100%;
 }
 
 .equipment-header {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 100px; 
+  grid-template-columns: 1.5fr 1fr 1fr 100px;
   align-items: center;
   gap: 1rem;
   text-align: left;
 }
 
-.equipment-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
 
 .equipment-card h3 {
     color: white;
@@ -228,6 +246,16 @@ select#statusFilter option {
     font-size: 1rem;
     margin: 0;
 }
+
+.equipment-image {
+    width: 220px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto;
+}
+
 
 .status-dot {
   display: inline-block;
@@ -272,25 +300,27 @@ select#statusFilter option {
 .equipment-card.active{
     border-color: var(--color-accent);
 }
-.equipment-image {
-    flex: 3;
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-}
 
 .equipment-dropdown .equipment-desc {
-    flex: 6;
+  flex: 6;
   color: #ffffff !important;
-  font-size: 1.5rem !important;
+  font-size: 1rem !important;
   line-height: 1.6;
   font-weight: 400;
 }
+
 @media (max-width: 768px) {
     main {
         padding: 2rem 1rem;
     }
-
+    equipment-hero .title {
+        font-size: 3rem;
+    }
+    .panel-header h2 {
+        width: 100%;
+        margin: auto;
+        margin-bottom: 2rem;
+    }
     main h1 {
         font-size: 2rem;
     }
@@ -299,3 +329,4 @@ select#statusFilter option {
         grid-template-columns: 1fr;
     }
 }
+
