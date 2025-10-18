@@ -140,12 +140,17 @@ CREATE TABLE equipment (
 -- =====================
 -- PRODUCTS TABLE (Consumables Only)
 -- =====================
-CREATE TABLE products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    stock INT NOT NULL DEFAULT 0,
-    status ENUM('In Stock', 'Low Stock', 'Out of Stock') DEFAULT 'In Stock'
-);
+CREATE TABLE IF NOT EXISTS products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    stock INT DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'out of stock',
+    image_path VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- =====================
 -- FEEDBACK TABLE

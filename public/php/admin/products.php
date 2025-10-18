@@ -22,15 +22,9 @@ $result = $conn->query($sql);
 $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Normalize product rows so missing columns don't break the template
-$expectedKeys = ['id','name','category','brand','price','image','stock','status'];
-foreach ($products as &$p) {
-    foreach ($expectedKeys as $k) {
-        if (!array_key_exists($k, $p)) {
-            // sensible defaults
-            $p[$k] = ($k === 'price') ? 0.00 : (($k === 'stock') ? 0 : '');
-        }
-    }
-}
+$expectedKeys = ['id','name','category','image_path','stock','status'];
+
+
 unset($p);
 ?>
 
@@ -103,8 +97,6 @@ unset($p);
                             <th width="80">Image</th>
                             <th>Product Name</th>
                             <th>Category</th>
-                            <th>Brand</th>
-                            <th width="100">Price</th>
                             <th width="80">Stock</th>
                             <th width="120">Status</th>
                             <th width="160">Actions</th>
@@ -119,19 +111,19 @@ unset($p);
                                         onchange="updateBulkDelete()">
                                 </td>
                                 <td>
-                                    <?php if (!empty($product['image'])): ?>
-                                        <img src="../../../../uploads/products/<?= htmlspecialchars($product['image']) ?>"
-                                            alt="<?= htmlspecialchars($product['name']) ?>" class="product-thumb">
+                                    <?php if (!empty($product['image_path'])): ?>
+                                        <img src="../../../../uploads/products/<?= htmlspecialchars($product['image_path']) ?>"
+                                        alt="<?= htmlspecialchars($product['name']) ?>" class="product-thumb">
                                     <?php else: ?>
                                         <div class="product-thumb no-image">
                                             <i class="fa-solid fa-image"></i>
                                         </div>
                                     <?php endif; ?>
                                 </td>
+
                                 <td class="product-name"><?= htmlspecialchars($product['name']) ?></td>
-                                <td><?= htmlspecialchars($product['category']) ?></td>
-                                <td><?= htmlspecialchars($product['brand'] ?? '—') ?></td>
-                                <td class="price">₱<?= number_format($product['price'], 2) ?></td>
+                                <td><?= $product['category'] ?></td>
+
                                 <td class="stock"><?= $product['stock'] ?></td>
                                 <td>
                                     <?php
@@ -171,7 +163,7 @@ unset($p);
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <form id="productForm" class="side-panel-body" enctype="multipart/form-data">
+            <form id="productForm" class="side-panel-body" enctype="multipart/form-data" method="post">
                 <input type="hidden" id="productId" name="id">
                 <input type="hidden" id="existingImage" name="existing_image">
 
@@ -208,18 +200,6 @@ unset($p);
                     </select>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="productBrand">Brand</label>
-                        <input type="text" id="productBrand" name="brand" placeholder="e.g., Optimum Nutrition">
-                    </div>
-                    <div class="form-group">
-                        <label for="productPrice">Price (₱) *</label>
-                        <input type="number" id="productPrice" name="price" required min="0" step="0.01"
-                            placeholder="0.00">
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label for="productStock">Stock Quantity *</label>
                     <input type="number" id="productStock" name="stock" required min="0" placeholder="0">
@@ -227,11 +207,7 @@ unset($p);
                         Stock</small>
                 </div>
 
-                <div class="form-group">
-                    <label for="productDescription">Description</label>
-                    <textarea id="productDescription" name="description" rows="4"
-                        placeholder="Product details, ingredients, benefits..."></textarea>
-                </div>
+             
 
                 <div class="side-panel-footer">
                     <button type="button" class="btn-secondary" onclick="closeSidePanel()">Cancel</button>
