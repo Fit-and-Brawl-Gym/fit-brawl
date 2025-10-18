@@ -6,12 +6,21 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
     include '../../includes/db_connect.php';
 
-    $sql = "SELECT id, name, status, category, description, image_path FROM equipment";
+    // Select the expected equipment columns from the DB
+    $sql = "SELECT id, name, category, status, description FROM equipment";
     $result = $conn->query($sql);
 
     $equipment = [];
-    while ($row = $result->fetch_assoc()) {
-        $equipment[] = $row;
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $equipment[] = [
+                'id' => (int)$row['id'],
+                'name' => $row['name'],
+                'category' => $row['category'],
+                'status' => $row['status'],
+                'description' => $row['description']
+            ];
+        }
     }
 
     echo json_encode($equipment);
@@ -23,7 +32,7 @@ require_once '../../includes/db_connect.php';
 // Check membership status for header
 require_once '../../includes/membership_check.php';
 
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -49,7 +58,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit and Brawl - Equipment</title>
     <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/equipment.css">
+    <link rel="stylesheet" href="../css/pages/equipment.css?=v1">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
@@ -58,6 +67,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
     <script src="../js/header-dropdown.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
     <?php if(SessionManager::isLoggedIn()): ?>
     <link rel="stylesheet" href="../css/components/session-warning.css">
     <script src="../js/session-timeout.js"></script>
@@ -67,6 +77,11 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
@@ -115,55 +130,56 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
     <!--Main-->
     <main>
-          <div class="bg"></div>
-        <div class="equipment-panel">
-        <!-- equipment Heading -->
-         <div class="panel-header">
-            <h2>equipment availability</h2>
-         </div>
+        <div class="bg"></div>
 
-        <!-- Categories -->
-         <div class="categories-row">
-            <div class="category-chip" data-cat="supplements">
-                <img src="../../images/cardio-icon.svg" alt="Cardio Icon">
+        <!-- Equipment Gallery -->
+        <div class="panel-header">
+            <h2>Equipment Availability</h2>
+        </div>
+
+        <!-- category chips (filters) -->
+        <div class="categories-row" id="category-filters">
+            <div class="category-chip active" data-category="cardio">
+                <img src="../../images/cardio-icon.svg" alt="Cardio">
                 <p>Cardio</p>
             </div>
-            <div class="category-chip" data-cat="hydration">
-                <img src="../../images/flexibility-icon.svg" alt="Flexibility Icon">
+            <div class="category-chip" data-category="flexibility">
+                <img src="../../images/flexibility-icon.svg" alt="Flexibility">
                 <p>Flexibility</p>
             </div>
-            <div class="category-chip" data-cat="snacks">
-                <img src="../../images/core-icon.svg" alt="Core Icon">
+            <div class="category-chip" data-category="core">
+                <img src="../../images/core-icon.svg" alt="Core">
                 <p>Core</p>
             </div>
-            <div class="category-chip" data-cat="boxing gloves">
-                <img src="../../images/strength-icon.svg" alt="Strength Icon">
+            <div class="category-chip" data-category="strength">
+                <img src="../../images/strength-icon.svg" alt="Strength Training">
                 <p>Strength Training</p>
             </div>
-            <div class="category-chip" data-cat="boxing gloves">
-                <img src="../../images/functional-icon.svg" alt="Functional Icon">
+            <div class="category-chip" data-category="functional">
+                <img src="../../images/functional-icon.svg" alt="Functional Training">
                 <p>Functional Training</p>
             </div>
-         </div>
+        </div>
 
-        <!-- Search Product -->
+        <!-- controls: search + status filter -->
         <div class="controls">
-        <div class="search">
-            <input type="search" id="q" placeholder="Search equipment..." aria-label="Search equipment">
+            <div class="search">
+                <input type="search" id="equipmentSearch" placeholder="Search">
+            </div>
+            <div class="filter">
+                <select id="statusFilter">
+                    <option value="all">Filter by Status</option>
+                    <option value="available">Available</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+            </div>
         </div>
-        <div style="width:210px">
-            <select id="statusFilter">
-            <option value="all">Filter by Status</option>
-            <option value="available">Available</option>
-            <option value="out-of-order">Out of order</option>
-            <option value="low">Maintenance</option>
-            </select>
-        </div>
-        </div>
-        <!-- Equipment Lists -->
+
+        <!-- equipment list -->
         <div id="equipment-container">
-           
+            <!-- JS will render equipment cards here -->
         </div>
+
     </main>
 
     <!--Footer-->
@@ -204,6 +220,21 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </footer>
 
-    <script src="../js/equipment.js?=v1"></script>
+    <script>
+        // Load equipment data
+        fetch('equipment.php?api=true')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('equipment-container');
+                container.innerHTML = data.map(item => `
+                    <div class="equipment-card">
+                        <h3>${item.name}</h3>
+                        <p>Status: <span class="status-${item.equipment.toLowerCase().replace(/\s+/g, '-')}">${item.equipment}</span></p>
+                    </div>
+                `).join('');
+            })
+            .catch(error => console.error('Error loading equipment:', error));
+    </script>
+    <script src="../js/equipment.js"></script>
 </body>
 </html>
