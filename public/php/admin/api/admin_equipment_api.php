@@ -17,35 +17,53 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // CREATE or UPDATE
 if ($method === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
-
-    $id = isset($input['id']) && $input['id'] !== '' ? (int) $input['id'] : null;
-    $name = trim($input['name'] ?? '');
-    $category = trim($input['category'] ?? '');
-    $status = trim($input['status'] ?? 'Available');
-    $description = trim($input['description'] ?? '');
+    $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int) $_POST['id'] : null;
+    $name = trim($_POST['name'] ?? '');
+    $category = trim($_POST['category'] ?? '');
+    $status = trim($_POST['status'] ?? 'Available');
+    $description = trim($_POST['description'] ?? '');
+    $imagePath = null;
 
     if (empty($name) || empty($category)) {
         echo json_encode(['success' => false, 'message' => 'Name and category are required']);
         exit;
     }
 
-    if ($id) {
-        // UPDATE
-        $stmt = $conn->prepare("UPDATE equipment SET name = ?, category = ?, status = ?, description = ? WHERE id = ?");
-        $stmt->bind_param('ssssi', $name, $category, $status, $description, $id);
-    } else {
-        // CREATE
-        $stmt = $conn->prepare("INSERT INTO equipment (name, category, status, description) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param('ssss', $name, $category, $status, $description);
+    // Handle image upload
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $targetDir = __DIR__ . '/../../../../uploads/equipment/';
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $filename = uniqid() . "_" . basename($_FILES['image']['name']);
+        $targetFile = $targetDir . $filename;
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
+            $imagePath = '../../uploads/equipment/' . $filename;
+        }
     }
 
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Equipment saved successfully']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+    // If updating
+    if ($id) {
+        if ($imagePath) {
+            $stmt = $conn->prepare("UPDATE equipment SET name=?, category=?, status=?, description=?, image_path=? WHERE id=?");
+            $stmt->bind_param("sssssi", $name, $category, $status, $description, $imagePath, $id);
+        } else {
+            $stmt = $conn->prepare("UPDATE equipment SET name=?, category=?, status=?, description=? WHERE id=?");
+            $stmt->bind_param("ssssi", $name, $category, $status, $description, $id);
+        }
+    } 
+    // If adding new
+    else {
+        $stmt = $conn->prepare("INSERT INTO equipment (name, category, status, description, image_path) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $name, $category, $status, $description, $imagePath);
     }
-    $stmt->close();
+     if ($stmt->execute()) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => $stmt->error]);
+        }   
     exit;
 }
 
@@ -61,11 +79,12 @@ if ($method === 'DELETE') {
     $stmt = $conn->prepare("DELETE FROM equipment WHERE id = ?");
     $stmt->bind_param('i', $id);
 
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Equipment deleted successfully']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
-    }
+    
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'message' => $stmt->error]);
+            }
     $stmt->close();
     exit;
 }
