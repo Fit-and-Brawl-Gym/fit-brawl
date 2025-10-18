@@ -142,9 +142,27 @@ unset($it);
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <form id="equipmentForm" class="side-panel-body">
+      <form id="equipmentForm" class="side-panel-body" method="post">
         <input type="hidden" id="equipmentId" name="id">
 
+                <input type="hidden" id="existingImage" name="existing_image">
+
+                  <!-- Image Upload Preview -->
+                  <div class="form-group">
+                      <label>Equipment Image</label>
+                      <div class="image-upload-container">
+                          <div id="imagePreview" class="image-preview">
+                              <i class="fa-solid fa-image"></i>
+                              <p>Click to upload image</p>
+                          </div>
+                          <input type="file" id="equipmentImage" name="image" accept="image/*" style="display:none;"
+                              onchange="previewImage(event)">
+                          <button type="button" class="btn-secondary btn-small"
+                              onclick="document.getElementById('equipmentImage').click()">
+                              <i class="fa-solid fa-upload"></i> Choose Image
+                          </button>
+                      </div>
+                  </div>
         <div class="form-group">
           <label for="equipmentName">Equipment Name *</label>
           <input type="text" id="equipmentName" name="name" required placeholder="e.g., Treadmill Pro X500">
@@ -199,7 +217,7 @@ unset($it);
     </div>
   </div>
 
-  <script src="js/equipment.js"></script>
+  <script src="js/equipment.js?=v1"></script>
 </body>
 
 </html>

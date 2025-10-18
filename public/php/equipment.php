@@ -1,53 +1,63 @@
 <?php
-// Check if this is an API request
 session_start();
+
 
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
     include '../../includes/db_connect.php';
 
-    // Select the expected equipment columns from the DB
-    $sql = "SELECT id, name, category, status, description FROM equipment";
-    $result = $conn->query($sql);
+    try {
+        $sql = "SELECT id, name, category, status, description, image_path FROM equipment";
+        $result = $conn->query($sql);
 
-    $equipment = [];
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            $equipment[] = [
-                'id' => (int)$row['id'],
-                'name' => $row['name'],
-                'category' => $row['category'],
-                'status' => $row['status'],
-                'description' => $row['description']
-            ];
+        if (!$result) {
+            throw new Exception($conn->error);
         }
-    }
 
-    echo json_encode($equipment);
+        $equipment = [];
+        while ($row = $result->fetch_assoc()) {
+            $imageBase = '/fit-brawl/uploads/equipment/';
+            $placeholder = '/fit-brawl/images/placeholder-equipment.jpg';
+
+            $row['image_path'] = !empty($row['image_path'])
+                ? (strpos($row['image_path'], '/fit-brawl/') === false
+                    ? $imageBase . basename($row['image_path'])
+                    : $row['image_path'])
+                : $placeholder;
+
+            $equipment[] = $row;
+        }
+
+        echo json_encode(['success' => true, 'data' => $equipment]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
     exit;
 }
 
+
+// === MAIN PAGE ===
 require_once '../../includes/db_connect.php';
-
-// Check membership status for header
 require_once '../../includes/membership_check.php';
-
 require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
 
-// Check if user is logged in
+// Redirect if not logged in
 if (!SessionManager::isLoggedIn()) {
     header('Location: login.php');
     exit;
 }
 
-// Determine avatar source for logged-in users
+// Avatar for header
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+    $avatarSrc = $hasCustomAvatar
+        ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar'])
+        : "../../images/profile-icon.svg";
 }
 ?>
 
