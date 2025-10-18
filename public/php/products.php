@@ -165,6 +165,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                 <img src="../../images/boxing-icon.svg" alt="Boxing and Muay Thai Gloves">
                 <p>Boxing and Muay Thai</p>
                 </div>
+                <div class="category-chip" data-cat="accessories">
+                <img src="../../images/strength-icon.svg" alt="Accessories">
+                <p>Accessories</p>
+                </div>
          </div>
 
         <!-- Search Product -->

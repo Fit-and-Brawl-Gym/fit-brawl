@@ -15,7 +15,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
     try {
 
-        $sql = "SELECT id, name, category AS cat, stock, status, image_path AS image FROM products ORDER BY category, name";
+        $sql = "SELECT id, name, category, stock, status, image_path AS image FROM products ORDER BY category, name";
         $result = $conn->query($sql);
 
         if (!$result) {
@@ -36,7 +36,8 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             
 
             if (empty($row['image'])) {
-                $row['image'] = '../../../uploads/products' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
+                $row['image'] = '../../../uploads/products/' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
+
             }
         
 
@@ -228,6 +229,7 @@ unset($p);
                         <option value="Supplements">Supplements</option>
                         <option value="Hydration & Drinks">Hydration & Drinks</option>
                         <option value="Snacks">Snacks</option>
+                        <option value="Accessories">Accessories</option>
                         <option value="Boxing & Muay Thai Products">Boxing & Muay Thai Products</option>
                     </select>
                 </div>

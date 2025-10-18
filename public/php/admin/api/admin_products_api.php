@@ -16,7 +16,7 @@ try {
     if ($method === 'POST') {
         $id = $_POST['id'] ?? null;
         $name = test_input($_POST['name'] ?? '');
-        $category = test_input($_POST['category']?? '');
+        $category = ($_POST['category']?? '');
         $stock = test_input(intval($_POST['stock'] ?? 0));
 
         if ($stock == 0) {
