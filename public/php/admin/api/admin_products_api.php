@@ -28,7 +28,7 @@ try {
         }
         $imagePath = null;
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $targetDir = "../../../../uploads/products/";
+            $targetDir = __DIR__ . '/../../../../uploads/products/';
             if (!is_dir($targetDir)) {
                 mkdir($targetDir, 0777, true);
             }
@@ -37,7 +37,7 @@ try {
             $targetFile = $targetDir . $filename;
 
             if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-                $imagePath = $filename;
+                $imagePath = '../../uploads/products/' . $filename;
             }
         }
 

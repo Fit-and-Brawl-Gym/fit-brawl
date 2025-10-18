@@ -26,7 +26,7 @@ function editProduct(product) {
     // Show existing image
     if (product.image) {
         const preview = document.getElementById('imagePreview');
-        preview.style.backgroundImage = `url('../../../../uploads/products/${product.image}')`;
+        preview.style.backgroundImage = `url('../../uploads/products/${product.image}')`;
         preview.style.backgroundSize = 'cover';
         preview.style.backgroundPosition = 'center';
         preview.innerHTML = '';
