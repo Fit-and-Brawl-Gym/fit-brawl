@@ -12,9 +12,12 @@ function capitalize(s) {
 
 function renderEquipment(items) {
   container.innerHTML = items.map(item => {
-    // category stored in DB as comma separated string – normalize to array
     const categories = item.category ? item.category.split(',').map(c => c.trim()) : [];
     const statusClass = (item.status || '').toLowerCase().replace(/\s+/g, '-');
+    const imageSrc = item.image_path && item.image_path.trim() !== ''
+        ? item.image_path
+        : '../../images/placeholder-equipment.jpg';
+
     return `
       <div class="equipment-card" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
         <div class="equipment-header">
@@ -25,19 +28,17 @@ function renderEquipment(items) {
           </div>
         </div>
         <div class="equipment-dropdown">
-          <img src="${
-            item.image_path
-              ? item.image_path
-              : `../../images/${item.name.toLowerCase().replace(/\s+/g, '-')}.jpg`
-          }" alt="${escapeHtml(item.name)}" class="equipment-image"
-          onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
+          <img src="${imageSrc}" 
+               alt="${escapeHtml(item.name)}" 
+               class="equipment-image"
+               onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
           <div class="equipment-desc">${escapeHtml(item.description || '')}</div>
         </div>
       </div>
     `;
   }).join('');
 
-  // Attach click handlers for expansion
+  // Click toggle
   const cards = container.querySelectorAll('.equipment-card');
   cards.forEach(card => {
     card.addEventListener('click', () => {
@@ -95,9 +96,9 @@ function applyFilters() {
 // Load data from API
 fetch('equipment.php?api=true')
   .then(r => r.json())
-  .then(data => {
-    // map to expected fields
-    EQUIPMENT_DATA = data.map(d => ({
+  .then(res => {
+    if (!res.success) throw new Error(res.error || 'Failed to load equipment');
+    EQUIPMENT_DATA = res.data.map(d => ({
       id: d.id,
       name: d.name,
       category: d.category,
