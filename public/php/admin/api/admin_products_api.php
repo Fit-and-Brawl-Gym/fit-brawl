@@ -12,178 +12,89 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 $method = $_SERVER['REQUEST_METHOD'];
 
 // CREATE or UPDATE
-if ($method === 'POST') {
-    $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int) $_POST['id'] : null;
-    $name = trim($_POST['name'] ?? '');
-    $category = trim($_POST['category'] ?? '');
-    $brand = trim($_POST['brand'] ?? '');
-    $price = floatval($_POST['price'] ?? 0);
-    $stock = intval($_POST['stock'] ?? 0);
-    $description = trim($_POST['description'] ?? '');
-    $existingImage = trim($_POST['existing_image'] ?? '');
+try {
+    if ($method === 'POST') {
+        $id = $_POST['id'] ?? null;
+        $name = test_input($_POST['name'] ?? '');
+        $category = test_input($_POST['category']?? '');
+        $stock = test_input(intval($_POST['stock'] ?? 0));
 
-    if (empty($name) || empty($category)) {
-        echo json_encode(['success' => false, 'message' => 'Name and category are required']);
-        exit;
-    }
-
-    // Auto-calculate status based on stock - FIX: ensure correct logic
-    if ($stock === 0) {
-        $status = 'Out of Stock';
-    } elseif ($stock >= 1 && $stock <= 10) {
-        $status = 'Low Stock';
-    } else {
-        $status = 'In Stock';
-    }
-
-    // Debug: log the calculated status
-    error_log("Stock: $stock, Calculated Status: $status");
-
-    // Handle image upload
-    $imageName = $existingImage;
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/../../../../uploads/products/';
-
-        // Create directory if not exists
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+        if ($stock == 0) {
+            $status = 'out of stock';
+        } elseif ($stock > 0 && $stock <= 10) {
+            $status = 'low stock';
+        } else {
+            $status = 'in stock';
         }
+        $imagePath = null;
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $targetDir = __DIR__ . '/../../../../uploads/products/';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
 
-        $extension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $imageName = uniqid('prod_') . '.' . $extension;
-        $targetPath = $uploadDir . $imageName;
+            $filename = uniqid() . "_" . basename($_FILES['image']['name']);
+            $targetFile = $targetDir . $filename;
 
-        // Validate image type
-        $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        if (!in_array(strtolower($extension), $allowedTypes)) {
-            echo json_encode(['success' => false, 'message' => 'Invalid image type. Allowed: jpg, png, gif, webp']);
-            exit;
-        }
-
-        // Move uploaded file
-        if (!move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-            echo json_encode(['success' => false, 'message' => 'Failed to upload image']);
-            exit;
-        }
-
-        // Delete old image if updating
-        if ($id && $existingImage && file_exists($uploadDir . $existingImage)) {
-            unlink($uploadDir . $existingImage);
-        }
-    }
-
-    if ($id) {
-        // UPDATE - IMPORTANT: Make sure status is updated
-        $stmt = $conn->prepare("UPDATE products SET name = ?, category = ?, brand = ?, price = ?, stock = ?, status = ?, description = ?, image = ? WHERE id = ?");
-        if ($stmt === false) {
-            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
-            exit;
-        }
-        $stmt->bind_param('sssdiissi', $name, $category, $brand, $price, $stock, $status, $description, $imageName, $id);
-    } else {
-        // CREATE
-        $stmt = $conn->prepare("INSERT INTO products (name, category, brand, price, stock, status, description, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        if ($stmt === false) {
-            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
-            exit;
-        }
-        $stmt->bind_param('sssdisss', $name, $category, $brand, $price, $stock, $status, $description, $imageName);
-    }
-
-    if ($stmt->execute()) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Product saved successfully',
-            'debug' => "Stock: $stock, Status: $status" // Debug info
-        ]);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
-    }
-    $stmt->close();
-    exit;
-}
-
-// DELETE
-if ($method === 'DELETE') {
-    // Bulk delete
-    if (isset($_GET['bulk'])) {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $ids = $input['ids'] ?? [];
-
-        if (empty($ids)) {
-            echo json_encode(['success' => false, 'message' => 'No IDs provided']);
-            exit;
-        }
-
-        // Get images to delete
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $stmt = $conn->prepare("SELECT image FROM products WHERE id IN ($placeholders)");
-        $types = str_repeat('i', count($ids));
-        $stmt->bind_param($types, ...$ids);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $uploadDir = __DIR__ . '/../../../../uploads/products/';
-        while ($row = $result->fetch_assoc()) {
-            if (!empty($row['image']) && file_exists($uploadDir . $row['image'])) {
-                unlink($uploadDir . $row['image']);
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
+                $imagePath = '../../uploads/products/' . $filename;
             }
         }
-        $stmt->close();
 
-        // Delete products
-        $stmt = $conn->prepare("DELETE FROM products WHERE id IN ($placeholders)");
-        $stmt->bind_param($types, ...$ids);
+        if (empty($id)) {
+            $stmt = $conn->prepare("INSERT INTO products (name, category, stock, status, image_path) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssiss", $name, $category, $stock, $status, $imagePath);
+        } else {
+            if ($imagePath) {
+                $stmt = $conn->prepare("UPDATE products SET name=?, category=?, stock=?, status=?, image_path=? WHERE id=?");
+                $stmt->bind_param("ssissi", $name, $category, $stock, $status, $imagePath, $id);
+            } else {
+                $stmt = $conn->prepare("UPDATE products SET name=?, category=?, stock=?, status=? WHERE id=?");
+                $stmt->bind_param("ssisi", $name, $category, $stock, $status, $id);
+            }
+        }
 
         if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'message' => count($ids) . ' product(s) deleted successfully']);
+            echo json_encode(['success' => true]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to delete products: ' . $stmt->error]);
+            echo json_encode(['success' => false, 'message' => $stmt->error]);
         }
-        $stmt->close();
-        exit;
-    }
+    } elseif ($method === 'DELETE') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ids = [];
 
-    // Single delete
-    $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-
-    if ($id <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Invalid ID']);
-        exit;
-    }
-
-    // Get image to delete
-    $stmt = $conn->prepare("SELECT image FROM products WHERE id = ?");
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $product = $result->fetch_assoc();
-    $stmt->close();
-
-    if ($product && !empty($product['image'])) {
-        $imagePath = __DIR__ . '/../../../../uploads/products/' . $product['image'];
-        if (file_exists($imagePath)) {
-            unlink($imagePath);
+        if (isset($_GET['id'])) {
+            $ids[] = intval($_GET['id']);
+        } elseif (!empty($input['ids'])) {
+            $ids = array_map('intval', $input['ids']);
         }
-    }
 
-    // Delete product
-    $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
-    if ($stmt === false) {
-        echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
-        exit;
-    }
-    $stmt->bind_param('i', $id);
+        if (!empty($ids)) {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $types = str_repeat('i', count($ids));
+            $stmt = $conn->prepare("DELETE FROM products WHERE id IN ($placeholders)");
+            $stmt->bind_param($types, ...$ids);
 
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Product deleted successfully']);
+            if ($stmt->execute()) {
+                echo json_encode(['success' => true]);
+            } else {
+                echo json_encode(['success' => false, 'message' => $stmt->error]);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No IDs provided']);
+        }
     } else {
-        echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
+        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     }
-    $stmt->close();
-    exit;
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
-http_response_code(405);
-echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+function test_input($data){
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
+
 ?>

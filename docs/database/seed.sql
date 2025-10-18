@@ -90,15 +90,15 @@ INSERT INTO equipment (name, status, category, description, image_path) VALUES
 -- =====================
 -- SEED DATA FOR PRODUCTS
 -- =====================
-INSERT INTO `products` (`id`, `name`, `stock`, `status`) VALUES
-(1, 'Whey Protein Powder', 20, 'In Stock'),
-(2, 'Mouth Guards', 0, 'Out of Stock'),
-(3, 'Bottled Water', 5, 'Low Stock'),
-(4, 'Resistance Bands', 10, 'In Stock'),
-(5, 'Recovery Bar', 0, 'Out of Stock'),
-(6, 'Muscle Roller', 5, 'Low Stock'),
-(7, 'Ice Pack', 25, 'In Stock'),
-(8, 'Workout Supplement', 10, 'In Stock');
+INSERT INTO products (name, category, stock, status, image_path) VALUES
+    ('Whey Protein Powder', 'supplements', 50, 'in stock', '../../uploads/products/whey-protein-powder.jpg'),
+    ('Pre-Workout Supplement', 'supplements', 10, 'low stock', '../../uploads/products/workout-supplement.jpg'),
+    ('Bottled Water', 'hydration', 100, 'in stock', '../../uploads/products/bottled-water.jpg'),
+    ('Recovery Bar', 'snacks', 30, 'in stock', '../../uploads/products/recovery-bar.jpg'),
+    ('Muscle Roller', 'equipment', 15, 'in stock', '../../uploads/products//muscle-roller.jpg'),
+    ('Ice Pack', 'equipment', 5, 'low stock', '../../uploads/products/ice-pack.jpg'),
+    ('Resistance Bands', 'equipment', 0, 'out of stock', '../../uploads/products/resistance-bands.jpg'),
+    ('Mouth Guards', 'boxing', 25, 'in stock', '../../uploads/products/mouth-guards.jpg');
 
 -- =====================
 -- SEED DATA FOR FEEDBACK
