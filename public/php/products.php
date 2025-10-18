@@ -34,7 +34,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             
             // Ensure image path is valid
             if (empty($row['image'])) {
-                $row['image'] = '../../images/' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
+                $row['image'] = '../../uploads/products' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
             }
             
             $products[] = $row;
@@ -189,7 +189,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
     </main>
 
-    <script src="../js/products.js"></script>
+    <script src="../js/products.js?=v1"></script>
 
     <!--Footer-->
     <footer>
@@ -230,8 +230,3 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     </footer>
 </body>
 </html>
-<script>
-fetch("../api/product_api.php")
-  .then(res => res.json())
-  .then(console.log);
-</script>

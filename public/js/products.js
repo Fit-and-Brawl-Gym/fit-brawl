@@ -41,7 +41,7 @@
         if (!imageSrc) {
             // Generate image path from product name (e.g., "Whey Protein Powder" -> "whey-protein-powder.jpg")
             const imageName = product.name.toLowerCase().replace(/\s+/g, '-');
-            imageSrc = `../../images/${imageName}.jpg`;
+            imageSrc = `../../uploads/products ${imageName}.jpg`;
         }
  
         const card = document.createElement('div');
@@ -136,32 +136,34 @@
     }
 
     async function fetchProducts() {
-        const apiUrl = `${window.location.pathname}?api=true`;
-        try {
-            const response = await fetch(apiUrl, { cache: 'no-store' });
-            if (!response.ok) throw new Error('Network response failed');
+    const apiUrl = "products.php?api=true";
+    try {
+        const response = await fetch(apiUrl, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Network error: ${response.status}`);
 
-            const data = await response.json();
-            return data.map(item => ({
-                id: item.id || item.product_id || null,
-                name: item.name || item.product_name || 'Unnamed Product',
-                cat: (item.cat || item.category || (item.category_name && item.category_name.toLowerCase())) || 'uncategorized',
-                status: (item.status || item.stock || '').toString().toLowerCase()
-            }));
-        } catch (error) {
-            console.warn('Could not load products from API, using fallback data.', error);
-            return [
-                { id: 1, name: "Whey Protein Powder", cat: "supplements", status: "in", image: "../../images/whey-protein-powder.jpg" },
-                { id: 2, name: "Pre-Workout Supplement", cat: "supplements", status: "low", image: "../../images/workout-supplement.jpg" },
-                { id: 3, name: "Bottled Water", cat: "hydration", status: "in", image: "../../images/bottled-water.jpg" },
-                { id: 4, name: "Recovery Bar", cat: "snacks", status: "in", image: "../../images/recovery-bar.jpg" },
-                { id: 5, name: "Muscle Roller", cat: "equipment", status: "in", image: "../../images/muscle-roller.jpg" },
-                { id: 6, name: "Ice Pack", cat: "equipment", status: "low", image: "../../images/ice-pack.jpg" },
-                { id: 7, name: "Resistance Bands", cat: "equipment", status: "out", image: "../../images/resistance-bands.jpg" },
-                { id: 8, name: "Mouth Guards", cat: "boxing", status: "in", image: "../../images/mouth-guards.jpg" }
-            ];
+        const data = await response.json();
+
+
+        
+        if (!data.success || !Array.isArray(data.data)) {
+            throw new Error("Invalid API format — expected { success:true, data:[...] }");
         }
+
+
+        return data.data.map(item => ({
+            id: item.id || item.product_id || null,
+            name: item.name || item.product_name || "Unnamed Product",
+            cat: (item.cat || item.category || "uncategorized").toLowerCase(),
+            status: (item.status || "").toLowerCase(),
+            image: item.image || item.image_path || ""
+        }));
+    } catch (error) {
+        console.error("Could not load products from API, using fallback data.", error);
+        return [];
     }
+}
+
+
 
     async function init() {
         attachEventListeners();
