@@ -8,21 +8,53 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-// Fetch all products (build ORDER BY only using columns that exist)
-$orderCols = [];
-// check commonly used columns
-$hasCategory = ($conn->query("SHOW COLUMNS FROM products LIKE 'category'")->num_rows > 0);
-$hasName = ($conn->query("SHOW COLUMNS FROM products LIKE 'name'")->num_rows > 0);
-if ($hasCategory) $orderCols[] = 'category';
-if ($hasName) $orderCols[] = 'name';
-if (empty($orderCols)) $orderCols[] = 'id';
 
-$sql = "SELECT * FROM products" . (count($orderCols) ? " ORDER BY " . implode(', ', $orderCols) : '');
+if (isset($_GET['api']) && $_GET['api'] === 'true') {
+    header('Content-Type: application/json');
+    require_once __DIR__ . '/../../includes/db_connect.php';
+
+    try {
+
+        $sql = "SELECT id, name, category AS cat, stock, status, image_path AS image FROM products ORDER BY category, name";
+        $result = $conn->query($sql);
+
+        if (!$result) {
+            throw new Exception($conn->error);
+        }
+
+        $products = [];
+        while ($row = $result->fetch_assoc()) {
+            // Normalize status
+            $status = strtolower(trim($row['status'] ?? ''));
+            if (str_contains($status, 'in')) {
+                $row['status'] = 'in';
+            } elseif (str_contains($status, 'low')) {
+                $row['status'] = 'low';
+            } else {
+                $row['status'] = 'out';
+            }
+            
+
+            if (empty($row['image'])) {
+                $row['image'] = '../../../uploads/products' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
+            }
+        
+
+            $products[] = $row;
+        }
+
+        echo json_encode(['success' => true, 'data' => $products], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+    exit;
+}
+
+
+$sql = "SELECT * FROM products ORDER BY category, name";
 $result = $conn->query($sql);
 $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
-
-// Normalize product rows so missing columns don't break the template
-$expectedKeys = ['id','name','category','image_path','stock','status'];
 
 
 unset($p);
@@ -112,7 +144,7 @@ unset($p);
                                 </td>
                                 <td>
                                     <?php if (!empty($product['image_path'])): ?>
-                                        <img src="../../../../uploads/products/<?= htmlspecialchars($product['image_path']) ?>"
+                                        <img src="/fit-brawl/uploads/products/<?= htmlspecialchars($product['image_path']) ?>"
                                         alt="<?= htmlspecialchars($product['name']) ?>" class="product-thumb">
                                     <?php else: ?>
                                         <div class="product-thumb no-image">
