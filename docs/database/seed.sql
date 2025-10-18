@@ -91,14 +91,14 @@ INSERT INTO equipment (name, status, category, description, image_path) VALUES
 -- SEED DATA FOR PRODUCTS
 -- =====================
 INSERT INTO products (name, category, stock, status, image_path) VALUES
-    ('Whey Protein Powder', 'supplements', 50, 'in stock', '../../uploads/products/whey-protein-powder.jpg'),
-    ('Pre-Workout Supplement', 'supplements', 10, 'low stock', '../../uploads/products/workout-supplement.jpg'),
-    ('Bottled Water', 'hydration', 100, 'in stock', '../../uploads/products/bottled-water.jpg'),
-    ('Recovery Bar', 'snacks', 30, 'in stock', '../../uploads/products/recovery-bar.jpg'),
-    ('Muscle Roller', 'equipment', 15, 'in stock', '../../uploads/products//muscle-roller.jpg'),
-    ('Ice Pack', 'equipment', 5, 'low stock', '../../uploads/products/ice-pack.jpg'),
-    ('Resistance Bands', 'equipment', 0, 'out of stock', '../../uploads/products/resistance-bands.jpg'),
-    ('Mouth Guards', 'boxing', 25, 'in stock', '../../uploads/products/mouth-guards.jpg');
+    ('Whey Protein Powder', 'Supplements', 50, 'in stock', '../../uploads/products/whey-protein-powder.jpg'),
+    ('Pre-Workout Supplement', 'Supplements', 10, 'low stock', '../../uploads/products/workout-supplement.jpg'),
+    ('Bottled Water', 'Hydration & Drinks', 100, 'in stock', '../../uploads/products/bottled-water.jpg'),
+    ('Recovery Bar', 'Snacks', 30, 'in stock', '../../uploads/products/recovery-bar.jpg'),
+    ('Muscle Roller', 'Accessories', 15, 'in stock', '../../uploads/products//muscle-roller.jpg'),
+    ('Ice Pack', 'Accessories', 5, 'low stock', '../../uploads/products/ice-pack.jpg'),
+    ('Resistance Bands', 'Accessories', 0, 'out of stock', '../../uploads/products/resistance-bands.jpg'),
+    ('Mouth Guards', 'Boxing & Muay Thai Products', 25, 'in stock', '../../uploads/products/mouth-guards.jpg');
 
 -- =====================
 -- SEED DATA FOR FEEDBACK

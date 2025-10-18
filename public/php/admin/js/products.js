@@ -11,25 +11,39 @@ function openSidePanel() {
     document.getElementById('sidePanel').classList.add('active');
 }
 
-// Open side panel for editing
+
 function editProduct(product) {
+        console.log("🟢 editProduct triggered:", product);
     document.getElementById('panelTitle').textContent = 'Edit Product';
     document.getElementById('productId').value = product.id;
     document.getElementById('productName').value = product.name;
-    document.getElementById('productCategory').value = product.category;
-    document.getElementById('productBrand').value = product.brand || '';
-    document.getElementById('productPrice').value = product.price;
-    document.getElementById('productStock').value = product.stock;
-    document.getElementById('productDescription').value = product.description || '';
-    document.getElementById('existingImage').value = product.image || '';
 
-    // Show existing image
-    if (product.image) {
-        const preview = document.getElementById('imagePreview');
-        preview.style.backgroundImage = `url('../../uploads/products/${product.image}')`;
-        preview.style.backgroundSize = 'cover';
-        preview.style.backgroundPosition = 'center';
-        preview.innerHTML = '';
+
+    const categoryField = document.getElementById('productCategory');
+    categoryField.value = product.category;
+
+
+    document.getElementById('productStock').value = product.stock;
+
+
+    const imageFile = product.image || product.image_path || '';
+    document.getElementById('existingImage').value = imageFile;
+
+
+    if (imageFile) {
+    const preview = document.getElementById('imagePreview');
+    const fileName = imageFile.split('/').pop();
+
+
+    const imagePath = `/fit-brawl/uploads/products/${fileName}`;
+
+
+    preview.style.backgroundImage = `url('${imagePath}')`;
+    preview.style.backgroundSize = 'cover';
+    preview.style.backgroundPosition = 'center';
+    preview.innerHTML = '';
+    } else {
+        resetImagePreview();
     }
 
     document.getElementById('sidePanel').classList.add('active');
