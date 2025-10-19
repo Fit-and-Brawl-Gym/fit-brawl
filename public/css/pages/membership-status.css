@@ -1,0 +1,49 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #002f3f;
+    margin: 0;
+    padding: 0;
+    }
+main {
+    max-width: 600px;
+    margin: 100px auto;
+    padding: 30px;
+    background: rgba(15, 79, 82, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    text-align: center;
+}
+h2 {
+    margin-bottom: 15px;
+    color: #ffcc00;
+}
+p {
+    color: white;
+    line-height: 1.6;
+}
+.status-message.pending {
+    border-left: 6px solid #f0ad4e;
+    padding-left: 15px;
+    }
+.status-message.rejected {
+    border-left: 6px solid #d9534f;
+    padding-left: 15px;
+}
+.status-message.none {
+    border-left: 6px solid #5bc0de;
+    padding-left: 15px;
+}
+.back-btn {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 10px 20px;
+    background-color: #ffcc00;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+.back-btn:hover {
+    background-color: #e6b800;
+}

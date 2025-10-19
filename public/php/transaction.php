@@ -555,7 +555,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </footer>
 
-    <script src="../js/transaction.js"></script>
+    <script src="../js/transaction.js?=v1"></script>
 </body>
 
 
