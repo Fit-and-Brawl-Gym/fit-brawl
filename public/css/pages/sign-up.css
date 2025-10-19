@@ -265,3 +265,129 @@
         padding: 1rem;
     }
 }
+
+/* Password Validation Styles */
+.password-requirements {
+    margin-top: 15px;
+    display: none;
+}
+
+.password-requirements.show {
+    display: block;
+}
+
+.requirements-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.requirement-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    font-size: 13px;
+    background-color: #f0f0f0;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.requirement-item.met {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.requirement-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.requirement-item.met .requirement-icon {
+    background-color: #28a745;
+    color: white;
+}
+
+.requirement-item .requirement-icon {
+    background-color: #ccc;
+    color: white;
+}
+
+.strength-indicator {
+    margin-top: 12px;
+    display: none;
+}
+
+.strength-indicator.show {
+    display: block;
+}
+
+.strength-bar {
+    height: 6px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.strength-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+}
+
+.strength-bar-fill.weak {
+    width: 33%;
+    background-color: #dc3545;
+}
+
+.strength-bar-fill.medium {
+    width: 66%;
+    background-color: #ffc107;
+}
+
+.strength-bar-fill.strong {
+    width: 100%;
+    background-color: #28a745;
+}
+
+.strength-text {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.strength-text.weak {
+    color: #dc3545;
+}
+
+.strength-text.medium {
+    color: #ffc107;
+}
+
+.strength-text.strong {
+    color: #28a745;
+}
+
+.eye-toggle {
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.eye-toggle:hover {
+    color: #333;
+}
+
+.input-group-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
