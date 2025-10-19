@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Elements
+
     const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
     const receiptModal = document.getElementById('receiptModal');
     const receiptModalOverlay = document.getElementById('receiptModalOverlay');
@@ -17,58 +17,69 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let selectedFile = null;
 
-    // Billing toggle functionality
+
+    function updatePlanPrice() {
+        const billing = document.querySelector('input[name="billing"]:checked')?.value || 'monthly';
+        const variantRadio = document.querySelector('input[name="variant"]:checked');
+        const variant = variantRadio ? variantRadio.value : null;
+        const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
+        const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
+
+        if (!priceAmount || !pricePeriod) return; // Safety
+
+        // Example global vars (define these in your HTML)
+        // let monthlyPrice = 299, yearlyPrice = 2999, resolutionPrices = {...}
+
+        if (variant && typeof resolutionPrices !== 'undefined' && resolutionPrices[variant]) {
+            priceAmount.textContent = resolutionPrices[variant][billing];
+            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
+        } else {
+            priceAmount.textContent = billing === 'yearly' ? yearlyPrice : monthlyPrice;
+            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
+        }
+    }
+
+
     billingBtns.forEach(btn => {
         btn.addEventListener('click', function () {
             const billing = this.getAttribute('data-billing');
             const urlParams = new URLSearchParams(window.location.search);
             const plan = urlParams.get('plan') || 'gladiator';
 
-        });
-    });
+            urlParams.set('billing', billing);
+            urlParams.set('plan', plan);
 
-    // Billing toggle functionality with radio buttons
-    const billingRadios = document.querySelectorAll('input[name="billing"]');
-    billingRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
-            if (this.checked) {
-                const billing = this.value;
-                // Update price display here
-                // Example:
-                // document.querySelector('.plan-price .price-amount').textContent = billing === 'monthly' ? monthlyPrice : yearlyPrice;
-            }
-        });
-    });
+            const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+            window.history.pushState({}, '', newUrl);
 
-    // Variant toggle functionality (for Resolution plan)
-    document.querySelectorAll('input[name="variant"]').forEach(radio => {
-        radio.addEventListener('change', function () {
             updatePlanPrice();
         });
     });
 
-    // Open receipt modal
-    function openReceiptModal() {
-        // Validate form first
-        if (!subscriptionForm.checkValidity()) {
-            subscriptionForm.reportValidity();
-            return;
-        }
 
-        receiptModal.classList.add('active');
-        receiptModalOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
+    document.querySelectorAll('input[name="billing"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            if (this.checked) {
+                const billing = this.value;
+                const urlParams = new URLSearchParams(window.location.search);
+                const plan = urlParams.get('plan') || 'gladiator';
+                urlParams.set('billing', billing);
+                urlParams.set('plan', plan);
 
-    // Close receipt modal
-    function closeModal() {
-        receiptModal.classList.remove('active');
-        receiptModalOverlay.classList.remove('active');
-        document.body.style.overflow = '';
-        resetFileUpload();
-    }
+                const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+                window.history.pushState({}, '', newUrl);
 
-    // Reset file upload
+                updatePlanPrice();
+            }
+        });
+    });
+
+
+    document.querySelectorAll('input[name="variant"]').forEach(radio => {
+        radio.addEventListener('change', updatePlanPrice);
+    });
+
+
     function resetFileUpload() {
         selectedFile = null;
         receiptFileInput.value = '';
@@ -77,68 +88,18 @@ document.addEventListener('DOMContentLoaded', function () {
         submitReceiptBtn.disabled = true;
     }
 
-    // File upload area click
-    fileUploadArea.addEventListener('click', function () {
-        receiptFileInput.click();
-    });
-
-    // Drag and drop functionality
-    fileUploadArea.addEventListener('dragover', function (e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--color-accent)';
-        this.style.background = 'rgba(213, 186, 43, 0.1)';
-    });
-
-    fileUploadArea.addEventListener('dragleave', function (e) {
-        e.preventDefault();
-        this.style.borderColor = 'rgba(213, 186, 43, 0.5)';
-        this.style.background = 'rgba(255, 255, 255, 0.05)';
-    });
-
-    fileUploadArea.addEventListener('drop', function (e) {
-        e.preventDefault();
-        this.style.borderColor = 'rgba(213, 186, 43, 0.5)';
-        this.style.background = 'rgba(255, 255, 255, 0.05)';
-
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFileSelect(files[0]);
-        }
-    });
-
-    // File input change
-    receiptFileInput.addEventListener('change', function (e) {
-        if (this.files.length > 0) {
-            handleFileSelect(this.files[0]);
-        }
-    });
-
-    // Handle file selection
     function handleFileSelect(file) {
-        // Validate file type
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-        if (!validTypes.includes(file.type)) {
-            alert('Please upload a valid image (JPG, PNG) or PDF file.');
-            return;
-        }
-
-        // Validate file size (10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            alert('File size must be less than 10MB.');
-            return;
-        }
+        if (!validTypes.includes(file.type)) return alert('Invalid file type.');
+        if (file.size > 10 * 1024 * 1024) return alert('File must be under 10MB.');
 
         selectedFile = file;
         fileName.textContent = file.name;
-
-        // Show preview for images
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = function (e) {
-                previewImage.src = e.target.result;
-                previewImage.style.display = 'block';
-            };
+            reader.onload = e => previewImage.src = e.target.result;
             reader.readAsDataURL(file);
+            previewImage.style.display = 'block';
         } else {
             previewImage.style.display = 'none';
         }
@@ -148,41 +109,34 @@ document.addEventListener('DOMContentLoaded', function () {
         submitReceiptBtn.disabled = false;
     }
 
-    // Remove file
-    removeFileBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        resetFileUpload();
+    fileUploadArea.addEventListener('click', () => receiptFileInput.click());
+    receiptFileInput.addEventListener('change', e => {
+        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
     });
+    removeFileBtn.addEventListener('click', resetFileUpload);
 
-    // Submit receipt
+
     submitReceiptBtn.addEventListener('click', function () {
-        if (!selectedFile) {
-            alert('Please select a file first.');
-            return;
-        }
+        if (!selectedFile) return alert('Please select a file first.');
 
-        // Get form data
         const formData = new FormData(subscriptionForm);
         formData.append('receipt', selectedFile);
 
-        // Get plan details from URL
         const urlParams = new URLSearchParams(window.location.search);
         formData.append('plan', urlParams.get('plan') || 'gladiator');
         formData.append('billing', urlParams.get('billing') || 'monthly');
 
-        // Show loading state
         submitReceiptBtn.textContent = 'SUBMITTING...';
         submitReceiptBtn.disabled = true;
 
-        // Send to backend
         fetch('api/process_subscription.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert('Payment receipt submitted successfully! Your membership is now active.');
+                alert('Payment receipt submitted successfully!');
                 window.location.href = 'membership.php?success=1';
             } else {
                 alert('Error: ' + data.message);
@@ -190,86 +144,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitReceiptBtn.disabled = false;
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
+        .catch(err => {
+            console.error('Error:', err);
             alert('An error occurred. Please try again.');
             submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
             submitReceiptBtn.disabled = false;
         });
     });
 
-    // Event listeners
+    function openReceiptModal() {
+        if (!subscriptionForm.checkValidity()) {
+            subscriptionForm.reportValidity();
+            return;
+        }
+        receiptModal.classList.add('active');
+        receiptModalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        receiptModal.classList.remove('active');
+        receiptModalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        resetFileUpload();
+    }
+
     confirmPaymentBtn.addEventListener('click', openReceiptModal);
     closeReceiptModal.addEventListener('click', closeModal);
     cancelReceiptBtn.addEventListener('click', closeModal);
     receiptModalOverlay.addEventListener('click', closeModal);
-
-    // ESC key to close modal
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && receiptModal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-});
-
-document.querySelectorAll('input[name="billing"]').forEach(radio => {
-    radio.addEventListener('change', function (e) {
-        // Update displayed prices and info here
-        // Do NOT reload the page or submit the form
-        // Example: update price display
-        // document.querySelector('.plan-price .price-amount').textContent = ...;
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('input[name="billing"]').forEach(radio => {
-        radio.addEventListener('change', function () {
-            const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
-            const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
-            if (this.value === 'monthly') {
-                priceAmount.textContent = monthlyPrice;
-                pricePeriod.textContent = '/MONTH';
-            } else {
-                priceAmount.textContent = yearlyPrice;
-                pricePeriod.textContent = '/YEAR';
-            }
-        });
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Billing radio change
-    document.querySelectorAll('input[name="billing"]').forEach(radio => {
-        radio.addEventListener('change', function () {
-            updatePlanPrice();
-        });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && receiptModal.classList.contains('active')) closeModal();
     });
 
-    // Variant radio change (for Resolution plan)
-    document.querySelectorAll('input[name="variant"]').forEach(radio => {
-        radio.addEventListener('change', function () {
-            updatePlanPrice();
-        });
-    });
-
-    function updatePlanPrice() {
-        const billing = document.querySelector('input[name="billing"]:checked').value;
-        const variantRadio = document.querySelector('input[name="variant"]:checked');
-        const variant = variantRadio ? variantRadio.value : null;
-        const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
-        const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
-
-        // If Resolution plan
-        if (variant && resolutionPrices[variant]) {
-            priceAmount.textContent = resolutionPrices[variant][billing];
-            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
-        } else {
-            // For other plans, use global monthlyPrice/yearlyPrice
-            priceAmount.textContent = billing === 'yearly' ? yearlyPrice : monthlyPrice;
-            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
-        }
-    }
-
-    // Initial load
     updatePlanPrice();
 });

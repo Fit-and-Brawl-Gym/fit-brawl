@@ -54,6 +54,7 @@ CREATE TABLE user_memberships (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     plan_id INT DEFAULT NULL,
+    plan_name VARCHAR(100) DEFAULT NULL,
     duration INT DEFAULT NULL COMMENT 'Duration in days (used to compute end_date if needed)',
     qr_proof VARCHAR(255) DEFAULT NULL,
     admin_id INT DEFAULT NULL,
