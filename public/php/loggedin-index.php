@@ -217,7 +217,7 @@ if (isset($_SESSION['avatar'])) {
                     BUILT FOR <span class="yellow">BATTLE</span>
                 </h1>
                 <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
-                <a href="reservations.php" class="hero-btn">View Schedule</a>
+                <a href="<?= htmlspecialchars($membershipLink) ?>" class="hero-btn">View Schedule</a>
             </div>
         </section>
     </main>
