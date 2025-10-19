@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert('Payment receipt submitted successfully!');
+                alert('Subscription submitted for review. Please wait for admin approval.');
                 window.location.href = 'membership.php?success=1';
             } else {
                 alert('Error: ' + data.message);
