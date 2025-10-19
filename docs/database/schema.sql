@@ -53,6 +53,9 @@ CREATE TABLE memberships (
 CREATE TABLE user_memberships (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    name VARCHAR(255) DEFAULT NULL,
+    country VARCHAR(100) DEFAULT NULL,
+    permanent_address VARCHAR(255) DEFAULT NULL,
     plan_id INT DEFAULT NULL,
     plan_name VARCHAR(100) DEFAULT NULL,
     duration INT DEFAULT NULL COMMENT 'Duration in days (used to compute end_date if needed)',

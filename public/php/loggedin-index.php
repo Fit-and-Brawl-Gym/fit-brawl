@@ -42,14 +42,16 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-// Check active membership — safely detect schema and query accordingly
 $hasActiveMembership = false;
+$hasAnyRequest = false; 
+$gracePeriodDays = 3;
 
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
+    $today = date('Y-m-d');
 
+    // Check user_memberships table
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
-        // Get the latest membership request
         $stmt = $conn->prepare("
             SELECT request_status, membership_status, end_date
             FROM user_memberships
@@ -68,22 +70,26 @@ if (isset($_SESSION['user_id'])) {
                 $membershipStatus = $row['membership_status'] ?? null;
                 $endDate = $row['end_date'] ?? null;
 
-                // Only approved AND not expired should count
-                if (
-                    $requestStatus === 'approved' &&
-                    $membershipStatus === 'active' &&
-                    $endDate >= date('Y-m-d')
-                ) {
-                    $hasActiveMembership = true;
+                $hasAnyRequest = true;
+
+                if ($requestStatus === 'approved' && $endDate) {
+                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+
+                    if ($expiryWithGrace >= $today) {
+
+                        $hasActiveMembership = true;
+                        $hasAnyRequest = false;
+                    }
                 }
             }
 
             $stmt->close();
         }
 
+
     } elseif ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT id
+            SELECT status, end_date
             FROM subscriptions
             WHERE user_id = ? AND status IN ('Approved','approved')
             ORDER BY date_submitted DESC
@@ -93,14 +99,35 @@ if (isset($_SESSION['user_id'])) {
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
-            $hasActiveMembership = ($result && $result->num_rows > 0);
+
+            if ($row = $result->fetch_assoc()) {
+                $status = strtolower($row['status']);
+                $endDate = $row['end_date'] ?? null;
+                $hasAnyRequest = true;
+
+                if ($status === 'approved' && $endDate) {
+                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+
+                    if ($expiryWithGrace >= $today) {
+                        $hasActiveMembership = true;
+                        $hasAnyRequest = false;
+                    }
+                }
+            }
+
             $stmt->close();
         }
     }
 }
 
-// Set membership link
-$membershipLink = $hasActiveMembership ? 'reservations.php' : 'membership.php';
+
+if ($hasActiveMembership) {
+    $membershipLink = 'reservations.php';
+} elseif ($hasAnyRequest) {
+    $membershipLink = 'membership-status.php';
+} else {
+    $membershipLink = 'membership.php';
+}
 // Set avatar source
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['avatar'])) {

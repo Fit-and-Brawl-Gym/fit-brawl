@@ -103,14 +103,17 @@ $source_id = null;
 $duration = ($billing === 'yearly') ? 365 : 30;
 // Insert new membership request
 $insert_query = "INSERT INTO user_memberships 
-(user_id, plan_id, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)";
+(user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)";
 
 $stmt = $conn->prepare($insert_query);
 $stmt->bind_param(
-    "iisssssisi",
+    "iissssssssisi",
     $user_id,
     $plan_id,
+    $name,
+    $country,
+    $address,
     $membership['plan_name'],
     $filename,
     $start_date,
