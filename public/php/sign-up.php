@@ -428,6 +428,7 @@ function showError($error) {
     </div>
 
     <script src="../js/terms-modal.js"></script>
+    <script src="../js/password-validation.js"></script>
 </body>
 </html>
 ```
