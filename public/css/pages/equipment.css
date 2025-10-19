@@ -93,7 +93,7 @@ main {
 
 .category-chip {
   text-align: center;
-  border: 2px solid var(--color-primary);
+  border: none;
   border-radius: 12px;
   padding: 20px 16px;
   width: 150px;
@@ -110,7 +110,7 @@ main {
   object-fit: contain;
   display: block;
   margin: 0 auto 12px;
-  filter: brightness(0.9);
+  filter: brightness(1000);
 }
 
 .category-chip p {
@@ -126,8 +126,8 @@ main {
 }
 
 .category-chip:hover {
-  background: var(--color-primary-dark);
-  border-color: var(--color-accent);
+  background: var(--color-accent);
+  border: none;
 }
 
 .category-chip:hover img {
@@ -140,7 +140,7 @@ main {
 }
 
 .category-chip.active p {
-  color: var(--color-text-dark);
+  color: var(--color-white);
   font-weight: 700;
 }
 
