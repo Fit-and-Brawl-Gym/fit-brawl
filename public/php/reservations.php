@@ -41,8 +41,8 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
     $membership_query = "SELECT um.*, m.plan_name
                         FROM user_memberships um
-                        JOIN memberships m ON um.membership_id = m.id
-                        WHERE um.user_id = ? AND um.status = 'active' AND um.end_date >= CURDATE()
+                        JOIN memberships m ON um.plan_id = m.id
+                        WHERE um.user_id = ? AND um.membership_status = 'active' AND um.end_date >= CURDATE()
                         ORDER BY um.end_date DESC
                         LIMIT 1";
     $stmt = $conn->prepare($membership_query);

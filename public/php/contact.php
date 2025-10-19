@@ -8,6 +8,95 @@ require_once '../../includes/membership_check.php';
 
 require_once '../../includes/session_manager.php'; 
 
+
+
+$hasActiveMembership = false;
+$hasAnyRequest = false; 
+$gracePeriodDays = 3;
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $today = date('Y-m-d');
+
+    // Check user_memberships table
+    if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
+        $stmt = $conn->prepare("
+            SELECT request_status, membership_status, end_date
+            FROM user_memberships
+            WHERE user_id = ?
+            ORDER BY date_submitted DESC
+            LIMIT 1
+        ");
+
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($row = $result->fetch_assoc()) {
+                $requestStatus = $row['request_status'] ?? null;
+                $membershipStatus = $row['membership_status'] ?? null;
+                $endDate = $row['end_date'] ?? null;
+
+                $hasAnyRequest = true;
+
+                if ($requestStatus === 'approved' && $endDate) {
+                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+
+                    if ($expiryWithGrace >= $today) {
+
+                        $hasActiveMembership = true;
+                        $hasAnyRequest = false;
+                    }
+                }
+            }
+
+            $stmt->close();
+        }
+
+
+    } elseif ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+        $stmt = $conn->prepare("
+            SELECT status, end_date
+            FROM subscriptions
+            WHERE user_id = ? AND status IN ('Approved','approved')
+            ORDER BY date_submitted DESC
+            LIMIT 1
+        ");
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($row = $result->fetch_assoc()) {
+                $status = strtolower($row['status']);
+                $endDate = $row['end_date'] ?? null;
+                $hasAnyRequest = true;
+
+                if ($status === 'approved' && $endDate) {
+                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+
+                    if ($expiryWithGrace >= $today) {
+                        $hasActiveMembership = true;
+                        $hasAnyRequest = false;
+                    }
+                }
+            }
+
+            $stmt->close();
+        }
+    }
+}
+
+
+if ($hasActiveMembership) {
+    $membershipLink = 'reservations.php';
+} elseif ($hasAnyRequest) {
+    $membershipLink = 'membership-status.php';
+} else {
+    $membershipLink = 'membership.php';
+}
+
 // Initialize session manager
 SessionManager::initialize();
 
