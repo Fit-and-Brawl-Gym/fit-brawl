@@ -35,9 +35,49 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         exit();
     }
 
+    // Password Validation Function
+    function validatePassword($password) {
+    $errors = [];
+    
+    // must have at least 8 characters
+    if (strlen($password) < 8) {
+        $errors[] = "Password must be at least 8 characters long";
+    }
+    
+    // must contain at least one uppercase letter
+    if (!preg_match('/[A-Z]/', $password)) {
+        $errors[] = "Password must contain at least one uppercase letter";
+    }
+    
+    // must contain at least one lowercase letter
+    if (!preg_match('/[a-z]/', $password)) {
+        $errors[] = "Password must contain at least one lowercase letter";
+    }
+    
+    // must contain at least one number
+    if (!preg_match('/[0-9]/', $password)) {
+        $errors[] = "Password must contain at least one number";
+    }
+    
+    // must contain at least one special character
+    if (!preg_match('/[!@#$%^&*]/', $password)) {
+        $errors[] = "Password must contain at least one special character (!@#$%^&*)";
+    }
+    
+    return $errors;
+}
+
     //Check password match
     if ($password_input !== $confirm_password) {
         $_SESSION['register_error'] = "Passwords do not match.";
+        header("Location: sign-up.php");
+        exit();
+    }
+
+    // Validate password requirements
+    $passwordErrors = validatePassword($password_input);
+    if (!empty($passwordErrors)) {
+        $_SESSION['register_error'] = implode("<br>", $passwordErrors);
         header("Location: sign-up.php");
         exit();
     }
