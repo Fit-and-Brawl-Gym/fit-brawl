@@ -53,6 +53,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
 
 // Check membership status for header
 require_once '../../includes/membership_check.php';
+$hasActiveMembership = false;
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
+        // Get the latest membership request
+        $stmt = $conn->prepare("
+            SELECT request_status, membership_status, end_date
+            FROM user_memberships
+            WHERE user_id = ?
+            ORDER BY date_submitted DESC
+            LIMIT 1
+        ");
+
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($row = $result->fetch_assoc()) {
+                $requestStatus = $row['request_status'] ?? null;
+                $membershipStatus = $row['membership_status'] ?? null;
+                $endDate = $row['end_date'] ?? null;
+
+                // Only approved AND not expired should count
+                if (
+                    $requestStatus === 'approved' &&
+                    $membershipStatus === 'active' &&
+                    $endDate >= date('Y-m-d')
+                ) {
+                    $hasActiveMembership = true;
+                }
+            }
+
+            $stmt->close();
+        }
+
+    } elseif ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+        $stmt = $conn->prepare("
+            SELECT id
+            FROM subscriptions
+            WHERE user_id = ? AND status IN ('Approved','approved')
+            ORDER BY date_submitted DESC
+            LIMIT 1
+        ");
+        if ($stmt) {
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $hasActiveMembership = ($result && $result->num_rows > 0);
+            $stmt->close();
+        }
+    }
+}
+
+// Set membership link
+$membershipLink = $hasActiveMembership ? 'reservations.php' : 'membership.php';
 
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
