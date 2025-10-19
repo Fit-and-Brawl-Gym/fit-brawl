@@ -116,41 +116,56 @@ document.addEventListener('DOMContentLoaded', function () {
     removeFileBtn.addEventListener('click', resetFileUpload);
 
 
-    submitReceiptBtn.addEventListener('click', function () {
-        if (!selectedFile) return alert('Please select a file first.');
+  submitReceiptBtn.addEventListener('click', function () {
+    if (!selectedFile) return alert('Please select a file first.');
 
-        const formData = new FormData(subscriptionForm);
-        formData.append('receipt', selectedFile);
+    // Disable buttons immediately
+    submitReceiptBtn.disabled = true;
+    removeFileBtn.disabled = true;
+    cancelReceiptBtn.disabled = true;
+    submitReceiptBtn.textContent = 'SUBMITTING...';
 
-        const urlParams = new URLSearchParams(window.location.search);
-        formData.append('plan', urlParams.get('plan') || 'gladiator');
-        formData.append('billing', urlParams.get('billing') || 'monthly');
+    const formData = new FormData(subscriptionForm);
+    formData.append('receipt', selectedFile);
 
-        submitReceiptBtn.textContent = 'SUBMITTING...';
-        submitReceiptBtn.disabled = true;
+    const urlParams = new URLSearchParams(window.location.search);
+    formData.append('plan', urlParams.get('plan') || 'gladiator');
+    formData.append('billing', urlParams.get('billing') || 'monthly');
 
-        fetch('api/process_subscription.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert('Subscription submitted for review. Please wait for admin approval.');
-                window.location.href = 'membership.php?success=1';
-            } else {
-                alert('Error: ' + data.message);
-                submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
-                submitReceiptBtn.disabled = false;
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            alert('An error occurred. Please try again.');
+    fetch('api/process_subscription.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Do NOT re-enable buttons here
+            const msg = document.createElement('div');
+            msg.className = 'success-message';
+            msg.textContent = 'Subscription submitted! Redirecting...';
+            document.body.appendChild(msg);
+            setTimeout(() => {
+                window.location.href = 'membership-status.php';
+            }, 2000);
+        } else {
+            alert('Error: ' + data.message);
             submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
+            // Re-enable buttons only on error
             submitReceiptBtn.disabled = false;
-        });
+            removeFileBtn.disabled = false;
+            cancelReceiptBtn.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        alert('An error occurred. Please try again.');
+        submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
+        // Re-enable buttons only on error
+        submitReceiptBtn.disabled = false;
+        removeFileBtn.disabled = false;
+        cancelReceiptBtn.disabled = false;
     });
+});
 
     function openReceiptModal() {
         if (!subscriptionForm.checkValidity()) {

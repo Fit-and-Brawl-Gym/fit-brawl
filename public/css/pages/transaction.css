@@ -804,6 +804,20 @@
     text-transform: uppercase;
 }
 
+.success-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #4CAF50;
+    color: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 100000 !important;
+    font-size: 16px;
+    text-align: center;
+}
 /* Responsive Design */
 @media (max-width: 1024px) {
     .transaction-page {
