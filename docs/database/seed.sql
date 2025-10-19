@@ -80,11 +80,12 @@ VALUES
 -- SEED DATA FOR EQUIPMENT
 -- =====================
 INSERT INTO equipment (name, status, category, description, image_path) VALUES
-('Treadmill 1', 'Available', 'Cardio', 'Great for improving endurance and burning calories.', 'threadmill-bg.png'),
-('Treadmill 2', 'Maintenance', 'Cardio', 'Currently under maintenance.', 'threadmill-bg.png'),
-('Bench Press', 'Available', 'Strength Training', 'Build upper body strength and chest muscles.', 'bench-press.png'),
-('Rowing Machine 1', 'Available', 'Cardio', 'Enhances stamina and targets the entire body.', 'rowing-machine.png'),
-('Rowing Machine 2', 'Out of Order', 'Cardio', 'Currently not operational.', 'rowing-machine.png');
+('Treadmill 1', 'Available', 'Cardio', 'Great for improving endurance and burning calories.', '../../uploads/equipment/threadmill-bg.png'),
+('Treadmill 2', 'Maintenance', 'Cardio', 'Currently under maintenance.', '../../uploads/equipment/treadmill-pro-x500.jpg'),
+('Bench Press', 'Available', 'Strength Training', 'Build upper body strength and chest muscles.', '../../uploads/equipment/bench-press-station.jpg'),
+('Rowing Machine 1', 'Available', 'Cardio', 'Enhances stamina and targets the entire body.', '../../uploads/equipment/rowing-machine.jpg'),
+('Kettlebell Set', 'Available', 'Strength Training', 'Ideal for dynamic strength and cardio workouts.', '../../uploads/equipment/kettlebell-16kg.jpg'),
+('Dumbbell Set', 'Available', 'Strength Training', 'Versatile weights for various exercises.', '../../uploads/equipment/dumbbell-set-5-to-50kg.jpg');
 
 
 -- =====================
@@ -95,7 +96,7 @@ INSERT INTO products (name, category, stock, status, image_path) VALUES
     ('Pre-Workout Supplement', 'Supplements', 10, 'low stock', '../../uploads/products/workout-supplement.jpg'),
     ('Bottled Water', 'Hydration & Drinks', 100, 'in stock', '../../uploads/products/bottled-water.jpg'),
     ('Recovery Bar', 'Snacks', 30, 'in stock', '../../uploads/products/recovery-bar.jpg'),
-    ('Muscle Roller', 'Accessories', 15, 'in stock', '../../uploads/products//muscle-roller.jpg'),
+    ('Muscle Roller', 'Accessories', 15, 'in stock', '../../uploads/products/muscle-roller.jpg'),
     ('Ice Pack', 'Accessories', 5, 'low stock', '../../uploads/products/ice-pack.jpg'),
     ('Resistance Bands', 'Accessories', 0, 'out of stock', '../../uploads/products/resistance-bands.jpg'),
     ('Mouth Guards', 'Boxing & Muay Thai Products', 25, 'in stock', '../../uploads/products/mouth-guards.jpg');
