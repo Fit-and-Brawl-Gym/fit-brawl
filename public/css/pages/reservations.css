@@ -96,7 +96,6 @@ h1.page-title {
 
 .upgrade-btn:hover {
     background: var(--color-accent-hover);
-    transform: translateY(-2px);
 }
 
 .login-prompt {
@@ -133,10 +132,6 @@ h1.page-title {
     align-items: center;
     gap: var(--spacing-2);
     transition: var(--transition-base);
-}
-
-.stat-card:hover {
-    border-color: var(--color-accent);
 }
 
 .stat-icon {
@@ -194,7 +189,7 @@ h1.page-title {
 .scheduling-left {
     background: rgba(26, 74, 82, 0.8);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-3);
+    padding: var(--spacing-4);
     height: fit-content;
 }
 
@@ -474,11 +469,6 @@ h1.page-title {
     background: var(--color-accent-hover);
 }
 
-/* Firefox Scrollbar */
-.month-dropdown {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-accent) rgba(45, 107, 117, 0.3);
-}
 
 .month-option {
     padding: var(--spacing-2) var(--spacing-3);
@@ -645,7 +635,6 @@ h1.page-title {
 
 .schedule-training-btn:hover {
     background: var(--color-accent-hover);
-    transform: translateY(-2px);
 }
 
 /* ========================================
@@ -655,7 +644,7 @@ h1.page-title {
 .booked-sessions {
     background: rgba(26, 74, 82, 0.8);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-3);
+    padding: var(--spacing-5);
 }
 
 .booked-header {
