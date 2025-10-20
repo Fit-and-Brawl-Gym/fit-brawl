@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -72,12 +72,18 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     <?php if(SessionManager::isLoggedIn()): ?>
     <link rel="stylesheet" href="../css/components/session-warning.css">
     <script src="../js/session-timeout.js"></script>
+    <script src="../js/hamburger-menu.js"></script>
 <?php endif; ?>
 </head>
 <body>
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" id="hamburgerMenu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
