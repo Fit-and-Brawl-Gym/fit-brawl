@@ -16,7 +16,7 @@
 
 .hero-content {
     flex: 1;
-    max-width: 750px;
+    max-width: 100%;
     color: #fff;
     position: relative;
 }
@@ -250,6 +250,16 @@
     .hero-content {
         width: 100%;
         margin-bottom: var(--spacing-4);
+    }
+
+    .hero-line {
+        width: 100%;
+        max-width: none;
+    }
+
+    .hero-underline {
+        width: 100%;
+        max-width: none;
     }
 
     .hero-title {

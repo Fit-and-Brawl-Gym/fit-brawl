@@ -62,6 +62,9 @@
   --font-size-5xl: 3rem;       /* 48px */
   --font-size-6xl: 4rem;       /* 64px */
   --font-size-7xl: 5rem;       /* 80px */
+  --font-size-8xl: 6rem;       /* 96px */
+  --font-size-9xl: 8rem;       /* 128px */
+
 
   /* Font Weights */
   --font-weight-light: 300;
