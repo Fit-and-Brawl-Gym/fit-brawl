@@ -1,5 +1,6 @@
 .signup-main {
-    min-height: calc(100vh - 120px);
+    min-height: 0;
+    height: auto;
     background: #010d17 url('../../../images/sign-up_bg.png') no-repeat center top / cover;
     position: relative;
 }
@@ -8,7 +9,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2rem 4rem;
+    padding: var(--spacing-20);
     min-height: 70vh;
     gap: 3rem;
 }
@@ -54,8 +55,6 @@
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
 }
 
 .modal-header h2 {
@@ -116,7 +115,7 @@
     width: 100%;
     padding: 12px 15px 12px 50px;
     border: 2px solid #ddd;
-    border-radius: 25px;
+    border-radius: var(--radius-2xl);
     font-size: 1rem;
     background: #f8f9fa;
     transition: border-color 0.3s;
@@ -194,7 +193,7 @@
     color: #333;
     border: none;
     padding: 12px;
-    border-radius: 25px;
+    border-radius: var(--radius-2xl);
     font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
@@ -237,35 +236,74 @@
     .signup-hero {
         flex-direction: column;
         text-align: center;
-        padding: 2rem;
+        padding: var(--spacing-10);
+    }
+
+    .modal-header h2 {
+        font-size: var(--font-size-5xl);
+    }
+
+    .signup-form h3 {
+        font-size: var(--font-size-xl);
     }
 
     .hero-content {
-        max-width: 100%;
-        margin-bottom: 2rem;
+        width: 100%;
+        margin-bottom: var(--spacing-4);
     }
 
     .hero-title {
-        font-size: 3rem;
+        font-size: var(--font-size-7xl);
     }
 
     .signup-modal {
         flex: none;
         width: 100%;
-        max-width: 400px;
+    }
+
+    .checkbox-container input {
+        scale: 2.5;
+        margin-right: var(--spacing-6);
+        margin-left: var(--spacing-4);
     }
 }
 
 @media (max-width: 600px) {
     .hero-title {
-        font-size: 2rem;
+        font-size: var(--font-size-6xl);
     }
 
     .signup-hero {
-        padding: 1rem;
+        padding: var(--spacing-8);
     }
 }
 
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: var(--font-size-4xl);
+    }
+
+    .modal-header h2 {
+        font-size: var(--font-size-4xl);
+    }
+
+    .signup-hero {
+        padding: var(--spacing-6);
+    }
+
+    .signup-form h3 {
+        font-size: var(--font-size-lg);
+    }
+
+    .input-group input {
+        padding: 10px 12px 10px 40px;
+        font-size: var(--font-size-sm);
+    }
+
+    .checkbox-container {
+        font-size: var(--font-size-xs);
+    }
+}
 /* Password Validation Styles */
 .password-requirements {
     margin-top: 15px;
