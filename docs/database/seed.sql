@@ -12,26 +12,68 @@ INSERT INTO users (username, email, password, role, avatar) VALUES
 -- =====================
 -- SEED DATA FOR MEMBERSHIPS
 -- =====================
-INSERT INTO memberships (plan_name, price, duration) VALUES
-('Brawler', 1000.00, 30),
-('Gladiator', 2500.00, 90),
-('Champion', 9000.00, 365);
+INSERT INTO memberships (plan_name, class_type) VALUES
+('Gladiator', 'Boxing and MMA'),
+('Brawler', 'Muay Thai'),
+('Champion', 'Boxing'),
+('Clash', 'MMA'),
+('Resolution', 'Gym');
+
+-- =====================
+-- SEED DATA FOR TRAINERS
+-- =====================
+INSERT INTO trainers (name, specialization, schedule) VALUES
+('Coach Carlo', 'Boxing', 'Mon-Fri 8AM-12PM'),
+('Coach Rieze', 'MMA', 'Tue-Thu 2PM-6PM'),
+('Coach Thei', 'Muay Thai', 'Mon-Wed-Fri 1PM-5PM'),
+('Coach Excel', 'Muay Thai', 'Tue-Thu 10AM-3PM'),
+('Coach Sean', 'Boxing', 'Mon-Fri 9AM-1PM'),
+('Coach Mikell', 'Boxing', 'Sat-Sun 10AM-2PM'),
+('Coach Adrian', 'MMA', 'Mon-Wed 3PM-7PM'),
+('Coach Andrei', 'MMA', 'Tue-Thu 4PM-8PM'),
+('Coach Bon', 'Gym', 'Daily 6AM-10AM'),
+('Coach Timbs', 'Gym', 'Daily 5PM-9PM');
+
+-- =====================
+-- SEED DATA FOR MEMBERSHIP_TRAINERS
+-- =====================
+-- Gladiator (Boxing and MMA)
+INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
+(1, 1), 
+(1, 2); 
+
+-- Brawler (Muay Thai)
+INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
+(2, 3), 
+(2, 4); 
+
+-- Champion (Boxing)
+INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
+(3, 5), 
+(3, 6); 
+
+-- Clash (MMA)
+INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
+(4, 7), 
+(4, 8); 
+
+-- Resolution (Gym)
+INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
+(5, 9),
+(5, 10); 
 
 -- =====================
 -- SEED DATA FOR TRAINERS (MUST COME BEFORE RESERVATIONS)
 -- =====================
 DELETE FROM trainers;
-INSERT INTO trainers (id, name, specialization, schedule) VALUES
-(1, 'Coach Carlo', 'Muay Thai', 'Mon-Wed-Fri 6-8PM'),
-(2, 'Coach Rieze', 'Boxing', 'Tue-Thu 7-9PM'),
-(3, 'Coach Thei', 'MMA', 'Mon-Fri 5-7PM');
+
 
 -- =====================
 -- SEED DATA FOR USER MEMBERSHIPS (NEW)
 -- =====================
 INSERT INTO user_memberships (user_id, membership_id, start_date, end_date, billing_type, status) VALUES
-(2, 2, '2025-07-15', '2025-10-15', 'monthly', 'active'),
-(3, 1, '2025-08-01', '2025-09-01', 'monthly', 'active');
+(2, 2, 'Brawler', '2025-07-15', '2025-10-15', 'monthly', 'active', 'approved'),
+(3, 1, 'Gladiator', '2025-08-01', '2025-09-01', 'monthly', 'active', 'approved');
 
 -- =====================
 -- SEED DATA FOR RESERVATIONS (UPDATED)
