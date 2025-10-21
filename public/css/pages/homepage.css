@@ -3,7 +3,7 @@ body {
 }
 
 main {
-  min-height: 1450px; /* Fixed height to fit all content */
+  min-height: 1500px;
   position: relative;
   background-color: #010d17;
 }
@@ -16,15 +16,15 @@ main {
   padding-bottom: 150px;
   background-image: url('../../../images/homepage-boxer.png');
   background-repeat: no-repeat;
-  background-position: left -100px top -120px;
+  background-position: left -100px top -130px;
   background-size: auto 1100px;
   background-attachment: scroll;
   min-height: 700px;
 }
 
 .hero-content {
-  max-width: 600px;
-  margin-left: 5vw;
+  max-width: var(--container-md);
+  margin-left: var(--spacing-8);
   color: #fff;
   z-index: 2;
   position: relative;
@@ -86,7 +86,7 @@ main {
   font-weight: 700;
   font-size: 1.1rem;
   padding: 0.8rem 2.2rem;
-  border-radius: 30px;
+  border-radius: var(--radius-xl);
   text-decoration: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   transition: background 0.2s, color 0.2s;
@@ -115,14 +115,13 @@ main {
   background: url('../../../images/fog-bg.png') no-repeat;
   background-size: 120%;
   background-position: right -90px top -100px;
-  padding: 80px 20px 100px;
+  padding: var(--spacing-24) var(--spacing-8) var(--spacing-32) var(--spacing-8);
   position: relative;
   margin-top: -10px;
 }
 
 .overview-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   text-align: left;
 }
 
@@ -177,7 +176,6 @@ main {
   max-width: 900px;
   margin-right: auto;
   padding-left: 0;
-  padding-right: 20px;
 }
 
 .overview-subtitle .highlight {
@@ -188,10 +186,9 @@ main {
   color: #ffffff;
   font-size: 1rem;
   line-height: 1.8;
-  max-width: 100%;
+  width: 100%;
   text-align: justify;
   padding-left: 0;
-  padding-right: 20px;
 }
 
 .features-grid {
@@ -199,7 +196,7 @@ main {
   grid-template-columns: repeat(3, 1fr);
   gap: 40px;
   margin-top: 50px;
-  padding: 0 20px;
+  padding: var(--spacing-8);
   position: relative;
   z-index: 3; /* make sure grid is above footer */
 }
@@ -209,7 +206,7 @@ main {
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   padding: 40px 30px;
-  border-radius: 10px;
+  border-radius: var(--radius-xl);
   transition: box-shadow 0.3s ease;
   border: 2px solid rgba(213, 186, 43, 0.3);
   position: relative;
@@ -267,7 +264,7 @@ main {
     min-height: 1600px;
   }
   .homepage-hero {
-    background-position: left -150px top -120px;
+    background-position: left -150px top -140px;
     background-size: auto 1000px;
     min-height: 650px;
   }
@@ -281,15 +278,20 @@ main {
   }
 
   .hero-sub {
-    font-size: 1.7rem;
+    font-size: var(--font-size-2xl);
   }
+
 
   .gym-overview {
     background-image: none;
   }
 
   .overview-subtitle {
-    font-size: 1.8rem;
+    font-size: var(--font-size-4xl);
+  }
+
+  .features-grid {
+    padding: 0;
   }
 }
 
@@ -299,7 +301,7 @@ main {
     min-height: 1700px;
   }
   .homepage-hero {
-    background-position: left -200px top -100px;
+    background-position: left -200px top -120px;
     background-size: auto 900px;
     min-height: 600px;
     padding-bottom: 120px;
@@ -307,7 +309,7 @@ main {
 
   .hero-content {
     max-width: 500px;
-    margin-left: 8vw;
+    margin-left: var(--spacing-8);
   }
 
   .homepage-hero h1 {
@@ -330,7 +332,6 @@ main {
   .gym-overview {
     background-size: 140%;
     background-position: right -150px top -180px;
-    padding: 60px 20px 80px;
     margin-top: -80px;
   }
 
@@ -344,23 +345,19 @@ main {
   }
 
   .overview-subtitle {
-    font-size: 1.6rem;
+    font-size: var(--font-size-3xl);
     margin-top: 60px;
-    margin-left: 8vw;
   }
 
-  .overview-description {
-    margin-left: 8vw;
-  }
 
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 30px;
+    padding: 0;
   }
 
   .feature-card:last-child {
     grid-column: 1 / -1;
-    width: 350px;
     margin: 0 auto;
   }
 }
@@ -368,13 +365,13 @@ main {
 /* Small tablets (900px and below) */
 @media (max-width: 900px) {
   .homepage-hero {
-    background-position: left -250px top -80px;
+    background-position: left -250px top -100px;
     background-size: auto 800px;
     min-height: 550px;
   }
 
   .hero-content {
-    margin-left: 6vw;
+    margin-left: var(--spacing-8);
   }
 
   .homepage-hero h1 {
@@ -404,14 +401,12 @@ main {
   }
 
   .overview-subtitle {
-    font-size: 1.5rem;
+    font-size: var(--font-size-4xl);
     margin-top: 50px;
-    margin-left: 6vw;
   }
 
   .overview-description {
     font-size: 0.95rem;
-    margin-left: 6vw;
   }
 
   .feature-icon {
@@ -431,19 +426,23 @@ main {
   }
 
   .homepage-hero {
-    background-position: left -350px top -50px;
+    background-position: right -350px top -70px;
     background-size: auto 550px;
     min-height: 400px;
     padding-bottom: 80px;
   }
 
   .hero-content {
-    max-width: 85%;
-    margin-left: 7vw;
+    max-width: 100%;
+    margin-left: var(--spacing-8);
+  }
+
+  .hero-underline.top-line {
+    max-width: 300px;
   }
 
   .homepage-hero h1 {
-    font-size: 2.2rem;
+    font-size: var(--font-size-5xl);
     margin-top: 1rem;
   }
 
@@ -474,13 +473,11 @@ main {
   .gym-overview {
     background: none;
     background-color: #010d17;
-    padding: 50px 15px 70px;
-    margin-top: -70px;
   }
 
   .overview-title {
     font-size: 2.2rem;
-    top: -32px;
+    top: -20px;
     gap: 15px;
   }
 
@@ -494,20 +491,17 @@ main {
   }
 
   .overview-subtitle {
-    font-size: 1.3rem;
+    font-size: var(--font-size-4xl);
     margin-bottom: 20px;
-    margin-left: 7vw;
   }
 
   .overview-description {
     font-size: 0.9rem;
     margin-bottom: 50px;
-    margin-left: 7vw;
   }
 
   .features-grid {
     gap: 25px;
-    padding: 0 25px;
     max-width: 900px;
     margin: 0 auto;
   }
@@ -522,24 +516,23 @@ main {
 /* Small phones (600px and below) */
 @media (max-width: 600px) {
   main {
-    min-height: 1800px;
+    min-height: 1900px;
   }
 
   .homepage-hero {
-    background-position: right -20px top -30px;
-    background-size: auto 450px;
+    background-position: right -350px top -60px;
+    background-size: auto 500px;
     min-height: 350px;
     padding-bottom: 60px;
   }
 
   .hero-content {
-    max-width: 88%;
-    margin-left: 6vw;
-    margin-right: 6vw;
+    max-width: 100%;
+    margin-left: var(--spacing-8);
   }
 
   .homepage-hero h1 {
-    font-size: 1.8rem;
+    font-size: var(--font-size-4xl);
   }
 
   .hero-sub {
@@ -571,8 +564,7 @@ main {
   .gym-overview {
     background: none;
     background-color: #010d17;
-    padding: 40px 15px 60px;
-    margin-top: -60px;
+    margin-top: 0;
   }
 
   .overview-title {
@@ -586,11 +578,11 @@ main {
   }
 
   .overview-subtitle {
-    font-size: 1.2rem;
+    font-size: var(--font-size-3xl);
   }
 
   .overview-description {
-    font-size: 0.9rem;
+    font-size: var(--font-size-lg);
     text-align: left;
     margin-bottom: 40px;
   }
@@ -598,18 +590,15 @@ main {
   .features-grid {
     grid-template-columns: 1fr;
     gap: 20px;
-    padding: 0 20px;
+    padding: 0;
   }
 
   .feature-card {
     padding: 30px 20px;
-    max-width: 380px;
+    max-width: 100%;
     margin: 0 auto;
   }
 
-  .feature-card:last-child {
-    max-width: 380px;
-  }
 
   .feature-icon {
     width: 80px;
@@ -617,39 +606,39 @@ main {
   }
 
   .feature-title {
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
   }
 
   .feature-text {
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
   }
 }
+
 
 /* Extra small phones (480px and below) */
 @media (max-width: 480px) {
   main {
-    min-height: 1700px;
+    min-height: 2200px;
   }
 
   .homepage-hero {
-    background-position: left -140px top -45px;
+    background-position: left -100px top -45px;
     background-size: auto 380px;
     min-height: 320px;
     padding-bottom: 50px;
   }
 
   .hero-content {
-    margin-left: 5vw;
-    margin-right: 5vw;
+    margin-left: var(--spacing-6);
   }
 
   .homepage-hero h1 {
-    font-size: 1.5rem;
+    font-size: var(--font-size-4xl);
     margin-top: 0.8rem;
   }
 
   .hero-sub {
-    font-size: 0.8rem;
+    font-size: var(--font-size-base);
   }
 
   .sub-underline {
@@ -672,12 +661,11 @@ main {
   .gym-overview {
     background: none;
     background-color: #010d17;
-    padding: 30px 10px 50px;
     margin-top: -50px;
   }
 
   .overview-title {
-    font-size: 1.8rem;
+    font-size: var(--font-size-4xl);
     top: -24px;
     gap: 10px;
   }
@@ -687,43 +675,37 @@ main {
   }
 
   .overview-subtitle {
-    font-size: 1rem;
-    padding-right: 10px;
+    font-size: var(--font-size-3xl);
   }
 
   .overview-description {
-    font-size: 0.85rem;
-    padding-right: 10px;
+    font-size: var(--font-size-lg);
     margin-bottom: 35px;
   }
 
   .features-grid {
     gap: 15px;
-    padding: 0 15px;
+    padding: 0;
   }
 
   .feature-card {
-    padding: 25px 15px;
-    max-width: 300px;
+    width: 100%;
   }
 
-  .feature-card:last-child {
-    max-width: 300px;
-  }
 
   .feature-icon {
-    width: 70px;
-    height: 70px;
+    width: 90px;
+    height: 90px;
     margin-bottom: 20px;
   }
 
   .feature-title {
-    font-size: 1rem;
+    font-size: var(--font-size-lg);
     margin-bottom: 12px;
   }
 
   .feature-text {
-    font-size: 0.85rem;
+    font-size: var(--font-size-base);
     line-height: 1.5;
   }
 }
@@ -731,21 +713,22 @@ main {
 /* Very small phones (360px and below) */
 @media (max-width: 360px) {
   main {
-    min-height: 1650px;
+    min-height: 2000px;
   }
 
   .homepage-hero {
+    background-position: left -140px top -25px;
     background-size: auto 450px;
     min-height: 380px;
     padding-bottom: 60px;
   }
 
   .homepage-hero h1 {
-    font-size: 1.8rem;
+    font-size: var(--font-size-4xl);
   }
 
   .hero-sub {
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
   }
 
   .sub-underline {
@@ -764,11 +747,10 @@ main {
   .gym-overview {
     background: none;
     background-color: #010d17;
-    padding: 25px 8px 40px;
   }
 
   .overview-title {
-    font-size: 1.6rem;
+    font-size: var(--font-size-4xl);
     top: -20px;
   }
 
@@ -777,11 +759,11 @@ main {
   }
 
   .overview-subtitle {
-    font-size: 0.9rem;
+    font-size: var(--font-size-2xl);
   }
 
   .overview-description {
-    font-size: 0.8rem;
+    font-size: var(--font-size-base);
   }
 
   .features-grid {
@@ -789,20 +771,21 @@ main {
   }
 
   .feature-card {
+    width: 100%;
     max-width: 320px;
   }
 
   .feature-icon {
-    width: 60px;
-    height: 60px;
+    width: 90px;
+    height: 90px;
   }
 
   .feature-title {
-    font-size: 0.95rem;
+    font-size: var(--font-size-base);
   }
 
   .feature-text {
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
   }
 }
 
