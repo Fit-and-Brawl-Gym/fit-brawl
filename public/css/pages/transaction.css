@@ -1,8 +1,9 @@
 .transaction-page {
-    min-height: 100vh;
+    min-height: 0;
+    height: auto;
     background: url('../../../images/transaction-bg.png') no-repeat center / 150% auto;
     background-size: cover;
-    padding: var(--spacing-16) var(--spacing-4) var(--spacing-8);
+    padding: var(--spacing-16) var(--spacing-8) var(--spacing-16);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -151,8 +152,7 @@
 
 .qr-instruction {
     color: var(--color-accent);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-2xl);
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -330,7 +330,7 @@
 }
 
 .plan-header-headband {
-    background: linear-gradient(90deg, var(--color-accent) 0%, #b8941f 100%);
+    background: var(--color-accent);
     padding: var(--spacing-4) var(--spacing-5);
     display: flex;
     justify-content: space-between;
@@ -493,8 +493,8 @@
     color: var(--color-text-muted);
     line-height: var(--line-height-relaxed);
     text-align: center;
-    margin: var(--spacing-6) 0 0 0;
-    padding: var(--spacing-4);
+    margin: var(--spacing-2) 0 0 0;
+    padding: var(--spacing-3);
     background: rgba(0, 0, 0, 0.2);
     border-radius: var(--radius-md);
     border: 1px solid rgba(213, 186, 43, 0.2);
@@ -509,8 +509,7 @@
 .confirm-payment-btn,
 .cancel-btn {
     padding: var(--spacing-4) var(--spacing-6);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-2xl);
     text-transform: uppercase;
     border-radius: var(--radius-lg);
     cursor: pointer;
@@ -595,7 +594,7 @@
 .modal-header h2 {
     font-family: var(--font-family-display);
     color: var(--color-accent);
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
     margin: 0;
 }
 
@@ -720,6 +719,7 @@
 }
 
 .submit-receipt-btn {
+    margin-top: var(--spacing-3);
     background: var(--color-accent);
     color: var(--color-primary);
 }
@@ -818,7 +818,8 @@
     font-size: 16px;
     text-align: center;
 }
-/* Responsive Design */
+
+
 @media (max-width: 1024px) {
     .transaction-page {
         height: auto;
@@ -830,14 +831,19 @@
     }
 
     .transaction-title {
-        font-size: var(--font-size-3xl);
+        font-size: var(--font-size-5xl);
+        padding-bottom: var(--spacing-1);
+    }
+
+    .form-group label {
+        font-size: var(--font-size-xl);
     }
 }
 
 @media (max-width: 768px) {
     .transaction-page {
         height: auto;
-        padding: var(--spacing-12) var(--spacing-4) var(--spacing-6);
+        padding: var(--spacing-12) var(--spacing-8);
     }
 
     .transaction-title {
