@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -244,7 +244,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                             <!-- Member Status Banner -->
                             <div class="member-status-banner">
                                 <span class="member-icon">✓</span>
-                                <span class="member-text">Member Pricing Applied</span>
+                                <span class="member-text">Signup Discount Applied</span>
                             </div>
                             <?php endif; ?>
 
