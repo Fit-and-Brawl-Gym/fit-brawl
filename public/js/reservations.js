@@ -1,10 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize calendar
+
+
     let currentDate = new Date(2025, 8, 1); // September 2025
     let selectedDate = null;
     let currentClassFilter = 'all';
     let currentCoachFilter = 'all';
     let sessionsData = {}; // Store sessions by day
+    let trainersData = {}; 
 
     // Calendar elements
     const calendarGrid = document.getElementById('calendarGrid');
@@ -30,32 +33,58 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentMonthDisplay = document.getElementById('currentMonthDisplay');
     const monthOptions = document.querySelectorAll('.month-option');
 
-    // Coach options for each class type
-    const classCoachOptions = {
-        'muay-thai': [
-            { value: 'coach-carlo', text: 'Coach Carlo' }
-        ],
-        'boxing': [
-            { value: 'coach-rieze', text: 'Coach Rieze' }
-        ],
-        'mma': [
-            { value: 'coach-thei', text: 'Coach Thei' }
-        ],
-        'all': [
-            { value: 'all', text: 'All Coaches' },
-            { value: 'coach-carlo', text: 'Coach Carlo' },
-            { value: 'coach-rieze', text: 'Coach Rieze' },
-            { value: 'coach-thei', text: 'Coach Thei' }
-        ]
-    };
+    async function fetchTrainers(classType = "all") {
+    try {
 
-    // Coach mapping for each class type (default selection)
-    const classCoachMapping = {
-        'muay-thai': 'coach-carlo',
-        'boxing': 'coach-rieze',
-        'mma': 'coach-thei',
-        'all': 'all'
-    };
+
+        const response = await fetch("api/get_trainers.php");
+        const data = await response.json();
+
+        if (data.success) {
+            trainersData = data.trainers;
+            updateCoachDropdown(classType);
+            checkSingleClassType();
+        } else {
+            console.error('Failed to load trainers:', data.message);
+        }
+    } catch (err) {
+        console.error('Error fetching trainers:', err);
+    }
+}
+
+function checkSingleClassType() {
+    const classTypes = Object.keys(trainersData);
+    const filterContainer = document.querySelector('.class-filter');
+    if (!filterContainer) return;
+
+
+    filterContainer.style.display = classTypes.length <= 1 ? 'none' : 'flex';
+}
+
+function updateCoachDropdown(classType) {
+    coachSelect.innerHTML = '';
+
+    let availableTrainers = [];
+
+    if (classType === 'all') {
+        availableTrainers = Object.values(trainersData).flat();
+    } else {
+        const key = classType.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        availableTrainers = trainersData[key] || [];
+    }
+
+   
+    availableTrainers.forEach(trainer => {
+        const option = document.createElement('option');
+        option.value = trainer.id;
+        option.textContent = trainer.name;
+        coachSelect.appendChild(option);
+    });
+
+    // Default to first trainer if available
+    currentCoachFilter = availableTrainers.length ? coachSelect.value : 'none';
+}
+
 
     // Fetch reservations from server
     async function fetchReservations() {
@@ -148,22 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Update coach dropdown options based on class type
-    function updateCoachDropdown(classType) {
-        const options = classCoachOptions[classType];
-        coachSelect.innerHTML = '';
-
-        options.forEach(option => {
-            const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.text;
-            coachSelect.appendChild(optionElement);
-        });
-
-        // Set default coach for this class type
-        coachSelect.value = classCoachMapping[classType];
-        currentCoachFilter = classCoachMapping[classType];
-    }
 
     // Update month navigation text in schedule header
     function updateMonthNavText() {
@@ -385,15 +398,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Class filter functionality
     filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentClassFilter = this.dataset.class;
+    btn.addEventListener('click', async function() {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
 
-            updateCoachDropdown(currentClassFilter);
-            fetchReservations();
-        });
+        currentClassFilter = this.dataset.class;
+        console.log('Selected class:', currentClassFilter);
+
+        await fetchTrainers(currentClassFilter); 
+        fetchReservations();
     });
+});
+
 
     // Coach select change
     coachSelect.addEventListener('change', function() {
@@ -450,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Initialize
-    updateCoachDropdown('all');
+     fetchTrainers();
     fetchReservations();
     fetchUserBookings();
 });

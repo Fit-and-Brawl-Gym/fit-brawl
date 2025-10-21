@@ -42,8 +42,29 @@ CREATE TABLE remember_password (
 CREATE TABLE memberships (
     id INT AUTO_INCREMENT PRIMARY KEY,
     plan_name VARCHAR(50) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    duration INT NOT NULL COMMENT 'Duration in days'
+    class_type VARCHAR(100) NOT NULL
+);
+
+-- =====================
+-- TRAINERS TABLE
+-- =====================
+CREATE TABLE trainers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    specialization VARCHAR(100) NOT NULL,
+    schedule TEXT
+);
+
+-- =====================
+-- MEMBERSHIP_TRAINERS TABLE
+-- Links memberships to their assigned trainers (many-to-many)
+-- =====================
+CREATE TABLE membership_trainers (
+    membership_id INT NOT NULL,
+    trainer_id INT NOT NULL,
+    FOREIGN KEY (membership_id) REFERENCES memberships(id) ON DELETE CASCADE,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
+    PRIMARY KEY (membership_id, trainer_id)
 );
 
 -- =====================
@@ -78,15 +99,6 @@ CREATE TABLE user_memberships (
     FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- =====================
--- TRAINERS TABLE
--- =====================
-CREATE TABLE trainers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    specialization VARCHAR(100) NOT NULL,
-    schedule TEXT
-);
 
 -- =====================
 -- RESERVATIONS TABLE
