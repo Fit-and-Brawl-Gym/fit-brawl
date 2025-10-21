@@ -71,9 +71,12 @@ DELETE FROM trainers;
 -- =====================
 -- SEED DATA FOR USER MEMBERSHIPS (NEW)
 -- =====================
-INSERT INTO user_memberships (user_id, membership_id, start_date, end_date, billing_type, status) VALUES
-(2, 2, 'Brawler', '2025-07-15', '2025-10-15', 'monthly', 'active', 'approved'),
-(3, 1, 'Gladiator', '2025-08-01', '2025-09-01', 'monthly', 'active', 'approved');
+INSERT INTO user_memberships (
+    user_id, name, country, permanent_address, plan_id, plan_name,
+    start_date, end_date, billing_type, membership_status, request_status, date_approved
+) VALUES
+(2, 'John Doe', 'Philippines', '123 Main St, Manila', 2, 'Brawler', '2025-07-15', '2025-10-15', 'monthly', 'active', 'approved', '2025-07-15'),
+(3, 'Jane Smith', 'Philippines', '456 Elm St, Makati', 1, 'Gladiator', '2025-08-01', '2025-09-01', 'monthly', 'active', 'approved', '2025-08-01');
 
 -- =====================
 -- SEED DATA FOR RESERVATIONS (UPDATED)
