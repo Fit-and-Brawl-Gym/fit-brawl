@@ -59,10 +59,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar'])
         : "../../images/profile-icon.svg";
 }
-// Check active membership 
+// Check active membership
 
 $hasActiveMembership = false;
-$hasAnyRequest = false; 
+$hasAnyRequest = false;
 $gracePeriodDays = 3;
 
 if (isset($_SESSION['user_id'])) {
@@ -219,7 +219,7 @@ if ($hasActiveMembership) {
         <div class="bg"></div>
  <!-- HERO -->
     <section class="equipment-hero">
-        <div style="max-width:1200px;margin:0 auto;padding:6px 24px">
+        <div style="width:100%;margin:0;padding:var(--spacing-4) var(--spacing-12);">
         <h1 class="title"><strong style="color:var(--color-accent)">PLAN</strong> YOUR WORKOUT</h1>
         <h1 class="title">WITH <strong style="color:var(--color-accent)">CONFIDENCE</strong></h1>
         <p class="subtitle"> Choose the <strong style="color:var(--color-accent)">EQUIPMENT</strong> best for you!</p>
