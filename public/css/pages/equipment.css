@@ -69,7 +69,7 @@ main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-top: var(--spacing-5);
+    margin-top: var(--spacing-10);
     position: relative;
     padding-bottom: var(--spacing-24);
     z-index: 1;
@@ -174,19 +174,18 @@ main {
     gap: var(--spacing-4);
     align-items: center;
     justify-content: center;
-    max-width: 840px;
+    max-width: 750px;
     margin: 0 auto var(--spacing-8);
     width: 100%;
     flex-wrap: wrap;
-    padding: 0 var(--spacing-4);
 }
 
 .search {
-    flex: 3 1 300px;
+    flex: 2 1 360px;
 }
 
 .filter {
-    flex: 1 1 180px;
+    flex: 1 1 200px;
 }
 
 input[type="search"],
@@ -205,6 +204,10 @@ select#statusFilter {
     backdrop-filter: blur(8px);
 }
 
+input#equipmentSearch {
+    min-width: auto;
+}
+
 select#statusFilter {
     background-image: url("../../../images/arrow-down.svg");
     background-repeat: no-repeat;
@@ -215,13 +218,14 @@ select#statusFilter {
 }
 
 input[type="search"]:focus,
+input#equipmentSearch:focus,
 select#statusFilter:focus {
     outline: none;
     border-color: var(--color-accent);
     background: rgba(45, 107, 117, 0.8);
 }
 
-input[type="search"]::placeholder {
+input[type="search"]::placeholder, input#equipmentSearch::placeholder {
     color: var(--color-text-muted);
 }
 

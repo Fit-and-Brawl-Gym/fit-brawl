@@ -262,7 +262,7 @@ if ($hasActiveMembership) {
         <!-- controls: search + status filter -->
         <div class="controls">
             <div class="search">
-                <input type="search" id="equipmentSearch" placeholder="Search">
+                <input type="search" id="equipmentSearch" placeholder="Search Equipment...">
             </div>
             <div class="filter">
                 <select id="statusFilter">
