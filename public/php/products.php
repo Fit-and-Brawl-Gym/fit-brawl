@@ -3,7 +3,7 @@
 
 session_start();
 
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -31,12 +31,12 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             // Normalize status values
             $status = strtolower($row['status']);
             $row['status'] = $status;
-            
+
             // Ensure image path is valid
             if (empty($row['image'])) {
                 $row['image'] = '../../uploads/products' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
             }
-            
+
             $products[] = $row;
         }
 
@@ -52,10 +52,10 @@ require_once '../../includes/db_connect.php';
 
 // Check membership status for header
 require_once '../../includes/membership_check.php';
-// Check active membership 
+// Check active membership
 
 $hasActiveMembership = false;
-$hasAnyRequest = false; 
+$hasAnyRequest = false;
 $gracePeriodDays = 3;
 
 if (isset($_SESSION['user_id'])) {
@@ -218,7 +218,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
     <!-- HERO -->
     <section class="products-hero">
-        <div style="max-width:1200px;margin:0 auto;padding:6px 24px">
+        <div style="width:100%;margin:0;padding:var(--spacing-4) var(--spacing-12);">
         <h1 class="title"><strong style="color:var(--color-accent)">ESSENTIALS</strong> FOR EVERY</h1>
         <h1 class="title"><strong style="color:var(--color-accent)">REP, SET,</strong> AND <strong style="color:var(--color-accent)">GOAL<span class="exclamation">!</span></strong></h1>
         <p class="subtitle"> Check the available <strong style="color:var(--color-accent)">PRODUCTS</strong> in our store!</p>
