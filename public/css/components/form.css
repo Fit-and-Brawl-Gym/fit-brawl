@@ -8,7 +8,8 @@
     margin: 0;
 }
 main {
-  min-height: 100vh;
+  min-height: 0;
+  height: auto;
   display: flex;
   justify-content: center;
   align-items: center;
