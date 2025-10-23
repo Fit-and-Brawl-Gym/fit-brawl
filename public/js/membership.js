@@ -176,27 +176,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add click handlers for "Select Plan" buttons
-    function addPlanSelectionHandlers() {
-        const selectPlanButtons = document.querySelectorAll('.select-btn');
+function addPlanSelectionHandlers() {
+    const selectPlanButtons = document.querySelectorAll('.select-btn');
 
-        selectPlanButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
+    selectPlanButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
 
-                // Get plan type from parent card's data-plan attribute
-                const planCard = this.closest('.plan-card');
-                const planType = planCard ? planCard.getAttribute('data-plan') : 'gladiator';
 
-                // For resolution plan, default to regular variant
-                if (planType === 'resolution-regular' || planType === 'resolution-student') {
-                    window.location.href = `transaction.php?plan=resolution&variant=regular&billing=monthly`;
-                } else {
-                    // Redirect to transaction page with plan parameter
-                    window.location.href = `transaction.php?plan=${planType}&billing=monthly`;
-                }
-            });
+            const activeCard = document.querySelector('.plan-card.center');
+            if (!activeCard) return;
+
+            const planType = activeCard.getAttribute('data-plan');
+            const category = activeCard.getAttribute('data-category') || 'regular';
+
+
+            if (planType === 'resolution-regular') {
+                window.location.href = `transaction.php?plan=resolution&variant=regular&billing=monthly`;
+            } else if (planType === 'resolution-student') {
+                window.location.href = `transaction.php?plan=resolution&variant=student&billing=monthly`;
+            } else {
+
+                window.location.href = `transaction.php?plan=${planType}&category=${category}&billing=monthly`;
+            }
         });
-    }
+    });
+}
+
+
 
     // Service name to key mapping
     const serviceMapping = {
