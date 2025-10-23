@@ -48,7 +48,7 @@
 
   /* Typography */
   --font-family-primary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-display: 'Zuume Rough Bold', 'Poppins', sans-serif;
+  --font-family-display: 'zuume-rough-bold', 'Poppins', sans-serif;
 
   /* Font Sizes */
   --font-size-xs: 0.75rem;     /* 12px */
@@ -61,6 +61,10 @@
   --font-size-4xl: 2.25rem;    /* 36px */
   --font-size-5xl: 3rem;       /* 48px */
   --font-size-6xl: 4rem;       /* 64px */
+  --font-size-7xl: 5rem;       /* 80px */
+  --font-size-8xl: 6rem;       /* 96px */
+  --font-size-9xl: 8rem;       /* 128px */
+
 
   /* Font Weights */
   --font-weight-light: 300;

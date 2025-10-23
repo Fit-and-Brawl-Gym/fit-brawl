@@ -2,6 +2,7 @@
     background: url('../../../images/reservation-bg.png') center/cover no-repeat fixed;
     position: relative;
     padding: var(--spacing-3) 0 var(--spacing-12) 0;
+    min-height: 0;
     height: auto;
 }
 
@@ -26,12 +27,8 @@ h1.page-title {
     z-index: 2;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 var(--spacing-4);
+    padding: 0 var(--spacing-5);
 }
-
-/* ========================================
-   PAGE HEADER
-   ======================================== */
 
 .page-header {
     text-align: center;
@@ -112,9 +109,6 @@ h1.page-title {
     text-decoration: underline;
 }
 
-/* ========================================
-   STATS SECTION
-   ======================================== */
 
 .stats-section {
     display: grid;
@@ -172,19 +166,11 @@ h1.page-title {
     color: var(--color-text-light);
 }
 
-/* ========================================
-   SCHEDULING SECTION
-   ======================================== */
-
 .scheduling-section {
     display: grid;
     grid-template-columns: 240px 1fr;
     gap: var(--spacing-4);
 }
-
-/* ========================================
-   LEFT COLUMN - FILTERS
-   ======================================== */
 
 .scheduling-left {
     background: rgba(26, 74, 82, 0.8);
@@ -264,10 +250,6 @@ h1.page-title {
     outline: none;
     border-color: var(--color-accent);
 }
-
-/* ========================================
-   DATE SELECTOR / CALENDAR
-   ======================================== */
 
 .date-selector {
     background: rgba(15, 50, 56, 0.5);
@@ -374,19 +356,11 @@ h1.page-title {
     border-radius: var(--radius-full);
 }
 
-/* ========================================
-   RIGHT COLUMN - SCHEDULE & BOOKINGS
-   ======================================== */
-
 .scheduling-right {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-4);
 }
-
-/* ========================================
-   MONTHLY SCHEDULE
-   ======================================== */
 
 .monthly-schedule {
     background: rgba(26, 74, 82, 0.8);
@@ -404,7 +378,8 @@ h1.page-title {
 
 .schedule-header h2 {
     font-family: var(--font-family-display);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-2xl);
+    letter-spacing: 1.5px;
     color: var(--color-accent);
     margin: 0;
 }
@@ -563,10 +538,6 @@ h1.page-title {
     background: var(--color-warning);
 }
 
-/* ========================================
-   SCHEDULE DETAILS POPUP
-   ======================================== */
-
 .schedule-details {
     position: absolute;
     top: 50%;
@@ -637,10 +608,6 @@ h1.page-title {
     background: var(--color-accent-hover);
 }
 
-/* ========================================
-   BOOKED SESSIONS
-   ======================================== */
-
 .booked-sessions {
     background: rgba(26, 74, 82, 0.8);
     border-radius: var(--radius-lg);
@@ -655,14 +622,16 @@ h1.page-title {
 }
 
 .booked-header i {
+    margin-top: -5px;
     font-size: var(--font-size-lg);
     color: var(--color-accent);
 }
 
 .booked-header h3 {
     font-family: var(--font-family-display);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-2xl);
     color: var(--color-accent);
+    letter-spacing: 1.5px;
     margin: 0;
 }
 
@@ -723,9 +692,6 @@ h1.page-title {
     color: var(--color-error);
 }
 
-/* ========================================
-   RESPONSIVE DESIGN
-   ======================================== */
 
 @media (max-width: 1200px) {
     .scheduling-section {

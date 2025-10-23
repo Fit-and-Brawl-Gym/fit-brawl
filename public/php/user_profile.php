@@ -13,7 +13,7 @@ require_once '../../includes/db_connect.php';
 require_once '../../includes/membership_check.php';
 
 $hasActiveMembership = false;
-$hasAnyRequest = false; 
+$hasAnyRequest = false;
 $gracePeriodDays = 3;
 
 if (isset($_SESSION['user_id'])) {
@@ -23,7 +23,7 @@ if (isset($_SESSION['user_id'])) {
     // Check user_memberships table
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT request_status, membership_status, end_date
+            SELECT request_status, membership_status, end_date, plan_name
             FROM user_memberships
             WHERE user_id = ?
             ORDER BY date_submitted DESC
@@ -98,7 +98,7 @@ if ($hasActiveMembership) {
 } else {
     $membershipLink = 'membership.php';
 }
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -118,13 +118,49 @@ $user = $stmt->get_result()->fetch_assoc();
 
 // TODO: Fetch real membership and activity data from database
 // For now using mock data
-$membershipPlan = "GLADIATOR";
-$nextPayment = "November 15, 2025";
-$gymStreak = 7; // days
 
-$lastTrainingDate = "October 15, 2025";
-$lastTrainingType = "Boxing";
-$lastTrainerName = "Coach Thei";
+// Fetch membership plan and next payment from user_memberships or subscriptions
+$membershipPlan = isset($row['plan_name']) ? $row['plan_name'] : "N/A";
+$nextPayment = isset($endDate) ? date('F j, Y', strtotime($endDate)) : "N/A";
+
+// Calculate gym streak (number of consecutive days with activity)
+$gymStreak = 0;
+$streakQuery = $conn->prepare("SELECT activity_date FROM training_sessions WHERE user_id = ? ORDER BY activity_date DESC LIMIT 7");
+if ($streakQuery) {
+    $streakQuery->bind_param("i", $user_id);
+    $streakQuery->execute();
+    $streakResult = $streakQuery->get_result();
+    $dates = [];
+    while ($row = $streakResult->fetch_assoc()) {
+        $dates[] = $row['activity_date'];
+    }
+    // Simple streak calculation
+    $expected = date('Y-m-d');
+    foreach ($dates as $date) {
+        if ($date === $expected) {
+            $gymStreak++;
+            $expected = date('Y-m-d', strtotime($expected . ' -1 day'));
+        } else {
+            break;
+        }
+    }
+    $streakQuery->close();
+}
+
+// Fetch last training session
+$lastTrainingDate = $lastTrainingType = $lastTrainerName = "N/A";
+$activityQuery = $conn->prepare("SELECT activity_date, activity_type, trainer_name FROM training_sessions WHERE user_id = ? ORDER BY activity_date DESC LIMIT 1");
+if ($activityQuery) {
+    $activityQuery->bind_param("i", $user_id);
+    $activityQuery->execute();
+    $activityResult = $activityQuery->get_result();
+    if ($row = $activityResult->fetch_assoc()) {
+        $lastTrainingDate = date('F j, Y', strtotime($row['activity_date']));
+        $lastTrainingType = $row['activity_type'];
+        $lastTrainerName = $row['trainer_name'];
+    }
+    $activityQuery->close();
+}
 
 // Determine avatar source
 $hasCustomAvatar = $user['avatar'] !== 'default-avatar.png' && !empty($user['avatar']);
