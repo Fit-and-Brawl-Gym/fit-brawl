@@ -17,8 +17,8 @@ INSERT INTO memberships (plan_name, class_type) VALUES
 ('Brawler', 'Muay Thai'),
 ('Champion', 'Boxing'),
 ('Clash', 'MMA'),
-('Resolution', 'Gym');
-
+('Resolution Regular', 'Gym'),
+('Resolution Student', 'Gym');
 -- =====================
 -- SEED DATA FOR TRAINERS
 -- =====================

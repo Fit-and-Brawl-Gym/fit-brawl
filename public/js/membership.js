@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tables.forEach((table, index) => {
             const rows = table.querySelectorAll('tr');
-            // Determine if this is member or non-member table
+
             const tableType = index === 0 ? 'member' : 'non-member';
 
             rows.forEach(row => {
@@ -176,31 +176,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add click handlers for "Select Plan" buttons
- function addPlanSelectionHandlers() {
+function addPlanSelectionHandlers() {
     const selectPlanButtons = document.querySelectorAll('.select-btn');
 
     selectPlanButtons.forEach(button => {
         button.addEventListener('click', function (e) {
             e.preventDefault();
 
-            // Find the parent card of the clicked button
             const planCard = this.closest('.plan-card');
             if (!planCard) {
                 console.error('Plan card not found for clicked button.');
                 return;
             }
 
-            const planType = planCard.getAttribute('data-plan');
-            const category = planCard.getAttribute('data-category') || 'regular';
+            let planType = planCard.getAttribute('data-plan');
+            let category = planCard.getAttribute('data-category') || 'regular';
 
-            // Debugging (optional)
-            console.log(`Clicked plan: ${planType}, category: ${category}`);
 
-            // Redirect based on plan
+            const variant = this.getAttribute('data-variant'); 
+            if (variant) {
+
+                planType = `${planType}-${variant}`;
+            }
+
+   
             window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
         });
     });
 }
+
 
 // Run this after your cards are loaded
 document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
