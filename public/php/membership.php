@@ -398,6 +398,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         // Pass login status to JavaScript
         window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
     </script>
-    <script src="../js/membership.js"></script>
+    <script src="../js/membership.js?=v1"></script>
 </body>
 </html>

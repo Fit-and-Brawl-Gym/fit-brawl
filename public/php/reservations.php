@@ -384,6 +384,6 @@ if ($activeMembership) {
 
     <script src="../js/header-dropdown.js"></script>
     
-    <script src="../js/reservations.js"></script>
+    <script src="../js/reservations.js?=v1"></script>
 </body>
 </html>

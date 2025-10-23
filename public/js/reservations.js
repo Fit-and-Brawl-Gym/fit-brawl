@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             trainersData = data.trainers;
             updateCoachDropdown(classType);
             checkSingleClassType();
+            fetchReservations();
         } else {
             console.error('Failed to load trainers:', data.message);
         }
@@ -61,29 +62,29 @@ function checkSingleClassType() {
     filterContainer.style.display = classTypes.length <= 1 ? 'none' : 'flex';
 }
 
-function updateCoachDropdown(classType) {
-    coachSelect.innerHTML = '';
-
-    let availableTrainers = [];
-
-    if (classType === 'all') {
-        availableTrainers = Object.values(trainersData).flat();
-    } else {
-        const key = classType.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        availableTrainers = trainersData[key] || [];
+function updateCoachDropdown(classType = "all") {
+    if (!trainersData || typeof trainersData !== "object") {
+        console.warn("No trainers data found");
+        return;
     }
 
-   
-    availableTrainers.forEach(trainer => {
-        const option = document.createElement('option');
-        option.value = trainer.id;
-        option.textContent = trainer.name;
-        coachSelect.appendChild(option);
+    const dropdown = document.getElementById("coachSelect");
+    if (!dropdown) return;
+
+    dropdown.innerHTML = ""; 
+
+    const key = classType ? classType.toLowerCase().replace(/\s+/g, "-") : "all";
+    const trainers = trainersData[key] || [];
+
+    trainers.forEach(trainer => {
+        const opt = document.createElement("option");
+        opt.value = trainer.id;
+        opt.textContent = trainer.name;
+        dropdown.appendChild(opt);
     });
 
-    // Default to first trainer if available
-    currentCoachFilter = availableTrainers.length ? coachSelect.value : 'none';
 }
+
 
 
     // Fetch reservations from server
@@ -99,6 +100,7 @@ function updateCoachDropdown(classType) {
                 sessionsData = data.reservations;
                 renderSmallCalendar();
                 renderLargeCalendar();
+                
             }
         } catch (error) {
             console.error('Error fetching reservations:', error);
@@ -466,7 +468,26 @@ function updateCoachDropdown(classType) {
     });
 
     // Initialize
-     fetchTrainers();
-    fetchReservations();
-    fetchUserBookings();
+   (async () => {
+    try {
+        const firstBtn = document.querySelector('.class-filters .filter-btn') || document.querySelector('.filter-btn');
+
+        if (firstBtn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            firstBtn.classList.add('active');
+            currentClassFilter = firstBtn.dataset.class || 'all';
+            await fetchTrainers(currentClassFilter);
+
+        } else {
+            await fetchTrainers('all');
+        }
+        
+        await fetchUserBookings();
+    } catch (err) {
+        console.error('Initialization error:', err);
+        fetchTrainers('all');
+        fetchUserBookings();
+    }
+})();
+
 });
