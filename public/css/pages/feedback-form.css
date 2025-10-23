@@ -211,7 +211,6 @@
         gap: var(--spacing-3);
     }
 
-    /* Keep label to the left on small screens: make form-group a row with label fixed size */
     .form-group {
         flex-direction: row;
         align-items: center;
@@ -219,15 +218,13 @@
         padding: 0;
     }
 
-    /* Ensure label keeps its circular appearance and doesn't stretch */
     .form-group > label {
-        flex: 0 0 44px; /* fixed width/height matching earlier rules */
+        flex: 0 0 44px;
         display: inline-flex;
         justify-content: center;
         align-items: center;
     }
 
-    /* Inputs and textareas should take remaining space */
     .form-group input,
     .form-group textarea {
         font-size: var(--font-size-base);
