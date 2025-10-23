@@ -176,33 +176,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add click handlers for "Select Plan" buttons
-function addPlanSelectionHandlers() {
+ function addPlanSelectionHandlers() {
     const selectPlanButtons = document.querySelectorAll('.select-btn');
 
     selectPlanButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
 
-
-            const activeCard = document.querySelector('.plan-card.center');
-            if (!activeCard) return;
-
-            const planType = activeCard.getAttribute('data-plan');
-            const category = activeCard.getAttribute('data-category') || 'regular';
-
-
-            if (planType === 'resolution-regular') {
-                window.location.href = `transaction.php?plan=resolution&variant=regular&billing=monthly`;
-            } else if (planType === 'resolution-student') {
-                window.location.href = `transaction.php?plan=resolution&variant=student&billing=monthly`;
-            } else {
-
-                window.location.href = `transaction.php?plan=${planType}&category=${category}&billing=monthly`;
+            // Find the parent card of the clicked button
+            const planCard = this.closest('.plan-card');
+            if (!planCard) {
+                console.error('Plan card not found for clicked button.');
+                return;
             }
+
+            const planType = planCard.getAttribute('data-plan');
+            const category = planCard.getAttribute('data-category') || 'regular';
+
+            // Debugging (optional)
+            console.log(`Clicked plan: ${planType}, category: ${category}`);
+
+            // Redirect based on plan
+            window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
         });
     });
 }
 
+// Run this after your cards are loaded
+document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
 
 
     // Service name to key mapping
