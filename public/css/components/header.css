@@ -111,7 +111,6 @@
     margin-left: auto;
     display: flex;
     align-items: center;
-    padding-left: 20px;
 }
 
 .account-icon {
@@ -125,7 +124,6 @@
 /* Gold border for logged-in users */
 .account-dropdown .account-icon {
     border: 3px solid #d5ba2b;
-    padding: 2px;
 }
 
 .account-dropdown {
@@ -170,9 +168,7 @@
   filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
 }
 
-main{
-    min-height: calc(100vh - 80px);
-}
+
 
 /* Hamburger Menu */
 .hamburger-menu {

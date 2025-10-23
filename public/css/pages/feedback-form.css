@@ -1,13 +1,15 @@
 @font-face {
     font-family: zuume-rough-bold;
     src: url(fonts/zuume-rough-bold.ttf) format("truetype");
-  }
-  *{
-      box-sizing: border-box;
-      padding: 0;
-      margin: 0;
-  }
-  .bg {
+}
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+.bg {
     position: absolute;
     top: 0;
     left: 0;
@@ -16,201 +18,290 @@
     background: url('../../../images/feedback-bg.png') no-repeat center center;
     background-size: cover;
     z-index: -1;
-
-  }
-  .form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-
 }
 
-.form-group{
-    font-family: 'poppins', sans-serif;
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-4);
+}
+
+.form-group {
+    font-family: var(--font-family-primary);
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: var(--spacing-2);
     align-items: center;
-  flex-direction: row;
-    --padding-left: 5px;
-    --font-size: 1.2rem;
+    flex-direction: row;
     position: relative;
 }
-  .icon {
-    width: 60%;
-    height: 60%;
-    max-width: 100%;
-    max-height: 100%;
-    border: 2px solid #2c6e7a;
-    border-radius: 50%;
-    box-sizing: border-box;
-    display: block;
-    fill: #2c6e7a;
-}
-.email-label {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+
+/* Icon Labels */
+.form-group label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 44px;
     height: 44px;
     min-width: 44px;
     min-height: 44px;
-    border-radius: 50%;
-    background-color: #2c6e7a;
+    border-radius: var(--radius-full);
+    background-color: var(--color-primary-light);
     overflow: hidden;
     flex-shrink: 0;
-    flex-grow: 0;
-    flex-basis: 44px;
-    flex: 0 0 44px;
+    position: relative;
+}
+
+.form-group label::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 32px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Profile/Name Icon */
+.form-group label[for="name"]::before {
+    background-image: url('../../../images/profile-icon.svg');
+    filter: brightness(0) invert(1);
     align-self: center;
 }
- .form-group input, .form-group textarea {
 
-    font-size: 1rem;
-    font-family: 'Poppins', sans-serif;
-    border-radius: 20px;
+/* Email Icon */
+.form-group label[for="email"]::before {
+    background-image: url('../../../images/email-icon.svg');
+    filter: brightness(0) invert(1);
+}
+
+.form-group input,
+.form-group textarea {
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-primary);
+    border-radius: var(--radius-xl);
     border: none;
     background-color: #d9d9d9;
-    padding: var(--padding-left);
-}
-.form-group textarea {
-  width: 100%;
-  height: 100px;
-  padding-top: 10px;
-  resize: none;
+    padding: var(--spacing-3) var(--spacing-4);
+    width: 100%;
+    transition: all 0.2s ease;
 }
 
-.buttons{
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: 2px solid var(--color-accent);
+    background-color: #e8e8e8;
+}
+
+.form-group textarea {
+    height: 100px;
+    padding-top: var(--spacing-3);
+    resize: vertical;
+    min-height: 80px;
+}
+
+.buttons {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-4);
 }
 
-.buttons a, .buttons button{
+.buttons a,
+.buttons button {
     text-decoration: none;
-    color: #fff;
-    font-size: 1rem;
-    font-family: 'Poppins', sans-serif;
-    font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 20px;
+    color: var(--color-white);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-primary);
+    font-weight: var(--font-weight-bold);
+    padding: var(--spacing-3) var(--spacing-6);
+    border-radius: var(--radius-3xl);
     border: none;
     cursor: pointer;
-    background-color: #002f3f;
+    background-color: var(--color-primary);
+    transition: var(--transition-base);
+    white-space: nowrap;
 }
 
-.buttons button{
-    background-color: #d5ba2b;
-    color: black;
+.buttons button {
+    background-color: var(--color-accent);
+    color: var(--color-text-dark);
 }
 
-.buttons a:hover, .buttons button:hover{
-    opacity: 0.8;
-    transition: 0.3s;
+.buttons a:hover,
+.buttons button:hover {
+    opacity: 0.85;
 }
 
-.status{
-    color: #2ecc71;
-    background-color: transparent;
-    border: 1px solid #2ecc71;
-    padding: 12px 15px;
-    border-radius: 5px;
-    margin-bottom: 15px;
+.status {
+    color: var(--color-success);
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid var(--color-success);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--spacing-4);
     text-align: center;
-    font-weight: bold;
-    font-family: 'Poppins', sans-serif;
+    font-weight: var(--font-weight-bold);
+    font-family: var(--font-family-primary);
 }
-/* Responsive: Tablet */
+
+/* Tablet - 768px to 1024px */
 @media (max-width: 1024px) {
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
+    .form-row {
+        gap: var(--spacing-3);
+    }
 
-  .form-group{
-    justify-content: flex-start;
-    padding: 0.25rem 0.5rem;
-    gap: 8px;
-  }
+    .form-group {
+        gap: var(--spacing-3);
+    }
 
-  .icon {
-    width: 36px;
-    height: 36px;
-  }
+    .form-group label {
+        align-self: center;
+    }
 
-  .form-group input {
-    width: 100%;
-  }
+    .form-group input,
+    .form-group textarea {
+        padding: var(--spacing-2) var(--spacing-4);
+    }
 
+    .buttons {
+        gap: var(--spacing-2);
+    }
 
-  .form-group input, .form-group textarea {
-    font-size: 0.95rem;
-    padding: 6px 8px;
-  }
-
-  .buttons{
-    gap: 0.5rem;
-  }
-
-  .buttons a, .buttons button{
-    padding: 8px 18px;
-    font-size: 0.95rem;
-    align-self: center;
-  }
 }
 
-/* Responsive: Mobile */
+/* Small Tablet - 600px to 768px */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+
+    .form-group {
+        justify-content: flex-start;
+    }
+
+    .form-group textarea {
+        height: 120px;
+    }
+
+    .buttons {
+        flex-wrap: wrap;
+    }
+
+    .buttons a,
+    .buttons button {
+        flex: 1;
+        min-width: 140px;
+        text-align: center;
+    }
+}
+
+/* Mobile - under 600px */
 @media (max-width: 600px) {
-  .bg {
-    background-position: center top;
-    background-size: cover;
-  }
+    .bg {
+        background-position: center top;
+        background-size: cover;
+        background-attachment: scroll;
+    }
 
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-3);
+    }
 
-  .form-group{
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    gap: 6px;
-    padding: 6px 10px;
-  }
+    /* Keep label to the left on small screens: make form-group a row with label fixed size */
+    .form-group {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-2);
+        padding: 0;
+    }
 
-  /* Center label icons (profile/first-name) when form groups stack vertically */
-  .form-row .form-group > label {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-  }
+    /* Ensure label keeps its circular appearance and doesn't stretch */
+    .form-group > label {
+        flex: 0 0 44px; /* fixed width/height matching earlier rules */
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-  .icon {
-    width: 36px;
-    height: 36px;
-  }
+    /* Inputs and textareas should take remaining space */
+    .form-group input,
+    .form-group textarea {
+        font-size: var(--font-size-base);
+        padding: var(--spacing-3) var(--spacing-4);
+        flex: 1 1 auto;
+    }
 
-  .form-group input, .form-group textarea {
-    font-size: 1rem;
-    padding: 10px;
-    border-radius: 12px;
-  }
+    .form-group textarea {
+        height: 140px;
+        min-height: 100px;
+    }
 
-  .form-group textarea {
-    height: 120px;
-  }
+    .buttons {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: var(--spacing-3);
+        margin-top: var(--spacing-4);
+    }
 
-  .buttons{
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 8px;
-  }
+    .buttons a,
+    .buttons button {
+        width: 100%;
+        padding: var(--spacing-3) var(--spacing-4);
+        text-align: center;
+    }
 
-  .buttons a, .buttons button{
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 1rem;
-    text-align: center;
-  }
+    .status {
+        padding: var(--spacing-3);
+        font-size: var(--font-size-sm);
+    }
+}
+
+@media (max-width: 400px) {
+    .form-row {
+        gap: var(--spacing-2);
+    }
+
+    .form-group {
+        gap: var(--spacing-2);
+    }
+
+    .form-group input,
+    .form-group textarea {
+        font-size: 0.9rem;
+        padding: var(--spacing-2) var(--spacing-3);
+    }
+
+    .form-group textarea {
+        height: 120px;
+    }
+
+    .buttons {
+        gap: var(--spacing-2);
+    }
+
+    .buttons a,
+    .buttons button {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.9rem;
+    }
+
+    .status {
+        padding: var(--spacing-2);
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .form-group textarea {
+        height: 80px;
+        min-height: 60px;
+    }
+
+    .buttons {
+        margin-top: var(--spacing-2);
+    }
 }
