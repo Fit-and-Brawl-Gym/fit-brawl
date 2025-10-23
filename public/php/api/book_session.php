@@ -23,7 +23,7 @@ if (!$reservation_id) {
 }
 
 // Check if user has active membership
-$membership_check = $conn->prepare("SELECT id FROM user_memberships WHERE user_id = ? AND status = 'active' AND end_date >= CURDATE()");
+$membership_check = $conn->prepare("SELECT id FROM user_memberships WHERE user_id = ? AND membership_status = 'active' AND end_date >= CURDATE()");
 $membership_check->bind_param("i", $user_id);
 $membership_check->execute();
 if ($membership_check->get_result()->num_rows === 0) {
