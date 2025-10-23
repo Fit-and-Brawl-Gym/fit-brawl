@@ -68,19 +68,32 @@ if (!move_uploaded_file($receipt['tmp_name'], $uploadPath)) {
 
 // Map plan names to IDs
 $planMapping = [
-    'brawler' => 1,
-    'gladiator' => 2,
+    'gladiator' => 1,
+    'brawler' => 2,
     'champion' => 3,
-    'resolution' => 1,
-    'resolution-student' => 1,
-    'resolution-regular' => 1,
+    'clash' => 4,
+    'resolution' => 5,
+    'resolution-student' => 5,
+    'resolution-regular' => 5,
 ];
 
-if (!isset($planMapping[$plan])) {
-    error_log("Unknown plan: " . $plan);
-    echo json_encode(['success' => false, 'message' => 'Invalid membership plan: ' . $plan]);
+
+// Fetch plan ID dynamically from the database
+$stmt = $conn->prepare("
+    SELECT id, plan_name 
+    FROM memberships 
+    WHERE LOWER(REPLACE(plan_name, ' ', '-')) = ?
+");
+$planSlug = strtolower(str_replace(' ', '-', $plan));
+$stmt->bind_param("s", $planSlug);
+$stmt->execute();
+$membership = $stmt->get_result()->fetch_assoc();
+
+if (!$membership) {
+    echo json_encode(['success' => false, 'message' => 'Invalid membership plan: ' . htmlspecialchars($plan)]);
     exit;
 }
+
 
 $plan_id = $planMapping[$plan];
 
