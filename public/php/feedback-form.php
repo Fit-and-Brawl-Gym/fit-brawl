@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $message = test_input($_POST['message'] ?? '');
     $index = $_SESSION['anonymous_index'] ?? 1;
 
-    
+
 
     $sql = "SELECT avatar FROM users WHERE id = ?";
     $stmt = $conn->prepare($sql);
@@ -37,13 +37,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (empty($email)){
         $email = "anon@gmail.com";
     }
- 
+
     if (empty($message)) {
         echo json_encode(["status" => "error", "message" => "Message cannot be empty"]);
         exit;
-    }   
+    }
         $_SESSION['anonymous_index'] = $index + 1;
-        $sql = "INSERT INTO feedback (user_id, username, email, avatar, message, date) 
+        $sql = "INSERT INTO feedback (user_id, username, email, avatar, message, date)
                 VALUES (?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("issss", $user_id, $username, $email, $user_avatar, $message);
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 require_once '../../includes/membership_check.php';
 
 $hasActiveMembership = false;
-$hasAnyRequest = false; 
+$hasAnyRequest = false;
 $gracePeriodDays = 3;
 
 if (isset($_SESSION['user_id'])) {
@@ -147,7 +147,7 @@ if ($hasActiveMembership) {
 } else {
     $membershipLink = 'membership.php';
 }
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -253,42 +253,30 @@ function test_input($data) {
                 <div class="contact-header">
                     <h1>Share your feedback</h1>
                 </div>
-                <form method="post" class="feedback-form" id="feedbackForm">
-                    <div class="contact-details">
-                    <?php if(!empty($status)) : ?>
-                        <div class="status"><?= htmlspecialchars($status) ?></div>
-                    <?php endif; ?>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="first-name">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon">
-                                    <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
-                                </svg>
-                            </label>
-                            <input type="text" id="name" name="name" placeholder="Name (Optional)">
-                        </div>
-                        <div class="form-group">
-                            <label for="last-name" class="email-label">
-                                <svg class="icon email-icon" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                                    <path fill="#fff" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2
-                                    2 0 0 0-2-2zm0 4.2l-8 4.8-8-4.8V6l8
-                                    4.8L20 6v2.2z"/>
-                                </svg>
-                            </label>
-                            <input type="text" id="email" name="email" placeholder="Email (Optional)">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <textarea id="message" name="message" placeholder="Leave us a message..." required></textarea>
-                    </div>
-                    <div class="buttons">
-                        <a href="feedback.php">Cancel</a>
-                        <button type="submit" name="feedback" class="feedback-btn">Submit</button>
-                    </div>
-                    </div>
-                </form>
-            </div>
+                  <form method="post" class="feedback-form" id="feedbackForm">
+                      <div class="contact-details">
+                      <?php if(!empty($status)) : ?>
+                          <div class="status"><?= htmlspecialchars($status) ?></div>
+                      <?php endif; ?>
+                      <div class="form-row">
+                          <div class="form-group">
+                              <label for="name"></label>
+                              <input type="text" id="name" name="name" placeholder="Name (Optional)">
+                          </div>
+                          <div class="form-group">
+                              <label for="email"></label>
+                              <input type="text" id="email" name="email" placeholder="Email (Optional)">
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <textarea id="message" name="message" placeholder="Leave us a message..." required></textarea>
+                      </div>
+                      <div class="buttons">
+                          <a href="feedback.php">Cancel</a>
+                          <button type="submit" name="feedback" class="feedback-btn">Submit</button>
+                      </div>
+                      </div>
+                  </form>
         </div>
     </main>
 

@@ -38,32 +38,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     // Password Validation Function
     function validatePassword($password) {
     $errors = [];
-    
+
     // must have at least 8 characters
     if (strlen($password) < 8) {
         $errors[] = "Password must be at least 8 characters long";
     }
-    
+
     // must contain at least one uppercase letter
     if (!preg_match('/[A-Z]/', $password)) {
         $errors[] = "Password must contain at least one uppercase letter";
     }
-    
+
     // must contain at least one lowercase letter
     if (!preg_match('/[a-z]/', $password)) {
         $errors[] = "Password must contain at least one lowercase letter";
     }
-    
+
     // must contain at least one number
     if (!preg_match('/[0-9]/', $password)) {
         $errors[] = "Password must contain at least one number";
     }
-    
+
     // must contain at least one special character
     if (!preg_match('/[!@#$%^&*]/', $password)) {
         $errors[] = "Password must contain at least one special character (!@#$%^&*)";
     }
-    
+
     return $errors;
 }
 
@@ -178,11 +178,17 @@ function showError($error) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
+    <script src="../js/hamburger.js"></script>
 </head>
 <body>
     <!--Header-->
     <header>
         <div class="wrapper">
+            <button class="hamburger-menu" id="hamburgerMenu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
             <div class="title">
                 <a href="index.php">
                     <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
@@ -430,4 +436,3 @@ function showError($error) {
     <script src="../js/terms-modal.js"></script>
 </body>
 </html>
-```

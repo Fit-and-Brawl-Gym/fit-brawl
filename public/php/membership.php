@@ -134,6 +134,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                             <li>Muay Thai Training</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
+                            <li>Shower Access</li>
+                            <li>Locker Access</li>
                         </ul>
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
@@ -150,6 +152,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                             <li>Boxing and MMA Area Access</li>
                             <li>Gym Equipment Access</li>
                             <li>Jakuzzi Access</li>
+                            <li>Shower Access</li>
                             <li>Locker Access</li>
                         </ul>
                         <button class="select-btn gladiator-btn">SELECT PLAN</button>
@@ -163,6 +166,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                             <li>Boxing Training</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
+                            <li>Shower Access</li>
+                            <li>Locker Access</li>
                         </ul>
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
@@ -175,6 +180,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                             <li>MMA Training</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
+                            <li>Shower Access</li>
+                            <li>Locker Access</li>
                         </ul>
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
@@ -188,6 +195,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                         </div>
                         <ul class="plan-features">
                             <li>Gym Equipment Access with Face Recognition</li>
+                            <li>Shower Access</li>
+                            <li>Locker Access</li>
                         </ul>
                         <button class="select-btn">SELECT PLAN</button>
                     </div>
