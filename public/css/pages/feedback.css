@@ -1,233 +1,370 @@
 @font-face {
     font-family: zuume-rough-bold;
     src: url(fonts/zuume-rough-bold.ttf) format("truetype");
-  }
-  *{
-      box-sizing: border-box;
-      padding: 0;
-      margin: 0;
-  }
-  html, body{
-  min-height: 100%;
-   margin: 0;
-  padding: 0;
-  
-  }
-  body {
-    display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: url('../../../images/feedback-bg.png') no-repeat center center fixed;
-  background-size: cover;
 }
 
-  main {
-    min-height: 100vh;
-   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  position: relative;
-  padding-bottom: 150px; 
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
 }
-  .feedback-section {
+
+html, body {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    font-family: 'Poppins', sans-serif;
-    align-items: center;
-    padding: 3rem 1rem;
-  }
+    min-height: 100vh;
+    background: url('../../../images/feedback-bg.png') no-repeat center center fixed;
+    background-size: cover;
+}
 
-  .feedback-card {
+main {
+    min-height: 100vh;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    position: relative;
+    padding-bottom: 100px;
+}
+
+.feedback-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    font-family: var(--font-family-primary);
+    align-items: center;
+    padding: var(--spacing-12) var(--spacing-4);
+}
+
+.feedback-card {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: var(--spacing-8);
     max-width: 800px;
     width: 100%;
-  }
+}
 
-  .feedback-card.left img {
+.feedback-card.left img {
     order: 1;
-  }
-  .feedback-card.left .bubble {
-    order: 2;
-  }
+}
 
-  .feedback-card.right img {
+.feedback-card.left .bubble {
     order: 2;
-  }
-  .feedback-card.right .bubble {
+}
+
+.feedback-card.right img {
+    order: 2;
+}
+
+.feedback-card.right .bubble {
     order: 1;
-  }
+}
 
-  .feedback-card img {
+.feedback-card img {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
     object-fit: cover;
-    border: 3px solid #d5ba2b;
-  }
+    border: 3px solid var(--color-accent);
+}
 
-  .bubble {
-    background: #164b63;
-    color: #fff;
-    padding: 1rem 2rem;
-    border-radius: 1rem;
+.bubble {
+    background: var(--color-primary);
+    color: var(--color-white);
+    padding: var(--spacing-4) var(--spacing-8);
+    border-radius: var(--radius-2xl);
     position: relative;
     flex: 1;
-  }
+    min-width: 0;
+}
 
-  .bubble h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.1rem;
-    font-weight: bold;
+.bubble h3 {
+    margin: 0 0 var(--spacing-2);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     text-align: center;
-  }
+}
 
-  .bubble p {
+.bubble p {
     margin: 0;
     font-style: italic;
-    line-height: 1.5;
-  }
+    line-height: var(--line-height-normal);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
 
-
-  .feedback-card.left .bubble::after {
+.feedback-card.left .bubble::after {
     content: "";
     position: absolute;
     left: -15px;
     top: 50%;
     transform: translateY(-50%);
     border: 10px solid transparent;
-    border-right-color: #164b63;
-  }
+    border-right-color: var(--color-primary);
+}
 
-  .feedback-card.right .bubble::after {
+.feedback-card.right .bubble::after {
     content: "";
     position: absolute;
     right: -15px;
     top: 50%;
     transform: translateY(-50%);
     border: 10px solid transparent;
-    border-left-color: #164b63;
-  }
+    border-left-color: var(--color-primary);
+}
 
-  .floating-btn {
+.floating-btn {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: var(--spacing-5);
+    right: var(--spacing-5);
     width: 170px;
-    padding: 5px;
-    font-family: 'Poppins', sans-serif;
+    padding: var(--spacing-1);
+    font-family: var(--font-family-primary);
     height: 40px;
     text-decoration: none;
     border-radius: 50px;
-    background-color: #ffcc00;
-    color: #002f3f;
-    font-size: 12px;
-    font-weight: bold;
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
     line-height: 30px;
     text-align: center;
     align-items: center;
     justify-content: center;
     display: flex;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg);
     cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
-    z-index: 1000;
-  }
+    transition: var(--transition-all);
+    z-index: var(--z-fixed);
+}
 
-  .floating-btn:hover {
-    background-color: #ffaa00;
+.floating-btn:hover {
+    background-color: var(--color-accent-hover);
     transform: scale(1.1);
-  }
+}
 
-  @media (max-width: 1024px) {
+/* Tablet - 768px to 1024px */
+@media (max-width: 1024px) {
+    main {
+        padding-bottom: 80px;
+    }
+
     .feedback-section {
-      padding: 2.5rem 1rem;
-      gap: 1.5rem;
+        padding: var(--spacing-10) var(--spacing-4);
+        gap: var(--spacing-6);
     }
 
     .feedback-card {
-      max-width: 720px;
-      gap: 0.75rem;
-      align-items: flex-start;
+        max-width: 700px;
+        gap: var(--spacing-6);
     }
 
     .feedback-card img {
-      width: 160px;
+        width: 90px;
+        height: 90px;
+    }
+
+    .bubble {
+        padding: var(--spacing-4) var(--spacing-6);
     }
 
     .bubble h3 {
-      font-size: 1rem;
+        font-size: var(--font-size-base);
+    }
+
+    .bubble p {
+        font-size: var(--font-size-base);
     }
 
     .floating-btn {
-      width: 150px;
-      height: 38px;
-      right: 18px;
-      bottom: 18px;
-      font-size: 11px;
-      line-height: 34px;
+        width: 150px;
+        height: 38px;
+        right: var(--spacing-4);
+        bottom: var(--spacing-4);
+        font-size: 11px;
+        line-height: 34px;
     }
-  }
+}
 
-  @media (max-width: 600px) {
+/* Small Tablet - 600px to 768px */
+@media (max-width: 768px) {
     main {
-      align-items: start;
+        padding-bottom: 70px;
     }
 
     .feedback-section {
-      padding: 2rem 0.75rem;
-      gap: 1rem;
+        padding: var(--spacing-8) var(--spacing-3);
+        gap: var(--spacing-5);
     }
 
     .feedback-card {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.75rem;
-      max-width: 420px;
-      margin: 0 auto;
+        max-width: 600px;
+        gap: var(--spacing-4);
+        align-items: flex-start;
+    }
+
+    .feedback-card img {
+        width: 80px;
+        height: 80px;
+        border: 2px solid var(--color-accent);
+    }
+
+    .bubble {
+        padding: var(--spacing-3) var(--spacing-5);
+    }
+
+    .bubble h3 {
+        font-size: 0.95rem;
+    }
+
+    .bubble p {
+        font-size: 0.9rem;
+        line-height: 1.45;
     }
 
     .feedback-card.left .bubble::after,
     .feedback-card.right .bubble::after {
-      display: none;
+        border-width: 8px;
+        left: -13px;
     }
 
-    .feedback-card img {
-      width: 120px;
-      border-radius: 8px;
-    }
-
-    .bubble {
-      padding: 0.85rem 1rem;
-      border-radius: 0.75rem;
-    }
-
-    .bubble h3 {
-      font-size: 0.95rem;
-    }
-
-    .bubble p {
-      font-size: 0.95rem;
-      line-height: 1.4;
+    .feedback-card.right .bubble::after {
+        right: -13px;
     }
 
     .floating-btn {
-      right: 12px;
-      bottom: 12px;
-      width: 140px;
-      height: 36px;
-      font-size: 11px;
-      line-height: 32px;
-      border-radius: 999px;
-      padding: 4px 8px;
+        width: 140px;
+        height: 36px;
+        right: var(--spacing-3);
+        bottom: var(--spacing-3);
+        font-size: 10px;
+        line-height: 32px;
+    }
+}
+
+/* Mobile - under 600px */
+@media (max-width: 600px) {
+    body {
+        background-attachment: scroll;
     }
 
-    .bg {
-      background-position: center top;
-      background-size: cover;
+    main {
+        align-items: center;
+        padding-bottom: 60px;
     }
-  }
+
+    .feedback-section {
+        padding: var(--spacing-6) var(--spacing-2);
+        gap: var(--spacing-4);
+        width: 100%;
+    }
+
+    .feedback-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: var(--spacing-3);
+        max-width: 90%;
+        margin: 0 auto;
+    }
+
+    .feedback-card.left img,
+    .feedback-card.right img {
+        order: 1;
+    }
+
+    .feedback-card.left .bubble,
+    .feedback-card.right .bubble {
+        order: 2;
+    }
+
+    .feedback-card.left .bubble::after,
+    .feedback-card.right .bubble::after {
+        display: none;
+    }
+
+    .feedback-card img {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-2xl);
+        border: 3px solid var(--color-accent);
+    }
+
+    .bubble {
+        width: 100%;
+        padding: var(--spacing-3) var(--spacing-4);
+        border-radius: var(--radius-xl);
+    }
+
+    .bubble h3 {
+        font-size: 0.95rem;
+        margin-bottom: var(--spacing-2);
+    }
+
+    .bubble p {
+        font-size: 0.88rem;
+        line-height: 1.5;
+    }
+
+    .floating-btn {
+        right: 50%;
+        bottom: var(--spacing-3);
+        transform: translateX(50%);
+        width: 140px;
+        height: 38px;
+        font-size: 11px;
+        line-height: 34px;
+        border-radius: 999px;
+    }
+
+    .floating-btn:hover {
+        transform: translateX(50%) scale(1.05);
+    }
+}
+
+/* Extra Small Mobile - under 400px */
+@media (max-width: 400px) {
+    .feedback-section {
+        padding: var(--spacing-5) var(--spacing-2);
+        gap: var(--spacing-3);
+    }
+
+    .feedback-card {
+        gap: var(--spacing-2);
+        max-width: 95%;
+    }
+
+    .feedback-card img {
+        width: 80px;
+        height: 80px;
+        border: 2px solid var(--color-accent);
+    }
+
+    .bubble {
+        padding: var(--spacing-2) var(--spacing-3);
+    }
+
+    .bubble h3 {
+        font-size: 0.88rem;
+        margin-bottom: var(--spacing-1);
+    }
+
+    .bubble p {
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+
+    .floating-btn {
+        width: 130px;
+        height: 36px;
+        font-size: 10px;
+        line-height: 32px;
+    }
+}
