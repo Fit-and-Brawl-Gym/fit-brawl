@@ -1,5 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
-
+document.addEventListener('DOMContentLoaded', () => {
     const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
     const receiptModal = document.getElementById('receiptModal');
     const receiptModalOverlay = document.getElementById('receiptModalOverlay');
@@ -12,23 +11,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileName = document.getElementById('fileName');
     const removeFileBtn = document.getElementById('removeFile');
     const submitReceiptBtn = document.getElementById('submitReceiptBtn');
-    const billingBtns = document.querySelectorAll('.billing-btn');
     const subscriptionForm = document.getElementById('subscriptionForm');
 
     let selectedFile = null;
 
-
     function updatePlanPrice() {
         const billing = document.querySelector('input[name="billing"]:checked')?.value || 'monthly';
-        const variantRadio = document.querySelector('input[name="variant"]:checked');
-        const variant = variantRadio ? variantRadio.value : null;
+        const variant = document.querySelector('input[name="variant"]:checked')?.value || null;
         const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
         const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
-
-        if (!priceAmount || !pricePeriod) return; // Safety
-
-        // Example global vars (define these in your HTML)
-        // let monthlyPrice = 299, yearlyPrice = 2999, resolutionPrices = {...}
+        if (!priceAmount || !pricePeriod) return;
 
         if (variant && typeof resolutionPrices !== 'undefined' && resolutionPrices[variant]) {
             priceAmount.textContent = resolutionPrices[variant][billing];
@@ -40,45 +32,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    billingBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
-            const billing = this.getAttribute('data-billing');
-            const urlParams = new URLSearchParams(window.location.search);
-            const plan = urlParams.get('plan') || 'gladiator';
+    function setURLParam(key, value, replace = false) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(key, value);
+        if (replace) {
+            window.history.replaceState({}, '', url);
+        } else {
+            window.history.pushState({}, '', url);
+        }
+    }
 
-            urlParams.set('billing', billing);
-            urlParams.set('plan', plan);
-
-            const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-            window.history.pushState({}, '', newUrl);
-
+    document.querySelectorAll('input[name="billing"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const billing = radio.value;
+            setURLParam('billing', billing);
             updatePlanPrice();
         });
     });
 
-
-    document.querySelectorAll('input[name="billing"]').forEach(radio => {
-        radio.addEventListener('change', function () {
-            if (this.checked) {
-                const billing = this.value;
-                const urlParams = new URLSearchParams(window.location.search);
-                const plan = urlParams.get('plan') || 'gladiator';
-                urlParams.set('billing', billing);
-                urlParams.set('plan', plan);
-
-                const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
-                window.history.pushState({}, '', newUrl);
-
-                updatePlanPrice();
-            }
+    document.querySelectorAll('input[name="variant"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const variant = radio.value;
+            setURLParam('variant', variant, true);
+            setURLParam('plan', 'resolution', true);
+            updatePlanPrice();
         });
     });
 
-
-    document.querySelectorAll('input[name="variant"]').forEach(radio => {
-        radio.addEventListener('change', updatePlanPrice);
-    });
-
+    updatePlanPrice();
 
     function resetFileUpload() {
         selectedFile = null;
@@ -95,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         selectedFile = file;
         fileName.textContent = file.name;
+
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = e => previewImage.src = e.target.result;
@@ -115,57 +97,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     removeFileBtn.addEventListener('click', resetFileUpload);
 
-
-  submitReceiptBtn.addEventListener('click', function () {
-    if (!selectedFile) return alert('Please select a file first.');
-
-    // Disable buttons immediately
-    submitReceiptBtn.disabled = true;
-    removeFileBtn.disabled = true;
-    cancelReceiptBtn.disabled = true;
-    submitReceiptBtn.textContent = 'SUBMITTING...';
-
-    const formData = new FormData(subscriptionForm);
-    formData.append('receipt', selectedFile);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    formData.append('plan', urlParams.get('plan') || 'gladiator');
-    formData.append('billing', urlParams.get('billing') || 'monthly');
-
-    fetch('api/process_subscription.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            // Do NOT re-enable buttons here
-            const msg = document.createElement('div');
-            msg.className = 'success-message';
-            msg.textContent = 'Subscription submitted! Redirecting...';
-            document.body.appendChild(msg);
-            setTimeout(() => {
-                window.location.href = 'membership-status.php';
-            }, 2000);
-        } else {
-            alert('Error: ' + data.message);
-            submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
-            // Re-enable buttons only on error
-            submitReceiptBtn.disabled = false;
-            removeFileBtn.disabled = false;
-            cancelReceiptBtn.disabled = false;
-        }
-    })
-    .catch(err => {
-        console.error('Error:', err);
-        alert('An error occurred. Please try again.');
-        submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
-        // Re-enable buttons only on error
-        submitReceiptBtn.disabled = false;
-        removeFileBtn.disabled = false;
-        cancelReceiptBtn.disabled = false;
-    });
-});
 
     function openReceiptModal() {
         if (!subscriptionForm.checkValidity()) {
@@ -191,6 +122,64 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape' && receiptModal.classList.contains('active')) closeModal();
     });
+
+    submitReceiptBtn.addEventListener('click', () => {
+        const selectedVariant = document.querySelector('input[name="variant"]:checked')?.value;
+        const urlParams = new URLSearchParams(window.location.search);
+        let basePlan = urlParams.get('plan') || 'gladiator';
+
+        if (basePlan.startsWith('resolution') && selectedVariant) {
+            basePlan = 'resolution-' + selectedVariant;
+        }
+
+        console.log('Submitting plan:', basePlan);
+
+        const formData = new FormData(subscriptionForm);
+        formData.append('plan', basePlan);
+        formData.append('billing', urlParams.get('billing') || 'monthly');
+
+        if (selectedFile) formData.append('receipt', selectedFile);
+
+        submitReceiptBtn.disabled = true;
+
+        fetch('api/process_subscription.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const msg = document.createElement('div');
+                msg.className = 'success-message';
+                msg.textContent = 'Subscription submitted! Redirecting...';
+                document.body.appendChild(msg);
+                setTimeout(() => window.location.href = 'membership-status.php', 2000);
+            } else {
+                alert('Error: ' + data.message);
+                submitReceiptBtn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An error occurred. Please try again.');
+            submitReceiptBtn.disabled = false;
+        });
+    });
+
+    const variantRadios = document.querySelectorAll('input[name="variant"]');
+    const url = new URL(window.location.href);
+    let currentVariant = url.searchParams.get('variant');
+
+    if (!currentVariant && variantRadios.length > 0) {
+        const regularRadio = Array.from(variantRadios).find(r => r.value === 'regular');
+        if (regularRadio) {
+            regularRadio.checked = true;
+            setURLParam('variant', 'regular', true);
+        }
+    } else if (currentVariant) {
+        const matchRadio = Array.from(variantRadios).find(r => r.value === currentVariant);
+        if (matchRadio) matchRadio.checked = true;
+    }
 
     updatePlanPrice();
 });

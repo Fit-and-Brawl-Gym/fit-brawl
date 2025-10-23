@@ -3,7 +3,7 @@ session_start();
 require_once '../../../includes/db_connect.php';
 header('Content-Type: application/json');
 
-// Check if user is logged in
+// Check login
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Please login first']);
     exit;
@@ -27,7 +27,7 @@ if (empty($plan) || empty($name) || empty($country) || empty($address)) {
     exit;
 }
 
-// Handle file upload
+// Validate file upload
 if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
     echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
     exit;
@@ -51,11 +51,9 @@ if ($receipt['size'] > $maxSize) {
     exit;
 }
 
-// Create uploads directory
+// Save uploaded file
 $uploadDir = __DIR__ . '/../../../uploads/receipts/';
-if (!file_exists($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
-}
+if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
 
 $extension = pathinfo($receipt['name'], PATHINFO_EXTENSION);
 $filename = 'receipt_' . $user_id . '_' . time() . '.' . $extension;
@@ -66,58 +64,54 @@ if (!move_uploaded_file($receipt['tmp_name'], $uploadPath)) {
     exit;
 }
 
-// Map plan names to IDs
+// Plan mapping
 $planMapping = [
     'gladiator' => 1,
     'brawler' => 2,
     'champion' => 3,
     'clash' => 4,
-    'resolution' => 5,
-    'resolution-student' => 5,
     'resolution-regular' => 5,
+    'resolution-student' => 6
 ];
 
-
-// Fetch plan ID dynamically from the database
-$stmt = $conn->prepare("
-    SELECT id, plan_name 
-    FROM memberships 
-    WHERE LOWER(REPLACE(plan_name, ' ', '-')) = ?
-");
-$planSlug = strtolower(str_replace(' ', '-', $plan));
-$stmt->bind_param("s", $planSlug);
-$stmt->execute();
-$membership = $stmt->get_result()->fetch_assoc();
-
-if (!$membership) {
+if (!isset($planMapping[$plan])) {
     echo json_encode(['success' => false, 'message' => 'Invalid membership plan: ' . htmlspecialchars($plan)]);
     exit;
 }
 
-
 $plan_id = $planMapping[$plan];
 
-// Get plan details
+// Fetch membership info if it exists
 $stmt = $conn->prepare("SELECT * FROM memberships WHERE id = ?");
 $stmt->bind_param("i", $plan_id);
 $stmt->execute();
 $membership = $stmt->get_result()->fetch_assoc();
 
+// If resolution plans are not in DB, create a temporary plan name
 if (!$membership) {
-    echo json_encode(['success' => false, 'message' => 'Membership plan not found']);
-    exit;
+    if ($plan === 'resolution-student') {
+        $membership = ['plan_name' => 'Resolution Student'];
+    } elseif ($plan === 'resolution-regular') {
+        $membership = ['plan_name' => 'Resolution Regular'];
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Membership plan not found']);
+        exit;
+    }
 }
 
 // Compute dates
 $start_date = date('Y-m-d');
 $end_date = ($billing === 'yearly') ? date('Y-m-d', strtotime('+1 year')) : date('Y-m-d', strtotime('+1 month'));
+$duration = ($billing === 'yearly') ? 365 : 30;
 $source_table = 'user_memberships';
 $source_id = null;
-$duration = ($billing === 'yearly') ? 365 : 30;
-// Insert new membership request
-$insert_query = "INSERT INTO user_memberships 
-(user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)";
+
+// Insert into user_memberships
+$insert_query = "
+    INSERT INTO user_memberships 
+    (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)
+";
 
 $stmt = $conn->prepare($insert_query);
 $stmt->bind_param(
@@ -136,6 +130,7 @@ $stmt->bind_param(
     $source_table,
     $source_id
 );
+
 if ($stmt->execute()) {
     echo json_encode([
         'success' => true,
@@ -150,4 +145,3 @@ if ($stmt->execute()) {
 } else {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
 }
-?>
