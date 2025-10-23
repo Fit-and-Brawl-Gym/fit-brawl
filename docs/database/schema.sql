@@ -202,3 +202,12 @@ CREATE TABLE contact (
     message TEXT NOT NULL,
     date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE training_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    activity_date DATE NOT NULL,
+    activity_type VARCHAR(100) NOT NULL,
+    trainer_name VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
