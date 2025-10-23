@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
 
             if (data.success) {
-                alert('Training session scheduled! You will receive a confirmation email.');
+                alert('Training session booked and registered successfully!');
                 closeScheduleDetails();
                 fetchReservations();
                 fetchUserBookings();
