@@ -30,16 +30,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
 }
 
-// Fetch trainers for the dropdown
-$trainers_query = "SELECT * FROM trainers ORDER BY name";
-$trainers_result = $conn->query($trainers_query);
-$trainers = [];
-while ($row = $trainers_result->fetch_assoc()) {
-    $trainers[] = $row;
-}
 
 // Fetch user's active membership
 $activeMembership = null;
+
 if ($isLoggedIn && isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
     $membership_query = "SELECT um.*, m.plan_name
@@ -54,6 +48,38 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
         $activeMembership = $row;
+    }
+}
+
+$membershipDetails = null;
+$membershipTrainers = [];
+if ($activeMembership) {
+    $plan_name = $activeMembership['plan_name'];
+
+    // Fetch class type
+    $details_query = "SELECT id, class_type FROM memberships WHERE plan_name = ?";
+    $stmt = $conn->prepare($details_query);
+    $stmt->bind_param("s", $plan_name);
+    $stmt->execute();
+    $details_result = $stmt->get_result();
+
+    if ($membershipDetails = $details_result->fetch_assoc()) {
+        $membership_id = $membershipDetails['id'];
+
+        // Fetch all trainers assigned to this membership
+        $trainer_query = "
+            SELECT t.name, t.specialization
+            FROM membership_trainers mt
+            JOIN trainers t ON mt.trainer_id = t.id
+            WHERE mt.membership_id = ?";
+        $stmt_trainers = $conn->prepare($trainer_query);
+        $stmt_trainers->bind_param("i", $membership_id);
+        $stmt_trainers->execute();
+        $trainers_result = $stmt_trainers->get_result();
+
+        while ($trainer = $trainers_result->fetch_assoc()) {
+            $membershipTrainers[] = $trainer;
+        }
     }
 }
 ?>
@@ -192,19 +218,40 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
                     <div class="filter-section">
                         <h3 class="section-title">Class Type:</h3>
                         <div class="class-filters">
-                            <button class="filter-btn" data-class="muay-thai">Muay Thai</button>
-                            <button class="filter-btn" data-class="boxing">Boxing</button>
-                            <button class="filter-btn" data-class="mma">MMA</button>
-                            <button class="filter-btn active" data-class="all">All</button>
+                            <?php if ($activeMembership && $membershipDetails): ?>
+                                <?php
+                                 
+                                    $classTypes = preg_split('/\s*(?:,|and|,)\s*/i', $membershipDetails['class_type']);
+                                    $classTypes = array_filter(array_map('trim', $classTypes)); 
+                                    $hasMultipleClasses = count($classTypes) > 1;
+                                ?>
+
+                               <?php foreach ($classTypes as $type): ?>
+                                    <?php $slug = strtolower(preg_replace('/[^a-z0-9]+/', '-', trim($type))); ?>
+                                    <button 
+                                        class="filter-btn<?= !$hasMultipleClasses ? ' active' : '' ?>" 
+                                        data-class="<?= htmlspecialchars($slug) ?>">
+                                        <?= htmlspecialchars($type) ?>
+                                    </button>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <button class="filter-btn active" data-class="all">All</button>
+                                <p style="color: var(--color-text-muted); font-size: 0.9rem;">No active membership</p>
+                            <?php endif; ?>
                         </div>
 
-                        <h3 class="section-title">Coach Name:</h3>
+                        <h3 class="section-title">Trainer:</h3>
                         <div class="coach-select-wrapper">
                             <select id="coachSelect" class="coach-select">
-                                <option value="all">All Coaches</option>
-                                <option value="coach-carlo">Coach Carlo</option>
-                                <option value="coach-rieze">Coach Rieze</option>
-                                <option value="coach-thei">Coach Thei</option>
+                                <?php if (!empty($membershipTrainers)): ?>
+                                    <?php foreach ($membershipTrainers as $trainer): ?>
+                                        <option value="<?= strtolower(str_replace(' ', '-', htmlspecialchars($trainer['name']))) ?>">
+                                            <?= htmlspecialchars($trainer['name']) ?> 
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <option disabled>No trainers assigned</option>
+                                <?php endif; ?>
                             </select>
                         </div>
 
@@ -339,6 +386,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     </footer>
 
     <script src="../js/header-dropdown.js"></script>
-    <script src="../js/reservations.js"></script>
+    
+    <script src="../js/reservations.js?=v1"></script>
 </body>
 </html>

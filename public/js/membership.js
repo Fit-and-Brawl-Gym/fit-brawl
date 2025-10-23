@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         tables.forEach((table, index) => {
             const rows = table.querySelectorAll('tr');
-            // Determine if this is member or non-member table
+
             const tableType = index === 0 ? 'member' : 'non-member';
 
             rows.forEach(row => {
@@ -176,27 +176,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add click handlers for "Select Plan" buttons
-    function addPlanSelectionHandlers() {
-        const selectPlanButtons = document.querySelectorAll('.select-btn');
+function addPlanSelectionHandlers() {
+    const selectPlanButtons = document.querySelectorAll('.select-btn');
 
-        selectPlanButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
+    selectPlanButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
 
-                // Get plan type from parent card's data-plan attribute
-                const planCard = this.closest('.plan-card');
-                const planType = planCard ? planCard.getAttribute('data-plan') : 'gladiator';
+            const planCard = this.closest('.plan-card');
+            if (!planCard) {
+                console.error('Plan card not found for clicked button.');
+                return;
+            }
 
-                // For resolution plan, default to regular variant
-                if (planType === 'resolution-regular' || planType === 'resolution-student') {
-                    window.location.href = `transaction.php?plan=resolution&variant=regular&billing=monthly`;
-                } else {
-                    // Redirect to transaction page with plan parameter
-                    window.location.href = `transaction.php?plan=${planType}&billing=monthly`;
-                }
-            });
+            let planType = planCard.getAttribute('data-plan');
+            let category = planCard.getAttribute('data-category') || 'regular';
+
+
+            const variant = this.getAttribute('data-variant'); 
+            if (variant) {
+
+                planType = `${planType}-${variant}`;
+            }
+
+   
+            window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
         });
-    }
+    });
+}
+
+
+// Run this after your cards are loaded
+document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
+
 
     // Service name to key mapping
     const serviceMapping = {
