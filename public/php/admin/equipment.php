@@ -11,16 +11,19 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 $orderCols = [];
 $hasCategory = ($conn->query("SHOW COLUMNS FROM equipment LIKE 'category'")->num_rows > 0);
 $hasName = ($conn->query("SHOW COLUMNS FROM equipment LIKE 'name'")->num_rows > 0);
-if ($hasCategory) $orderCols[] = 'category';
-if ($hasName) $orderCols[] = 'name';
-if (empty($orderCols)) $orderCols[] = 'id';
+if ($hasCategory)
+  $orderCols[] = 'category';
+if ($hasName)
+  $orderCols[] = 'name';
+if (empty($orderCols))
+  $orderCols[] = 'id';
 
 $sql = "SELECT * FROM equipment" . (count($orderCols) ? " ORDER BY " . implode(', ', $orderCols) : '');
 $result = $conn->query($sql);
 $equipment = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Normalize rows so template keys exist
-$expectedKeys = ['id','name','category','status','description'];
+$expectedKeys = ['id', 'name', 'category', 'status', 'description'];
 foreach ($equipment as &$it) {
   foreach ($expectedKeys as $k) {
     if (!array_key_exists($k, $it)) {
@@ -39,6 +42,7 @@ unset($it);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Equipment Management - Fit & Brawl Gym</title>
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/equipment.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
@@ -145,24 +149,24 @@ unset($it);
       <form id="equipmentForm" class="side-panel-body" method="post">
         <input type="hidden" id="equipmentId" name="id">
 
-                <input type="hidden" id="existingImage" name="existing_image">
+        <input type="hidden" id="existingImage" name="existing_image">
 
-                  <!-- Image Upload Preview -->
-                  <div class="form-group">
-                      <label>Equipment Image</label>
-                      <div class="image-upload-container">
-                          <div id="imagePreview" class="image-preview">
-                              <i class="fa-solid fa-image"></i>
-                              <p>Click to upload image</p>
-                          </div>
-                          <input type="file" id="equipmentImage" name="image" accept="image/*" style="display:none;"
-                              onchange="previewImage(event)">
-                          <button type="button" class="btn-secondary btn-small"
-                              onclick="document.getElementById('equipmentImage').click()">
-                              <i class="fa-solid fa-upload"></i> Choose Image
-                          </button>
-                      </div>
-                  </div>
+        <!-- Image Upload Preview -->
+        <div class="form-group">
+          <label>Equipment Image</label>
+          <div class="image-upload-container">
+            <div id="imagePreview" class="image-preview">
+              <i class="fa-solid fa-image"></i>
+              <p>Click to upload image</p>
+            </div>
+            <input type="file" id="equipmentImage" name="image" accept="image/*" style="display:none;"
+              onchange="previewImage(event)">
+            <button type="button" class="btn-secondary btn-small"
+              onclick="document.getElementById('equipmentImage').click()">
+              <i class="fa-solid fa-upload"></i> Choose Image
+            </button>
+          </div>
+        </div>
         <div class="form-group">
           <label for="equipmentName">Equipment Name *</label>
           <input type="text" id="equipmentName" name="name" required placeholder="e.g., Treadmill Pro X500">
