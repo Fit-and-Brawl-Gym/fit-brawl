@@ -39,28 +39,28 @@ INSERT INTO trainers (name, specialization, schedule) VALUES
 -- =====================
 -- Gladiator (Boxing and MMA)
 INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
-(1, 1), 
-(1, 2); 
+(1, 1),
+(1, 2);
 
 -- Brawler (Muay Thai)
 INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
-(2, 3), 
-(2, 4); 
+(2, 3),
+(2, 4);
 
 -- Champion (Boxing)
 INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
-(3, 5), 
-(3, 6); 
+(3, 5),
+(3, 6);
 
 -- Clash (MMA)
 INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
-(4, 7), 
-(4, 8); 
+(4, 7),
+(4, 8);
 
 -- Resolution (Gym)
 INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
 (5, 9),
-(5, 10); 
+(5, 10);
 
 -- =====================
 -- SEED DATA FOR TRAINERS (MUST COME BEFORE RESERVATIONS)
@@ -124,28 +124,46 @@ VALUES
 -- =====================
 -- SEED DATA FOR EQUIPMENT
 -- =====================
-INSERT INTO equipment (name, status, category, description, image_path) VALUES
-('Treadmill 1', 'Available', 'Cardio', 'Great for improving endurance and burning calories.', '../../uploads/equipment/threadmill-bg.png'),
-('Treadmill 2', 'Maintenance', 'Cardio', 'Currently under maintenance.', '../../uploads/equipment/treadmill-pro-x500.jpg'),
-('Bench Press', 'Available', 'Strength Training', 'Build upper body strength and chest muscles.', '../../uploads/equipment/bench-press-station.jpg'),
-('Rowing Machine 1', 'Available', 'Cardio', 'Enhances stamina and targets the entire body.', '../../uploads/equipment/rowing-machine.jpg'),
-('Kettlebell Set', 'Available', 'Strength Training', 'Ideal for dynamic strength and cardio workouts.', '../../uploads/equipment/kettlebell-16kg.jpg'),
-('Dumbbell Set', 'Available', 'Strength Training', 'Versatile weights for various exercises.', '../../uploads/equipment/dumbbell-set-5-to-50kg.jpg');
+INSERT INTO `equipment` (`id`, `name`, `category`, `status`, `description`, `image_path`) VALUES
+(1, 'Treadmill Pro X500', 'Cardio', 'Available', 'High-performance treadmill with incline features', '\"../uploads/equipment/treadmill-pro-x500.jpg\"'),
+(2, 'Stationary Bike Elite', 'Cardio', 'Available', 'Adjustable resistance cycling bike', '\"../uploads/equipment/stationary-bike-elite.jpg\"'),
+(3, 'Elliptical Trainer', 'Cardio', 'Out of Order', 'Low-impact cardio machine', '\"../uploads/equipment/elliptical-trainer.jpg\"'),
+(4, 'Rowing Machine', 'Cardio', 'Available', 'Full-body cardio workout equipment', '\"../uploads/equipment/rowing-machine.jpg\"'),
+(5, 'Assault AirBike', 'Cardio', 'Available', 'Fan-based resistance bike for HIIT', '\"../uploads/equipment/assault-airbike.jpg\"'),
+(6, 'Yoga Mat Premium', 'Flexibility', 'Available', 'Non-slip yoga mat with carrying strap', '\"../uploads/equipment/yoga-mat-premium.jpg\"'),
+(7, 'Foam Roller', 'Flexibility', 'Available', 'Muscle recovery and stretching tool', '\"../uploads/equipment/foam-roller.jpg\"'),
+(8, 'Resistance Bands Set', 'Flexibility', 'Available', 'Multiple resistance levels for stretching', '\"../uploads/equipment/resistance-bands-set.jpg\"'),
+(9, 'Pilates Reformer', 'Flexibility', 'Maintenance', 'Professional pilates equipment', '\"../uploads/equipment/pilates-reformer.jpg\"'),
+(10, 'Stretch Strap', 'Flexibility', 'Available', 'Assisted stretching tool', '\"../uploads/equipment/stretch-strap.jpg\"'),
+(11, 'Ab Wheel Roller', 'Core', 'Available', 'Core strengthening wheel', '\"../uploads/equipment/ab-wheel-roller.jpg\"'),
+(12, 'Medicine Ball 10kg', 'Core', 'Available', 'Weighted ball for core exercises', '\"../uploads/equipment/medicine-ball-10kg.jpg\"'),
+(13, 'Stability Ball 65cm', 'Core', 'Available', 'Swiss ball for balance training', '\"../uploads/equipment/stability-ball-65cm.jpg\"'),
+(14, 'Captain\'s Chair', 'Core', 'Out of Order', 'Leg raise station - needs repair', '\"../uploads/equipment/captain\'s-chair.jpg\"'),
+(15, 'Plank Station', 'Core', 'Available', 'Dedicated plank workout area', '\"../uploads/equipment/plank-station.jpg\"'),
+(16, 'Barbell Olympic 20kg', 'Strength Training', 'Available', 'Standard Olympic barbell', '\"../uploads/equipment/barbell-olympic-20kg.jpg\"'),
+(17, 'Dumbbell Set 5 to 50kg', 'Strength Training', 'Available', 'Complete dumbbell rack', '\"../uploads/equipment/dumbbell-set-5-to-50kg.jpg\"'),
+(18, 'Power Rack', 'Strength Training', 'Available', 'Multi-purpose squat rack with safety bars', '\"../uploads/equipment/power-rack.jpg\"'),
+(19, 'Bench Press Station', 'Strength Training', 'Available', 'Adjustable bench with barbell support', '\"../uploads/equipment/bench-press-station.jpg\"'),
+(20, 'Leg Press Machine', 'Strength Training', 'Maintenance', 'Heavy-duty leg press - under servicing', '\"../uploads/equipment/leg-press-machine.jpg\"'),
+(21, 'Kettlebell 16kg', 'Functional Training', 'Available', 'Cast iron kettlebell', '\"../uploads/equipment/kettlebell-16kg.jpg\"'),
+(22, 'Battle Ropes', 'Functional Training', 'Available', '15m heavy rope for conditioning', '\"../uploads/equipment/battle-ropes.jpg\"'),
+(23, 'Suspension Trainer', 'Functional Training', 'Available', 'TRX-style bodyweight training', '\"../uploads/equipment/suspension-trainer.jpg\"'),
+(24, 'Plyometric Box Set', 'Functional Training', 'Available', 'Jump boxes in various heights', '\"../uploads/equipment/plyometric-box-set.jpg\"'),
+(25, 'Slam Ball 15kg', 'Functional Training', 'Available', 'Heavy ball for power training', '\"../uploads/equipment/slam-ball-15kg.jpg\"');
 
 
 -- =====================
 -- SEED DATA FOR PRODUCTS
 -- =====================
-INSERT INTO products (name, category, stock, status, image_path) VALUES
-    ('Whey Protein Powder', 'Supplements', 50, 'in stock', '../../uploads/products/whey-protein-powder.jpg'),
-    ('Pre-Workout Supplement', 'Supplements', 10, 'low stock', '../../uploads/products/workout-supplement.jpg'),
-    ('Bottled Water', 'Hydration & Drinks', 100, 'in stock', '../../uploads/products/bottled-water.jpg'),
-    ('Recovery Bar', 'Snacks', 30, 'in stock', '../../uploads/products/recovery-bar.jpg'),
-    ('Muscle Roller', 'Accessories', 15, 'in stock', '../../uploads/products/muscle-roller.jpg'),
-    ('Ice Pack', 'Accessories', 5, 'low stock', '../../uploads/products/ice-pack.jpg'),
-    ('Resistance Bands', 'Accessories', 0, 'out of stock', '../../uploads/products/resistance-bands.jpg'),
-    ('Mouth Guards', 'Boxing & Muay Thai Products', 25, 'in stock', '../../uploads/products/mouth-guards.jpg');
-
+INSERT INTO products (id, name, category, stock, status, image_path, created_at, updated_at) VALUES
+(1, 'Whey Protein Powder', 'Supplements', 50, 'in stock', '../../uploads/products/whey-protein-powder.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00'),
+(2, 'Pre-Workout Supplement', 'Supplements', 10, 'low stock', '../../uploads/products/workout-supplement.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00'),
+(3, 'Bottled Water', 'Hydration & Drinks', 100, 'in stock', '../../uploads/products/bottled-water.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00'),
+(4, 'Recovery Bar', 'Snacks', 30, 'in stock', '../../uploads/products/recovery-bar.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00'),
+(5, 'Muscle Roller', 'Accessories', 15, 'in stock', '../../uploads/products/muscle-roller.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00'),
+(6, 'Ice Pack', 'Accessories', 5, 'low stock', '../../uploads/products/ice-pack.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00'),
+(7, 'Resistance Bands', 'Accessories', 0, 'out of stock', '../../uploads/products/resistance-bands.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00'),
+(8, 'Mouth Guards', 'Boxing & Muay Thai Products', 25, 'in stock', '../../uploads/products/mouth-guards.jpg', '2025-10-22 01:08:00', '2025-10-22 01:08:00');
 -- =====================
 -- SEED DATA FOR FEEDBACK
 -- =====================
