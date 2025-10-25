@@ -43,7 +43,6 @@
 /* Table wrapper */
 .table-wrap {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 /* Subscription tables */
