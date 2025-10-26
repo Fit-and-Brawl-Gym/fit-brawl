@@ -25,7 +25,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
   <main class="admin-main">
     <header>
       <h1>Manage Subscriptions</h1>
-      <p>Approve or reject membership payments — processing and members separated for clarity.</p>
+      <p>Approve or reject membership payments.</p>
     </header>
 
     <!-- Processing Subscriptions -->
@@ -48,32 +48,6 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
             </tr>
           </thead>
           <tbody id="processingTableBody">
-            <!-- Data loaded via JavaScript -->
-            <tr>
-              <td colspan="6" style="text-align:center; color:#999;">Loading...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Current Members -->
-    <section class="subscriptions-section">
-      <h2>Current Members</h2>
-      <p class="muted">Approved subscriptions / active members.</p>
-      <div class="table-wrap">
-        <table class="subs-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Member</th>
-              <th>Plan</th>
-              <th>QR Proof</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-            </tr>
-          </thead>
-          <tbody id="approvedTableBody">
             <!-- Data loaded via JavaScript -->
             <tr>
               <td colspan="6" style="text-align:center; color:#999;">Loading...</td>
