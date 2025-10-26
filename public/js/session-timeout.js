@@ -1,8 +1,8 @@
 class SessionTimer {
     constructor() {
         console.log('Initializing session timer');
-        this.warningTime = 60; // 1 minute warning
-        this.idleTimeout = 180; // 3 minutes total
+        this.warningTime = 120; // 2 minutes warning
+        this.idleTimeout = 900; // 15 minutes total
         this.remainingTime = this.idleTimeout;
         this.isWarningDisplayed = false;
         this.displayInterval = null;

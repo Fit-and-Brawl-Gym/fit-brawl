@@ -1,8 +1,8 @@
 <?php
 class SessionManager {
-    const IDLE_TIMEOUT = 180;    // 3 minutes for testing
-    const WARNING_TIME = 60;     // 1 minute warning
-    const ABSOLUTE_TIMEOUT = 300; // 5 minutes for testing
+    const IDLE_TIMEOUT = 900;    // 15 minutes 
+    const WARNING_TIME = 120;     // 2 minutes 
+    const ABSOLUTE_TIMEOUT = 36000; // 10 hours
 
     public static function initialize() {
         if (session_status() === PHP_SESSION_NONE) {
