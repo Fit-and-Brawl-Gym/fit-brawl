@@ -26,55 +26,63 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <!-- Sidebar Container -->
 <aside class="sidebar">
     <div class="sidebar-header">
-        <img src="../../../images/logo.png" alt="Gym Logo" class="logo">
+        <img src="../../../images/logo.png" alt="Gym Logo">
         <h2>Fit & Brawl Gym</h2>
+        <p>Admin Panel</p>
     </div>
 
-    <div class="sidebar-user">
-        <p>Welcome, <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></strong></p>
-    </div>
-
-    <nav class="sidebar-nav">
-        <ul>
-            <li class="<?= $current_page == 'admin.php' ? 'active' : '' ?>">
-                <a href="admin.php">🏠 Dashboard</a>
-            </li>
-            <li class="<?= $current_page == 'users.php' ? 'active' : '' ?>">
-                <a href="users.php">👥 Members</a>
-            </li>
-            <li class="<?= $current_page == 'trainers.php' ? 'active' : '' ?>">
-                <a href="trainers.php">🥋 Trainers</a>
-            </li>
-            <li class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
-                <a href="reservations.php">📅 Reservations</a>
-            </li>
-            <li class="<?= $current_page == 'subscriptions.php' ? 'active' : '' ?>">
-                <a href="subscriptions.php">💳 Subscriptions</a>
-            </li>
-            <li class="<?= $current_page == 'equipment.php' ? 'active' : '' ?>">
-                <a href="equipment.php">🏋️ Equipment</a>
-            </li>
-            <li class="<?= $current_page == 'products.php' ? 'active' : '' ?>">
-                <a href="products.php">🛍️ Products</a>
-            </li>
-            <li class="<?= $current_page == 'feedback.php' ? 'active' : '' ?>">
-                <a href="feedback.php">💬 Feedback</a>
-            </li>
-            <li class="<?= $current_page == 'contact.php' ? 'active' : '' ?>">
-                <a href="contacts.php">📩 Contacts
-                    <?= $unreadCount > 0 ? "<span class='badge'>$unreadCount</span>" : "" ?>
-                </a>
-            </li>
-            <li class="<?= $current_page == 'announcements.php' ? 'active' : '' ?>">
-                <a href="announcements.php">📢 Announcements</a>
-            </li>
-            <li class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
-                <a href="system_status.php">⚙️ System Status</a>
-            </li>
-        </ul>
+    <nav>
+        <a href="admin.php" class="<?= $current_page == 'admin.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-house icon"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="users.php" class="<?= $current_page == 'users.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-users icon"></i>
+            <span>Members</span>
+        </a>
+        <a href="trainers.php" class="<?= $current_page == 'trainers.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-dumbbell icon"></i>
+            <span>Trainers</span>
+        </a>
+        <a href="reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-calendar-check icon"></i>
+            <span>Reservations</span>
+        </a>
+        <a href="subscriptions.php" class="<?= $current_page == 'subscriptions.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-credit-card icon"></i>
+            <span>Subscriptions</span>
+        </a>
+        <a href="equipment.php" class="<?= $current_page == 'equipment.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-wrench icon"></i>
+            <span>Equipment</span>
+        </a>
+        <a href="products.php" class="<?= $current_page == 'products.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-box icon"></i>
+            <span>Products</span>
+        </a>
+        <a href="feedback.php" class="<?= $current_page == 'feedback.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-comments icon"></i>
+            <span>Feedback</span>
+        </a>
+        <a href="contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-envelope icon"></i>
+            <span>Contacts</span>
+            <?= $unreadCount > 0 ? "<span class='badge'>$unreadCount</span>" : "" ?>
+        </a>
+        <a href="announcements.php" class="<?= $current_page == 'announcements.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-bullhorn icon"></i>
+            <span>Announcements</span>
+        </a>
+        <a href="system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-gear icon"></i>
+            <span>System Status</span>
+        </a>
     </nav>
 
     <div class="sidebar-footer">
-        <a href="../logout.php" class="logout-btn">🚪 Logout</a>
+        <a href="../logout.php" class="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+        </a>
     </div>
 </aside>

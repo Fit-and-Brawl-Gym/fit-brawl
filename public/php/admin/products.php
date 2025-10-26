@@ -33,13 +33,13 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             } else {
                 $row['status'] = 'out';
             }
-            
+
 
             if (empty($row['image'])) {
                 $row['image'] = '../../../uploads/products/' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
 
             }
-        
+
 
             $products[] = $row;
         }
@@ -69,6 +69,7 @@ unset($p);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products Management - Fit & Brawl Gym</title>
     <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/products.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
@@ -146,7 +147,7 @@ unset($p);
                                 <td>
                                     <?php if (!empty($product['image_path'])): ?>
                                         <img src="/fit-brawl/uploads/products/<?= htmlspecialchars($product['image_path']) ?>"
-                                        alt="<?= htmlspecialchars($product['name']) ?>" class="product-thumb">
+                                            alt="<?= htmlspecialchars($product['name']) ?>" class="product-thumb">
                                     <?php else: ?>
                                         <div class="product-thumb no-image">
                                             <i class="fa-solid fa-image"></i>
@@ -241,7 +242,7 @@ unset($p);
                         Stock</small>
                 </div>
 
-             
+
 
                 <div class="side-panel-footer">
                     <button type="button" class="btn-secondary" onclick="closeSidePanel()">Cancel</button>
