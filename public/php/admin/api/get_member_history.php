@@ -28,17 +28,20 @@ try {
     if ($tableCheck->num_rows == 0) {
         throw new Exception('user_memberships table does not exist');
     }
-    
     // Get available columns
     $columns = $conn->query("SHOW COLUMNS FROM user_memberships");
     $availableColumns = [];
     while ($col = $columns->fetch_assoc()) {
         $availableColumns[] = $col['Field'];
     }
-    
+
     // Build SELECT clause based on available columns
     $selectFields = ['id', 'plan_name'];
-    
+
+
+    // Build SELECT clause based on available columns
+    $selectFields = ['id', 'plan_name'];
+
     $optionalColumns = [
         'duration',
         'total_payment',
@@ -48,7 +51,8 @@ try {
         'membership_status',
         'request_status'
     ];
-    
+
+
     foreach ($optionalColumns as $col) {
         if (in_array($col, $availableColumns)) {
             $selectFields[] = $col;
@@ -56,9 +60,9 @@ try {
             $selectFields[] = "NULL as $col";
         }
     }
-    
+
     $selectClause = implode(', ', $selectFields);
-    
+
     // Get all membership history for this user
     $sql = "SELECT $selectClause
             FROM user_memberships
@@ -66,17 +70,17 @@ try {
             ORDER BY " . (in_array('date_submitted', $availableColumns) ? 'date_submitted' : 'id') . " DESC";
 
     $stmt = $conn->prepare($sql);
-    
+
     if (!$stmt) {
         throw new Exception('Prepare failed: ' . $conn->error);
     }
-    
+
     $stmt->bind_param("i", $userId);
-    
+
     if (!$stmt->execute()) {
         throw new Exception('Execute failed: ' . $stmt->error);
     }
-    
+
     $result = $stmt->get_result();
 
     $history = [];

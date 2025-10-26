@@ -165,16 +165,16 @@ function toggleMemberDetails(id) {
 async function viewHistory(userId, userName) {
     try {
         console.log('Loading history for user:', userId, userName);
-        
+
         const response = await fetch(`api/get_member_history.php?user_id=${userId}`);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const text = await response.text();
         console.log('History API response:', text);
-        
+
         let data;
         try {
             data = JSON.parse(text);
@@ -226,7 +226,6 @@ function showHistoryPanel(userName, history) {
 function createHistoryItem(item) {
     const payment = item.total_payment ? `₱${parseFloat(item.total_payment).toLocaleString()}` : 'N/A';
     const duration = item.duration ? `${item.duration} days` : 'N/A';
-    
     return `
         <div class="history-item">
             <div class="history-header">
