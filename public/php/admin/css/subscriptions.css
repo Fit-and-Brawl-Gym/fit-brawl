@@ -1,0 +1,215 @@
+/* =========================== */
+/* SUBSCRIPTIONS PAGE STYLES   */
+/* =========================== */
+
+.subscriptions-section {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.subscriptions-section h2 {
+    font-size: 20px;
+    color: #222;
+    margin-bottom: 12px;
+}
+
+.subscriptions-section .muted {
+    color: #999;
+    font-size: 13px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.controls button {
+    background: #f5f8f7;
+    border: 1px solid #ddd;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.controls button:hover {
+    background: #e8f0ef;
+}
+
+/* Table wrapper */
+.table-wrap {
+    overflow-x: auto;
+}
+
+/* Subscription tables */
+.subs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.subs-table thead {
+    background: #f9fafb;
+}
+
+.subs-table th,
+.subs-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.subs-table th {
+    font-weight: 700;
+    color: #555;
+}
+
+.subs-table tbody tr:hover {
+    background: #fafbfc;
+}
+
+/* Action buttons */
+.btn-approve,
+.btn-reject {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+}
+
+.btn-approve {
+    background: #0b8454;
+    margin-right: 6px;
+}
+
+.btn-reject {
+    background: #c0392b;
+}
+
+.btn-approve:hover,
+.btn-reject:hover {
+    opacity: 0.9;
+}
+
+/* Badge styles */
+.badge-pending {
+    background: #ffd966;
+    color: #3a2e00;
+}
+
+.badge-approved {
+    background: #c6f6d5;
+    color: #135e2c;
+}
+
+.badge-rejected {
+    background: #ffd6d6;
+    color: #7a1b1b;
+}
+
+/* QR link */
+.qr-link {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #eef7f6;
+    color: #004147;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.qr-link:hover {
+    background: #d8efee;
+}
+
+/* Small link button */
+.small-link {
+    background: none;
+    border: none;
+    color: #006b66;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px;
+}
+
+/* Confirmation modal specific */
+#confirmModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#confirmModal.show {
+    display: flex;
+}
+
+.modal-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+#confirmTitle {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: #222;
+}
+
+#confirmMessage {
+    color: #555;
+    margin-bottom: 16px;
+}
+
+#rejectReasonContainer {
+    margin-top: 12px;
+}
+
+#rejectReasonContainer label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+#rejectReason {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: none;
+    font-family: inherit;
+}
+
+.btn-modal {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#confirmCancel {
+    background: #e6eef0;
+    color: #134b48;
+}
+
+#confirmOk {
+    background: #002f3f;
+    color: #fff;
+}
