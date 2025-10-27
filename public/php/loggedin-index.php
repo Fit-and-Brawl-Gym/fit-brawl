@@ -43,7 +43,7 @@ if (!isset($_SESSION['email'])) {
 }
 
 $hasActiveMembership = false;
-$hasAnyRequest = false; 
+$hasAnyRequest = false;
 $gracePeriodDays = 3;
 
 if (isset($_SESSION['user_id'])) {
@@ -201,7 +201,7 @@ if (isset($_SESSION['avatar'])) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>
