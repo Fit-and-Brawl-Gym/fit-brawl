@@ -6,12 +6,12 @@ require_once '../../includes/db_connect.php';
 // Check membership status for header
 require_once '../../includes/membership_check.php';
 
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 
 
 $hasActiveMembership = false;
-$hasAnyRequest = false; 
+$hasAnyRequest = false;
 $gracePeriodDays = 3;
 
 if (isset($_SESSION['user_id'])) {
@@ -146,10 +146,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (empty($message)) {
         $messageErr = "Message is required";
 
-    }   
+    }
 
     if (empty($fnameErr) && empty($lnameErr) && empty($emailErr) && empty($phoneErr) && empty($messageErr)) {
-    $sql = "INSERT INTO contact (first_name, last_name, email, phone_number, message, date_submitted) 
+    $sql = "INSERT INTO contact (first_name, last_name, email, phone_number, message, date_submitted)
             VALUES (?, ?, ?, ?, ?, NOW())";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssss", $fname, $lname, $email, $phoneNum, $message);
@@ -267,14 +267,14 @@ function test_input($data) {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="first-name">First Name</label>
-                            <input type="text" id="first-name" name="first-name" placeholder="" value="<?= htmlspecialchars($fname ?? '') ?>">
+                            <input type="text" id="first-name" name="first-name" placeholder="Excel" value="<?= htmlspecialchars($fname ?? '') ?>">
                             <?php if(!empty($fnameErr)) : ?>
                         <div class="status"><?= htmlspecialchars($fnameErr) ?></div>
                     <?php endif; ?>
                         </div>
                         <div class="form-group">
                             <label for="last-name">Last Name</label>
-                            <input type="text" id="last-name" name="last-name" placeholder="" value="<?= htmlspecialchars($lname ?? '') ?>">
+                            <input type="text" id="last-name" name="last-name" placeholder="Bondoc" value="<?= htmlspecialchars($lname ?? '') ?>">
                             <?php if(!empty($lnameErr)) : ?>
                         <div class="status"><?= htmlspecialchars($lnameErr) ?></div>
                     <?php endif; ?>
@@ -283,7 +283,7 @@ function test_input($data) {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="" value="<?= htmlspecialchars($email ?? '') ?>">
+                            <input type="email" id="email" name="email" placeholder="excelpogi@gmail.com" value="<?= htmlspecialchars($email ?? '') ?>">
                             <?php if(!empty($emailErr)) : ?>
                         <div class="status"><?= htmlspecialchars($emailErr) ?></div>
                     <?php endif; ?>
@@ -291,7 +291,7 @@ function test_input($data) {
 
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" placeholder="" value="<?= htmlspecialchars($phoneNum ?? '') ?>">
+                            <input type="tel" id="phone" name="phone" placeholder="09123456789" value="<?= htmlspecialchars($phoneNum ?? '') ?>">
                             <?php if(!empty($phoneErr)) : ?>
                         <div class="status"><?= htmlspecialchars($phoneErr) ?></div>
                     <?php endif; ?>

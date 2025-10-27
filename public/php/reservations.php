@@ -142,7 +142,7 @@ if ($activeMembership) {
                 </div>
             <?php else: ?>
                 <a href="login.php" class="account-link">
-                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>
@@ -220,16 +220,16 @@ if ($activeMembership) {
                         <div class="class-filters">
                             <?php if ($activeMembership && $membershipDetails): ?>
                                 <?php
-                                 
+
                                     $classTypes = preg_split('/\s*(?:,|and|,)\s*/i', $membershipDetails['class_type']);
-                                    $classTypes = array_filter(array_map('trim', $classTypes)); 
+                                    $classTypes = array_filter(array_map('trim', $classTypes));
                                     $hasMultipleClasses = count($classTypes) > 1;
                                 ?>
 
                                <?php foreach ($classTypes as $type): ?>
                                     <?php $slug = strtolower(preg_replace('/[^a-z0-9]+/', '-', trim($type))); ?>
-                                    <button 
-                                        class="filter-btn<?= !$hasMultipleClasses ? ' active' : '' ?>" 
+                                    <button
+                                        class="filter-btn<?= !$hasMultipleClasses ? ' active' : '' ?>"
                                         data-class="<?= htmlspecialchars($slug) ?>">
                                         <?= htmlspecialchars($type) ?>
                                     </button>
@@ -246,7 +246,7 @@ if ($activeMembership) {
                                 <?php if (!empty($membershipTrainers)): ?>
                                     <?php foreach ($membershipTrainers as $trainer): ?>
                                         <option value="<?= strtolower(str_replace(' ', '-', htmlspecialchars($trainer['name']))) ?>">
-                                            <?= htmlspecialchars($trainer['name']) ?> 
+                                            <?= htmlspecialchars($trainer['name']) ?>
                                         </option>
                                     <?php endforeach; ?>
                                 <?php else: ?>
@@ -386,7 +386,7 @@ if ($activeMembership) {
     </footer>
 
     <script src="../js/header-dropdown.js"></script>
-    
+
     <script src="../js/reservations.js?=v1"></script>
 </body>
 </html>

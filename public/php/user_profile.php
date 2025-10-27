@@ -277,11 +277,8 @@ $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($use
                 <h3>Recent Activity</h3>
                 <ul class="activity-list">
                     <li class="activity-item">
-                        <div class="activity-header">
-                            <span class="activity-title">Last Training Session</span>
-                            <span class="activity-date"><?= htmlspecialchars($lastTrainingDate) ?></span>
-                        </div>
                         <div class="activity-details">
+                            <strong>Last Training Session:</strong> <?= htmlspecialchars($lastTrainingDate) ?> <br>
                             <strong>Type:</strong> <?= htmlspecialchars($lastTrainingType) ?><br>
                             <strong>Trainer:</strong> <?= htmlspecialchars($lastTrainerName) ?>
                         </div>
