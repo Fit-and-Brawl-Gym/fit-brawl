@@ -50,8 +50,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             <button class="tab" data-plan="Brawler">Brawler</button>
             <button class="tab" data-plan="Champion">Champion</button>
             <button class="tab" data-plan="Clash">Clash</button>
-            <button class="tab" data-plan="Resolution Regular">Resolution Regular</button>
-            <button class="tab" data-plan="Resolution Student">Resolution Student</button>
+            <button class="tab" data-plan="Resolution Regular">Resolution</button>
         </div>
 
         <!-- Members List -->

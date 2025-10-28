@@ -12,6 +12,72 @@
     z-index: 1;
 }
 
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-4) var(--spacing-6);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    animation: slideDown 0.3s ease-out;
+    max-width: 600px;
+    width: 90%;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.error-notification {
+    background: rgba(220, 38, 38, 0.95);
+    border: 2px solid rgba(220, 38, 38, 1);
+}
+
+.notification-icon {
+    font-size: var(--font-size-2xl);
+}
+
+.notification-text {
+    color: var(--color-white);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    flex: 1;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    font-size: var(--font-size-3xl);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 /* Hero Section */
 .membership-hero {
     text-align: center;
@@ -353,82 +419,21 @@
     font-size: var(--font-size-6xl);
 }
 
-.pricing-toggle {
-    display: flex;
-    justify-content: center;
-    gap: 0;
+/* Pricing Title */
+.pricing-title {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-3xl);
+    color: var(--color-accent);
+    text-align: center;
     background: var(--color-teal-medium);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    padding: var(--spacing-2);
-    position: relative;
-}
-
-.toggle-btn {
-    font-family: var(--font-family-display);
-    font-size: var(--font-size-2xl);
-    color: var(--color-text-light);
-    background: transparent;
-    border: none;
-    padding: var(--spacing-4) var(--spacing-10);
-    cursor: pointer;
-    transition: var(--transition-base);
-    border-radius: var(--radius-lg);
-    position: relative;
-}
-
-.toggle-btn:hover {
-    color: var(--color-accent);
-}
-
-.toggle-btn.active {
-    background: var(--color-accent);
-    color: var(--color-primary);
-}
-
-.toggle-btn .toggle-hyphen {
-    font-family: var(--font-family-primary);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-3xl);
-}
-
-.signup-notice {
-    position: absolute;
-    left: 50%;
-    top: -2.2rem; /* place above the toggle */
-    transform: translateX(-50%);
-    background: linear-gradient(90deg, var(--color-success) 0%, #20b038 100%);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    opacity: 0;
-    transition: var(--transition-base);
-    pointer-events: none;
-}
-
-.signup-notice.show {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.signup-notice[data-logged-in="true"] {
-    background: linear-gradient(90deg, #17a2b8 0%, #138496 100%);
-}
-
-.signup-notice-icon {
-    font-size: var(--font-size-lg);
-}
-
-.signup-notice-text {
-    color: var(--color-white);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-sm);
-    white-space: nowrap;
+    padding: var(--spacing-5) var(--spacing-4);
+    margin: 0;
+    letter-spacing: 2px;
 }
 
 .pricing-table-container {
-    display: none;
+    display: block;
 }
 
 .pricing-table-container.active {
@@ -902,29 +907,9 @@
         top: -18px;
     }
 
-    .pricing-toggle {
-        flex-direction: column;
-        gap: var(--spacing-2);
-    }
-
-    .toggle-btn {
-        font-size: var(--font-size-xl);
-        padding: var(--spacing-3) var(--spacing-6);
-    }
-
-    .toggle-btn .toggle-hyphen {
+    .pricing-title {
         font-size: var(--font-size-2xl);
-    }
-
-    .signup-notice {
-        position: absolute;
-        left: 50%;
-        top: -1.2rem;
-        transform: translateX(-50%);
-        margin: 0;
-        justify-content: center;
-        max-width: 90%;
-        padding: var(--spacing-2) var(--spacing-3);
+        padding: var(--spacing-4) var(--spacing-3);
     }
 
     .pricing-table-scroll {
