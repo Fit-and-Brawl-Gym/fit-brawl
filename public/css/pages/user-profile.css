@@ -62,14 +62,11 @@ body::before {
     width: 150px;
     height: 150px;
     border-radius: var(--radius-full);
-    border: 4px solid var(--color-accent);
     object-fit: cover;
 }
 
 .profile-avatar.default-icon {
     background: rgba(255, 255, 255, 0.1);
-    padding: var(--spacing-8);
-    object-fit: contain;
 }
 
 .profile-info {
@@ -294,7 +291,7 @@ body::before {
 
 .avatar-preview.default-icon {
     background: rgba(255, 255, 255, 0.1);
-    padding: var(--spacing-5);
+    padding-left: 1px;
     object-fit: contain;
 }
 

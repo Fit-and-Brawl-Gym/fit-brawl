@@ -121,7 +121,7 @@ if ($type === 'member' || $isMember) {
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
 }
 ?>
 <!DOCTYPE html>
@@ -184,7 +184,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                 </div>
             <?php else: ?>
                 <a href="login.php" class="account-link">
-                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/account-icon.png" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>
