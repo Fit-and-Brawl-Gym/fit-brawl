@@ -1,7 +1,7 @@
 .login-main {
     min-height: 0;
     height: auto;
-    background: #010d17 url('../../../images/login-bg.png') no-repeat center top / cover;
+    background: var(--color-bg-dark) url('../../../images/login-bg.png') no-repeat center top / cover;
     position: relative;
 }
 
@@ -10,13 +10,13 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-20);
-    gap: 3rem;
+    gap: var(--spacing-12);
 }
 
 .hero-content {
     flex: 1;
     max-width: 750px;
-    color: #fff;
+    color: var(--color-white);
     position: relative;
 }
 
@@ -24,115 +24,115 @@
     width: 100%;
     max-width: 700px;
     height: 4px;
-    background: #d5ba2b;
-    margin-bottom: 2rem;
+    background: var(--color-accent);
+    margin-bottom: var(--spacing-8);
 }
 
 .hero-title {
-    font-family: 'zuume-rough-bold', 'Poppins', sans-serif;
+    font-family: var(--font-family-display);
     font-size: var(--font-size-9xl);
-    font-weight: 900;
-    line-height: 1.1;
+    font-weight: var(--font-weight-black);
+    line-height: var(--line-height-tight);
     text-transform: uppercase;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-6);
     letter-spacing: 2px;
 }
 
 .hero-title .yellow {
-    color: #d5ba2b;
+    color: var(--color-accent);
 }
 
 .hero-underline {
     width: 100%;
     max-width: 700px;
     height: 4px;
-    background: #d5ba2b;
+    background: var(--color-accent);
 }
 
 .login-modal {
     flex: 0 0 400px;
     background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-2xl);
+    padding: var(--spacing-8);
+    box-shadow: var(--shadow-2xl);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
 .modal-header h2 {
-    background: #002f3f;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-white);
     text-align: center;
-    padding: 1rem;
-    margin: -2rem -2rem 2rem -2rem;
-    border-radius: 20px 20px 0 0;
-    font-size: 2rem;
-    font-weight: 600;
-    font-family: 'zuume-rough-bold', sans-serif;
+    padding: var(--spacing-4);
+    margin: calc(var(--spacing-8) * -1) calc(var(--spacing-8) * -1) var(--spacing-8);
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-display);
 }
 
 .login-form h3 {
     text-align: center;
-    color: #333;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
+    color: var(--color-text-dark);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-8);
     text-transform: uppercase;
 }
 
 .input-group {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-6);
 }
 
 .input-group i {
     position: absolute;
-    left: 15px;
+    left: var(--spacing-4);
     top: 50%;
     transform: translateY(-50%);
-    color: #666;
-    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
 }
 
 .input-group input {
     width: 100%;
-    padding: 12px 15px 12px 50px;
+    padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 50px;
     border: 2px solid #ddd;
-    border-radius: 25px;
-    font-size: 1rem;
-    background: #f8f9fa;
-    transition: border-color 0.3s;
+    border-radius: var(--radius-3xl);
+    font-size: var(--font-size-base);
+    background: var(--color-text-light);
+    transition: var(--transition-base);
 }
 
 .input-group input:focus {
     outline: none;
-    border-color: #d5ba2b;
+    border-color: var(--color-accent);
 }
 
 .form-options {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    font-size: 0.9rem;
+    margin-bottom: var(--spacing-8);
+    font-size: var(--font-size-sm);
 }
 
 .checkbox-container {
     display: flex;
     align-items: center;
     cursor: pointer;
-    color: #333;
+    color: var(--color-text-dark);
 }
 .error-box {
-    border: 1px solid #ff4d4d;
+    border: 1px solid var(--color-error);
     background-color: transparent;
-    color: #ff4d4d;
-    padding: 12px 15px;
-    border-radius: 5px;
-    margin-bottom: 15px;
+    color: var(--color-error);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-4);
     text-align: center;
-    font-weight: bold;
-    font-family: 'Poppins', sans-serif;
+    font-weight: var(--font-weight-bold);
+    font-family: var(--font-family-primary);
 }
 .checkbox-container input {
     margin: 0 var(--spacing-3);
@@ -140,48 +140,48 @@
 }
 
 .forgot-password {
-    color: #666;
+    color: var(--color-text-muted);
     text-decoration: none;
 }
 
 .forgot-password:hover {
-    color: #d5ba2b;
+    color: var(--color-accent);
 }
 
 .login-btn {
     width: 100%;
-    background: #d5ba2b;
-    color: #333;
+    background: var(--color-accent);
+    color: var(--color-text-dark);
     border: none;
-    padding: 12px;
-    border-radius: 25px;
-    font-size: 1.1rem;
-    font-weight: 700;
+    padding: var(--spacing-3);
+    border-radius: var(--radius-3xl);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     cursor: pointer;
-    transition: background 0.3s;
-    margin-bottom: 1.5rem;
+    transition: var(--transition-base);
+    margin-bottom: var(--spacing-6);
 }
 
 .login-btn:hover {
-    background: #b8941f;
+    background: var(--color-accent-hover);
 }
 
 .signup-link {
     text-align: center;
-    color: #666;
-    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
     font-style: italic;
     margin: 0;
 }
 
 .signup-link a {
-    color: #333;
+    color: var(--color-text-dark);
     text-decoration: underline;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .signup-link a:hover {
-    color: #d5ba2b;
+    color: var(--color-accent);
 }
 
 @media (max-width: 1024px) {

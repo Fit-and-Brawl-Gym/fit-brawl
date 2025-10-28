@@ -81,16 +81,16 @@
     font-family: var(--font-family-primary);
     border-radius: var(--radius-xl);
     border: none;
-    background-color: #d9d9d9;
+    background-color: var(--color-gray-light);
     padding: var(--spacing-3) var(--spacing-4);
     width: 100%;
-    transition: all 0.2s ease;
+    transition: var(--transition-fast);
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: 2px solid var(--color-accent);
-    background-color: #e8e8e8;
+    background-color: var(--color-gray-medium);
 }
 
 .form-group textarea {

@@ -1,6 +1,6 @@
 .verification-main {
     min-height: calc(100vh - 120px);
-    background: #010d17 url('../../../images/sign-up_bg.png') no-repeat center top / cover;
+    background: var(--color-bg-dark) url('../../../images/sign-up_bg.png') no-repeat center top / cover;
     position: relative;
 }
 
@@ -8,15 +8,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2rem 4rem;
+    padding: var(--spacing-8) var(--spacing-16);
     min-height: 70vh;
-    gap: 3rem;
+    gap: var(--spacing-12);
 }
 
 .hero-content {
     flex: 1;
     max-width: 750px;
-    color: #fff;
+    color: var(--color-white);
     position: relative;
 }
 
@@ -24,57 +24,57 @@
     width: 100%;
     max-width: 700px;
     height: 4px;
-    background: #d5ba2b;
-    margin-bottom: 2rem;
+    background: var(--color-accent);
+    margin-bottom: var(--spacing-8);
 }
 
 .hero-title {
-    font-family: 'zuume-rough-bold', 'Poppins', sans-serif;
-    font-size: 6.5rem;
-    font-weight: 900;
-    line-height: 1.1;
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-9xl);
+    font-weight: var(--font-weight-black);
+    line-height: var(--line-height-tight);
     text-transform: uppercase;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-6);
     letter-spacing: 2px;
 }
 
 .hero-title .yellow {
-    color: #d5ba2b;
+    color: var(--color-accent);
 }
 
 .hero-underline {
     width: 100%;
     max-width: 700px;
     height: 4px;
-    background: #d5ba2b;
+    background: var(--color-accent);
 }
 
 .verification-modal {
-    background: white;
-    padding: 2rem;
+    background: var(--color-white);
+    padding: var(--spacing-8);
     border-radius: 22px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-lg);
     width: 100%;
     max-width: 450px;
 }
 
 .modal-header h2 {
-    background: #002f3f;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-white);
     text-align: center;
-    padding: 1rem;
-    margin: -2rem -2rem 2rem -2rem;
-    border-radius: 20px 20px 0 0;
-    font-size: 2rem;
-    font-weight: 600;
+    padding: var(--spacing-4);
+    margin: calc(var(--spacing-8) * -1) calc(var(--spacing-8) * -1) var(--spacing-8);
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-semibold);
 }
 
 .verification-form h3 {
     text-align: center;
-    color: #333;
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
+    color: var(--color-text-dark);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-8);
     text-transform: uppercase;
 }
 
@@ -96,10 +96,10 @@
 
 .input-group input {
     flex: 1;
-    padding: 12px 15px 12px 45px;
+    padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 45px;
     border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
     letter-spacing: 8px;
     text-align: center;
 }
@@ -107,8 +107,8 @@
 .verification-input-container {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 1.5rem;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-6);
 }
 
 .otp-input-wrapper {
@@ -118,19 +118,19 @@
 
 .otp-input-wrapper i {
     position: absolute;
-    left: 15px;
+    left: var(--spacing-4);
     top: 50%;
     transform: translateY(-50%);
-    color: #666;
+    color: var(--color-text-muted);
     z-index: 1;
 }
 
 .otp-input-wrapper input {
     width: 100%;
-    padding: 12px 15px 12px 45px;
+    padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 45px;
     border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
     letter-spacing: 4px;
     text-align: center;
 }
@@ -139,61 +139,61 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    font-size: 0.9rem;
+    margin-bottom: var(--spacing-8);
+    font-size: var(--font-size-sm);
 }
 
 .verify-btn {
     width: 100%;
-    background: #d5ba2b;
-    color: #333;
+    background: var(--color-accent);
+    color: var(--color-text-dark);
     border: none;
-    padding: 12px;
-    border-radius: 25px;
-    font-size: 1.1rem;
-    font-weight: 700;
+    padding: var(--spacing-3);
+    border-radius: var(--radius-3xl);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     cursor: pointer;
-    transition: background 0.3s;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
+    transition: var(--transition-base);
+    margin-top: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
 }
 
 .verify-btn:hover {
-    background: #b8941f;
+    background: var(--color-accent-hover);
 }
 
 .otp-input-group {
     display: flex;
     justify-content: center;
-    margin: 20px 0;
+    margin: var(--spacing-5) 0;
 }
 
 .otp-input-group input {
     width: 200px;
     height: 40px;
-    font-size: 24px;
+    font-size: var(--font-size-3xl);
     text-align: center;
-    letter-spacing: 20px;
-    padding-left: 20px;
+    letter-spacing: var(--spacing-5);
+    padding-left: var(--spacing-5);
     border: 2px solid #ddd;
-    border-radius: 5px;
+    border-radius: var(--radius-md);
 }
 
 .success-message {
     background-color: rgba(0, 255, 0, 0.1);
-    color: #008000;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 1rem;
+    color: var(--color-success);
+    padding: var(--spacing-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-4);
     text-align: center;
 }
 
 .error-message {
     background-color: rgba(255, 0, 0, 0.1);
-    color: #ff0000;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 1rem;
+    color: var(--color-error);
+    padding: var(--spacing-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-4);
     text-align: center;
 }
 
@@ -201,12 +201,12 @@
     min-width: 46px;
     height: 46px;
     padding: 0;
-    border: 1px solid var(--accent-color);
-    background: #d5ba2b;
-    color: #333;
-    border-radius: 5px;
+    border: 1px solid var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: var(--transition-all);
 }
 
 .resend-btn.loading {
@@ -228,7 +228,7 @@
 }
 
 .resend-btn:hover {
-    background: #b8941f;
+    background: var(--color-accent-hover);
 }
 
 .resend-btn:disabled {
@@ -238,24 +238,24 @@
 
 #countdown {
     text-align: center;
-    margin-top: 10px;
-    color: #666;
+    margin-top: var(--spacing-3);
+    color: var(--color-text-muted);
 }
 
 @media (max-width: 1024px) {
     .verification-hero {
         flex-direction: column;
         text-align: center;
-        padding: 2rem;
+        padding: var(--spacing-8);
     }
 
     .hero-content {
         max-width: 100%;
-        margin-bottom: 2rem;
+        margin-bottom: var(--spacing-8);
     }
 
     .hero-title {
-        font-size: 3rem;
+        font-size: var(--font-size-5xl);
     }
 
     .verification-modal {
@@ -267,10 +267,10 @@
 
 @media (max-width: 600px) {
     .hero-title {
-        font-size: 2rem;
+        font-size: var(--font-size-3xl);
     }
 
     .verification-hero {
-        padding: 1rem;
+        padding: var(--spacing-4);
     }
 }

@@ -327,7 +327,7 @@ body::before {
 
 .file-size-hint {
     display: block;
-    color: #999;
+    color: var(--color-text-muted);
     font-size: var(--font-size-xs);
     margin-top: var(--spacing-1);
     font-style: italic;
