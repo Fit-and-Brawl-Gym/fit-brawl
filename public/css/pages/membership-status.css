@@ -1,6 +1,6 @@
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #002f3f;
+    font-family: var(--font-family-primary);
+    background-color: var(--color-primary);
     margin: 0;
     padding: 0;
 }
@@ -8,65 +8,65 @@ body {
 main {
     max-width: 600px;
     margin: 100px auto;
-    padding: 30px;
+    padding: var(--spacing-8);
     background: rgba(15, 79, 82, 0.3);
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
     text-align: center;
 }
 
 h2 {
-    margin-bottom: 15px;
-    color: #ffcc00;
+    margin-bottom: var(--spacing-4);
+    color: var(--color-accent);
 }
 
 p {
-    color: white;
-    line-height: 1.6;
+    color: var(--color-white);
+    line-height: var(--line-height-relaxed);
 }
 
 .status-message.pending {
-    border-left: 6px solid #f0ad4e;
-    padding-left: 15px;
+    border-left: 6px solid var(--color-warning);
+    padding-left: var(--spacing-4);
 }
 
 .status-message.rejected {
-    border-left: 6px solid #d9534f;
-    padding-left: 15px;
+    border-left: 6px solid var(--color-error);
+    padding-left: var(--spacing-4);
 }
 
 .status-message.none {
     border-left: 6px solid #5bc0de;
-    padding-left: 15px;
+    padding-left: var(--spacing-4);
 }
 
 /* Button Group */
 .button-group {
     display: flex;
-    gap: 12px;
+    gap: var(--spacing-3);
     justify-content: center;
-    margin-top: 24px;
+    margin-top: var(--spacing-6);
 }
 
 .btn-home,
 .btn-secondary {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: var(--spacing-3) var(--spacing-6);
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-weight-semibold);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-    font-size: 14px;
+    gap: var(--spacing-2);
+    transition: var(--transition-base);
+    font-size: var(--font-size-sm);
     border: 2px solid transparent;
 }
 
 /* Primary button - Yellow theme */
 .btn-home {
-    background: #ffcc00;
-    color: #002f3f;
-    border-color: #ffcc00;
+    background: var(--color-accent);
+    color: var(--color-primary);
+    border-color: var(--color-accent);
 }
 
 .btn-home:hover {
@@ -93,7 +93,7 @@ p {
 /* Icon styling */
 .btn-home i,
 .btn-secondary i {
-    font-size: 16px;
+    font-size: var(--font-size-base);
 }
 
 /* Remove old back-btn if it exists */
@@ -104,8 +104,8 @@ p {
 /* Responsive */
 @media (max-width: 480px) {
     main {
-        margin: 50px 20px;
-        padding: 20px;
+        margin: 50px var(--spacing-5);
+        padding: var(--spacing-5);
     }
 
     .button-group {

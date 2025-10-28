@@ -1,7 +1,7 @@
 body {
   min-height: 0;
   height: auto;
-  background-color: #010d17;
+  background-color: var(--color-bg-dark);
 }
 
 .homepage-hero {
@@ -19,32 +19,32 @@ body {
 .hero-content {
   max-width: 600px;
   margin: var(--spacing-8);
-  color: #fff;
+  color: var(--color-white);
   z-index: 2;
   position: relative;
 }
 
 .homepage-hero h1 {
-  font-family: 'zuume-rough-bold', 'Poppins', sans-serif;
+  font-family: var(--font-family-display);
   font-size: var(--font-size-7xl);
-  font-weight: 900;
-  line-height: 1.1;
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-tight);
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-2);
   letter-spacing: 1px;
-  margin-top: 3rem;
+  margin-top: var(--spacing-12);
 }
 
 .homepage-hero .yellow {
-  color: #d5ba2b;
+  color: var(--color-accent);
 }
 
 .hero-underline {
   width: 100%;
   max-width: 600px;
   height: 4px;
-  background: #d5ba2b;
-  margin: 1rem 0 0.5rem 0;
+  background: var(--color-accent);
+  margin: var(--spacing-4) 0 var(--spacing-2) 0;
 }
 
 .sub-underline {
@@ -60,35 +60,35 @@ body {
   transform: translateY(-50%);
   width: 100px;
   height: 4px;
-  background: #d5ba2b;
+  background: var(--color-accent);
 }
 
 .hero-sub {
-  font-size: 1.9rem;
-  font-weight: 500;
-  margin-bottom: 2rem;
-  margin-top: 0.5rem;
-  color: #d5ba2b;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-8);
+  margin-top: var(--spacing-2);
+  color: var(--color-accent);
   letter-spacing: 1px;
   position: relative;
 }
 
 .hero-btn {
   display: inline-block;
-  background: #d5ba2b;
-  color: #0a2a36;
-  font-weight: 700;
-  font-size: 1.1rem;
-  padding: 0.8rem 2.2rem;
+  background: var(--color-accent);
+  color: var(--color-fog);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-3) var(--spacing-10);
   border-radius: var(--radius-xl);
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: background 0.2s, color 0.2s;
+  box-shadow: var(--shadow-base);
+  transition: var(--transition-fast);
 }
 
 .hero-btn:hover {
   background: #ffe066;
-  color: #0a2a36;
+  color: var(--color-fog);
 }
 
 .top-line {
@@ -107,7 +107,7 @@ body {
 @media (max-width: 1200px) {
     body {
       background: none;
-      background-color: #010d17;
+      background-color: var(--color-bg-dark);
   }
 
   .homepage-hero::before {
@@ -132,7 +132,7 @@ body {
       font-size: var(--font-size-7xl);
   }
   .hero-sub {
-      font-size: 1.6rem;
+      font-size: var(--font-size-2xl);
   }
   .homepage-hero::before {
     height: 60%;
@@ -147,7 +147,7 @@ body {
 @media (max-width: 900px) {
   body {
   background: none;
-  background-color: #010d17;
+  background-color: var(--color-bg-dark);
 }
 
   .homepage-hero::before {
@@ -167,7 +167,7 @@ body {
   }
 
   .hero-sub {
-      font-size: 1.4rem;
+      font-size: var(--font-size-xl);
   }
 }
 
@@ -182,11 +182,11 @@ body {
   }
 
   .hero-sub {
-      font-size: 1.2rem;
+      font-size: var(--font-size-xl);
   }
   body {
     background-image: none;
-    background-color: #010d17;
+    background-color: var(--color-bg-dark);
   }
 
   .homepage-hero {
@@ -195,8 +195,8 @@ body {
   }
 
   .hero-sub {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-6);
   }
 
   .homepage-hero::before {

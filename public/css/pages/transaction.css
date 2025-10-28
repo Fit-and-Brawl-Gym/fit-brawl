@@ -17,12 +17,12 @@
 }
 
 .transaction-title {
-    font-family: 'zuume-rough-bold', sans-serif;
+    font-family: var(--font-family-display);
     font-size: var(--font-size-6xl);
     text-align: center;
     color: var(--color-white);
     margin-bottom: -30px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: var(--shadow-text);
     position: relative;
     z-index: 2;
     letter-spacing: 2px;
@@ -361,7 +361,7 @@
 }
 
 .plan-name {
-    font-family: 'zuume-rough-bold', sans-serif;
+    font-family: var(--font-family-display);
     font-size: var(--font-size-3xl);
     color: var(--color-primary);
     margin: 0;
@@ -696,7 +696,7 @@
 
 .remove-file-btn:hover {
     background: var(--color-error);
-    color: white;
+    color: var(--color-white);
 }
 
 .modal-actions {
