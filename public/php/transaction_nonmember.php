@@ -117,33 +117,6 @@ $price = $selectedService['price'];
             outline: none;
             border-color: var(--color-accent);
         }
-
-        .payment-qr-section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-6);
-            margin-top: var(--spacing-5);
-        }
-
-        .qr-code-container {
-            text-align: center;
-            margin-bottom: var(--spacing-4);
-        }
-
-        .qr-code {
-            max-width: 250px;
-            height: auto;
-            border: 3px solid var(--color-accent);
-            border-radius: var(--radius-md);
-        }
-
-        .qr-instruction {
-            text-align: center;
-            color: var(--color-accent);
-            font-weight: var(--font-weight-bold);
-            font-size: var(--font-size-sm);
-            margin: 0;
-        }
     </style>
 </head>
 <body>
@@ -183,10 +156,6 @@ $price = $selectedService['price'];
     <main class="transaction-page">
         <div class="transaction-container">
             <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
-            <p style="text-align: center; color: var(--color-white); margin-bottom: var(--spacing-6);">
-                Fill in your details and select your preferred date. You'll receive a receipt to show at the gym entrance.
-            </p>
-
             <div class="transaction-box">
                 <form id="nonMemberForm" class="subscription-form">
                     <input type="hidden" name="service" value="<?php echo $service; ?>">
@@ -214,13 +183,6 @@ $price = $selectedService['price'];
                                     <i class="far fa-calendar-alt"></i> Select Service Date *
                                 </label>
                                 <input type="text" id="serviceDate" name="service_date" placeholder="Choose a date" required readonly>
-                            </div>
-
-                            <div class="payment-qr-section">
-                                <div class="qr-code-container">
-                                    <img src="../../images/qr-code.png" alt="InstaPay QR Code" class="qr-code">
-                                </div>
-                                <p class="qr-instruction">SCAN TO PROCEED WITH YOUR PAYMENT</p>
                             </div>
                         </div>
 

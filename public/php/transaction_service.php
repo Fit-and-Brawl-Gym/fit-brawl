@@ -216,13 +216,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                                 </label>
                                 <input type="text" id="serviceDate" name="service_date" placeholder="Choose a date" required readonly style="cursor: pointer; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(213, 186, 43, 0.3); border-radius: var(--radius-md); color: var(--color-white);">
                             </div>
-
-                            <div class="payment-qr-section">
-                                <div class="qr-code-container">
-                                    <img src="../../images/qr-code.png" alt="InstaPay QR Code" class="qr-code">
-                                </div>
-                                <p class="qr-instruction">KINDLY SCAN TO PROCEED WITH YOUR PAYMENT</p>
-                            </div>
                         </div>
 
                         <!-- Right Column -->
