@@ -36,81 +36,31 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
 }
+
+// Set variables for header
+$pageTitle = "Fit and Brawl - Membership";
+$currentPage = "membership";
+$additionalCSS = ["../css/pages/membership.css"];
+$additionalJS = [];
+
+// Include header
+require_once '../../includes/header.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fit and Brawl - Membership</title>
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/membership.css">
-    <link rel="stylesheet" href="../css/components/footer.css">
-    <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-
-    <script src="../js/header-dropdown.js"></script>
-    <script src="../js/hamburger-menu.js"></script>
-    <?php if(SessionManager::isLoggedIn()): ?>
-    <link rel="stylesheet" href="../css/components/session-warning.css">
-    <script src="../js/session-timeout.js"></script>
-    <?php endif; ?>
-</head>
-<body>
-    <!--Header-->
-    <header>
-        <div class="wrapper">
-            <button class="hamburger-menu" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="title">
-                <a href="index.php">
-                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
-                </a>
-                <a href="index.php">
-                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
-                </a>
-            </div>
-            <nav class="nav-bar">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php" class="active">Membership</a></li>
-                    <li><a href="equipment.php">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </nav>
-            <?php if(isset($_SESSION['email'])): ?>
-                <!-- Logged-in dropdown -->
-                <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>"
-             alt="Account" class="account-icon">
-                    <div class="dropdown-menu">
-                        <a href="user_profile.php">Profile</a>
-                        <a href="logout.php">Logout</a>
-                    </div>
-                </div>
-            <?php else: ?>
-                <!-- Not logged-in -->
-                <a href="login.php" class="account-link">
-                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
-                </a>
-            <?php endif; ?>
-        </div>
-    </header>
 
     <!--Main-->
     <main class="membership-main">
+        <!-- Error/Success Notification -->
+        <?php if (isset($_SESSION['plan_error'])): ?>
+        <div class="notification error-notification">
+            <span class="notification-icon">⚠️</span>
+            <span class="notification-text"><?php echo htmlspecialchars($_SESSION['plan_error']); ?></span>
+            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+        <?php unset($_SESSION['plan_error']); ?>
+        <?php endif; ?>
+
         <!-- Hero Section -->
         <section class="membership-hero">
             <h1 class="hero-title">CHOOSE YOUR <span class="yellow">JOURNEY </span> <span class="exclamation">!</span></h1>
@@ -131,7 +81,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                         <p class="plan-subtitle">MEMBERSHIP IN MUAY THAI</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
-                            <li>Muay Thai Training</li>
+                            <li>Muay Thai Training with Coach Thei</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
                             <li>Shower Access</li>
@@ -148,7 +98,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                             <div class="price-main">3500 PHP <span>/MONTH</span></div>
                         </div>
                         <ul class="plan-features">
-                            <li>Boxing and MMA Training</li>
+                            <li>Boxing Training with Coach Rieze</li>
+                            <li>MMA Training with Coach Carlo</li>
                             <li>Boxing and MMA Area Access</li>
                             <li>Gym Equipment Access</li>
                             <li>Jakuzzi Access</li>
@@ -163,7 +114,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                         <p class="plan-subtitle">MEMBERSHIP IN BOXING</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
-                            <li>Boxing Training</li>
+                            <li>Boxing Training with Coach Rieze</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
                             <li>Shower Access</li>
@@ -177,7 +128,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                         <p class="plan-subtitle">MEMBERSHIP IN MMA</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
-                            <li>MMA Training</li>
+                            <li>MMA Training with Coach Carlo</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
                             <li>Shower Access</li>
@@ -189,10 +140,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                     <div class="plan-card" data-plan="resolution-regular" data-category="non-member">
                         <h3 class="plan-name">RESOLUTION</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
-                        <div class="plan-price">
-                            <div class="price-student">700 PHP <span>/MONTH</span><br><span class="student-label">For Students</span></div>
-                            <div class="price-regular">1000 PHP <span>/MONTH</span><br><span class="regular-label">For Regular</span></div>
-                        </div>
+                        <div class="plan-price">1000 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
                             <li>Gym Equipment Access with Face Recognition</li>
                             <li>Shower Access</li>
@@ -211,20 +159,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         <!-- Pricing Tables -->
         <section class="pricing-section">
             <div class="pricing-header" id="pricingHeader">
-                <div class="pricing-toggle">
-                    <button class="toggle-btn active" data-table="member">FOR MEMBERS</button>
-                    <button class="toggle-btn" data-table="non-member">FOR NON<span class="toggle-hyphen">-</span>MEMBERS</button>
-                </div>
-                <?php if (!$isLoggedIn): ?>
-                <div class="signup-notice" id="signupNotice" data-logged-in="false">
-                    <span class="signup-notice-text">Sign up now and save 30 PHP <br> on all services!</span>
-                </div>
-                <?php else: ?>
-                <div class="signup-notice" id="signupNotice" data-logged-in="true" style="opacity: 0; pointer-events: none;">
-                    <span class="signup-notice-icon">✓</span>
-                    <span class="signup-notice-text">You're getting member pricing!</span>
-                </div>
-                <?php endif; ?>
+                <h2 class="pricing-title">MEMBER ADDITIONAL SERVICES</h2>
             </div>
 
             <!-- Members Table -->
@@ -261,48 +196,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                             </tr>
                             <tr>
                                 <td class="price-cell">500 PHP</td>
-                                <td>Training: MMA</td>
-                                <td>A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Non-Members Table -->
-            <div class="pricing-table-container" id="nonMemberTable">
-                <div class="pricing-table-scroll">
-                    <table class="pricing-table">
-                        <thead>
-                            <tr>
-                                <th>PRICE</th>
-                                <th>SERVICE</th>
-                                <th>BENEFITS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="price-cell">150 PHP</td>
-                                <td>Day Pass: Gym Access</td>
-                                <td>Full-day access to all gym facilities and equipment, including the weight room, cardio machines, and functional training areas. Perfect for a one-off workout or for travelers.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">120 PHP</td>
-                                <td>Day Pass: Student Access</td>
-                                <td>Discounted full-day access to all gym facilities (weight room, cardio, etc.). Must present a valid student ID upon entry.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">380 PHP</td>
-                                <td>Training: Boxing</td>
-                                <td>Full-day access to boxing area. Focused on footwork, defense, and power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight strategies.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">530 PHP</td>
-                                <td>Training: Muay Thai</td>
-                                <td>Full-day access to mma area. Includes in-depth training on clinch work, teeps, and powerful low kicks. Perfect for mastering traditional techniques and conditioning.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">630 PHP</td>
                                 <td>Training: MMA</td>
                                 <td>A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.</td>
                             </tr>
@@ -365,48 +258,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </main>
 
-    <!--Footer-->
-    <footer>
-        <div class="container footer-flex">
-            <div class="footer-logo-block">
-                <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
-            </div>
-            <div class="footer-menu-block">
-                <div class="footer-menu-title">MENU</div>
-                <ul class="footer-menu-list">
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
-                    <li><a href="equipment.php">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </div>
-            <div class="footer-contact-block">
-                <div class="footer-contact-title">CONTACT</div>
-                <div class="footer-contact-details">
-                    1832 Oroquieta Rd, Santa Cruz, Manila,<br>
-                    1008 Metro Manila<br><br>
-                    Gmail: fitxbrawl@gmail.com
-                </div>
-            </div>
-            <div class="footer-hours-block">
-                <div class="footer-hours-title">OPENING HOURS</div>
-                <div class="footer-hours-details">
-                    Sun–Fri: 9AM to 10PM<br>
-                    Saturday: 10AM to 7PM
-                </div>
-            </div>
-        </div>
-        <div class="copyright">
-            <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
-        </div>
-    </footer>
-
     <script>
         // Pass login status to JavaScript
         window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
     </script>
     <script src="../js/membership.js?=v1"></script>
-</body>
-</html>
+
+<?php require_once '../../includes/footer.php'; ?>

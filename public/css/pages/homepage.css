@@ -1,22 +1,22 @@
 body {
-  background-color: #010d17;
+  background-color: var(--color-bg-dark);
 }
 
 main {
   min-height: 1500px;
   position: relative;
-  background-color: #010d17;
+  background-color: var(--color-bg-dark);
 }
 
 .homepage-hero {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   padding-bottom: 150px;
   background-image: url('../../../images/homepage-boxer.png');
   background-repeat: no-repeat;
-  background-position: left -100px top -130px;
+  background-position: left -450px top -130px;
   background-size: auto 1100px;
   background-attachment: scroll;
   min-height: 700px;
@@ -25,32 +25,32 @@ main {
 .hero-content {
   max-width: var(--container-md);
   margin-left: var(--spacing-8);
-  color: #fff;
+  color: var(--color-white);
   z-index: 2;
   position: relative;
 }
 
 .homepage-hero h1 {
-  font-family: 'zuume-rough-bold', 'Poppins', sans-serif;
-  font-size: 6rem;
-  font-weight: 900;
-  line-height: 1.1;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-8xl);
+  font-weight: var(--font-weight-black);
+  line-height: var(--line-height-tight);
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-2);
   letter-spacing: 1px;
-  margin-top: 3rem;
+  margin-top: var(--spacing-12);
 }
 
 .homepage-hero .yellow {
-  color: #d5ba2b;
+  color: var(--color-accent);
 }
 
 .hero-underline {
   width: 100%;
   max-width: 400px;
   height: 4px;
-  background: #d5ba2b;
-  margin: 1rem 0 0.5rem 0;
+  background: var(--color-accent);
+  margin: var(--spacing-4) 0 var(--spacing-2) 0;
 }
 
 .sub-underline {
@@ -66,35 +66,35 @@ main {
   transform: translateY(-50%);
   width: 100px;
   height: 4px;
-  background: #d5ba2b;
+  background: var(--color-accent);
 }
 
 .hero-sub {
-  font-size: 1.9rem;
-  font-weight: 500;
-  margin-bottom: 2rem;
-  margin-top: 0.5rem;
-  color: #d5ba2b;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-8);
+  margin-top: var(--spacing-2);
+  color: var(--color-accent);
   letter-spacing: 1px;
   position: relative;
 }
 
 .hero-btn {
   display: inline-block;
-  background: #d5ba2b;
-  color: #0a2a36;
-  font-weight: 700;
-  font-size: 1.1rem;
-  padding: 0.8rem 2.2rem;
+  background: var(--color-accent);
+  color: var(--color-fog);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-3) var(--spacing-10);
   border-radius: var(--radius-xl);
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: background 0.2s, color 0.2s;
+  box-shadow: var(--shadow-base);
+  transition: var(--transition-fast);
 }
 
 .hero-btn:hover {
   background: #ffe066;
-  color: #0a2a36;
+  color: var(--color-fog);
 }
 
 .top-line {
@@ -107,7 +107,100 @@ main {
 }
 
 .apostrophe {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-family-primary);
+}
+
+/* Pricing Section Wrapper - New separate section */
+.pricing-section-wrapper {
+  position: relative;
+  padding: var(--spacing-8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -100px;
+  z-index: 5;
+}
+
+/* Non-Member Pricing Section on Homepage */
+.non-member-pricing {
+  background: var(--color-teal-overlay);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(213, 186, 43, 0.4);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin-right: var(--spacing-10);
+}
+
+.pricing-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  color: var(--color-accent);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+  letter-spacing: 1px;
+}
+
+.pricing-table-mini {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-5);
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pricing-row:hover {
+  background: rgba(213, 186, 43, 0.2);
+  box-shadow: 0 4px 12px rgba(213, 186, 43, 0.3);
+}
+
+.pricing-row .price {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  min-width: 90px;
+}
+
+.pricing-row .service {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  text-align: right;
+  font-weight: var(--font-weight-medium);
+}
+
+.view-all-btn {
+  display: block;
+  width: 100%;
+  background: var(--color-accent);
+  color: var(--color-fog);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  padding: var(--spacing-3);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  text-align: center;
+  transition: var(--transition-fast);
+}
+
+.view-all-btn:hover {
+  background: #ffe066;
+  box-shadow: 0 5px 15px rgba(213, 186, 43, 0.4);
 }
 
 /* Gym Overview Section */
@@ -126,29 +219,29 @@ main {
 }
 
 .overview-title {
-  font-family: 'zuume-rough-bold', 'Poppins', sans-serif;
-  font-size: 3rem;
-  color: #d5ba2b;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-5xl);
+  color: var(--color-accent);
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-5);
   letter-spacing: 2px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   padding-left: 0;
-  gap: 30px;
+  gap: var(--spacing-8);
   position: absolute;
   top: -23px;
   left: 0;
   right: 0;
-  z-index: 10;
+  z-index: var(--z-dropdown);
 }
 
 .overview-title::before {
   content: '';
   width: 200px;
   height: 4px;
-  background: #d5ba2b;
+  background: var(--color-accent);
   flex-shrink: 0;
 }
 
@@ -156,7 +249,7 @@ main {
   content: '';
   flex: 1;
   height: 4px;
-  background: #d5ba2b;
+  background: var(--color-accent);
 }
 
 .title-with-line {
@@ -165,13 +258,13 @@ main {
 }
 
 .overview-subtitle {
-  font-family: 'zuume-rough-bold', 'Poppins', sans-serif;
-  font-size: 2.5rem;
-  color: #ffffff;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-4xl);
+  color: var(--color-white);
   text-transform: uppercase;
-  margin-bottom: 30px;
+  margin-bottom: var(--spacing-8);
   letter-spacing: 1px;
-  line-height: 1.3;
+  line-height: var(--line-height-snug);
   text-align: left;
   max-width: 900px;
   margin-right: auto;
@@ -179,13 +272,13 @@ main {
 }
 
 .overview-subtitle .highlight {
-  color: #d5ba2b;
+  color: var(--color-accent);
 }
 
 .overview-description {
-  color: #ffffff;
-  font-size: 1rem;
-  line-height: 1.8;
+  color: var(--color-white);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
   width: 100%;
   text-align: justify;
   padding-left: 0;
@@ -194,20 +287,20 @@ main {
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  margin-top: 50px;
+  gap: var(--spacing-10);
+  margin-top: var(--spacing-12);
   padding: var(--spacing-8);
   position: relative;
   z-index: 3; /* make sure grid is above footer */
 }
 
 .feature-card {
-  background: rgba(10, 42, 54, 0.7);
+  background: var(--color-teal-overlay);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  padding: 40px 30px;
+  padding: var(--spacing-10) var(--spacing-8);
   border-radius: var(--radius-xl);
-  transition: box-shadow 0.3s ease;
+  transition: var(--transition-base);
   border: 2px solid rgba(213, 186, 43, 0.3);
   position: relative;
   z-index: 4;
@@ -220,7 +313,7 @@ main {
 .feature-icon {
   width: 100px;
   height: 100px;
-  margin: 0 auto 25px;
+  margin: 0 auto var(--spacing-6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,7 +324,7 @@ main {
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 0 10px rgba(213, 186, 43, 0.5));
-  transition: filter 0.3s ease;
+  transition: var(--transition-base);
 }
 
 .feature-card:hover .feature-icon img {
@@ -239,20 +332,20 @@ main {
 }
 
 .feature-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.3rem;
-  color: #d5ba2b;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  color: var(--color-accent);
   text-transform: uppercase;
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-4);
   letter-spacing: 1px;
   text-align: center;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .feature-text {
-  color: #ffffff;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  color: var(--color-white);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
   text-align: center;
 }
 
@@ -274,13 +367,21 @@ main {
   }
 
   .homepage-hero h1 {
-    font-size: 5rem;
+    font-size: var(--font-size-7xl);
   }
 
   .hero-sub {
     font-size: var(--font-size-2xl);
   }
 
+  .pricing-section-wrapper {
+    margin-top: -120px;
+  }
+
+  .non-member-pricing {
+    margin-top: var(--spacing-16);
+    max-width: 350px;
+  }
 
   .gym-overview {
     background-image: none;
@@ -301,6 +402,8 @@ main {
     min-height: 1700px;
   }
   .homepage-hero {
+    flex-direction: column;
+    align-items: flex-start;
     background-position: left -200px top -120px;
     background-size: auto 900px;
     min-height: 600px;
@@ -308,17 +411,18 @@ main {
   }
 
   .hero-content {
+    margin-top: var(--spacing-8);
     max-width: 500px;
     margin-left: var(--spacing-8);
   }
 
   .homepage-hero h1 {
-    font-size: 4rem;
-    margin-top: 2rem;
+    font-size: var(--font-size-6xl);
+    margin-top: var(--spacing-8);
   }
 
   .hero-sub {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
   }
 
   .sub-underline {
@@ -329,6 +433,16 @@ main {
     width: 80px;
   }
 
+  .pricing-section-wrapper {
+    margin-top: -80px;
+  }
+
+  .non-member-pricing {
+    max-width: 500px;
+    align-self: center;
+    margin-right: 0;
+  }
+
   .gym-overview {
     background-size: 140%;
     background-position: right -150px top -180px;
@@ -337,7 +451,7 @@ main {
 
   .overview-title {
     top: 40px;
-    gap: 20px;
+    gap: var(--spacing-5);
   }
 
   .overview-title::before {
@@ -346,13 +460,13 @@ main {
 
   .overview-subtitle {
     font-size: var(--font-size-3xl);
-    margin-top: 60px;
+    margin-top: var(--spacing-16);
   }
 
 
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
+    gap: var(--spacing-8);
     padding: 0;
   }
 
@@ -375,11 +489,11 @@ main {
   }
 
   .homepage-hero h1 {
-    font-size: 3.5rem;
+    font-size: var(--font-size-6xl);
   }
 
   .hero-sub {
-    font-size: 1.4rem;
+    font-size: var(--font-size-xl);
   }
 
   .hero-underline {
@@ -392,7 +506,7 @@ main {
   }
 
   .overview-title {
-    font-size: 2.5rem;
+    font-size: var(--font-size-4xl);
     top: 50px;
   }
 
@@ -402,11 +516,11 @@ main {
 
   .overview-subtitle {
     font-size: var(--font-size-4xl);
-    margin-top: 50px;
+    margin-top: var(--spacing-12);
   }
 
   .overview-description {
-    font-size: 0.95rem;
+    font-size: var(--font-size-base);
   }
 
   .feature-icon {
@@ -415,120 +529,29 @@ main {
   }
 
   .feature-title {
-    font-size: 1.2rem;
+    font-size: var(--font-size-xl);
   }
 }
 
-/* Large phones (768px and below) */
-@media (max-width: 768px) {
-  main {
-    min-height: 1600px;
-  }
-
-  .homepage-hero {
-    background-position: right -350px top -70px;
-    background-size: auto 550px;
-    min-height: 400px;
-    padding-bottom: 80px;
-  }
-
-  .hero-content {
-    max-width: 100%;
-    margin-left: var(--spacing-8);
-  }
-
-  .hero-underline.top-line {
-    max-width: 300px;
-  }
-
-  .homepage-hero h1 {
-    font-size: var(--font-size-5xl);
-    margin-top: 1rem;
-  }
-
-  .hero-sub {
-    font-size: 1rem;
-  }
-
-  .sub-underline {
-    padding-left: 65px;
-  }
-
-  .sub-underline::before {
-    width: 50px;
-    height: 3px;
-  }
-
-  .hero-underline {
-    max-width: 220px;
-    height: 3px;
-    margin: 0.2rem 0 0.7rem 0;
-  }
-
-  .hero-btn {
-    font-size: 0.9rem;
-    padding: 0.65rem 1.8rem;
-  }
-
-  .gym-overview {
-    background: none;
-    background-color: #010d17;
-  }
-
-  .overview-title {
-    font-size: 2.2rem;
-    top: -20px;
-    gap: 15px;
-  }
-
-  .overview-title::before {
-    width: 100px;
-    height: 3px;
-  }
-
-  .overview-title::after {
-    height: 3px;
-  }
-
-  .overview-subtitle {
-    font-size: var(--font-size-4xl);
-    margin-bottom: 20px;
-  }
-
-  .overview-description {
-    font-size: 0.9rem;
-    margin-bottom: 50px;
-  }
-
-  .features-grid {
-    gap: 25px;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-
-  .feature-card {
-    padding: 35px 25px;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-}
 
 /* Small phones (600px and below) */
 @media (max-width: 600px) {
   main {
-    min-height: 1900px;
+    min-height: 2200px;
   }
 
   .homepage-hero {
     background-position: right -350px top -60px;
     background-size: auto 500px;
-    min-height: 350px;
-    padding-bottom: 60px;
+    min-height: 300px;
+    padding-bottom: var(--spacing-6);
   }
 
   .hero-content {
     max-width: 100%;
-    margin-left: var(--spacing-8);
+    margin-top: var(--spacing-4);
+    margin-left: var(--spacing-6);
+    margin-right: var(--spacing-6);
   }
 
   .homepage-hero h1 {
@@ -536,7 +559,8 @@ main {
   }
 
   .hero-sub {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-6);
   }
 
   .sub-underline {
@@ -548,29 +572,62 @@ main {
   }
 
   .hero-underline {
-    max-width: 180px;
+    max-width: 200px;
   }
 
-  .hero-btn {
-    font-size: 0.85rem;
-    padding: 0.6rem 1.5rem;
+
+
+  /* Pricing section centered */
+  .pricing-section-wrapper {
+    padding: var(--spacing-6) var(--spacing-4);
   }
 
-  .hero-btn {
-    font-size: 0.85rem;
-    padding: 0.6rem 1.5rem;
+  .non-member-pricing {
+    max-width: 380px;
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-8);
+  }
+
+  .pricing-title {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-3);
+  }
+
+  .pricing-table-mini {
+    gap: var(--spacing-2);
+  }
+
+  .pricing-row {
+    padding: var(--spacing-2);
+  }
+
+  .pricing-row .price {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-black);
+    min-width: 75px;
+  }
+
+  .pricing-row .service {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .view-all-btn {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-2);
   }
 
   .gym-overview {
     background: none;
-    background-color: #010d17;
+    background-color: var(--color-bg-dark);
     margin-top: 0;
+    padding-top: var(--spacing-20);
   }
 
   .overview-title {
-    font-size: 2rem;
+    font-size: var(--font-size-3xl);
     top: -28px;
-    gap: 12px;
+    gap: var(--spacing-3);
   }
 
   .overview-title::before {
@@ -584,17 +641,17 @@ main {
   .overview-description {
     font-size: var(--font-size-lg);
     text-align: left;
-    margin-bottom: 40px;
+    margin-bottom: var(--spacing-10);
   }
 
   .features-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: var(--spacing-5);
     padding: 0;
   }
 
   .feature-card {
-    padding: 30px 20px;
+    padding: var(--spacing-8) var(--spacing-5);
     max-width: 100%;
     margin: 0 auto;
   }
@@ -614,101 +671,6 @@ main {
   }
 }
 
-
-/* Extra small phones (480px and below) */
-@media (max-width: 480px) {
-  main {
-    min-height: 2200px;
-  }
-
-  .homepage-hero {
-    background-position: left -100px top -45px;
-    background-size: auto 380px;
-    min-height: 320px;
-    padding-bottom: 50px;
-  }
-
-  .hero-content {
-    margin-left: var(--spacing-6);
-  }
-
-  .homepage-hero h1 {
-    font-size: var(--font-size-4xl);
-    margin-top: 0.8rem;
-  }
-
-  .hero-sub {
-    font-size: var(--font-size-base);
-  }
-
-  .sub-underline {
-    padding-left: 45px;
-  }
-
-  .sub-underline::before {
-    width: 35px;
-  }
-
-  .hero-underline {
-    max-width: 150px;
-  }
-
-  .hero-btn {
-    font-size: 0.8rem;
-    padding: 0.55rem 1.3rem;
-  }
-
-  .gym-overview {
-    background: none;
-    background-color: #010d17;
-    margin-top: -50px;
-  }
-
-  .overview-title {
-    font-size: var(--font-size-4xl);
-    top: -24px;
-    gap: 10px;
-  }
-
-  .overview-title::before {
-    width: 60px;
-  }
-
-  .overview-subtitle {
-    font-size: var(--font-size-3xl);
-  }
-
-  .overview-description {
-    font-size: var(--font-size-lg);
-    margin-bottom: 35px;
-  }
-
-  .features-grid {
-    gap: 15px;
-    padding: 0;
-  }
-
-  .feature-card {
-    width: 100%;
-  }
-
-
-  .feature-icon {
-    width: 90px;
-    height: 90px;
-    margin-bottom: 20px;
-  }
-
-  .feature-title {
-    font-size: var(--font-size-lg);
-    margin-bottom: 12px;
-  }
-
-  .feature-text {
-    font-size: var(--font-size-base);
-    line-height: 1.5;
-  }
-}
 
 /* Very small phones (360px and below) */
 @media (max-width: 360px) {
@@ -740,13 +702,13 @@ main {
   }
 
   .hero-btn {
-    font-size: 0.85rem;
-    padding: 0.55rem 1.3rem;
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-2) var(--spacing-5);
   }
 
   .gym-overview {
     background: none;
-    background-color: #010d17;
+    background-color: var(--color-bg-dark);
   }
 
   .overview-title {
@@ -767,7 +729,7 @@ main {
   }
 
   .features-grid {
-    padding: 0 12px;
+    padding: 0 var(--spacing-3);
   }
 
   .feature-card {

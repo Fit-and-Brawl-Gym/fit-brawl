@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php'; 
+require_once '../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -12,16 +12,68 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Get user's current active plan
+$user_id = $_SESSION['user_id'] ?? null;
+$currentPlan = null;
+$currentPlanKey = null;
+$hasActiveMembership = false;
+
+if ($user_id) {
+    $gracePeriodDays = 3;
+    $today = date('Y-m-d');
+
+    // Check for active membership
+    $stmt = $conn->prepare("
+        SELECT plan_name, end_date
+        FROM user_memberships
+        WHERE user_id = ?
+          AND request_status = 'approved'
+          AND membership_status = 'active'
+        ORDER BY end_date DESC
+        LIMIT 1
+    ");
+
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($row = $result->fetch_assoc()) {
+            $endDate = $row['end_date'];
+            $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+
+            if ($expiryWithGrace >= $today) {
+                $hasActiveMembership = true;
+                $currentPlan = $row['plan_name'];
+
+                // Map plan name to plan key (database stores short names like "Gladiator", "Brawler")
+                $planMapping = [
+                    'Gladiator' => 'gladiator',
+                    'Brawler' => 'brawler',
+                    'Champion' => 'champion',
+                    'Clash' => 'clash',
+                    'Resolution Regular' => 'resolution-regular',
+                    'Resolution Student' => 'resolution-student'
+                ];
+
+                $currentPlanKey = $planMapping[$currentPlan] ?? null;
+            }
+        }
+        $stmt->close();
+    }
+}
+
 // Get plan details from URL parameters or session
 $plan = isset($_GET['plan']) ? $_GET['plan'] : 'gladiator';
 $billing = isset($_GET['billing']) ? $_GET['billing'] : 'monthly';
 
-// For resolution plan, check for variant (student/regular)
-$variant = isset($_GET['variant']) ? $_GET['variant'] : 'regular';
-
-// Adjust plan key for resolution variants
-if ($plan === 'resolution') {
-    $plan = 'resolution-' . $variant;
+// Check if user is trying to select the same plan they currently have
+if ($hasActiveMembership && $currentPlanKey && $plan === $currentPlanKey) {
+    // Redirect to membership page with error message
+    $planDisplayName = $currentPlan . ' Plan';
+    $_SESSION['plan_error'] = "You already have an active " . $planDisplayName . ". Please choose a different plan to upgrade.";
+    header('Location: membership.php');
+    exit;
 }
 
 // Plan configurations
@@ -32,7 +84,7 @@ $plans = [
         'yearly' => 15000,
         'has_discount' => false,
         'benefits' => [
-            'Muay Thai Training',
+            'Muay Thai Training with Coach Thei',
             'MMA Area Access',
             'Free Orientation and Fitness Assessment'
         ]
@@ -43,7 +95,8 @@ $plans = [
         'yearly' => 35000,
         'has_discount' => true,
         'benefits' => [
-            'Boxing and MMA Training',
+            'Boxing Training with Coach Rieze',
+            'MMA Training with Coach Carlo',
             'Boxing and MMA Area Access',
             'Gym Equipment Access',
             'Jakuzi Access',
@@ -56,7 +109,7 @@ $plans = [
         'yearly' => 15000,
         'has_discount' => false,
         'benefits' => [
-            'Boxing Training',
+            'Boxing Training with Coach Rieze',
             'MMA Area Access',
             'Free Orientation and Fitness Assessment'
         ]
@@ -67,22 +120,13 @@ $plans = [
         'yearly' => 15000,
         'has_discount' => false,
         'benefits' => [
-            'MMA Training',
+            'MMA Training with Coach Carlo',
             'MMA Area Access',
             'Free Orientation and Fitness Assessment'
         ]
     ],
-    'resolution-student' => [
-        'name' => 'RESOLUTION PLAN (STUDENT)',
-        'monthly' => 700,
-        'yearly' => 7000,
-        'has_discount' => false,
-        'benefits' => [
-            'Gym Equipment Access with Face Recognition'
-        ]
-    ],
     'resolution-regular' => [
-        'name' => 'RESOLUTION PLAN (REGULAR)',
+        'name' => 'RESOLUTION PLAN',
         'monthly' => 1000,
         'yearly' => 10000,
         'has_discount' => false,
@@ -115,7 +159,7 @@ function formatPlanName($planName) {
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
 }
 ?>
 <!DOCTYPE html>
@@ -138,16 +182,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <script>
         const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
         const yearlyPrice = <?php echo json_encode($yearlyPrice); ?>;
-            const resolutionPrices = {
-            student: {
-                monthly: <?php echo json_encode($plans['resolution-student']['monthly']); ?>,
-                yearly: <?php echo json_encode($plans['resolution-student']['yearly']); ?>
-            },
-            regular: {
-                monthly: <?php echo json_encode($plans['resolution-regular']['monthly']); ?>,
-                yearly: <?php echo json_encode($plans['resolution-regular']['yearly']); ?>
-            }
-      };
     </script>
     <?php if(SessionManager::isLoggedIn()): ?>
     <link rel="stylesheet" href="../css/components/session-warning.css">
@@ -192,7 +226,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                 </div>
             <?php else: ?>
                 <a href="login.php" class="account-link">
-                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/account-icon.png" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>
@@ -417,31 +451,6 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                                         <span class="price-period">/<?php echo $billing === 'yearly' ? 'YEAR' : 'MONTH'; ?></span>
                                     </div>
                                 </div>
-
-                                <!-- Plan Variant Selector (for Resolution plan only) - Moved inside card -->
-                                <?php if (strpos($plan, 'resolution') !== false): ?>
-                                <div class="plan-variant-selector">
-                                    <label class="variant-option">
-                                        <input type="radio" name="variant" value="student"
-                                               <?php echo $variant === 'student' ? 'checked' : ''; ?>
-                                               data-variant="student">
-                                        <div>
-                                            <span class="variant-label">700 PHP <span class="variant-price">/MONTH</span></span><br>
-                                            <span class="variant-label">Student</span>
-                                        </div>
-                                    </label>
-
-                                    <label class="variant-option">
-                                        <input type="radio" name="variant" value="regular"
-                                               <?php echo $variant === 'regular' ? 'checked' : ''; ?>
-                                               data-variant="regular">
-                                        <div>
-                                            <span class="variant-label">1000 PHP <span class="variant-price">/MONTH</span></span><br>
-                                            <span class="variant-label">Regular</span>
-                                        </div>
-                                    </label>
-                                </div>
-                                <?php endif; ?>
 
                                 <div class="plan-body">
                                     <p class="next-payment">Next payment on <strong><?php echo $nextPayment; ?></strong></p>

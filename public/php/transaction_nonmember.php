@@ -1,36 +1,15 @@
 <?php
-session_start();
+// No session_start or login check - accessible to non-members
 require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
-
-// Initialize session manager
-SessionManager::initialize();
-
-// Check if user is logged in
-if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
 
 // Get service details from URL parameters
 $service = isset($_GET['service']) ? $_GET['service'] : 'daypass-gym';
 
-// Determine user status
-$isLoggedIn = isset($_SESSION['email']);
-// TODO: Check if user has active membership subscription from database
-// For now, we'll assume logged in users without explicit member flag are non-members
-$isMember = false; // This should be fetched from database based on active subscription
-
-// Get type from URL if provided (from table click), otherwise determine automatically
-$type = isset($_GET['type']) ? $_GET['type'] : ($isMember ? 'member' : 'non-member');
-
-// Service configurations
+// Service configurations (non-member prices only)
 $services = [
     'daypass-gym' => [
         'name' => 'Day Pass: Gym Access',
-        'member_price' => 90,
-        'non_member_price' => 150,
-        'discount' => 30,
+        'price' => 150,
         'benefits' => [
             'Full-day access to all gym facilities and equipment',
             'Weight room access',
@@ -41,9 +20,7 @@ $services = [
     ],
     'daypass-gym-student' => [
         'name' => 'Day Pass: Student Gym Access',
-        'member_price' => 70,
-        'non_member_price' => 120,
-        'discount' => 30,
+        'price' => 120,
         'benefits' => [
             'Full-day access to all gym facilities',
             'Weight room access',
@@ -53,9 +30,7 @@ $services = [
     ],
     'training-boxing' => [
         'name' => 'Training: Boxing',
-        'member_price' => 350,
-        'non_member_price' => 380,
-        'discount' => 30,
+        'price' => 380,
         'benefits' => [
             'Full-day access to boxing area',
             'Training with Coach Rieze',
@@ -67,9 +42,7 @@ $services = [
     ],
     'training-muaythai' => [
         'name' => 'Training: Muay Thai',
-        'member_price' => 400,
-        'non_member_price' => 530,
-        'discount' => 30,
+        'price' => 530,
         'benefits' => [
             'Full-day access to MMA area',
             'Training with Coach Thei',
@@ -81,9 +54,7 @@ $services = [
     ],
     'training-mma' => [
         'name' => 'Training: MMA',
-        'member_price' => 500,
-        'non_member_price' => 630,
-        'discount' => 30,
+        'price' => 630,
         'benefits' => [
             '75-minute comprehensive session',
             'Training with Coach Carlo',
@@ -96,30 +67,14 @@ $services = [
 ];
 
 $selectedService = $services[$service];
-$originalPrice = $selectedService['non_member_price'];
-
-// Calculate final price based on type
-if ($type === 'member' || $isMember) {
-    // Members get member price
-    $price = $selectedService['member_price'];
-} else {
-    // Non-members get non-member price
-    $price = $originalPrice;
-}
-
-// Determine avatar source for logged-in users
-$avatarSrc = '../../images/account-icon.svg';
-if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
-}
+$price = $selectedService['price'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Payment - FitXBrawl</title>
+    <title>Book Service - FitXBrawl</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/pages/transaction.css">
     <link rel="stylesheet" href="../css/components/footer.css">
@@ -133,10 +88,36 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="../js/header-dropdown.js"></script>
     <script src="../js/hamburger-menu.js"></script>
-    <?php if(SessionManager::isLoggedIn()): ?>
-    <link rel="stylesheet" href="../css/components/session-warning.css">
-    <script src="../js/session-timeout.js"></script>
-    <?php endif; ?>
+    <style>
+        .date-picker-group {
+            margin-bottom: var(--spacing-4);
+        }
+
+        .date-picker-group label {
+            display: block;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-white);
+            margin-bottom: var(--spacing-2);
+            font-size: var(--font-size-base);
+        }
+
+        .date-picker-group input {
+            width: 100%;
+            padding: var(--spacing-3);
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(213, 186, 43, 0.3);
+            border-radius: var(--radius-md);
+            color: var(--color-white);
+            font-size: var(--font-size-base);
+            font-family: var(--font-family-primary);
+            cursor: pointer;
+        }
+
+        .date-picker-group input:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+    </style>
 </head>
 <body>
     <!--Header-->
@@ -165,62 +146,49 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                     <li><a href="feedback.php">Feedback</a></li>
                 </ul>
             </nav>
-            <?php if(isset($_SESSION['email'])): ?>
-                <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>"
-                         alt="Account" class="account-icon">
-                    <div class="dropdown-menu">
-                        <a href="user_profile.php">Profile</a>
-                        <a href="logout.php">Logout</a>
-                    </div>
-                </div>
-            <?php else: ?>
-                <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.png" alt="Account" class="account-icon">
-                </a>
-            <?php endif; ?>
+            <a href="login.php" class="account-link">
+                <img src="../../images/account-icon.png" alt="Account" class="account-icon">
+            </a>
         </div>
     </header>
 
     <!--Main-->
     <main class="transaction-page">
         <div class="transaction-container">
-            <h1 class="transaction-title">COMPLETE YOUR PAYMENT</h1>
-
+            <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
             <div class="transaction-box">
-                <form id="subscriptionForm" class="subscription-form">
+                <form id="nonMemberForm" class="subscription-form">
+                    <input type="hidden" name="service" value="<?php echo $service; ?>">
+
                     <div class="transaction-content">
                         <!-- Left Column -->
                         <div class="transaction-left">
                             <div class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" id="name" name="name" placeholder="Excel Bondoc" required>
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
                             </div>
 
                             <div class="form-group">
-                                <label for="country">Country</label>
-                                <select id="country" name="country" required>
-                                    <option value="Philippines" selected>Philippines</option>
-                                    <!-- Add other countries as needed -->
-                                </select>
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" placeholder="juan.delacruz@email.com" required>
                             </div>
 
                             <div class="form-group">
-                                <label for="address">Permanent Address</label>
-                                <input type="text" id="address" name="address" placeholder="123 Mabini Street, Barangay Maligaya, Quezon City" required>
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="+63 912 345 6789" required>
                             </div>
 
-                            <div class="form-group">
+                            <div class="date-picker-group">
                                 <label for="serviceDate">
-                                    <i class="far fa-calendar-alt"></i> Select Service Date
+                                    <i class="far fa-calendar-alt"></i> Select Service Date *
                                 </label>
-                                <input type="text" id="serviceDate" name="service_date" placeholder="Choose a date" required readonly style="cursor: pointer; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(213, 186, 43, 0.3); border-radius: var(--radius-md); color: var(--color-white);">
+                                <input type="text" id="serviceDate" name="service_date" placeholder="Choose a date" required readonly>
                             </div>
                         </div>
 
                         <!-- Right Column -->
                         <div class="transaction-right">
-                            <!-- Plan Card with Headband -->
+                            <!-- Service Card -->
                             <div class="plan-card-transaction">
                                 <div class="plan-header-headband">
                                     <h2 class="plan-name"><?php echo $selectedService['name']; ?></h2>
@@ -248,10 +216,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
                             <!-- Action Buttons -->
                             <div class="transaction-actions">
-                                <button type="button" class="confirm-payment-btn" id="confirmPaymentBtn">
-                                    CONFIRM PAYMENT
+                                <button type="submit" class="confirm-payment-btn" id="generateReceiptBtn">
+                                    GENERATE RECEIPT
                                 </button>
-                                <button type="button" class="cancel-btn" onclick="window.location.href='membership.php'">
+                                <button type="button" class="cancel-btn" onclick="window.location.href='index.php'">
                                     Cancel
                                 </button>
                             </div>
@@ -259,49 +227,12 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
                     </div>
 
                     <p class="terms-notice">
-                        By confirming your payment, you agree to our terms and conditions. This is a single-day pass and is non-refundable.
+                        By generating your receipt, you agree to our terms and conditions. Please present this receipt at the gym entrance on your selected date.
                     </p>
                 </form>
             </div>
         </div>
     </main>
-
-    <!-- Receipt Upload Modal -->
-    <div class="modal-overlay" id="receiptModalOverlay"></div>
-    <div class="receipt-modal" id="receiptModal">
-        <div class="modal-header">
-            <h2>Submit Payment Receipt</h2>
-            <button class="modal-close-btn" id="closeReceiptModal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p class="modal-instruction">Please upload a screenshot or photo of your payment receipt to complete your purchase.</p>
-
-            <div class="file-upload-area" id="fileUploadArea">
-                <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
-                    <path d="M7 18C4.23858 18 2 15.7614 2 13C2 10.2386 4.23858 8 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8C19.7614 8 22 10.2386 22 13C22 15.7614 19.7614 18 17 18M12 13V21M12 13L9 16M12 13L15 16"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <p class="upload-text">Click to upload or drag and drop</p>
-                <p class="upload-subtext">PNG, JPG, PDF up to 10MB</p>
-                <input type="file" id="receiptFile" name="receipt" accept="image/*,.pdf" hidden>
-            </div>
-
-            <div class="file-preview" id="filePreview" style="display: none;">
-                <img id="previewImage" src="" alt="Receipt preview">
-                <p id="fileName"></p>
-                <button type="button" class="remove-file-btn" id="removeFile">Remove</button>
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
-                    SUBMIT RECEIPT
-                </button>
-                <button type="button" class="modal-cancel-btn" id="cancelReceiptBtn">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!--Footer-->
     <footer>
@@ -341,17 +272,51 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         </div>
     </footer>
 
-    <script src="../js/transaction-service.js"></script>
     <script>
-        // Initialize Flatpickr date picker for service date
+        // Initialize Flatpickr date picker
         flatpickr("#serviceDate", {
             minDate: "today",
             maxDate: new Date().fp_incr(30), // 30 days from today
             dateFormat: "F j, Y",
             disableMobile: false,
             onChange: function(selectedDates, dateStr, instance) {
-                console.log("Selected service date:", dateStr);
+                console.log("Selected date:", dateStr);
             }
+        });
+
+        // Handle form submission
+        document.getElementById('nonMemberForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            // Show loading state
+            const btn = document.getElementById('generateReceiptBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'GENERATING...';
+            btn.disabled = true;
+
+            fetch('api/generate_nonmember_receipt.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to receipt page
+                    window.location.href = 'receipt_nonmember.php?id=' + data.receipt_id;
+                } else {
+                    alert(data.message || 'An error occurred. Please try again.');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            });
         });
     </script>
 </body>
