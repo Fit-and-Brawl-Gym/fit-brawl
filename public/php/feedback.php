@@ -168,9 +168,14 @@ $additionalCSS = ["../css/pages/feedback.css?=v2"];
 // Include header
 require_once '../../includes/header.php';
 ?>
-
     <!--Main-->
     <main>
+        <!-- Page Header -->
+        <div class="feedback-header">
+            <h1 class="feedback-title">Member Testimonials</h1>
+            <p class="feedback-subtitle">See what our community has to say about their Fit X Brawl experience</p>
+            <div class="header-underline"></div>
+        </div>
 
         <div class="feedback-container">
             <div class="feedback-section" id="feedback-section">
