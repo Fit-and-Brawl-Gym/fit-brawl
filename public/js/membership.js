@@ -3,9 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const nextBtn = document.getElementById('nextBtn');
     const plansViewport = document.querySelector('.plans-viewport');
     const planCards = document.querySelectorAll('.plan-card');
-    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    // Toggle functionality removed - only member table is shown now
+    // const toggleBtns = document.querySelectorAll('.toggle-btn');
     const memberTable = document.getElementById('memberTable');
-    const nonMemberTable = document.getElementById('nonMemberTable');
+    // const nonMemberTable = document.getElementById('nonMemberTable');
 
     // Modal elements
     const serviceModal = document.getElementById('serviceModal');
@@ -86,7 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Toggle button functionality
+    // Toggle button functionality - REMOVED
+    // Non-member table moved to homepage, only member table remains
+    /*
     function switchPricingTable(tableType) {
         // Remove active class from all buttons
         toggleBtns.forEach(btn => btn.classList.remove('active'));
@@ -132,6 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+    */
+
 
     // Modal functionality
     function openModal(price, service, benefits, tableType) {
@@ -193,13 +198,13 @@ function addPlanSelectionHandlers() {
             let category = planCard.getAttribute('data-category') || 'regular';
 
 
-            const variant = this.getAttribute('data-variant'); 
+            const variant = this.getAttribute('data-variant');
             if (variant) {
 
                 planType = `${planType}-${variant}`;
             }
 
-   
+
             window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
         });
     });
@@ -223,7 +228,8 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
     purchaseBtn.addEventListener('click', function() {
         const serviceName = modalService.textContent;
         const serviceKey = serviceMapping[serviceName];
-        const currentTable = document.querySelector('.pricing-toggle .toggle-btn.active').dataset.table;
+        // Only member table exists now
+        const currentTable = 'member';
 
         if (serviceKey) {
             window.location.href = `transaction_service.php?service=${serviceKey}&type=${currentTable}`;
@@ -243,13 +249,13 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
     modalClose.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', closeModal);
 
-    // Event listeners for toggle buttons
-    toggleBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tableType = this.getAttribute('data-table');
-            switchPricingTable(tableType);
-        });
-    });
+    // Toggle button event listeners removed - only member table exists
+    // toggleBtns.forEach(btn => {
+    //     btn.addEventListener('click', function() {
+    //         const tableType = this.getAttribute('data-table');
+    //         switchPricingTable(tableType);
+    //     });
+    // });
 
     // Event listeners for carousel
     nextBtn.addEventListener('click', function(e) {

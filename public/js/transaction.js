@@ -17,18 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updatePlanPrice() {
         const billing = document.querySelector('input[name="billing"]:checked')?.value || 'monthly';
-        const variant = document.querySelector('input[name="variant"]:checked')?.value || null;
         const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
         const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
         if (!priceAmount || !pricePeriod) return;
 
-        if (variant && typeof resolutionPrices !== 'undefined' && resolutionPrices[variant]) {
-            priceAmount.textContent = resolutionPrices[variant][billing];
-            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
-        } else {
-            priceAmount.textContent = billing === 'yearly' ? yearlyPrice : monthlyPrice;
-            pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
-        }
+        priceAmount.textContent = billing === 'yearly' ? yearlyPrice : monthlyPrice;
+        pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
     }
 
 
@@ -46,15 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', () => {
             const billing = radio.value;
             setURLParam('billing', billing);
-            updatePlanPrice();
-        });
-    });
-
-    document.querySelectorAll('input[name="variant"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            const variant = radio.value;
-            setURLParam('variant', variant, true);
-            setURLParam('plan', 'resolution', true);
             updatePlanPrice();
         });
     });
@@ -124,13 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     submitReceiptBtn.addEventListener('click', () => {
-        const selectedVariant = document.querySelector('input[name="variant"]:checked')?.value;
         const urlParams = new URLSearchParams(window.location.search);
         let basePlan = urlParams.get('plan') || 'gladiator';
-
-        if (basePlan.startsWith('resolution') && selectedVariant) {
-            basePlan = 'resolution-' + selectedVariant;
-        }
 
         console.log('Submitting plan:', basePlan);
 
@@ -165,21 +145,4 @@ document.addEventListener('DOMContentLoaded', () => {
             submitReceiptBtn.disabled = false;
         });
     });
-
-    const variantRadios = document.querySelectorAll('input[name="variant"]');
-    const url = new URL(window.location.href);
-    let currentVariant = url.searchParams.get('variant');
-
-    if (!currentVariant && variantRadios.length > 0) {
-        const regularRadio = Array.from(variantRadios).find(r => r.value === 'regular');
-        if (regularRadio) {
-            regularRadio.checked = true;
-            setURLParam('variant', 'regular', true);
-        }
-    } else if (currentVariant) {
-        const matchRadio = Array.from(variantRadios).find(r => r.value === currentVariant);
-        if (matchRadio) matchRadio.checked = true;
-    }
-
-    updatePlanPrice();
 });

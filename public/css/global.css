@@ -117,7 +117,7 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-glow: 0 0 20px rgba(212, 175, 55, 0.3);
+  --shadow-glow: 0 0 500px rgba(212, 175, 55, 0.3);
 
   /* Transitions */
   --transition-fast: 150ms ease;

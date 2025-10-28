@@ -51,6 +51,16 @@ require_once '../../includes/header.php';
 
     <!--Main-->
     <main class="membership-main">
+        <!-- Error/Success Notification -->
+        <?php if (isset($_SESSION['plan_error'])): ?>
+        <div class="notification error-notification">
+            <span class="notification-icon">⚠️</span>
+            <span class="notification-text"><?php echo htmlspecialchars($_SESSION['plan_error']); ?></span>
+            <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+        <?php unset($_SESSION['plan_error']); ?>
+        <?php endif; ?>
+
         <!-- Hero Section -->
         <section class="membership-hero">
             <h1 class="hero-title">CHOOSE YOUR <span class="yellow">JOURNEY </span> <span class="exclamation">!</span></h1>
@@ -71,7 +81,7 @@ require_once '../../includes/header.php';
                         <p class="plan-subtitle">MEMBERSHIP IN MUAY THAI</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
-                            <li>Muay Thai Training</li>
+                            <li>Muay Thai Training with Coach Thei</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
                             <li>Shower Access</li>
@@ -88,7 +98,8 @@ require_once '../../includes/header.php';
                             <div class="price-main">3500 PHP <span>/MONTH</span></div>
                         </div>
                         <ul class="plan-features">
-                            <li>Boxing and MMA Training</li>
+                            <li>Boxing Training with Coach Rieze</li>
+                            <li>MMA Training with Coach Carlo</li>
                             <li>Boxing and MMA Area Access</li>
                             <li>Gym Equipment Access</li>
                             <li>Jakuzzi Access</li>
@@ -103,7 +114,7 @@ require_once '../../includes/header.php';
                         <p class="plan-subtitle">MEMBERSHIP IN BOXING</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
-                            <li>Boxing Training</li>
+                            <li>Boxing Training with Coach Rieze</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
                             <li>Shower Access</li>
@@ -117,7 +128,7 @@ require_once '../../includes/header.php';
                         <p class="plan-subtitle">MEMBERSHIP IN MMA</p>
                         <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
-                            <li>MMA Training</li>
+                            <li>MMA Training with Coach Carlo</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
                             <li>Shower Access</li>
@@ -129,10 +140,7 @@ require_once '../../includes/header.php';
                     <div class="plan-card" data-plan="resolution-regular" data-category="non-member">
                         <h3 class="plan-name">RESOLUTION</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
-                        <div class="plan-price">
-                            <div class="price-student">700 PHP <span>/MONTH</span><br><span class="student-label">For Students</span></div>
-                            <div class="price-regular">1000 PHP <span>/MONTH</span><br><span class="regular-label">For Regular</span></div>
-                        </div>
+                        <div class="plan-price">1000 PHP <span>/MONTH</span></div>
                         <ul class="plan-features">
                             <li>Gym Equipment Access with Face Recognition</li>
                             <li>Shower Access</li>
@@ -151,20 +159,7 @@ require_once '../../includes/header.php';
         <!-- Pricing Tables -->
         <section class="pricing-section">
             <div class="pricing-header" id="pricingHeader">
-                <div class="pricing-toggle">
-                    <button class="toggle-btn active" data-table="member">FOR MEMBERS</button>
-                    <button class="toggle-btn" data-table="non-member">FOR NON<span class="toggle-hyphen">-</span>MEMBERS</button>
-                </div>
-                <?php if (!$isLoggedIn): ?>
-                <div class="signup-notice" id="signupNotice" data-logged-in="false">
-                    <span class="signup-notice-text">Sign up now and save 30 PHP <br> on all services!</span>
-                </div>
-                <?php else: ?>
-                <div class="signup-notice" id="signupNotice" data-logged-in="true" style="opacity: 0; pointer-events: none;">
-                    <span class="signup-notice-icon">✓</span>
-                    <span class="signup-notice-text">You're getting member pricing!</span>
-                </div>
-                <?php endif; ?>
+                <h2 class="pricing-title">MEMBER ADDITIONAL SERVICES</h2>
             </div>
 
             <!-- Members Table -->
@@ -201,48 +196,6 @@ require_once '../../includes/header.php';
                             </tr>
                             <tr>
                                 <td class="price-cell">500 PHP</td>
-                                <td>Training: MMA</td>
-                                <td>A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Non-Members Table -->
-            <div class="pricing-table-container" id="nonMemberTable">
-                <div class="pricing-table-scroll">
-                    <table class="pricing-table">
-                        <thead>
-                            <tr>
-                                <th>PRICE</th>
-                                <th>SERVICE</th>
-                                <th>BENEFITS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="price-cell">150 PHP</td>
-                                <td>Day Pass: Gym Access</td>
-                                <td>Full-day access to all gym facilities and equipment, including the weight room, cardio machines, and functional training areas. Perfect for a one-off workout or for travelers.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">120 PHP</td>
-                                <td>Day Pass: Student Access</td>
-                                <td>Discounted full-day access to all gym facilities (weight room, cardio, etc.). Must present a valid student ID upon entry.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">380 PHP</td>
-                                <td>Training: Boxing</td>
-                                <td>Full-day access to boxing area. Focused on footwork, defense, and power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight strategies.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">530 PHP</td>
-                                <td>Training: Muay Thai</td>
-                                <td>Full-day access to mma area. Includes in-depth training on clinch work, teeps, and powerful low kicks. Perfect for mastering traditional techniques and conditioning.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">630 PHP</td>
                                 <td>Training: MMA</td>
                                 <td>A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.</td>
                             </tr>
