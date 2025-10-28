@@ -518,8 +518,7 @@
 
 .pricing-table tbody tr:hover {
     background: rgba(213, 186, 43, 0.2);
-    transform: translateX(5px);
-}
+} 
 
 .price-cell {
     color: var(--color-accent);
@@ -964,5 +963,102 @@
     .pricing-table td:nth-child(3) {
         font-size: var(--font-size-xs);
         line-height: var(--line-height-tight);
+    }
+}
+
+/* Stacked cards for smaller and taller screens (portrait mobile) */
+@media (max-width: 768px) and (min-height: 600px) {
+    .plans-carousel {
+        padding: 0 var(--spacing-4);
+    }
+
+    .plans-container {
+        padding: var(--spacing-4) 0;
+    }
+
+    .plans-viewport {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-6);
+        position: static;
+    }
+
+    /* Show all cards in a vertical stack */
+    .plan-card {
+        position: static !important;
+        opacity: 1 !important;
+        transform: none !important;
+        pointer-events: auto !important;
+        width: 100%;
+        max-width: 350px;
+        height: auto;
+        min-height: 500px;
+    }
+
+    /* Reorder cards - Gladiator first on mobile */
+    .plan-card:nth-child(1) { order: 2; } /* Brawler - 2nd */
+    .plan-card:nth-child(2) { order: 1; } /* Gladiator - 1st */
+    .plan-card:nth-child(3) { order: 3; } /* Champion - 3rd */
+    .plan-card:nth-child(4) { order: 4; } /* Clash - 4th */
+    .plan-card:nth-child(5) { order: 5; } /* Resolution - 5th */
+
+    /* Remove all positioning classes effects */
+    .plan-card.left,
+    .plan-card.center,
+    .plan-card.right,
+    .plan-card.hidden {
+        position: static !important;
+        opacity: 1 !important;
+        transform: none !important;
+        pointer-events: auto !important;
+    }
+
+    .plan-card.featured-size.center,
+    .plan-card.gladiator-plan.center {
+        height: auto;
+        min-height: 520px;
+        box-shadow: 0 4px 15px rgba(74, 124, 135, 0.3);
+    }
+
+    /* Hide carousel navigation buttons */
+    .carousel-btn {
+        display: none !important;
+    }
+
+    /* Adjust popular badge for stacked view */
+    .popular-badge {
+        position: absolute;
+        top: -8px;
+        left: 30%;
+        transform: translateX(-50%) rotate(-6deg);
+        font-size: var(--font-size-2xl);
+        padding: 0.3rem 1rem;
+        white-space: nowrap;
+        z-index: 10;
+    }
+
+    /* Ensure proper spacing for plan features */
+    .plan-features {
+        margin: var(--spacing-4) 0;
+    }
+
+    .plan-features li {
+        padding: var(--spacing-3) 0;
+        font-size: var(--font-size-sm);
+    }
+
+    /* Adjust select button - center aligned */
+    .select-btn {
+        margin: var(--spacing-4) auto 0;
+        width: 100%;
+        max-width: 250px;
+        display: block;
+    }
+
+    .gladiator-btn {
+        padding: var(--spacing-3) var(--spacing-8);
+        margin: var(--spacing-4) auto 0;
+        display: block;
     }
 }

@@ -23,7 +23,21 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentIndex = 1; // Start with Gladiator in the middle
     const totalPlans = planCards.length;
 
+    // Check if we're on a smaller/taller screen (portrait mobile)
+    function isStackedView() {
+        return window.innerWidth <= 768 && window.innerHeight >= 600;
+    }
+
     function updateCarousel() {
+        // Skip carousel logic if in stacked view
+        if (isStackedView()) {
+            // Show all cards in stacked mode
+            planCards.forEach((card) => {
+                card.classList.remove('center', 'left', 'right', 'hidden', 'featured-size');
+            });
+            return;
+        }
+
         // Remove all position classes from all cards
         planCards.forEach((card) => {
             card.classList.remove('center', 'left', 'right', 'hidden', 'featured-size');
@@ -74,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function nextSlide() {
+        if (isStackedView()) return; // Disable in stacked view
         if (currentIndex < totalPlans - 1) {
             currentIndex++;
             updateCarousel();
@@ -81,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function prevSlide() {
+        if (isStackedView()) return; // Disable in stacked view
         if (currentIndex > 0) {
             currentIndex--;
             updateCarousel();
@@ -273,6 +289,15 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
     addTableRowHandlers();
     addPlanSelectionHandlers();
 
+    // Handle window resize for responsive behavior
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            updateCarousel();
+        }, 250);
+    });
+
     // Optional: Add keyboard navigation
     document.addEventListener('keydown', function(e) {
         if (serviceModal.classList.contains('active')) {
@@ -280,10 +305,13 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
                 closeModal();
             }
         } else {
-            if (e.key === 'ArrowLeft') {
-                prevSlide();
-            } else if (e.key === 'ArrowRight') {
-                nextSlide();
+            // Only allow keyboard navigation if not in stacked view
+            if (!isStackedView()) {
+                if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                } else if (e.key === 'ArrowRight') {
+                    nextSlide();
+                }
             }
         }
     });
