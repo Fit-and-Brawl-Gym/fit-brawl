@@ -100,17 +100,6 @@ body {
   height: 4px;
 }
 
-footer {
-  padding-top: 0;
-  margin-top: 0;
-}
-
-main {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  height: auto !important;
-}
-
 .apostrophe {
   font-family: 'Poppins', sans-serif;
 }
