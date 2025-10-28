@@ -1,11 +1,11 @@
 footer {
-    background-color: #002f3f;
-    color: white;
-    padding: 3rem 4rem;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: var(--spacing-12) var(--spacing-16);
     width: 100%;
     position: relative;
     overflow: hidden;
-    font-family: "Poppins", sans-serif;
+    font-family: var(--font-family-primary);
     z-index: 1; /* ensure footer sits below content with higher z-index */
 }
 
@@ -28,7 +28,7 @@ footer::before {
     align-items: flex-start;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 35px; /* Increased from 35px */
+    gap: var(--spacing-8); /* Increased from 35px */
     position: relative;
     z-index: 2;
 }
@@ -51,16 +51,16 @@ footer::before {
     width: auto;
     max-width: none;
     max-height: none;
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-4);
     display: block;
 }
 
 .footer-fit {
     display: flex;
     align-items: center;
-    font-size: 28px;
-    font-family: "zuume-rough-bold", sans-serif;
-    font-weight: 700;
+    font-size: var(--font-size-3xl);
+    font-family: var(--font-family-display);
+    font-weight: var(--font-weight-bold);
     text-transform: uppercase;
     gap: 0;
 }
@@ -72,9 +72,9 @@ footer::before {
 .footer-menu-title,
 .footer-contact-title,
 .footer-hours-title {
-    font-weight: 600;
-    font-size: 16px;
-    margin-bottom: 12px;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-3);
 }
 
 .footer-menu-list {
@@ -84,33 +84,33 @@ footer::before {
 }
 
 .footer-menu-list li {
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-2);
 }
 
 .footer-menu-list a {
     text-decoration: none;
-    color: white;
-    font-size: 15px;
-    transition: color 0.2s;
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    transition: color var(--transition-fast);
 }
 
 .footer-menu-list a:hover {
-    color: #d5ba2b;
+    color: var(--color-accent);
 }
 
 .footer-contact-details,
 .footer-hours-details {
-    font-size: 14.4px;
-    line-height: 1.6;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
 }
 
 footer .copyright {
     text-align: center;
-    margin-top: 30px;
-    font-size: 14.4px;
-    color: white;
+    margin-top: var(--spacing-8);
+    font-size: var(--font-size-sm);
+    color: var(--color-white);
     border-top: 1px solid rgba(255, 255, 255, 0.2);
-    padding-top: 20px;
+    padding-top: var(--spacing-5);
     position: relative;
     z-index: 2;
 }

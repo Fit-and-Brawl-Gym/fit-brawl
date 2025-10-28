@@ -15,37 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedFile = null;
 
-    function updatePlanPrice() {
-        const billing = document.querySelector('input[name="billing"]:checked')?.value || 'monthly';
-        const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
-        const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
-        if (!priceAmount || !pricePeriod) return;
-
-        priceAmount.textContent = billing === 'yearly' ? yearlyPrice : monthlyPrice;
-        pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
-    }
-
-
-    function setURLParam(key, value, replace = false) {
-        const url = new URL(window.location.href);
-        url.searchParams.set(key, value);
-        if (replace) {
-            window.history.replaceState({}, '', url);
-        } else {
-            window.history.pushState({}, '', url);
-        }
-    }
-
-    document.querySelectorAll('input[name="billing"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-            const billing = radio.value;
-            setURLParam('billing', billing);
-            updatePlanPrice();
-        });
-    });
-
-    updatePlanPrice();
-
     function resetFileUpload() {
         selectedFile = null;
         receiptFileInput.value = '';
@@ -56,17 +25,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFileSelect(file) {
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-        if (!validTypes.includes(file.type)) return alert('Invalid file type.');
-        if (file.size > 10 * 1024 * 1024) return alert('File must be under 10MB.');
+        if (!validTypes.includes(file.type)) {
+            alert('Invalid file type. Please upload JPG, PNG, or PDF only.');
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File must be under 10MB.');
+            return;
+        }
 
         selectedFile = file;
         fileName.textContent = file.name;
 
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = e => previewImage.src = e.target.result;
+            reader.onload = e => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            };
             reader.readAsDataURL(file);
-            previewImage.style.display = 'block';
         } else {
             previewImage.style.display = 'none';
         }
@@ -77,17 +54,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     fileUploadArea.addEventListener('click', () => receiptFileInput.click());
+
     receiptFileInput.addEventListener('change', e => {
-        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
     });
+
     removeFileBtn.addEventListener('click', resetFileUpload);
 
-
     function openReceiptModal() {
+        // Validate form first
         if (!subscriptionForm.checkValidity()) {
             subscriptionForm.reportValidity();
             return;
         }
+
         receiptModal.classList.add('active');
         receiptModalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -104,25 +86,36 @@ document.addEventListener('DOMContentLoaded', () => {
     closeReceiptModal.addEventListener('click', closeModal);
     cancelReceiptBtn.addEventListener('click', closeModal);
     receiptModalOverlay.addEventListener('click', closeModal);
+
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && receiptModal.classList.contains('active')) closeModal();
+        if (e.key === 'Escape' && receiptModal.classList.contains('active')) {
+            closeModal();
+        }
     });
 
     submitReceiptBtn.addEventListener('click', () => {
         const urlParams = new URLSearchParams(window.location.search);
-        let basePlan = urlParams.get('plan') || 'gladiator';
+        const service = urlParams.get('service');
 
-        console.log('Submitting plan:', basePlan);
+        if (!service) {
+            alert('Service information is missing');
+            return;
+        }
 
         const formData = new FormData(subscriptionForm);
-        formData.append('plan', basePlan);
-        formData.append('billing', urlParams.get('billing') || 'monthly');
+        formData.append('service', service);
 
-        if (selectedFile) formData.append('receipt', selectedFile);
+        if (selectedFile) {
+            formData.append('receipt', selectedFile);
+        } else {
+            alert('Please upload a payment receipt');
+            return;
+        }
 
         submitReceiptBtn.disabled = true;
+        submitReceiptBtn.textContent = 'SUBMITTING...';
 
-        fetch('api/process_subscription.php', {
+        fetch('api/process_service_booking.php', {
             method: 'POST',
             body: formData
         })
@@ -131,18 +124,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 const msg = document.createElement('div');
                 msg.className = 'success-message';
-                msg.textContent = 'Subscription submitted! Redirecting...';
+                msg.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 15px 30px; border-radius: 8px; z-index: 10000; font-weight: bold;';
+                msg.textContent = '✅ Booking confirmed! Redirecting to receipt...';
                 document.body.appendChild(msg);
-                setTimeout(() => window.location.href = 'membership-status.php', 2000);
+
+                setTimeout(() => {
+                    window.location.href = 'receipt_service.php?id=' + data.receipt_id;
+                }, 1500);
             } else {
                 alert('Error: ' + data.message);
                 submitReceiptBtn.disabled = false;
+                submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
             }
         })
         .catch(err => {
-            console.error(err);
+            console.error('Error:', err);
             alert('An error occurred. Please try again.');
             submitReceiptBtn.disabled = false;
+            submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
         });
     });
 });

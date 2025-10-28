@@ -8,6 +8,7 @@ html, body {
     min-height: 100%;
     margin: 0;
     padding: 0;
+    background-color: var(--color-bg-dark);
 }
 
 body {
@@ -33,7 +34,7 @@ body::before {
 
 /* Hero Section */
 .equipment-hero {
-    background: var(--color-primary) url('../../../images/products-h1-bg.png') no-repeat center center;
+    background: var(--color-primary) url('../../../images/equipment-h1-bg.png') no-repeat center center;
     background-size: cover;
     margin-top: var(--spacing-5);
     text-align: left;

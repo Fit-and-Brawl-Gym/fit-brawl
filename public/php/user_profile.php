@@ -164,7 +164,7 @@ if ($activityQuery) {
 
 // Determine avatar source
 $hasCustomAvatar = $user['avatar'] !== 'default-avatar.png' && !empty($user['avatar']);
-$avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../images/profile-icon.svg";
+$avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../images/account-icon.png";
 ?>
 <!DOCTYPE html>
 <html lang="en">
