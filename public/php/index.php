@@ -28,6 +28,34 @@ require_once '../../includes/header.php';
                 <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
                 <a href="membership.php" class="hero-btn">Be a Member</a>
             </div>
+
+            <!-- Non-Member Pricing Table -->
+            <div class="non-member-pricing">
+                <h2 class="pricing-title">NON MEMBER SERVICES</h2>
+                <div class="pricing-table-mini">
+                    <a href="transaction_nonmember.php?service=daypass-gym" class="pricing-row">
+                        <span class="price">150 PHP</span>
+                        <span class="service">Day Pass: Gym Access</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=daypass-gym-student" class="pricing-row">
+                        <span class="price">120 PHP</span>
+                        <span class="service">Day Pass: Student Access</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=training-boxing" class="pricing-row">
+                        <span class="price">380 PHP</span>
+                        <span class="service">Training: Boxing</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=training-muaythai" class="pricing-row">
+                        <span class="price">530 PHP</span>
+                        <span class="service">Training: Muay Thai</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=training-mma" class="pricing-row">
+                        <span class="price">630 PHP</span>
+                        <span class="service">Training: MMA</span>
+                    </a>
+                </div>
+                <a href="membership.php" class="view-all-btn">View All Plans</a>
+            </div>
         </section>
 
         <!-- Gym Overview Section -->
