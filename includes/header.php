@@ -113,7 +113,7 @@ if (!isset($membershipLink)) {
 
 // Determine avatar source for logged-in users
 if (!isset($avatarSrc)) {
-    $avatarSrc = '../../images/account-icon.svg';
+    $avatarSrc = '../../images/account-icon.png';
     if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
         $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";

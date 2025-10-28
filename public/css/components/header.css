@@ -121,11 +121,6 @@
     cursor: pointer;
 }
 
-/* Gold border for logged-in users */
-.account-dropdown .account-icon {
-    border: 3px solid #d5ba2b;
-}
-
 .account-dropdown {
     position: relative;
     display: inline-block;

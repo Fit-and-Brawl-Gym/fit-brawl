@@ -57,7 +57,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar
         ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar'])
-        : "../../images/profile-icon.svg";
+        : "../../images/account-icon.png";
 }
 // Check active membership
 
@@ -211,7 +211,7 @@ if ($hasActiveMembership) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/account-icon.png" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>

@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($result && $row = $result->fetch_assoc()) {
        if (empty($username )){
         $username = "Anonymous $index";
-        $user_avatar = "../../images/profile-icon.svg";
+        $user_avatar = "../../images/account-icon.png";
     } else{
         $user_avatar = $row['avatar'];
     }
@@ -162,7 +162,7 @@ if (!SessionManager::isLoggedIn()) {
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/profile-icon.svg";
+    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
 }
 
 function test_input($data) {
@@ -238,7 +238,7 @@ function test_input($data) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/profile-icon.svg" alt="Account" class="account-icon">
+                    <img src="../../images/account-icon.png" alt="Account" class="account-icon">
                 </a>
             <?php endif; ?>
         </div>
