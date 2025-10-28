@@ -1,26 +1,35 @@
+-- =============================================
+-- Fit & Brawl Gym Database Schema
+-- =============================================
+-- This schema is designed for a gym management system
+-- supporting memberships, reservations, equipment tracking,
+-- products, and user management.
+-- =============================================
+
 -- Create database
 CREATE DATABASE IF NOT EXISTS fit_and_brawl_gym;
 USE fit_and_brawl_gym;
 
 -- =====================
 -- USERS TABLE
+-- Stores user accounts with authentication and verification
 -- =====================
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL COMMENT 'Hashed password using bcrypt',
     role ENUM('member', 'admin', 'trainer') DEFAULT 'member',
-    avatar VARCHAR(255) DEFAULT 'profile-icon.svg',
+    avatar VARCHAR(255) DEFAULT 'default-avatar.png',
+    is_verified TINYINT(1) DEFAULT 0,
+    verification_token VARCHAR(255) DEFAULT NULL,
     otp VARCHAR(6) DEFAULT NULL,
     otp_expiry DATETIME DEFAULT NULL,
     otp_attempts INT DEFAULT 0,
-    last_otp_request TIMESTAMP DEFAULT NULL
+    last_otp_request TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_logout DATETIME DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
--- Add verification fields (safe as separate command)
-ALTER TABLE users
-ADD COLUMN is_verified TINYINT(1) DEFAULT 0 AFTER avatar,
-ADD COLUMN verification_token VARCHAR(255) DEFAULT NULL AFTER is_verified;
 -- =====================
 -- REMEMBER PASSWORD TOKENS TABLE
 -- =====================
@@ -142,14 +151,17 @@ CREATE TABLE user_reservations (
 
 -- =====================
 -- EQUIPMENT TABLE
+-- Tracks gym equipment and their maintenance status
 -- =====================
 CREATE TABLE equipment (
     id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     name VARCHAR(100) NOT NULL,
-    status ENUM('Available', 'Maintenance', 'Out of Order') NOT NULL DEFAULT 'Available',
-    category VARCHAR(50) DEFAULT NULL,
-    description TEXT DEFAULT NULL,
-    image_path VARCHAR(255) DEFAULT NULL
+    category VARCHAR(100) NOT NULL,
+    status ENUM('Available', 'Maintenance', 'Out of Order') DEFAULT 'Available',
+    description VARCHAR(255) DEFAULT NULL,
+    image_path VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 
@@ -170,14 +182,16 @@ CREATE TABLE IF NOT EXISTS products (
 
 -- =====================
 -- FEEDBACK TABLE
+-- Stores user feedback and reviews
 -- =====================
 CREATE TABLE feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     username VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    avatar VARCHAR(255) DEFAULT 'profile-icon.svg',
+    avatar VARCHAR(255) DEFAULT 'default-avatar.png',
     message TEXT NOT NULL,
+    is_visible TINYINT(1) DEFAULT 1 COMMENT 'Admin can hide/show feedback',
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -215,11 +229,81 @@ CREATE TABLE contact (
     date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- =====================
+-- TRAINING SESSIONS TABLE
+-- Tracks individual training session attendance
+-- =====================
 CREATE TABLE training_sessions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     activity_date DATE NOT NULL,
     activity_type VARCHAR(100) NOT NULL,
     trainer_name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- =====================
+-- INQUIRIES TABLE
+-- Stores contact form submissions
+-- =====================
+CREATE TABLE inquiries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    phone VARCHAR(50) DEFAULT NULL,
+    message TEXT NOT NULL,
+    date_sent DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('Unread', 'Read') DEFAULT 'Unread'
+);
+
+-- =====================
+-- SERVICE BOOKINGS TABLES
+-- Tracks service bookings for both members and non-members
+-- =====================
+
+-- For registered members
+CREATE TABLE member_service_bookings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    receipt_id VARCHAR(50) NOT NULL UNIQUE,
+    user_id INT NOT NULL,
+    service_key VARCHAR(50) NOT NULL,
+    service_name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    is_member TINYINT(1) DEFAULT 0 COMMENT 'Whether user had active membership at time of booking',
+    name VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    permanent_address VARCHAR(255) NOT NULL,
+    service_date DATE NOT NULL,
+    booking_date DATETIME NOT NULL,
+    qr_proof VARCHAR(255) NOT NULL COMMENT 'Payment receipt filename',
+    status ENUM('pending', 'confirmed', 'completed', 'cancelled') DEFAULT 'confirmed',
+    checked_in TINYINT(1) DEFAULT 0,
+    checked_in_at DATETIME DEFAULT NULL,
+    admin_notes TEXT DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_receipt_id (receipt_id),
+    INDEX (service_date),
+    INDEX (status)
+);
+
+-- For non-members (walk-ins)
+CREATE TABLE non_member_bookings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    receipt_id VARCHAR(50) NOT NULL UNIQUE,
+    service_key VARCHAR(50) NOT NULL,
+    service_name VARCHAR(100) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    customer_email VARCHAR(100) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    service_date DATE NOT NULL,
+    booking_date DATETIME NOT NULL,
+    status ENUM('pending', 'confirmed', 'completed', 'cancelled') DEFAULT 'pending',
+    checked_in TINYINT(1) DEFAULT 0,
+    checked_in_at DATETIME DEFAULT NULL,
+    notes TEXT DEFAULT NULL,
+    INDEX idx_service_date (service_date),
+    INDEX idx_customer_email (customer_email)
 );
