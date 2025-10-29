@@ -11,8 +11,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <aside class="sidebar">
     <div class="sidebar-header">
-        <img src="../../../images/fnb-icon.png" alt="FitXBrawl">
-        <h2>FitXBrawl</h2>
+        <img src="../../../images/header-title.svg" alt="FitXBrawl" class="logo-title"
+            style="width: 220px !important; height: auto !important; max-width: 220px !important;">
         <p>Admin Panel</p>
     </div>
     <nav>

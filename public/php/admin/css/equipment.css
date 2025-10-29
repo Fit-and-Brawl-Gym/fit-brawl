@@ -138,7 +138,7 @@
 .equipment-name {
     font-size: var(--admin-font-size-xl);
     font-weight: var(--admin-font-weight-bold);
-    color: var(--admin-text-primary);
+    color: #222;
     margin-bottom: 4px;
 }
 
@@ -263,7 +263,7 @@
 
 .side-panel-header h2 {
     font-size: var(--admin-font-size-2xl);
-    color: var(--admin-text-primary);
+    color: #222;
 }
 
 .close-btn {

@@ -38,7 +38,7 @@
 
 .profile-name {
     font-size: var(--admin-font-size-3xl);
-    color: var(--admin-text-primary);
+    color: #222;
     margin: 0 0 8px 0;
     text-align: center;
 }
@@ -84,7 +84,7 @@
 
 .info-item span {
     display: block;
-    color: var(--admin-text-primary);
+    color: #222;
     font-size: var(--admin-font-size-md);
 }
 

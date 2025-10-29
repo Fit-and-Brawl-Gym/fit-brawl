@@ -3,7 +3,7 @@
 /* =========================== */
 
 /* Import Admin Variables */
-@import url('../../../css/admin-variables.css');
+@import url('../../../css/admin-variables.css?v=3');
 
 * {
     margin: 0;
@@ -41,11 +41,15 @@ body {
     border-bottom: 1px solid var(--admin-border-sidebar);
 }
 
-.sidebar-header img {
-    width: 60px;
-    height: 60px;
-    border-radius: var(--admin-radius-full);
-    margin-bottom: var(--admin-gap-sm);
+.sidebar-header img.logo-title {
+    max-width: 220px !important;
+    width: 220px !important;
+    min-width: 220px !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0;
+    margin-left: 8px;
+    border-radius: 0 !important;
 }
 
 .sidebar-header h2 {
@@ -55,8 +59,12 @@ body {
 }
 
 .sidebar-header p {
-    font-size: var(--admin-font-size-base);
-    color: var(--admin-text-lighter);
+    font-size: var(--admin-font-size-xl);
+    font-weight: 700;
+    color: var(--admin-color-accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: var(--admin-gap-sm);
 }
 
 .sidebar nav {

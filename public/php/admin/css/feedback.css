@@ -65,7 +65,7 @@
 
 .stat-content strong {
     font-size: var(--admin-font-size-xl);
-    color: var(--admin-text-primary);
+    color: #222;
 }
 
 .date-filter {
@@ -168,7 +168,7 @@
 
 .user-info h3 {
     font-size: var(--admin-font-size-md);
-    color: var(--admin-text-primary);
+    color: #222;
     margin-bottom: 2px;
     font-weight: var(--admin-font-weight-semibold);
 }
