@@ -1,0 +1,183 @@
+/* Trainer Navigation Icon Styles */
+
+.trainer-nav ul {
+    display: flex;
+    gap: var(--spacing-3);
+    align-items: center;
+}
+
+.trainer-nav li {
+    list-style: none;
+}
+
+.trainer-nav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    min-height: 56px;
+    padding: var(--spacing-2);
+    border-radius: var(--radius-base);
+    background: transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    text-decoration: none;
+}
+
+.trainer-nav a i {
+    font-size: 1.6rem;
+    color: var(--color-text-light);
+    transition: all 0.3s ease;
+}
+
+/* Hover State: Yellow Icon, Transparent Background */
+.trainer-nav a:hover {
+    background: transparent;
+}
+
+.trainer-nav a:hover i {
+    color: var(--color-accent);
+    transform: scale(1.1);
+}
+
+/* Active State: Yellow Background, White Icon */
+.trainer-nav a.active {
+    background: var(--color-accent);
+    box-shadow: 0 4px 8px rgba(213, 186, 43, 0.3);
+}
+
+.trainer-nav a.active i {
+    color: var(--color-bg-dark);
+}
+
+.trainer-nav a.active:hover {
+    background: var(--color-accent);
+}
+
+.trainer-nav a.active:hover i {
+    color: var(--color-bg-dark);
+    transform: scale(1.05);
+}
+
+/* Add subtle pulse animation for active state */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 8px rgba(213, 186, 43, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 12px rgba(213, 186, 43, 0.5);
+    }
+}
+
+.trainer-nav a.active {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Tooltip on hover */
+.trainer-nav a::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: var(--color-accent);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 100;
+}
+
+.trainer-nav a:hover::after {
+    opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    /* In mobile hamburger menu, show text links instead of icons */
+    .trainer-nav a {
+        min-width: auto;
+        width: 100%;
+        padding: var(--spacing-4) var(--spacing-6);
+        justify-content: center;
+        border-radius: 0;
+    }
+
+    .trainer-nav a i {
+        display: none; /* Hide icons in mobile menu */
+    }
+
+    /* Show text instead */
+    .trainer-nav a::before {
+        font-size: var(--font-size-base);
+        color: var(--color-text-light);
+        font-family: var(--font-family-primary);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .trainer-nav a[href*="index.php"]::before {
+        content: "Home";
+    }
+
+    .trainer-nav a[href*="schedule.php"]::before {
+        content: "Schedule";
+    }
+
+    .trainer-nav a[href*="feedback.php"]::before {
+        content: "Feedback";
+    }
+
+    .trainer-nav a.active::before {
+        color: var(--color-accent);
+        font-weight: var(--font-weight-bold);
+    }
+
+    .trainer-nav a:hover::before {
+        color: var(--color-accent);
+    }
+
+    /* Mobile specific styles */
+    .trainer-nav ul {
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+    }
+
+    .trainer-nav li {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .trainer-nav a {
+        border-bottom: 1px solid rgba(213, 186, 43, 0.2);
+    }
+
+    .trainer-nav a:hover {
+        background-color: rgba(213, 186, 43, 0.1);
+    }
+
+    .trainer-nav a.active {
+        background: rgba(213, 186, 43, 0.2);
+        animation: none;
+        box-shadow: none;
+    }
+
+    /* Hide tooltip in mobile */
+    .trainer-nav a::after {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .wrapper {
+        padding: var(--spacing-3) var(--spacing-4);
+    }
+
+    .trainer-nav a {
+        padding: var(--spacing-3) var(--spacing-5);
+    }
+}

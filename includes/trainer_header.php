@@ -46,12 +46,13 @@ if (class_exists('SessionManager')) {
     <link rel="stylesheet" href="../../css/global.css">
     <link rel="stylesheet" href="../../css/components/footer.css">
     <link rel="stylesheet" href="../../css/components/header.css">
+    <link rel="stylesheet" href="../../css/components/trainer-nav.css">
     <?php if (isset($additionalCSS) && is_array($additionalCSS)): ?>
         <?php foreach ($additionalCSS as $cssFile): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
-    <link rel="shortcut icon" href="../../../images/fnb-icon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="../../../images/fnb-trainer-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -85,11 +86,23 @@ if (class_exists('SessionManager')) {
                     <img src="../../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
-            <nav class="nav-bar">
+            <nav class="nav-bar trainer-nav">
                 <ul>
-                    <li><a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?>>Home</a></li>
-                    <li><a href="schedule.php" <?= $currentPage === 'schedule' ? 'class="active"' : '' ?>>Schedule</a></li>
-                    <li><a href="feedback.php" <?= $currentPage === 'feedback' ? 'class="active"' : '' ?>>Feedback</a></li>
+                    <li>
+                        <a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
+                            <i class="fas fa-home"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="schedule.php" <?= $currentPage === 'schedule' ? 'class="active"' : '' ?> title="Schedule">
+                            <i class="fas fa-calendar-alt"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="feedback.php" <?= $currentPage === 'feedback' ? 'class="active"' : '' ?> title="Feedback">
+                            <i class="fas fa-comments"></i>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <?php if (isset($_SESSION['email'])): ?>

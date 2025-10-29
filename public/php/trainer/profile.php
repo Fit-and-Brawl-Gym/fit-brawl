@@ -60,66 +60,15 @@ if (isset($_SESSION['user_id'])) {
 // Determine avatar source
 $hasCustomAvatar = $user['avatar'] !== 'default-avatar.png' && !empty($user['avatar']);
 $avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../../images/account-icon.png";
+
+// Set variables for header
+$pageTitle = "Trainer Profile - Fit and Brawl";
+$currentPage = "profile";
+$additionalCSS = ["../../css/pages/user-profile.css"];
+
+// Include header
+require_once '../../../includes/trainer_header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - FitXBrawl Trainer</title>
-    <link rel="stylesheet" href="../../css/global.css">
-    <link rel="stylesheet" href="../../css/pages/user-profile.css">
-    <link rel="stylesheet" href="../../css/components/footer.css">
-    <link rel="stylesheet" href="../../css/components/header.css">
-    <link rel="shortcut icon" href="../../../images/fnb-icon.png" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap"
-        rel="stylesheet">
-    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-    <script src="../../js/header-dropdown.js"></script>
-    <script src="../../js/hamburger-menu.js"></script>
-    <?php if(SessionManager::isLoggedIn()): ?>
-    <link rel="stylesheet" href="../../css/components/session-warning.css">
-    <script src="../../js/session-timeout.js"></script>
-    <?php endif; ?>
-</head>
-
-<body>
-    <!--Header-->
-    <header>
-        <div class="wrapper">
-            <button class="hamburger-menu" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="title">
-                <a href="index.php">
-                    <img src="../../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
-                </a>
-                <a href="index.php">
-                    <img src="../../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
-                </a>
-            </div>
-            <nav class="nav-bar">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="schedule.php">Schedule</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </nav>
-            <div class="account-dropdown">
-                <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon">
-                <div class="dropdown-menu">
-                    <a href="profile.php">Profile</a>
-                    <a href="../logout.php">Logout</a>
-                </div>
-            </div>
-        </div>
-    </header>
 
     <!--Main-->
     <main class="profile-main">
@@ -132,7 +81,7 @@ $avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($
             <div class="profile-info">
                 <h1><?= htmlspecialchars($user['username']) ?></h1>
                 <p class="profile-email"><?= htmlspecialchars($user['email']) ?></p>
-                <p class="profile-role"><i class="fas fa-dumbbell"></i> Trainer</p>
+                <p class="profile-role"> Trainer</p>
                 <div class="profile-actions">
                     <button class="btn-edit-profile" id="toggleEditBtn">
                         <i class="fas fa-edit"></i> Edit Profile
