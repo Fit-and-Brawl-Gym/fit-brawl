@@ -65,92 +65,51 @@ $services = [
         ]
     ]
 ];
-
+$pageTitle = "Day Pass Transaction (Non-Member) - Fit and Brawl";
+$currentPage = "transaction_daypass_non_member";
 $selectedService = $services[$service];
 $price = $selectedService['price'];
+
+$additionalCSS = [
+    '../css/pages/transaction.css',
+    'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'
+];
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Service - FitXBrawl</title>
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/transaction.css">
-    <link rel="stylesheet" href="../css/components/footer.css">
-    <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="../js/header-dropdown.js"></script>
-    <script src="../js/hamburger-menu.js"></script>
-    <style>
-        .date-picker-group {
-            margin-bottom: var(--spacing-4);
-        }
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<style>
+    .date-picker-group {
+        margin-bottom: var(--spacing-4);
+    }
 
-        .date-picker-group label {
-            display: block;
-            font-weight: var(--font-weight-bold);
-            color: var(--color-white);
-            margin-bottom: var(--spacing-2);
-            font-size: var(--font-size-base);
-        }
+    .date-picker-group label {
+        display: block;
+        font-weight: var(--font-weight-bold);
+        color: var(--color-white);
+        margin-bottom: var(--spacing-2);
+        font-size: var(--font-size-base);
+    }
 
-        .date-picker-group input {
-            width: 100%;
-            padding: var(--spacing-3);
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(213, 186, 43, 0.3);
-            border-radius: var(--radius-md);
-            color: var(--color-white);
-            font-size: var(--font-size-base);
-            font-family: var(--font-family-primary);
-            cursor: pointer;
-        }
+    .date-picker-group input {
+        width: 100%;
+        padding: var(--spacing-3);
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(213, 186, 43, 0.3);
+        border-radius: var(--radius-md);
+        color: var(--color-white);
+        font-size: var(--font-size-base);
+        font-family: var(--font-family-primary);
+        cursor: pointer;
+    }
 
-        .date-picker-group input:focus {
-            outline: none;
-            border-color: var(--color-accent);
-        }
-    </style>
-</head>
-<body>
-    <!--Header-->
-    <header>
-        <div class="wrapper">
-            <button class="hamburger-menu" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="title">
-                <a href="index.php">
-                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
-                </a>
-                <a href="index.php">
-                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
-                </a>
-            </div>
-            <nav class="nav-bar">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php" class="active">Membership</a></li>
-                    <li><a href="equipment.php">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </nav>
-            <a href="login.php" class="account-link">
-                <img src="../../images/account-icon.png" alt="Account" class="account-icon">
-            </a>
-        </div>
-    </header>
+    .date-picker-group input:focus {
+        outline: none;
+        border-color: var(--color-accent);
+    }
+</style>
+<?php
+// Include header
+require_once '../../includes/header.php';
+?>
 
     <!--Main-->
     <main class="transaction-page">
@@ -234,43 +193,7 @@ $price = $selectedService['price'];
         </div>
     </main>
 
-    <!--Footer-->
-    <footer>
-        <div class="container footer-flex">
-            <div class="footer-logo-block">
-                <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
-            </div>
-            <div class="footer-menu-block">
-                <div class="footer-menu-title">MENU</div>
-                <ul class="footer-menu-list">
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
-                    <li><a href="equipment.php">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </div>
-            <div class="footer-contact-block">
-                <div class="footer-contact-title">CONTACT</div>
-                <div class="footer-contact-details">
-                    1832 Oroquieta Rd, Santa Cruz, Manila,<br>
-                    1008 Metro Manila<br><br>
-                    Gmail: fitxbrawl@gmail.com
-                </div>
-            </div>
-            <div class="footer-hours-block">
-                <div class="footer-hours-title">OPENING HOURS</div>
-                <div class="footer-hours-details">
-                    Sun–Fri: 9AM to 10PM<br>
-                    Saturday: 10AM to 7PM
-                </div>
-            </div>
-        </div>
-        <div class="copyright">
-            <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
-        </div>
-    </footer>
+<?php require_once '../../includes/footer.php'; ?>
 
     <script>
         // Initialize Flatpickr date picker

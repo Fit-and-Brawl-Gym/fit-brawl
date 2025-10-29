@@ -74,7 +74,7 @@ function test_input($data) {
 
 // Set variables for header
 $pageTitle = "Login - Fit and Brawl";
-$currentPage = "";
+$currentPage = "login";
 $additionalCSS = ["../css/pages/login.css?v=1"];
 $additionalJS = ["../js/hamburger.js"];
 

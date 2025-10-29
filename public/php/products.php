@@ -148,7 +148,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 }
 
 // Set variables for header
-$pageTitle = "Fit and Brawl - Products";
+$pageTitle = "Products - Fit and Brawl";
 $currentPage = "products";
 $additionalCSS = ["../css/pages/products.css"];
 

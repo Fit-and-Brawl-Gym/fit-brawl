@@ -24,6 +24,9 @@ if (!$booking) {
 // Format date for display
 $service_date = new DateTime($booking['service_date']);
 $booking_date = new DateTime($booking['booking_date']);
+
+$pageTitle = "Day Pass Receipt (Non-Member) - Fit and Brawl";
+$currentPage = "receipt_non_member";
 ?>
 <!DOCTYPE html>
 <html lang="en">

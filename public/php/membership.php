@@ -40,8 +40,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 }
 
 // Set variables for header
-$pageTitle = "Fit and Brawl - Membership";
-$currentPage = "membership";
+$pageTitle = "Membership Plans - Fit and Brawl";
+$currentPage = "membership_plans";
 $additionalCSS = ["../css/pages/membership.css"];
 $additionalJS = [];
 
