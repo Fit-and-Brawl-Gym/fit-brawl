@@ -1,5 +1,8 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
+
 require_once '../../../includes/db_connect.php';
 header('Content-Type: application/json');
 
@@ -99,12 +102,71 @@ if (!$membership) {
     }
 }
 
-// Compute dates
+
+$check_existing = $conn->prepare("
+    SELECT * FROM user_memberships 
+    WHERE user_id = ? 
+    ORDER BY id DESC 
+    LIMIT 1
+");
+$check_existing->bind_param("i", $user_id);
+$check_existing->execute();
+$existing = $check_existing->get_result()->fetch_assoc();
+
+
+if ($existing && $existing['request_status'] === 'pending') {
+    echo json_encode(['success' => false, 'message' => 'Upgrade or membership request already pending approval.']);
+    exit;
+}
+
+
 $start_date = date('Y-m-d');
 $end_date = ($billing === 'yearly') ? date('Y-m-d', strtotime('+1 year')) : date('Y-m-d', strtotime('+1 month'));
 $duration = ($billing === 'yearly') ? 365 : 30;
-$source_table = 'user_memberships';
-$source_id = null;
+
+
+if ($existing && $existing['membership_status'] === 'active') {
+    $update_query = "
+    UPDATE user_memberships
+    SET 
+        plan_id = ?,
+        name = ?,
+        country = ?,
+        permanent_address = ?,
+        plan_name = ?,
+        qr_proof = ?,
+        start_date = ?,
+        end_date = ?,
+        billing_type = ?,
+        membership_status = 'active',
+        request_status = 'pending',
+        duration = ?,
+        source_table = ?,
+        source_id = ?
+    WHERE user_id = ? AND id = ?
+";
+
+$stmt = $conn->prepare($update_query);
+$stmt->bind_param(
+    "issssssssisiis",
+    $plan_id,
+    $name,
+    $country,
+    $address,
+    $membership['plan_name'],
+    $filename,
+    $start_date,
+    $end_date,
+    $billing,
+    $duration,
+    $source_table,
+    $source_id,
+    $user_id,
+    $existing['id']
+);
+
+    $action = 'upgrade';
+} else {
 
 // Insert into user_memberships
 $insert_query = "
@@ -131,10 +193,18 @@ $stmt->bind_param(
     $source_id
 );
 
+
+
+    $action = 'new';
+}
+
+// Execute
 if ($stmt->execute()) {
     echo json_encode([
         'success' => true,
-        'message' => 'Subscription submitted for review. Please wait for admin approval.',
+        'message' => $action === 'upgrade'
+            ? 'Your existing membership has been upgraded and is now pending admin approval.'
+            : 'Your subscription has been submitted for review. Please wait for admin approval.',
         'membership' => [
             'plan' => $membership['plan_name'],
             'end_date' => $end_date,
