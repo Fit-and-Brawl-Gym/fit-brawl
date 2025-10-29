@@ -48,87 +48,112 @@ $booking_date_formatted = date('F d, Y \a\t g:i A', strtotime($booking['booking_
     <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            background: var(--color-bg-dark);
+            padding: var(--spacing-8) var(--spacing-4);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 2rem;
+            justify-content: center;
         }
 
         .receipt-container {
-            background: white;
             max-width: 800px;
             width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
+            background: linear-gradient(135deg, rgba(45, 103, 104, 0.95), rgba(23, 48, 49, 0.95));
+            border: 3px solid var(--color-accent);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-8);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Force consistent width on mobile for capture */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-4);
+            }
+
+            .receipt-container {
+                min-width: 350px;
+                max-width: 800px;
+                width: 100%;
+            }
         }
 
         .receipt-header {
-            background: linear-gradient(135deg, #f4c430 0%, #d4a017 100%);
-            padding: 2rem;
             text-align: center;
-            color: #1a1a1a;
+            border-bottom: 3px dashed var(--color-accent);
+            padding-bottom: var(--spacing-6);
+            margin-bottom: var(--spacing-6);
+        }
+
+        .header-logo {
+            width: 150px;
+            height: auto;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .receipt-logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: var(--spacing-3);
         }
 
         .receipt-header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .receipt-header p {
-            font-size: 0.95rem;
-            opacity: 0.9;
-        }
-
-        .receipt-body {
-            padding: 2.5rem;
+            font-family: var(--font-family-display);
+            font-size: var(--font-size-4xl);
+            color: var(--color-accent);
+            margin: 0 0 var(--spacing-2) 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .receipt-id {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
+            background: rgba(213, 186, 43, 0.2);
+            color: var(--color-accent);
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-xl);
+            padding: var(--spacing-3);
+            border-radius: var(--radius-md);
+            margin: var(--spacing-4) 0;
             text-align: center;
-            border: 2px dashed #d4a017;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            border: 4px solid var(--color-accent);
         }
 
-        .receipt-id strong {
-            font-size: 1.3rem;
-            color: #d4a017;
-            font-weight: 600;
+        .receipt-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-6);
+            margin-bottom: var(--spacing-6);
         }
 
-        .info-section {
-            margin-bottom: 2rem;
+        .receipt-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: var(--spacing-5);
+            border-radius: var(--radius-lg);
         }
 
-        .info-section h2 {
-            font-size: 1.2rem;
-            color: #1a1a1a;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #f4c430;
+        .receipt-section h2 {
+            font-family: var(--font-family-display);
+            font-size: var(--font-size-xl);
+            color: var(--color-accent);
+            margin: 0 0 var(--spacing-4) 0;
+            text-transform: uppercase;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e9ecef;
+            padding: var(--spacing-2) 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .info-row:last-child {
@@ -136,192 +161,229 @@ $booking_date_formatted = date('F d, Y \a\t g:i A', strtotime($booking['booking_
         }
 
         .info-label {
-            font-weight: 500;
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
         }
 
         .info-value {
-            font-weight: 600;
-            color: #1a1a1a;
+            color: var(--color-white);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-bold);
             text-align: right;
         }
 
-        .price-row {
-            background: #fff8e1;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1rem;
+        .service-highlight {
+            background: rgba(213, 186, 43, 0.15);
+            padding: var(--spacing-4);
+            border-radius: var(--radius-md);
+            margin: var(--spacing-4) 0;
         }
 
-        .price-row .info-value {
-            color: #d4a017;
-            font-size: 1.5rem;
+        .service-name {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            margin: 0 0 var(--spacing-2) 0;
+        }
+
+        .service-price {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-black);
+            color: var(--color-white);
+            margin: 0;
         }
 
         .member-badge {
             display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            background: rgba(40, 167, 69, 0.3);
+            color: #4ade80;
+            padding: var(--spacing-2) var(--spacing-4);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            border: 2px solid #4ade80;
         }
 
         .non-member-badge {
             display: inline-block;
-            background: #6c757d;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            background: rgba(108, 117, 125, 0.3);
+            color: #94a3b8;
+            padding: var(--spacing-2) var(--spacing-4);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            border: 2px solid #94a3b8;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 0.35rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            padding: var(--spacing-2) var(--spacing-4);
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
         }
 
         .status-confirmed {
-            background: #d4edda;
-            color: #155724;
+            background: rgba(212, 237, 218, 0.3);
+            color: #4ade80;
+            border: 2px solid #4ade80;
         }
 
         .status-pending {
-            background: #fff3cd;
-            color: #856404;
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 2px solid #ffc107;
         }
 
         .qr-section {
             text-align: center;
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 2rem 0;
-        }
-
-        .qr-section h3 {
-            margin-bottom: 1rem;
-            color: #1a1a1a;
+            padding: var(--spacing-6);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-lg);
+            margin: var(--spacing-6) 0;
         }
 
         #qrcode {
             display: inline-block;
-            padding: 1rem;
+            padding: var(--spacing-4);
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: var(--radius-md);
+            margin: var(--spacing-4) 0;
         }
 
-        .instructions {
-            background: #e7f3ff;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid #0066cc;
-            margin: 2rem 0;
+        .qr-instruction {
+            color: var(--color-accent);
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-lg);
+            margin: var(--spacing-3) 0 0 0;
         }
 
-        .instructions h3 {
-            color: #0066cc;
-            margin-bottom: 0.75rem;
-            font-size: 1.1rem;
-        }
-
-        .instructions ul {
-            margin-left: 1.5rem;
-            color: #333;
-        }
-
-        .instructions li {
-            margin-bottom: 0.5rem;
+        .receipt-footer {
+            text-align: center;
+            padding-top: var(--spacing-6);
+            border-top: 3px dashed var(--color-accent);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: var(--font-size-sm);
         }
 
         .action-buttons {
             display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
+            gap: var(--spacing-4);
+            justify-content: center;
+            margin-top: var(--spacing-6);
+            flex-wrap: wrap;
         }
 
         .btn {
-            flex: 1;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: var(--spacing-3) var(--spacing-6);
+            border-radius: var(--radius-lg);
+            font-weight: var(--font-weight-bold);
+            font-size: var(--font-size-base);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition-fast);
             text-decoration: none;
-            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-2);
+            border: none;
+            flex: 1;
+            min-width: 150px;
+            max-width: 250px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #f4c430 0%, #d4a017 100%);
-            color: #1a1a1a;
+            background: var(--color-accent);
+            color: var(--color-fog);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(244, 196, 48, 0.4);
+            background: #ffe066;
         }
 
         .btn-secondary {
-            background: #6c757d;
-            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--color-white);
+            border: 2px solid var(--color-white);
         }
 
         .btn-secondary:hover {
-            background: #5a6268;
+            background: rgba(255, 255, 255, 0.2);
         }
 
         @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
             body {
-                background: white;
+                margin: 0;
                 padding: 0;
+                background: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
             }
+
+            #printableImage {
+                max-width: 190mm;
+                max-height: 277mm;
+                width: auto;
+                height: auto;
+                display: block;
+                margin: 0 auto;
+            }
+
+            .receipt-container,
             .action-buttons {
-                display: none;
-            }
-            .receipt-container {
-                box-shadow: none;
+                display: none !important;
             }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .receipt-body {
-                padding: 1.5rem;
+                grid-template-columns: 1fr;
             }
+
             .action-buttons {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
             }
-            .info-row {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            .info-value {
-                text-align: left;
+
+            .btn {
+                flex: 1 1 100%;
+                max-width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
-    <div class="receipt-container">
+    <div class="receipt-container" id="receiptContainer">
         <div class="receipt-header">
-            <h1>🥊 FIT X BRAWL GYM</h1>
-            <p>Service Booking Receipt</p>
+            <img src="../../images/fnb-logo-yellow.svg" alt="FitXBrawl Logo" class="receipt-logo">
+            <h1>Service Receipt</h1>
+            <img src="../../images/header-title.svg" alt="Fit and Brawl Gym" class="header-logo">
+        </div>
+
+        <div class="receipt-id">
+            Receipt ID: <?php echo htmlspecialchars($receipt_id); ?>
+        </div>
+
+        <div class="service-highlight">
+            <p class="service-name"><?php echo htmlspecialchars($booking['service_name']); ?></p>
+            <p class="service-price">₱<?php echo number_format($booking['price'], 2); ?></p>
         </div>
 
         <div class="receipt-body">
-            <div class="receipt-id">
-                <strong>Receipt ID: <?php echo htmlspecialchars($receipt_id); ?></strong>
-            </div>
-
-            <div class="info-section">
-                <h2>Customer Information</h2>
+            <div class="receipt-section">
+                <h2><i class="fas fa-user"></i> Customer Details</h2>
                 <div class="info-row">
                     <span class="info-label">Name:</span>
                     <span class="info-value"><?php echo htmlspecialchars($booking['name']); ?></span>
@@ -344,18 +406,14 @@ $booking_date_formatted = date('F d, Y \a\t g:i A', strtotime($booking['booking_
                 </div>
             </div>
 
-            <div class="info-section">
-                <h2>Service Details</h2>
-                <div class="info-row">
-                    <span class="info-label">Service:</span>
-                    <span class="info-value"><?php echo htmlspecialchars($booking['service_name']); ?></span>
-                </div>
+            <div class="receipt-section">
+                <h2><i class="fas fa-calendar-check"></i> Booking Details</h2>
                 <div class="info-row">
                     <span class="info-label">Service Date:</span>
                     <span class="info-value"><?php echo $service_date_formatted; ?></span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Booking Date:</span>
+                    <span class="info-label">Booked On:</span>
                     <span class="info-value"><?php echo $booking_date_formatted; ?></span>
                 </div>
                 <div class="info-row">
@@ -376,33 +434,32 @@ $booking_date_formatted = date('F d, Y \a\t g:i A', strtotime($booking['booking_
                         </span>
                     </span>
                 </div>
-                <div class="info-row price-row">
-                    <span class="info-label">Total Amount:</span>
-                    <span class="info-value">₱<?php echo number_format($booking['price'], 2); ?></span>
-                </div>
             </div>
+        </div>
 
-            <div class="qr-section">
-                <h3>Show this QR code at the gym entrance</h3>
-                <div id="qrcode"></div>
-            </div>
+        <div class="qr-section">
+            <div id="qrcode"></div>
+            <p class="qr-instruction">
+                <i class="fas fa-qrcode"></i> Show this QR code at the gym entrance
+            </p>
+        </div>
 
-            <div class="instructions">
-                <h3>📋 Important Instructions</h3>
-                <ul>
-                    <li>Present this receipt at the gym entrance on your service date</li>
-                    <li>Arrive at least 15 minutes before your scheduled time</li>
-                    <li>Bring a valid ID for verification</li>
-                    <li>For student passes, bring your student ID</li>
-                    <li>Receipt is valid only for the date specified above</li>
-                    <li>No refunds after booking confirmation</li>
-                </ul>
-            </div>
+        <div class="receipt-footer">
+            <p><strong>Important:</strong> Please present this receipt at the gym entrance on your scheduled date.</p>
+            <p>1832 Oroquieta Rd, Santa Cruz, Manila, 1008 Metro Manila</p>
+            <p>fitxbrawl@gmail.com | Sun–Fri: 9AM-10PM | Saturday: 10AM-7PM</p>
+        </div>
 
-            <div class="action-buttons">
-                <button onclick="window.print()" class="btn btn-primary">🖨️ Print Receipt</button>
-                <a href="membership-status.php" class="btn btn-secondary">← Back to Dashboard</a>
-            </div>
+        <div class="action-buttons">
+            <button onclick="printReceipt()" class="btn btn-primary">
+                <i class="fas fa-print"></i> Print Receipt
+            </button>
+            <button onclick="downloadReceipt()" class="btn btn-primary">
+                <i class="fas fa-download"></i> Download
+            </button>
+            <a href="membership-status.php" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
         </div>
     </div>
 
@@ -422,7 +479,123 @@ $booking_date_formatted = date('F d, Y \a\t g:i A', strtotime($booking['booking_
         qr.addData(JSON.stringify(qrData));
         qr.make();
 
-        document.getElementById('qrcode').innerHTML = qr.createImgTag(6, 8);
+        // Store the QR code HTML for later use
+        const qrCodeHTML = qr.createImgTag(6, 8);
+        document.getElementById('qrcode').innerHTML = qrCodeHTML;
+
+        // Helper function to capture receipt as image
+        async function captureReceiptAsImage() {
+            const container = document.getElementById('receiptContainer');
+            const buttons = document.querySelector('.action-buttons');
+            const qrcodeElement = document.getElementById('qrcode');
+
+            // Store original QR code content
+            const originalQRContent = qrcodeElement.innerHTML;
+
+            // Temporarily hide buttons
+            buttons.style.display = 'none';
+
+            // Ensure QR code is present
+            if (!qrcodeElement.innerHTML || qrcodeElement.innerHTML.trim() === '') {
+                qrcodeElement.innerHTML = qrCodeHTML;
+            }
+
+            // Wait for QR code and all images to be fully rendered
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Capture the receipt
+            const canvas = await html2canvas(container, {
+                scale: 2,
+                backgroundColor: '#2d6768',
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                imageTimeout: 0,
+                onclone: function(clonedDoc) {
+                    // Ensure QR code is in the cloned document
+                    const clonedQR = clonedDoc.getElementById('qrcode');
+                    if (clonedQR && (!clonedQR.innerHTML || clonedQR.innerHTML.trim() === '')) {
+                        clonedQR.innerHTML = qrCodeHTML;
+                    }
+                }
+            });
+
+            // Restore buttons and QR code
+            buttons.style.display = 'flex';
+            qrcodeElement.innerHTML = originalQRContent;
+
+            return canvas;
+        }
+
+        // Print receipt function
+        async function printReceipt() {
+            try {
+                const canvas = await captureReceiptAsImage();
+                const imgData = canvas.toDataURL('image/png');
+
+                // Create a new window for printing
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Print Receipt</title>
+                        <style>
+                            @page {
+                                size: A4;
+                                margin: 0;
+                            }
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                min-height: 100vh;
+                                background: white;
+                            }
+                            img {
+                                max-width: 190mm;
+                                max-height: 277mm;
+                                width: auto;
+                                height: auto;
+                                display: block;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${imgData}" id="printableImage" onload="window.print(); window.onafterprint = function(){ window.close(); }">
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            } catch (error) {
+                console.error('Error printing receipt:', error);
+                alert('Failed to print receipt. Please try again.');
+            }
+        }
+
+        // Download receipt as image
+        async function downloadReceipt() {
+            try {
+                const canvas = await captureReceiptAsImage();
+
+                // Convert canvas to blob and download
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'receipt_<?php echo $receipt_id; ?>.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                });
+            } catch (error) {
+                console.error('Error downloading receipt:', error);
+                alert('Failed to download receipt. Please try again.');
+            }
+        }
     </script>
 </body>
 </html>

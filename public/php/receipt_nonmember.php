@@ -37,7 +37,7 @@ $booking_date = new DateTime($booking['booking_date']);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             background: var(--color-bg-dark);
@@ -58,11 +58,32 @@ $booking_date = new DateTime($booking['booking_date']);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
+        /* Force consistent width on mobile for capture */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-4);
+            }
+
+            .receipt-container {
+                min-width: 350px;
+                max-width: 800px;
+                width: 100%;
+            }
+        }
+
         .receipt-header {
             text-align: center;
             border-bottom: 3px dashed var(--color-accent);
             padding-bottom: var(--spacing-6);
             margin-bottom: var(--spacing-6);
+        }
+
+        .header-logo {
+            width: 150px;
+            height: auto;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
         }
 
         .receipt-logo {
@@ -80,12 +101,6 @@ $booking_date = new DateTime($booking['booking_date']);
             letter-spacing: 2px;
         }
 
-        .receipt-subtitle {
-            color: var(--color-white);
-            font-size: var(--font-size-lg);
-            margin: 0;
-        }
-
         .receipt-id {
             background: rgba(213, 186, 43, 0.2);
             color: var(--color-accent);
@@ -97,6 +112,7 @@ $booking_date = new DateTime($booking['booking_date']);
             text-align: center;
             letter-spacing: 2px;
             font-family: 'Courier New', monospace;
+            border: 4px solid var(--color-accent);
         }
 
         .receipt-body {
@@ -148,7 +164,6 @@ $booking_date = new DateTime($booking['booking_date']);
             background: rgba(213, 186, 43, 0.15);
             padding: var(--spacing-4);
             border-radius: var(--radius-md);
-            border-left: 4px solid var(--color-accent);
             margin: var(--spacing-4) 0;
         }
 
@@ -202,10 +217,11 @@ $booking_date = new DateTime($booking['booking_date']);
             gap: var(--spacing-4);
             justify-content: center;
             margin-top: var(--spacing-6);
+            flex-wrap: wrap;
         }
 
         .btn {
-            padding: var(--spacing-3) var(--spacing-8);
+            padding: var(--spacing-3) var(--spacing-6);
             border-radius: var(--radius-lg);
             font-weight: var(--font-weight-bold);
             font-size: var(--font-size-base);
@@ -214,8 +230,12 @@ $booking_date = new DateTime($booking['booking_date']);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: var(--spacing-2);
             border: none;
+            flex: 1;
+            min-width: 150px;
+            max-width: 250px;
         }
 
         .btn-primary {
@@ -225,7 +245,6 @@ $booking_date = new DateTime($booking['booking_date']);
 
         .btn-primary:hover {
             background: #ffe066;
-            transform: translateY(-2px);
         }
 
         .btn-secondary {
@@ -241,7 +260,7 @@ $booking_date = new DateTime($booking['booking_date']);
         .status-badge {
             display: inline-block;
             padding: var(--spacing-2) var(--spacing-4);
-            border-radius: var(--radius-full);
+            border-radius: var(--radius-lg);
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-bold);
             text-transform: uppercase;
@@ -253,18 +272,33 @@ $booking_date = new DateTime($booking['booking_date']);
         }
 
         @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
             body {
-                background: white;
+                margin: 0;
                 padding: 0;
+                background: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
             }
 
-            .receipt-container {
-                border: 2px solid #000;
-                box-shadow: none;
+            #printableImage {
+                max-width: 190mm;
+                max-height: 277mm;
+                width: auto;
+                height: auto;
+                display: block;
+                margin: 0 auto;
             }
 
+            .receipt-container,
             .action-buttons {
-                display: none;
+                display: none !important;
             }
         }
 
@@ -274,11 +308,13 @@ $booking_date = new DateTime($booking['booking_date']);
             }
 
             .action-buttons {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
             }
 
             .btn {
-                width: 100%;
+                flex: 1 1 100%;
+                max-width: 100%;
                 justify-content: center;
             }
         }
@@ -289,7 +325,7 @@ $booking_date = new DateTime($booking['booking_date']);
         <div class="receipt-header">
             <img src="../../images/fnb-logo-yellow.svg" alt="FitXBrawl Logo" class="receipt-logo">
             <h1>Booking Receipt</h1>
-            <p class="receipt-subtitle">Fit X Brawl Gym</p>
+            <img src="../../images/header-title.svg" alt="Fit and Brawl Gym Logo" class="header-logo">
         </div>
 
         <div class="receipt-id">
@@ -351,7 +387,7 @@ $booking_date = new DateTime($booking['booking_date']);
         </div>
 
         <div class="action-buttons">
-            <button onclick="window.print()" class="btn btn-primary">
+            <button onclick="printReceipt()" class="btn btn-primary">
                 <i class="fas fa-print"></i> Print Receipt
             </button>
             <button onclick="downloadReceipt()" class="btn btn-primary">
@@ -363,6 +399,7 @@ $booking_date = new DateTime($booking['booking_date']);
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script>
         // Generate QR Code
         const qrData = JSON.stringify({
@@ -370,21 +407,130 @@ $booking_date = new DateTime($booking['booking_date']);
             name: '<?php echo addslashes($booking['customer_name']); ?>',
             service: '<?php echo addslashes($booking['service_name']); ?>',
             date: '<?php echo $booking['service_date']; ?>',
-            price: <?php echo $booking['price']; ?>
+            price: <?php echo $booking['price']; ?>,
+            type: 'non_member'
         });
 
-        new QRCode(document.getElementById("qrcode"), {
-            text: qrData,
-            width: 200,
-            height: 200,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+        const qr = qrcode(0, 'M');
+        qr.addData(qrData);
+        qr.make();
+
+        // Store the QR code HTML for later use
+        const qrCodeHTML = qr.createImgTag(6, 8);
+        document.getElementById("qrcode").innerHTML = qrCodeHTML;
+
+        // Helper function to capture receipt as image
+        async function captureReceiptAsImage() {
+            const container = document.getElementById('receiptContainer');
+            const buttons = document.querySelector('.action-buttons');
+            const qrcodeElement = document.getElementById('qrcode');
+
+            // Store original QR code content
+            const originalQRContent = qrcodeElement.innerHTML;
+
+            // Temporarily hide buttons
+            buttons.style.display = 'none';
+
+            // Ensure QR code is present
+            if (!qrcodeElement.innerHTML || qrcodeElement.innerHTML.trim() === '') {
+                qrcodeElement.innerHTML = qrCodeHTML;
+            }
+
+            // Wait for QR code and all images to be fully rendered
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Capture the receipt
+            const canvas = await html2canvas(container, {
+                scale: 2,
+                backgroundColor: '#2d6768',
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                imageTimeout: 0,
+                onclone: function(clonedDoc) {
+                    // Ensure QR code is in the cloned document
+                    const clonedQR = clonedDoc.getElementById('qrcode');
+                    if (clonedQR && (!clonedQR.innerHTML || clonedQR.innerHTML.trim() === '')) {
+                        clonedQR.innerHTML = qrCodeHTML;
+                    }
+                }
+            });
+
+            // Restore buttons and QR code
+            buttons.style.display = 'flex';
+            qrcodeElement.innerHTML = originalQRContent;
+
+            return canvas;
+        }
+
+        // Print receipt function
+        async function printReceipt() {
+            try {
+                const canvas = await captureReceiptAsImage();
+                const imgData = canvas.toDataURL('image/png');
+
+                // Create a new window for printing
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Print Receipt</title>
+                        <style>
+                            @page {
+                                size: A4;
+                                margin: 0;
+                            }
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                min-height: 100vh;
+                                background: white;
+                            }
+                            img {
+                                max-width: 190mm;
+                                max-height: 277mm;
+                                width: auto;
+                                height: auto;
+                                display: block;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${imgData}" id="printableImage" onload="window.print(); window.onafterprint = function(){ window.close(); }">
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            } catch (error) {
+                console.error('Error printing receipt:', error);
+                alert('Failed to print receipt. Please try again.');
+            }
+        }
 
         // Download receipt as image
-        function downloadReceipt() {
-            window.print();
+        async function downloadReceipt() {
+            try {
+                const canvas = await captureReceiptAsImage();
+
+                // Convert canvas to blob and download
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'receipt_<?php echo $receipt_id; ?>.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                });
+            } catch (error) {
+                console.error('Error downloading receipt:', error);
+                alert('Failed to download receipt. Please try again.');
+            }
         }
     </script>
 </body>

@@ -1,7 +1,7 @@
 .membership-main {
-    min-height: 100vh;
+    min-height: 0;
     background: url('../../../images/subscription-bg.png') no-repeat center / auto;
-    background-size:220%;
+    background-size:cover;
     position: relative;
     padding-bottom: var(--spacing-16);
     height: auto;
@@ -432,99 +432,83 @@
     letter-spacing: 2px;
 }
 
-.pricing-table-container {
+/* Services Grid Layout */
+.services-grid-container {
     display: block;
 }
 
-.pricing-table-container.active {
+.services-grid-container.active {
     display: block;
 }
 
-.pricing-table-scroll {
-    max-height: 400px;
-    overflow-y: auto;
-    overflow-x: hidden;
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-6);
+    background: var(--color-teal-medium);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-    background: var(--color-teal-medium);
-    padding: 0;
+    padding: var(--spacing-8);
     margin-bottom: var(--spacing-8);
-    position: relative;
 }
 
-.pricing-table-scroll::-webkit-scrollbar {
-    width: 10px;
-}
-
-.pricing-table-scroll::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: var(--radius-lg);
-}
-
-.pricing-table-scroll::-webkit-scrollbar-thumb {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-}
-
-.pricing-table {
-    width: 100%;
-    border-collapse: collapse;
-    position: relative;
-}
-
-.pricing-table thead {
-    position: sticky;
-    top: 0;
+/* Service Card */
+.service-card {
     background: var(--color-primary);
-    z-index: 10;
-    box-shadow: var(--shadow-sm);
-}
-
-.pricing-table thead::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: var(--color-accent);
-}
-
-.pricing-table th {
+    border-radius: var(--radius-lg);
     padding: var(--spacing-6);
-    text-align: left;
-    color: var(--color-accent);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-lg);
-    border-bottom: 2px solid var(--color-accent);
-    background: var(--color-primary);
-    position: relative;
-}
-
-.pricing-table tbody {
-    background: var(--color-teal-medium);
-}
-
-.pricing-table td {
-    padding: var(--spacing-6);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--color-text-light);
-    background: transparent;
-}
-
-.pricing-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    transition: var(--transition-base);
     cursor: pointer;
-    transition: var(--transition-fast);
+    border: 2px solid transparent;
 }
 
-.pricing-table tbody tr:hover {
-    background: rgba(213, 186, 43, 0.2);
-} 
+.service-card:hover {
+    box-shadow: 0 10px 30px rgba(213, 186, 43, 0.3);
+}
 
-.price-cell {
-    color: var(--color-accent);
+.service-price {
+    font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-xl);
+    color: var(--color-accent);
+    font-family: var(--font-family-primary);
 }
+
+.service-name {
+    font-size: var(--font-size-3xl);
+    color: var(--color-white);
+    font-family: var(--font-family-display);
+    letter-spacing: 1.5px;
+}
+
+.service-benefits {
+    font-size: var(--font-size-base);
+    color: var(--color-text-light);
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+.service-select-btn {
+    background: var(--color-secondary);
+    border: 2px solid var(--color-secondary);
+    color: var(--color-white);
+    padding: var(--spacing-3) var(--spacing-6);
+    font-size: var(--font-size-2xl);
+    letter-spacing: 1.5px;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-family: var(--font-family-display);
+    margin-top: auto;
+}
+
+.service-select-btn:hover {
+    background: var(--color-accent);
+    color: var(--color-primary);
+    border-color: var(--color-accent);
+}
+
 
 /* Service Selection Modal */
 .service-modal {
@@ -679,7 +663,6 @@
 
 .purchase-btn:hover {
     background: var(--color-accent-hover);
-    transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(213, 186, 43, 0.4);
 }
 
@@ -690,7 +673,6 @@
 
 .inquire-btn:hover {
     background: var(--color-primary);
-    transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(74, 124, 135, 0.4);
 }
 
@@ -743,7 +725,6 @@
 .contact-btn:hover {
     background: var(--color-accent);
     color: var(--color-primary);
-    transform: translateY(-3px);
     box-shadow: 0 10px 35px rgba(213, 186, 43, 0.6);
 }
 
@@ -911,6 +892,33 @@
         padding: var(--spacing-4) var(--spacing-3);
     }
 
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+        padding: var(--spacing-6);
+    }
+
+    .service-card {
+        padding: var(--spacing-5);
+    }
+
+    .service-price {
+        font-size: var(--font-size-2xl);
+    }
+
+    .service-name {
+        font-size: var(--font-size-lg);
+    }
+
+    .service-benefits {
+        font-size: var(--font-size-sm);
+    }
+
+    .service-select-btn {
+        font-size: var(--font-size-base);
+        padding: var(--spacing-2) var(--spacing-4);
+    }
+
     .pricing-table-scroll {
         max-height: 300px;
     }
@@ -960,6 +968,27 @@
 
 /* Extra small screens adjustments */
 @media (max-width: 480px) {
+    .services-grid {
+        padding: var(--spacing-4);
+    }
+
+    .service-card {
+        padding: var(--spacing-4);
+    }
+
+    .service-price {
+        font-size: var(--font-size-xl);
+    }
+
+    .service-name {
+        font-size: var(--font-size-base);
+    }
+
+    .service-benefits {
+        font-size: var(--font-size-xs);
+        line-height: var(--line-height-tight);
+    }
+
     .pricing-table td:nth-child(3) {
         font-size: var(--font-size-xs);
         line-height: var(--line-height-tight);
