@@ -49,21 +49,21 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fas fa-comment-dots"></i>
             <span>Feedback</span>
         </a>
+        <a href="contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
+            <i class="fas fa-address-book"></i>
+            <span>Contacts</span>
+        </a>
         <a href="activity-log.php" class="<?= $current_page == 'activity-log.php' ? 'active' : '' ?>">
             <i class="fas fa-history"></i>
             <span>Activity Log</span>
-        </a>
-        <a href="system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
-            <i class="fas fa-server"></i>
-            <span>System Status</span>
         </a>
         <a href="announcements.php" class="<?= $current_page == 'announcements.php' ? 'active' : '' ?>">
             <i class="fas fa-bullhorn"></i>
             <span>Announcements</span>
         </a>
-        <a href="contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
-            <i class="fas fa-address-book"></i>
-            <span>Contacts</span>
+        <a href="system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
+            <i class="fas fa-server"></i>
+            <span>System Status</span>
         </a>
     </nav>
     <div class="sidebar-footer">
