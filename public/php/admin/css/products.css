@@ -8,45 +8,45 @@
 
 .filter-dropdown {
     padding: 10px 40px 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #fff;
-    font-size: 14px;
+    border: 1px solid var(--admin-input-border);
+    border-radius: var(--admin-input-radius);
+    background: var(--admin-bg-white);
+    font-size: var(--admin-font-size-md);
     cursor: pointer;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-image: var(--admin-select-arrow);
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 16px;
-    color: #333;
-    font-weight: 500;
-    transition: all 0.2s;
+    color: var(--admin-text-dark);
+    font-weight: var(--admin-font-weight-medium);
+    transition: var(--admin-transition-all);
 }
 
 .filter-dropdown:hover {
-    border-color: #1a1d2e;
-    background-color: #fafbfc;
+    border-color: var(--admin-input-border-hover);
+    background-color: var(--admin-bg-light);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--admin-shadow-hover);
 }
 
 .filter-dropdown:focus {
     outline: none;
-    border-color: #1a1d2e;
-    box-shadow: 0 0 0 3px rgba(26, 29, 46, 0.1);
+    border-color: var(--admin-input-border-hover);
+    box-shadow: var(--admin-shadow-focus);
 }
 
 .filter-dropdown option {
     padding: 10px;
-    font-size: 14px;
-    color: #333;
-    background: #fff;
+    font-size: var(--admin-font-size-md);
+    color: var(--admin-text-dark);
+    background: var(--admin-bg-white);
 }
 
 .filter-dropdown option:first-child {
-    color: #999;
+    color: var(--admin-text-light);
     font-style: italic;
 }
 
@@ -63,40 +63,40 @@
 /* =========================== */
 
 .table-container {
-    background: #fff;
-    border-radius: 12px;
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-radius-xl);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--admin-shadow-md);
 }
 
 .products-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: var(--admin-font-size-md);
 }
 
 .products-table thead {
-    background: #f9fafb;
-    border-bottom: 2px solid #e6eef0;
+    background: var(--admin-table-header-bg);
+    border-bottom: 2px solid var(--admin-table-border);
 }
 
 .products-table th {
     padding: 14px 16px;
     text-align: left;
-    font-weight: 700;
-    color: #555;
-    font-size: 13px;
+    font-weight: var(--admin-font-weight-bold);
+    color: var(--admin-text-secondary);
+    font-size: var(--admin-font-size-base);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .products-table tbody tr {
-    border-bottom: 1px solid #f0f0f0;
-    transition: background 0.2s;
+    border-bottom: 1px solid var(--admin-table-row-border);
+    transition: background var(--admin-transition-fast);
 }
 
 .products-table tbody tr:hover {
-    background: #fafbfc;
+    background: var(--admin-table-row-hover);
 }
 
 .products-table td {

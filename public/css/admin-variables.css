@@ -1,0 +1,346 @@
+/* ========================================
+   FITXBRAWL ADMIN PANEL CSS VARIABLES
+   ======================================== */
+
+/* Note: This file contains admin-specific variables.
+   It does NOT import global.css to avoid conflicts.
+   Admin pages should import this file directly. */
+
+/* ========================================
+   ADMIN-SPECIFIC CUSTOM PROPERTIES
+   ======================================== */
+
+:root {
+    /* ===========================
+     ADMIN BRAND COLORS
+     =========================== */
+
+    /* Primary Admin Colors */
+    --admin-color-primary: #1a1d2e;
+    /* Dark navy - main admin color */
+    --admin-color-primary-hover: #252938;
+    /* Lighter navy for hover */
+    --admin-color-accent: #00d9ff;
+    /* Cyan - admin accent */
+    --admin-color-accent-hover: #00b8d4;
+    /* Darker cyan for hover */
+
+    /* Admin Background Colors */
+    --admin-bg-main: #f7f8fa;
+    /* Main background */
+    --admin-bg-white: #ffffff;
+    /* White background */
+    --admin-bg-light: #fafbfc;
+    /* Light hover background */
+    --admin-bg-dark: #1a1d2e;
+    /* Dark background */
+    --admin-bg-sidebar: #1a1d2e;
+    /* Sidebar background */
+
+    /* Admin Text Colors */
+    --admin-text-primary: #222222;
+    /* Primary text */
+    --admin-text-secondary: #555555;
+    /* Secondary text */
+    --admin-text-muted: #666666;
+    /* Muted text */
+    --admin-text-light: #999999;
+    /* Light text */
+    --admin-text-lighter: #aaaaaa;
+    /* Lighter text */
+    --admin-text-dark: #333333;
+    /* Dark text */
+    --admin-text-white: #ffffff;
+    /* White text */
+
+    /* ===========================
+     ADMIN STATUS COLORS
+     =========================== */
+
+    /* Status Gradients */
+    --admin-gradient-blue: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --admin-gradient-green: linear-gradient(135deg, #48c774 0%, #38a169 100%);
+    --admin-gradient-red: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    --admin-gradient-orange: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    --admin-gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --admin-gradient-teal: linear-gradient(135deg, #4fd1c5 0%, #38b2ac 100%);
+
+    /* Status Colors - Solid */
+    --admin-status-success: #28a745;
+    --admin-status-warning: #ffc107;
+    --admin-status-danger: #dc3545;
+    --admin-status-info: #17a2b8;
+    --admin-status-pending: #ffc107;
+    --admin-status-completed: #48c774;
+    --admin-status-cancelled: #e74c3c;
+    --admin-status-active: #48c774;
+    --admin-status-inactive: #666666;
+
+    /* Status Background Colors */
+    --admin-status-bg-success: #d4edda;
+    --admin-status-bg-warning: #fff3cd;
+    --admin-status-bg-danger: #f8d7da;
+    --admin-status-bg-info: #e8f4f8;
+
+    /* Status Icon Backgrounds */
+    --admin-icon-bg-blue: #e8f4f8;
+    --admin-icon-bg-green: #d4edda;
+    --admin-icon-bg-yellow: #fff3cd;
+    --admin-icon-bg-red: #f8d7da;
+    --admin-icon-color-blue: #0066cc;
+    --admin-icon-color-green: #155724;
+    --admin-icon-color-yellow: #856404;
+    --admin-icon-color-red: #721c24;
+
+    /* ===========================
+     ADMIN BUTTON COLORS
+     =========================== */
+
+    --admin-btn-primary-bg: #1a1d2e;
+    --admin-btn-primary-color: #ffffff;
+    --admin-btn-primary-hover: #252938;
+
+    --admin-btn-secondary-bg: #f7f8fa;
+    --admin-btn-secondary-color: #666666;
+    --admin-btn-secondary-hover: #e8eaed;
+
+    --admin-btn-danger-bg: #dc3545;
+    --admin-btn-danger-color: #ffffff;
+    --admin-btn-danger-hover: #c82333;
+
+    --admin-btn-success-bg: #28a745;
+    --admin-btn-success-color: #ffffff;
+    --admin-btn-success-hover: #218838;
+
+    --admin-btn-logout-bg: #e74c3c;
+    --admin-btn-logout-hover: #c0392b;
+
+    /* ===========================
+     ADMIN BORDERS & DIVIDERS
+     =========================== */
+
+    --admin-border-color: #dddddd;
+    --admin-border-light: #e6eef0;
+    --admin-border-lighter: #f0f0f0;
+    --admin-border-dark: #cccccc;
+    --admin-border-sidebar: rgba(255, 255, 255, 0.1);
+    --admin-border-focus: #667eea;
+
+    /* ===========================
+     ADMIN SPACING
+     =========================== */
+
+    /* Sidebar Specific */
+    --admin-sidebar-width: 240px;
+    --admin-sidebar-width-mobile: 250px;
+    --admin-sidebar-padding: 20px;
+
+    /* Page Spacing */
+    --admin-page-padding: 30px;
+    --admin-page-padding-mobile: 20px;
+
+    /* Component Spacing */
+    --admin-card-padding: 24px;
+    --admin-card-padding-sm: 20px;
+    --admin-section-margin: 30px;
+    --admin-section-margin-sm: 24px;
+    --admin-gap-lg: 20px;
+    --admin-gap-md: 16px;
+    --admin-gap-sm: 12px;
+    --admin-gap-xs: 8px;
+
+    /* ===========================
+     ADMIN BORDER RADIUS
+     =========================== */
+
+    --admin-radius-sm: 6px;
+    --admin-radius-md: 8px;
+    --admin-radius-lg: 10px;
+    --admin-radius-xl: 12px;
+    --admin-radius-badge: 12px;
+    --admin-radius-full: 50%;
+
+    /* ===========================
+     ADMIN SHADOWS
+     =========================== */
+
+    --admin-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+    --admin-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --admin-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --admin-shadow-xl: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --admin-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --admin-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --admin-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --admin-shadow-focus: 0 0 0 3px rgba(26, 29, 46, 0.1);
+
+    /* ===========================
+     ADMIN TYPOGRAPHY
+     =========================== */
+
+    /* Font Families */
+    --admin-font-family: 'Segoe UI', Arial, sans-serif;
+
+    /* Font Sizes - Specific to Admin */
+    --admin-font-size-xs: 11px;
+    --admin-font-size-sm: 12px;
+    --admin-font-size-base: 13px;
+    --admin-font-size-md: 14px;
+    --admin-font-size-lg: 15px;
+    --admin-font-size-xl: 18px;
+    --admin-font-size-2xl: 20px;
+    --admin-font-size-3xl: 28px;
+    --admin-font-size-4xl: 32px;
+    --admin-font-size-5xl: 36px;
+
+    /* Font Weights */
+    --admin-font-weight-normal: 400;
+    --admin-font-weight-medium: 500;
+    --admin-font-weight-semibold: 600;
+    --admin-font-weight-bold: 700;
+
+    /* ===========================
+     ADMIN TRANSITIONS
+     =========================== */
+
+    --admin-transition-fast: 0.2s ease;
+    --admin-transition-base: 0.3s ease;
+    --admin-transition-all: all 0.2s ease;
+
+    /* ===========================
+     ADMIN Z-INDEX LAYERS
+     =========================== */
+
+    --admin-z-sidebar: 1000;
+    --admin-z-dropdown: 1010;
+    --admin-z-modal-overlay: 9999;
+    --admin-z-modal: 10000;
+
+    /* ===========================
+     ADMIN TABLE COLORS
+     =========================== */
+
+    --admin-table-header-bg: #f9fafb;
+    --admin-table-border: #e6eef0;
+    --admin-table-row-border: #f0f0f0;
+    --admin-table-row-hover: #fafbfc;
+
+    /* ===========================
+     ADMIN FORM ELEMENTS
+     =========================== */
+
+    --admin-input-bg: #ffffff;
+    --admin-input-border: #dddddd;
+    --admin-input-border-hover: #1a1d2e;
+    --admin-input-border-focus: #667eea;
+    --admin-input-padding: 10px 14px;
+    --admin-input-padding-with-icon: 10px 14px 10px 40px;
+    --admin-input-radius: 8px;
+
+    /* Select Dropdown Arrow SVG */
+    --admin-select-arrow: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+
+    /* ===========================
+     ADMIN BADGE SIZES
+     =========================== */
+
+    --admin-badge-padding: 4px 10px;
+    --admin-badge-padding-sm: 3px 8px;
+    --admin-badge-font-size: 12px;
+    --admin-badge-font-size-sm: 11px;
+
+    /* ===========================
+     ADMIN STAT CARD
+     =========================== */
+
+    --admin-stat-icon-size: 56px;
+    --admin-stat-icon-size-sm: 32px;
+    --admin-stat-icon-font-size: 24px;
+    --admin-stat-icon-font-size-sm: 16px;
+    --admin-stat-number-size: 28px;
+    --admin-stat-number-size-lg: 36px;
+
+    /* ===========================
+     ADMIN SCROLLBAR
+     =========================== */
+
+    --admin-scrollbar-width: 6px;
+    --admin-scrollbar-track: rgba(255, 255, 255, 0.05);
+    --admin-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --admin-scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+
+    /* ===========================
+     ADMIN BREAKPOINTS
+     =========================== */
+
+    --admin-breakpoint-mobile: 768px;
+    --admin-breakpoint-tablet: 1024px;
+    --admin-breakpoint-desktop: 1200px;
+}
+
+/* ========================================
+   ADMIN UTILITY CLASSES
+   ======================================== */
+
+/* Text Colors */
+.admin-text-primary {
+    color: var(--admin-text-primary) !important;
+}
+
+.admin-text-secondary {
+    color: var(--admin-text-secondary) !important;
+}
+
+.admin-text-muted {
+    color: var(--admin-text-muted) !important;
+}
+
+.admin-text-white {
+    color: var(--admin-text-white) !important;
+}
+
+.admin-text-accent {
+    color: var(--admin-color-accent) !important;
+}
+
+/* Background Colors */
+.admin-bg-white {
+    background-color: var(--admin-bg-white) !important;
+}
+
+.admin-bg-main {
+    background-color: var(--admin-bg-main) !important;
+}
+
+.admin-bg-dark {
+    background-color: var(--admin-bg-dark) !important;
+}
+
+/* Spacing Utilities */
+.admin-mb-sm {
+    margin-bottom: var(--admin-gap-sm) !important;
+}
+
+.admin-mb-md {
+    margin-bottom: var(--admin-gap-md) !important;
+}
+
+.admin-mb-lg {
+    margin-bottom: var(--admin-gap-lg) !important;
+}
+
+.admin-mb-section {
+    margin-bottom: var(--admin-section-margin) !important;
+}
+
+/* Shadow Utilities */
+.admin-shadow-sm {
+    box-shadow: var(--admin-shadow-sm) !important;
+}
+
+.admin-shadow-md {
+    box-shadow: var(--admin-shadow-md) !important;
+}
+
+.admin-shadow-lg {
+    box-shadow: var(--admin-shadow-lg) !important;
+}

@@ -5,61 +5,61 @@
 /* Tabs (Plan Filters) */
 .tabs {
     display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
+    gap: var(--admin-gap-xs);
+    margin-bottom: var(--admin-section-margin-sm);
     overflow-x: auto;
     padding-bottom: 4px;
 }
 
 .tab {
     padding: 10px 18px;
-    background: #f7f8fa;
+    background: var(--admin-bg-main);
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #666;
+    border-radius: var(--admin-input-radius);
+    font-size: var(--admin-font-size-md);
+    font-weight: var(--admin-font-weight-semibold);
+    color: var(--admin-text-muted);
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s;
+    transition: var(--admin-transition-all);
 }
 
 .tab:hover {
-    background: #e8eaed;
+    background: var(--admin-btn-secondary-hover);
 }
 
 .tab.active {
-    background: #1a1d2e;
-    color: #fff;
+    background: var(--admin-bg-dark);
+    color: var(--admin-text-white);
 }
 
 /* Stats Summary */
 .stats-summary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    gap: var(--admin-gap-xs);
+    padding: 10px var(--admin-gap-lg);
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-input-radius);
+    box-shadow: var(--admin-shadow-md);
 }
 
 .stat-label {
-    font-size: 14px;
-    color: #666;
+    font-size: var(--admin-font-size-md);
+    color: var(--admin-text-muted);
 }
 
 .stats-summary strong {
-    font-size: 20px;
-    color: #1a1d2e;
+    font-size: var(--admin-font-size-2xl);
+    color: var(--admin-bg-dark);
 }
 
 /* Members Container */
 .members-container {
-    background: #fff;
-    border-radius: 12px;
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-radius-xl);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--admin-shadow-md);
 }
 
 .members-list {
@@ -73,31 +73,31 @@
     align-items: center;
     justify-content: center;
     padding: 80px 20px;
-    color: #999;
+    color: var(--admin-text-light);
 }
 
 .loading-state i {
     font-size: 48px;
-    margin-bottom: 16px;
+    margin-bottom: var(--admin-gap-md);
 }
 
 /* Empty State */
 .empty-state {
     text-align: center;
     padding: 80px 20px;
-    color: #999;
+    color: var(--admin-text-light);
 }
 
 .empty-state i {
     font-size: 64px;
     color: #ddd;
-    margin-bottom: 16px;
+    margin-bottom: var(--admin-gap-md);
 }
 
 .empty-state h3 {
-    font-size: 20px;
-    color: #666;
-    margin-bottom: 8px;
+    font-size: var(--admin-font-size-2xl);
+    color: var(--admin-text-muted);
+    margin-bottom: var(--admin-gap-xs);
 }
 
 /* Member Row */
