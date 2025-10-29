@@ -55,35 +55,66 @@ if ($membershipRequest && $membershipRequest['date_submitted']) {
 <body>
     <main>
         <?php if ($membershipRequest): ?>
-            <?php if ($membershipRequest['request_status'] === 'pending'): ?>
+            <?php
+                $planName = htmlspecialchars($membershipRequest['plan_name']);
+                $status = $membershipRequest['request_status'];
+                $formattedDate = date('F d, Y', strtotime($membershipRequest['date_submitted']));
+                $isUpgrade = !empty($membershipRequest['source_id']); // means it's an upgrade from previous membership
+            ?>
+
+            <?php if ($status === 'pending'): ?>
                 <div class="status-message pending">
-                    <h2>Payment Submitted</h2>
-                    <p>Thank you for submitting your payment for the
-                        <strong><?= htmlspecialchars($membershipRequest['plan_name']) ?></strong> plan.
+                    <h2><?= $isUpgrade ? 'Upgrade Request Submitted' : 'Payment Submitted' ?></h2>
+                    <p>
+                        Thank you for submitting your <?= $isUpgrade ? 'upgrade' : 'payment' ?> for the
+                        <strong><?= $planName ?></strong> plan.
                     </p>
-                    <p>Your request is currently <strong>pending approval</strong>. Please wait for our admin to approve it.</p>
+                    <p>
+                        Your request is currently <strong>pending admin approval</strong>.
+                        Please wait for confirmation before using your <?= $isUpgrade ? 'upgraded' : 'new' ?> plan.
+                    </p>
                     <p class="date-info">
                         <i class="fa-regular fa-calendar"></i>
                         Submitted on <?= $formattedDate ?>
                     </p>
                 </div>
-            <?php elseif ($membershipRequest['request_status'] === 'rejected'): ?>
+
+            <?php elseif ($status === 'rejected'): ?>
                 <div class="status-message rejected">
-                    <h2>Payment Rejected</h2>
-                    <p>Your payment for the <strong><?= htmlspecialchars($membershipRequest['plan_name']) ?></strong> plan was
-                        rejected.</p>
-                    <p>Please contact our support to resolve the issue or submit a new payment.</p>
+                    <h2><?= $isUpgrade ? 'Upgrade Request Rejected' : 'Payment Rejected' ?></h2>
+                    <p>
+                        Your <?= $isUpgrade ? 'upgrade request' : 'payment' ?> for the
+                        <strong><?= $planName ?></strong> plan was <strong>rejected</strong>.
+                    </p>
+                    <p>Please contact support or submit a new <?= $isUpgrade ? 'upgrade request' : 'payment' ?>.</p>
                     <p class="date-info">
                         <i class="fa-regular fa-calendar"></i>
                         Submitted on <?= $formattedDate ?>
+                    </p>
+                </div>
+
+            <?php elseif ($status === 'approved'): ?>
+                <div class="status-message approved">
+                    <h2><?= $isUpgrade ? 'Upgrade Approved!' : 'Membership Approved!' ?></h2>
+                    <p>
+                        Your <?= $isUpgrade ? 'upgrade request' : 'membership payment' ?> for the
+                        <strong><?= $planName ?></strong> plan has been approved.
+                    </p>
+                    <p>Enjoy your <?= $isUpgrade ? 'new plan benefits' : 'membership privileges' ?>!</p>
+                    <p class="date-info">
+                        <i class="fa-regular fa-calendar"></i>
+                        Approved on <?= date('F d, Y', strtotime($membershipRequest['date_approved'] ?? 'now')) ?>
                     </p>
                 </div>
             <?php endif; ?>
+
         <?php else: ?>
             <div class="status-message none">
                 <h2>No Pending Requests</h2>
-                <p>You currently have no pending membership requests. <a href="membership.php">Select a plan</a> to become a
-                    member.</p>
+                <p>
+                    You currently have no active or pending membership requests.
+                    <a href="membership.php">Select a plan</a> to become a member or upgrade your plan.
+                </p>
             </div>
         <?php endif; ?>
 
@@ -91,7 +122,9 @@ if ($membershipRequest && $membershipRequest['date_submitted']) {
             <a href="loggedin-index.php" class="btn-home">
                 <i class="fa-solid fa-house"></i> Return to Home
             </a>
-            <a href="membership.php" class="btn-secondary">View Plans</a>
+            <a href="membership.php" class="btn-secondary">
+                <?= $membershipRequest ? 'Change Plan' : 'View Plans' ?>
+            </a>
         </div>
     </main>
 </body>
