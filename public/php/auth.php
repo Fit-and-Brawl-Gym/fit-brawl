@@ -4,48 +4,53 @@ require_once '../../includes/db_connect.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-function validatePassword($password) {
+function validatePassword($password)
+{
     $errors = [];
-    
+
     if (strlen($password) < 8) {
         $errors[] = "Password must be at least 8 characters long";
     }
-    
-    // c-check nito kung may uppercase letter - dryy
+
     if (!preg_match('/[A-Z]/', $password)) {
         $errors[] = "Password must contain at least one uppercase letter";
     }
-    
-    // ito naman c-check nito kung may lowercase letter - dryy
+
     if (!preg_match('/[a-z]/', $password)) {
         $errors[] = "Password must contain at least one lowercase letter";
     }
-    
-    // c-check for numbers - dryy
+
     if (!preg_match('/[0-9]/', $password)) {
         $errors[] = "Password must contain at least one number";
     }
-    
-    // c-check for special characters - dryy
-    if (!preg_match('/[!@#$%^&*]/', $password)) {
-        $errors[] = "Password must contain at least one special character (!@#$%^&*)";
+
+    if (!preg_match('/[?!@#$%^&*]/', $password)) {
+        $errors[] = "Password must contain at least one special character (?!@#$%^&*)";
     }
-    
+
     return $errors;
 }
 
 // password strength (weak, medium, strong)
-function getPasswordStrength($password) {
+function getPasswordStrength($password)
+{
     $strength = 0;
-    
-    if (strlen($password) >= 8) $strength++;
-    if (preg_match('/[A-Z]/', $password)) $strength++;
-    if (preg_match('/[a-z]/', $password)) $strength++;
-    if (preg_match('/[0-9]/', $password)) $strength++;
-    if (preg_match('/[!@#$%^&*]/', $password)) $strength++;
-    
-    if ($strength <= 2) return 'weak';
-    if ($strength <= 3) return 'medium';
+
+    if (strlen($password) >= 8)
+        $strength++;
+    if (preg_match('/[A-Z]/', $password))
+        $strength++;
+    if (preg_match('/[a-z]/', $password))
+        $strength++;
+    if (preg_match('/[0-9]/', $password))
+        $strength++;
+    if (preg_match('/[?!@#$%^&*]/', $password))
+        $strength++;
+
+    if ($strength <= 2)
+        return 'weak';
+    if ($strength <= 3)
+        return 'medium';
     return 'strong';
 }
 
@@ -69,9 +74,7 @@ if ($method === 'POST') {
         } else {
             echo json_encode(["status" => "error", "message" => "Invalid login"]);
         }
-    }
-
-    elseif (isset($data['action']) && $data['action'] === 'signup') {
+    } elseif (isset($data['action']) && $data['action'] === 'signup') {
         // SIGNUP
         $username = $data['username'];
         $email = $data['email'];
