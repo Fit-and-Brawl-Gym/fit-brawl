@@ -52,7 +52,7 @@
 .stat-info h3 {
     font-size: var(--admin-font-size-3xl);
     margin: 0 0 4px 0;
-    color: var(--admin-text-primary);
+    color: #222;
     font-weight: var(--admin-font-weight-bold);
 }
 
@@ -135,13 +135,13 @@
     padding: 16px;
     text-align: left;
     font-weight: 600;
-    color: #333;
+    color: #222;
     font-size: 14px;
     white-space: nowrap;
 }
 
 .data-table th a {
-    color: #333;
+    color: #222;
     text-decoration: none;
     display: flex;
     align-items: center;

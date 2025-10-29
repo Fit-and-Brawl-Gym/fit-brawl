@@ -85,7 +85,7 @@
 .stat-info h3 {
     font-size: var(--admin-font-size-3xl);
     margin: 0 0 4px 0;
-    color: var(--admin-text-primary);
+    color: #222;
     font-weight: var(--admin-font-weight-bold);
 }
 
@@ -251,7 +251,7 @@
     padding: 16px;
     text-align: left;
     font-weight: 600;
-    color: #333;
+    color: #222;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -364,7 +364,7 @@
     text-align: left;
     cursor: pointer;
     font-size: var(--admin-font-size-md);
-    color: var(--admin-text-primary);
+    color: #222;
     transition: background var(--admin-transition-fast);
 }
 
@@ -375,7 +375,7 @@
 .time-info {
     font-family: var(--admin-font-family);
     font-weight: var(--admin-font-weight-semibold);
-    color: var(--admin-text-primary);
+    color: #222;
     line-height: 1.6;
     font-size: var(--admin-font-size-base);
 }
@@ -485,7 +485,7 @@
 
 .calendar-day-count {
     font-size: 0.75rem;
-    color: #667eea;
+    color: var(--admin-color-accent);
     margin-top: auto;
 }
 
@@ -535,12 +535,12 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--admin-gap-lg);
-    border-bottom: 1px solid var(--admin-border-light);
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .day-bookings-header h3 {
     margin: 0;
-    color: var(--admin-text-primary);
+    color: #222;
     font-size: var(--admin-font-lg);
 }
 
@@ -561,8 +561,8 @@
 }
 
 .close-modal:hover {
-    background: var(--admin-bg-hover);
-    color: var(--admin-text-primary);
+    background: #f7f8fa;
+    color: #222;
 }
 
 .day-bookings-list {
@@ -598,7 +598,7 @@
 .booking-client {
     font-size: var(--admin-font-md);
     margin-bottom: 4px;
-    color: var(--admin-text-primary);
+    color: #222;
 }
 
 .booking-info {

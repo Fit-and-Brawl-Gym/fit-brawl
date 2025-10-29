@@ -12,7 +12,7 @@
 
 .subscriptions-section h2 {
     font-size: var(--admin-font-size-2xl);
-    color: var(--admin-text-primary);
+    color: #222;
     margin-bottom: var(--admin-gap-sm);
 }
 
@@ -184,7 +184,7 @@
     display: block;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #333;
+    color: #222;
 }
 
 #rejectReason {

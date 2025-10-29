@@ -25,7 +25,7 @@
 .section-title {
     font-size: var(--admin-font-size-xl);
     font-weight: var(--admin-font-weight-semibold);
-    color: var(--admin-text-primary);
+    color: #222;
     margin-bottom: var(--admin-gap-lg);
     display: flex;
     align-items: center;

@@ -16,14 +16,14 @@
      =========================== */
 
     /* Primary Admin Colors */
-    --admin-color-primary: #1a1d2e;
-    /* Dark navy - main admin color */
-    --admin-color-primary-hover: #252938;
-    /* Lighter navy for hover */
-    --admin-color-accent: #00d9ff;
-    /* Cyan - admin accent */
-    --admin-color-accent-hover: #00b8d4;
-    /* Darker cyan for hover */
+    --admin-color-primary: #002f3f;
+    /* Dark teal - main admin color */
+    --admin-color-primary-hover: #2d6b75;
+    /* Lighter teal for hover */
+    --admin-color-accent: #d5ba2b;
+    /* Gold - admin accent */
+    --admin-color-accent-hover: #b8941f;
+    /* Darker gold for hover */
 
     /* Admin Background Colors */
     --admin-bg-main: #f7f8fa;
@@ -32,10 +32,10 @@
     /* White background */
     --admin-bg-light: #fafbfc;
     /* Light hover background */
-    --admin-bg-dark: #1a1d2e;
-    /* Dark background */
-    --admin-bg-sidebar: #1a1d2e;
-    /* Sidebar background */
+    --admin-bg-dark: #002f3f;
+    /* Dark teal background */
+    --admin-bg-sidebar: #002f3f;
+    /* Sidebar background - dark teal */
 
     /* Admin Text Colors */
     --admin-text-primary: #222222;
@@ -58,12 +58,13 @@
      =========================== */
 
     /* Status Gradients */
-    --admin-gradient-blue: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --admin-gradient-primary: linear-gradient(135deg, #002f3f 0%, #2d6b75 100%);
+    --admin-gradient-blue: linear-gradient(135deg, #002f3f 0%, #4a7c87 100%);
     --admin-gradient-green: linear-gradient(135deg, #48c774 0%, #38a169 100%);
     --admin-gradient-red: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
     --admin-gradient-orange: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-    --admin-gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --admin-gradient-teal: linear-gradient(135deg, #4fd1c5 0%, #38b2ac 100%);
+    --admin-gradient-purple: linear-gradient(135deg, #002f3f 0%, #2d6b75 100%);
+    --admin-gradient-teal: linear-gradient(135deg, #002f3f 0%, #2d6b75 100%);
 
     /* Status Colors - Solid */
     --admin-status-success: #28a745;
@@ -96,9 +97,9 @@
      ADMIN BUTTON COLORS
      =========================== */
 
-    --admin-btn-primary-bg: #1a1d2e;
-    --admin-btn-primary-color: #ffffff;
-    --admin-btn-primary-hover: #252938;
+    --admin-btn-primary-bg: #002f3f;
+    --admin-btn-primary-color: #d5ba2b;
+    --admin-btn-primary-hover: #2d6b75;
 
     --admin-btn-secondary-bg: #f7f8fa;
     --admin-btn-secondary-color: #666666;
@@ -124,14 +125,14 @@
     --admin-border-lighter: #f0f0f0;
     --admin-border-dark: #cccccc;
     --admin-border-sidebar: rgba(255, 255, 255, 0.1);
-    --admin-border-focus: #667eea;
+    --admin-border-focus: #d5ba2b;
 
     /* ===========================
      ADMIN SPACING
      =========================== */
 
     /* Sidebar Specific */
-    --admin-sidebar-width: 240px;
+    --admin-sidebar-width: 260px;
     --admin-sidebar-width-mobile: 250px;
     --admin-sidebar-padding: 20px;
 
@@ -171,7 +172,7 @@
     --admin-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.05);
     --admin-shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
     --admin-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --admin-shadow-focus: 0 0 0 3px rgba(26, 29, 46, 0.1);
+    --admin-shadow-focus: 0 0 0 3px rgba(213, 186, 43, 0.2);
 
     /* ===========================
      ADMIN TYPOGRAPHY
@@ -230,8 +231,8 @@
 
     --admin-input-bg: #ffffff;
     --admin-input-border: #dddddd;
-    --admin-input-border-hover: #1a1d2e;
-    --admin-input-border-focus: #667eea;
+    --admin-input-border-hover: #002f3f;
+    --admin-input-border-focus: #d5ba2b;
     --admin-input-padding: 10px 14px;
     --admin-input-padding-with-icon: 10px 14px 10px 40px;
     --admin-input-radius: 8px;
