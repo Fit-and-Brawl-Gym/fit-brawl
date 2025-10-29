@@ -443,3 +443,58 @@ async function executeAction() {
     alert('An error occurred. Please try again.');
   }
 }
+
+// Approve subscription function
+async function approveSub(id) {
+  const row = document.querySelector(`#processingTableBody tr[data-id="${id}"]`);
+  if (!row) return;
+
+  // Call the existing approve function
+  await executeAction(id, 'approve');
+
+  // Log the action
+  const response = await fetch('api/subscription_actions.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'approve',
+      id: id,
+      // Add member info for logging
+      member_name: row.querySelector('td:nth-child(2)').textContent,
+      plan_name: row.querySelector('td:nth-child(3)').textContent
+    })
+  });
+
+  const result = await response.json();
+  if (!result.success) {
+    console.error('Logging error:', result.message);
+  }
+}
+
+// Reject subscription function
+async function rejectSub(id, reason) {
+  const row = document.querySelector(`#processingTableBody tr[data-id="${id}"]`);
+  if (!row) return;
+
+  // Call the existing reject function
+  await executeAction(id, 'reject', reason);
+
+  // Log the action
+  const response = await fetch('api/subscription_actions.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'reject',
+      id: id,
+      reason: reason,
+      // Add member info for logging
+      member_name: row.querySelector('td:nth-child(2)').textContent,
+      plan_name: row.querySelector('td:nth-child(3)').textContent
+    })
+  });
+
+  const result = await response.json();
+  if (!result.success) {
+    console.error('Logging error:', result.message);
+  }
+}

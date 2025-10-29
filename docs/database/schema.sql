@@ -200,11 +200,29 @@ CREATE TABLE feedback (
 -- ADMIN ACTION LOGS TABLE
 -- =====================
 CREATE TABLE admin_logs (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  admin_id INT NOT NULL,
-  action TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL COMMENT 'ID of admin who performed the action',
+    admin_name VARCHAR(100) NOT NULL COMMENT 'Name of the admin user',
+    action_type VARCHAR(50) NOT NULL COMMENT 'Type of action (subscription_approved, equipment_add, etc.)',
+    target_user VARCHAR(100) DEFAULT NULL COMMENT 'Name of user/member affected by action',
+    target_id INT DEFAULT NULL COMMENT 'ID of the record that was affected',
+    details TEXT DEFAULT NULL COMMENT 'Detailed description of the action',
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'When the action occurred',
+    
+    -- Indexes for faster queries
+    INDEX idx_admin_id (admin_id),
+    INDEX idx_action_type (action_type),
+    INDEX idx_timestamp (timestamp DESC),
+    INDEX idx_target_id (target_id),
+    
+    -- Foreign key to users table
+    CONSTRAINT fk_admin_logs_user FOREIGN KEY (admin_id) 
+        REFERENCES users(id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
+        
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tracks all admin actions in the system';
+   
 -- =====================
 -- ACTIVITY LOGS TABLE
 -- =====================
