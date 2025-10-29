@@ -31,6 +31,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 $trainer_id = null;
 $trainer_name = '';
 $trainer_specialization = '';
+$upcoming_bookings = [];
 
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -51,10 +52,34 @@ if (isset($_SESSION['user_id'])) {
         }
         $stmt->close();
     }
+
+    // Fetch upcoming bookings (next 5 bookings starting from today)
+    if ($trainer_id) {
+        $upcoming_query = "SELECT r.*, u.name as member_name, u.email as member_email,
+                          ct.class_name as class_type
+                          FROM reservations r
+                          JOIN users u ON r.user_id = u.id
+                          LEFT JOIN class_types ct ON r.class_type_id = ct.id
+                          WHERE r.trainer_id = ?
+                          AND r.reservation_date >= CURDATE()
+                          AND r.booking_status = 'confirmed'
+                          ORDER BY r.reservation_date ASC, r.start_time ASC
+                          LIMIT 5";
+        $stmt = $conn->prepare($upcoming_query);
+        if ($stmt) {
+            $stmt->bind_param("i", $trainer_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $upcoming_bookings[] = $row;
+            }
+            $stmt->close();
+        }
+    }
 }
 
 // Set variables for header
-$pageTitle = "Schedule - FitXBrawl Trainer";
+$pageTitle = "Schedule - Fit and Brawl Trainer";
 $currentPage = "schedule";
 $additionalCSS = ["../../css/pages/trainer/schedule.css"];
 
@@ -68,7 +93,7 @@ require_once '../../../includes/trainer_header.php';
             <!-- Page Title Section -->
             <div class="page-header">
                 <div class="header-content">
-                    <h1 class="page-title">CLASS SCHEDULE</h1>
+                    <h1 class="page-title">TRAINING SCHEDULE</h1>
                 </div>
                 <?php if ($trainer_name): ?>
                 <div class="trainer-info">
@@ -78,6 +103,44 @@ require_once '../../../includes/trainer_header.php';
                     </div>
                 </div>
                 <?php endif; ?>
+            </div>
+
+            <!-- Upcoming Section -->
+            <div class="upcoming-section">
+                <h2><i class="fas fa-calendar-check"></i> Upcoming Schedule</h2>
+                <div class="upcoming-cards">
+                    <?php if (!empty($upcoming_bookings)): ?>
+                        <?php foreach ($upcoming_bookings as $booking): ?>
+                            <div class="upcoming-card">
+                                <div class="card-header">
+                                    <span class="card-date">
+                                        <i class="fas fa-calendar"></i>
+                                        <?= date('M j, Y', strtotime($booking['reservation_date'])) ?>
+                                    </span>
+                                    <span class="card-time">
+                                        <i class="fas fa-clock"></i>
+                                        <?= date('g:i A', strtotime($booking['start_time'])) ?>
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-info">
+                                        <i class="fas fa-user"></i>
+                                        <span><strong>Client:</strong> <?= htmlspecialchars($booking['member_name']) ?></span>
+                                    </div>
+                                    <div class="card-info">
+                                        <i class="fas fa-dumbbell"></i>
+                                        <span><strong>Class:</strong> <?= htmlspecialchars($booking['class_type'] ?? 'General Training') ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="no-upcoming">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>No upcoming bookings scheduled</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <!-- Calendar Section -->

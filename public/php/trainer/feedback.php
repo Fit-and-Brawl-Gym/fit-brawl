@@ -45,7 +45,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 }
 
 // Set variables for header
-$pageTitle = "Fit and Brawl - Trainer Feedback";
+$pageTitle = "Feedback - Fit and Brawl Trainer";
 $currentPage = "feedback";
 $additionalCSS = ["../../css/pages/feedback.css?=v2"];
 
