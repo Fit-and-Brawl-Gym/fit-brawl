@@ -200,6 +200,26 @@ $stmt->bind_param(
 
 // Execute
 if ($stmt->execute()) {
+    // Attempt to send acknowledgement email to the user
+    try {
+        // fetch user email and username
+        $userStmt = $conn->prepare("SELECT email, username FROM users WHERE id = ? LIMIT 1");
+        if ($userStmt) {
+            $userStmt->bind_param('i', $user_id);
+            $userStmt->execute();
+            $userRow = $userStmt->get_result()->fetch_assoc();
+            $userStmt->close();
+
+            if ($userRow && !empty($userRow['email'])) {
+                include_once __DIR__ . '/../../../includes/membership_mailer.php';
+                // Send application acknowledgement (status pending)
+                sendMembershipApplicationEmail($userRow['email'], $userRow['username'] ?? $name, $membership['plan_name'] ?? $plan, 'pending');
+            }
+        }
+    } catch (Exception $e) {
+        error_log('Failed to send membership application email: ' . $e->getMessage());
+    }
+
     echo json_encode([
         'success' => true,
         'message' => $action === 'upgrade'
