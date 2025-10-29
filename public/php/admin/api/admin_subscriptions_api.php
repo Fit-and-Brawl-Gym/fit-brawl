@@ -8,6 +8,8 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
+// mailer for membership notifications
+include_once __DIR__ . '/../../../../includes/membership_mailer.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
@@ -82,6 +84,25 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
                 "Approved {$logData['plan_name']} subscription for {$logData['name']} (Duration: {$logData['duration']} days)"
             );
 
+            // Try to send approval email to the user
+            try {
+                // fetch user email and up-to-date membership row
+                $emailStmt = $conn->prepare("SELECT u.email, u.username, um.plan_name, um.start_date, um.end_date FROM user_memberships um LEFT JOIN users u ON um.user_id = u.id WHERE um.id = ? LIMIT 1");
+                if ($emailStmt) {
+                    $emailStmt->bind_param('i', $id);
+                    $emailStmt->execute();
+                    $emailRow = $emailStmt->get_result()->fetch_assoc();
+                    $emailStmt->close();
+
+                    if ($emailRow && !empty($emailRow['email'])) {
+                        // no perks array here; leave empty or extend later
+                        sendMembershipDecisionEmail($emailRow['email'], $emailRow['username'] ?? $logData['name'], $emailRow['plan_name'] ?? $logData['plan_name'], true, $emailRow['start_date'] ?? null, $emailRow['end_date'] ?? null, null, []);
+                    }
+                }
+            } catch (Exception $e) {
+                error_log('Failed to send membership approval email: ' . $e->getMessage());
+            }
+
             // Debug: Check if logging worked
             error_log("Activity log result: " . ($logSuccess ? 'SUCCESS' : 'FAILED'));
         } else {
@@ -140,6 +161,23 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
                     $id,
                     "Rejected {$logData['plan_name']} subscription for {$logData['name']}. Reason: {$remarks}"
                 );
+
+                // Try to send rejection email to the user (include admin remarks)
+                try {
+                    $emailStmt = $conn->prepare("SELECT u.email, u.username, um.plan_name FROM user_memberships um LEFT JOIN users u ON um.user_id = u.id WHERE um.id = ? LIMIT 1");
+                    if ($emailStmt) {
+                        $emailStmt->bind_param('i', $id);
+                        $emailStmt->execute();
+                        $emailRow = $emailStmt->get_result()->fetch_assoc();
+                        $emailStmt->close();
+
+                        if ($emailRow && !empty($emailRow['email'])) {
+                            sendMembershipDecisionEmail($emailRow['email'], $emailRow['username'] ?? $logData['name'], $emailRow['plan_name'] ?? $logData['plan_name'], false, null, null, $remarks, []);
+                        }
+                    }
+                } catch (Exception $e) {
+                    error_log('Failed to send membership rejection email: ' . $e->getMessage());
+                }
 
                 // Debug: Check if logging worked
                 error_log("Activity log result: " . ($logSuccess ? 'SUCCESS' : 'FAILED'));
