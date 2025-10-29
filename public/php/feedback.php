@@ -11,11 +11,6 @@ if ((isset($_GET['api']) && $_GET['api'] === 'true')) {
 // Initialize session manager
 SessionManager::initialize();
 
-// Check if user is logged in
-if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
     header('Content-Type: application/json');
@@ -168,67 +163,67 @@ $additionalCSS = ["../css/pages/feedback.css?=v2"];
 // Include header
 require_once '../../includes/header.php';
 ?>
-    <!--Main-->
-    <main>
-        <!-- Page Header -->
-        <div class="feedback-header">
-            <h1 class="feedback-title">Member Testimonials</h1>
-            <p class="feedback-subtitle">See what our community has to say about their Fit X Brawl experience</p>
-            <div class="header-underline"></div>
-        </div>
+<!--Main-->
+<main>
+    <!-- Page Header -->
+    <div class="feedback-header">
+        <h1 class="feedback-title">Member Testimonials</h1>
+        <p class="feedback-subtitle">See what our community has to say about their Fit X Brawl experience</p>
+        <div class="header-underline"></div>
+    </div>
 
-        <div class="feedback-container">
-            <div class="feedback-section" id="feedback-section">
-
-            </div>
-        </div>
-        <div class="feedback-button">
-            <a href="feedback-form.php" class="floating-btn">
-                Share your feedback!
-            </a>
+    <div class="feedback-container">
+        <div class="feedback-section" id="feedback-section">
 
         </div>
-    </main>
+    </div>
+    <div class="feedback-button">
+        <a href="feedback-form.php" class="floating-btn">
+            Share your feedback!
+        </a>
 
-    <!--Footer-->
-    <footer>
-        <div class="container footer-flex">
-            <div class="footer-logo-block">
-                <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
-            </div>
-            <div class="footer-menu-block">
-                <div class="footer-menu-title">MENU</div>
-                <ul class="footer-menu-list">
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
-                    <li><a href="equipment.php">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </div>
-            <div class="footer-contact-block">
-                <div class="footer-contact-title">CONTACT</div>
-                <div class="footer-contact-details">
-                    1832 Oroquieta Rd, Santa Cruz, Manila,<br>
-                    1008 Metro Manila<br><br>
-                    Gmail: fitxbrawl@gmail.com
-                </div>
-            </div>
-            <div class="footer-hours-block">
-                <div class="footer-hours-title">OPENING HOURS</div>
-                <div class="footer-hours-details">
-                    Sun–Fri: 9AM to 10PM<br>
-                    Saturday: 10AM to 7PM
-                </div>
+    </div>
+</main>
+
+<!--Footer-->
+<footer>
+    <div class="container footer-flex">
+        <div class="footer-logo-block">
+            <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
+        </div>
+        <div class="footer-menu-block">
+            <div class="footer-menu-title">MENU</div>
+            <ul class="footer-menu-list">
+                <li><a href="index.php">Home</a></li>
+                <li><a href="membership.php">Membership</a></li>
+                <li><a href="equipment.php">Equipment</a></li>
+                <li><a href="products.php">Products</a></li>
+                <li><a href="contact.php">Contact</a></li>
+                <li><a href="feedback.php">Feedback</a></li>
+            </ul>
+        </div>
+        <div class="footer-contact-block">
+            <div class="footer-contact-title">CONTACT</div>
+            <div class="footer-contact-details">
+                1832 Oroquieta Rd, Santa Cruz, Manila,<br>
+                1008 Metro Manila<br><br>
+                Gmail: fitxbrawl@gmail.com
             </div>
         </div>
-        <div class="copyright">
-            <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
+        <div class="footer-hours-block">
+            <div class="footer-hours-title">OPENING HOURS</div>
+            <div class="footer-hours-details">
+                Sun–Fri: 9AM to 10PM<br>
+                Saturday: 10AM to 7PM
+            </div>
         </div>
-    </footer>
+    </div>
+    <div class="copyright">
+        <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
+    </div>
+</footer>
 
-    <script src="../js/feedback.js"></script>
+<script src="../js/feedback.js"></script>
 </body>
 
 </html>
