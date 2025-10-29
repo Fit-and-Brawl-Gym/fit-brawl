@@ -77,19 +77,142 @@
     padding: var(--spacing-8) var(--spacing-5);
     overflow-y: auto;
     border-right: 1px solid #ddd;
+    box-sizing: border-box;
 }
 
-.terms-sidebar nav ul {
+/* Mobile dropdown navigation - hidden by default */
+.terms-mobile-nav {
+    display: none;
+    width: 100%;
+    position: relative;
+}
+
+.terms-dropdown-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-base);
+    border: 2px solid #ddd;
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    color: var(--color-text-dark);
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    transition: var(--transition-all);
+}
+
+.terms-dropdown-trigger:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.terms-dropdown-trigger[aria-expanded="true"] {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(17, 83, 128, 0.12);
+}
+
+.terms-dropdown-label {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.terms-dropdown-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    position: relative;
+}
+
+.terms-dropdown-icon::before,
+.terms-dropdown-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 70%;
+    height: 2px;
+    background: var(--color-text-dark);
+    transition: transform var(--transition-base);
+}
+
+.terms-dropdown-icon::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.terms-dropdown-icon::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.terms-dropdown-trigger[aria-expanded="true"] .terms-dropdown-icon::before {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.terms-dropdown-trigger[aria-expanded="true"] .terms-dropdown-icon::after {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.terms-dropdown-list {
+    position: absolute;
+    top: calc(100% + var(--spacing-2));
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: var(--color-white);
+    border: 1px solid #ddd;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg, 0 16px 32px rgba(15, 23, 42, 0.18));
+    max-height: 18rem;
+    overflow-y: auto;
+    z-index: 10;
+}
+
+.terms-dropdown-list li + li {
+    border-top: 1px solid #eee;
+}
+
+.terms-dropdown-list button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    color: var(--color-text-dark);
+    transition: var(--transition-all);
+}
+
+.terms-dropdown-list button:hover,
+.terms-dropdown-list button:focus {
+    background: #f5f6f8;
+}
+
+.terms-dropdown-list button.is-active {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+}
+
+/* Desktop navigation - visible by default */
+.terms-desktop-nav {
+    display: block;
+}
+
+.terms-desktop-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.terms-sidebar nav li {
+.terms-desktop-nav li {
     margin-bottom: var(--spacing-4);
 }
 
-.terms-sidebar nav a {
+.terms-desktop-nav a {
     color: var(--color-text-muted);
     text-decoration: none;
     font-size: var(--font-size-sm);
@@ -99,12 +222,12 @@
     transition: var(--transition-all);
 }
 
-.terms-sidebar nav a:hover {
+.terms-desktop-nav a:hover {
     background: #e9ecef;
     color: var(--color-text-dark);
 }
 
-.terms-sidebar nav a.active {
+.terms-desktop-nav a.active {
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
     background: #e9ecef;
@@ -205,9 +328,19 @@
 
     .terms-sidebar {
         width: 100%;
-        max-height: 150px;
         border-right: none;
         border-bottom: 1px solid #ddd;
+        padding: var(--spacing-4) var(--spacing-5);
+        overflow-y: visible;
+    }
+
+    /* Show mobile dropdown, hide desktop nav */
+    .terms-mobile-nav {
+        display: block;
+    }
+
+    .terms-desktop-nav {
+        display: none;
     }
 
     .terms-content {
