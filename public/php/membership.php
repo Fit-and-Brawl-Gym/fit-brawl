@@ -162,45 +162,43 @@ require_once '../../includes/header.php';
                 <h2 class="pricing-title">MEMBER ADDITIONAL SERVICES</h2>
             </div>
 
-            <!-- Members Table -->
-            <div class="pricing-table-container active" id="memberTable">
-                <div class="pricing-table-scroll">
-                    <table class="pricing-table">
-                        <thead>
-                            <tr>
-                                <th>PRICE</th>
-                                <th>SERVICE</th>
-                                <th>BENEFITS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="price-cell">90 PHP</td>
-                                <td>Day Pass: Gym Access</td>
-                                <td>Full-day access to all gym facilities and equipment, including the weight room, cardio machines, and functional training areas. Perfect for a one-off workout or for travelers.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">70 PHP</td>
-                                <td>Day Pass: Student Access</td>
-                                <td>Discounted full-day access to all gym facilities (weight room, cardio, etc.). Must present a valid student ID upon entry.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">350 PHP</td>
-                                <td>Training: Boxing</td>
-                                <td>Full-day access to boxing area. Focused on footwork, defense, and power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight strategies.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">400 PHP</td>
-                                <td>Training: Muay Thai</td>
-                                <td>Full-day access to mma area. Includes in-depth training on clinch work, teeps, and powerful low kicks. Perfect for mastering traditional techniques and conditioning.</td>
-                            </tr>
-                            <tr>
-                                <td class="price-cell">500 PHP</td>
-                                <td>Training: MMA</td>
-                                <td>A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Members Services -->
+            <div class="services-grid-container active" id="memberTable">
+                <div class="services-grid">
+                    <div class="service-card" data-price="90 PHP" data-service="Day Pass: Gym Access" data-benefits="Full-day access to all gym facilities and equipment, including the weight room, cardio machines, and functional training areas. Perfect for a one-off workout or for travelers.">
+                        <div class="service-price">90 PHP</div>
+                        <div class="service-name">Day Pass: Gym Access</div>
+                        <div class="service-benefits">Full-day access to all gym facilities and equipment, including the weight room, cardio machines, and functional training areas. Perfect for a one-off workout or for travelers.</div>
+                        <button class="service-select-btn">SELECT SERVICE</button>
+                    </div>
+
+                    <div class="service-card" data-price="70 PHP" data-service="Day Pass: Student Access" data-benefits="Discounted full-day access to all gym facilities (weight room, cardio, etc.). Must present a valid student ID upon entry.">
+                        <div class="service-price">70 PHP</div>
+                        <div class="service-name">Day Pass: Student Access</div>
+                        <div class="service-benefits">Discounted full-day access to all gym facilities (weight room, cardio, etc.). Must present a valid student ID upon entry.</div>
+                        <button class="service-select-btn">SELECT SERVICE</button>
+                    </div>
+
+                    <div class="service-card" data-price="350 PHP" data-service="Training: Boxing" data-benefits="Full-day access to boxing area. Focused on footwork, defense, and power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight strategies.">
+                        <div class="service-price">350 PHP</div>
+                        <div class="service-name">Training: Boxing</div>
+                        <div class="service-benefits">Full-day access to boxing area. Focused on footwork, defense, and power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight strategies.</div>
+                        <button class="service-select-btn">SELECT SERVICE</button>
+                    </div>
+
+                    <div class="service-card" data-price="400 PHP" data-service="Training: Muay Thai" data-benefits="Full-day access to mma area. Includes in-depth training on clinch work, teeps, and powerful low kicks. Perfect for mastering traditional techniques and conditioning.">
+                        <div class="service-price">400 PHP</div>
+                        <div class="service-name">Training: Muay Thai</div>
+                        <div class="service-benefits">Full-day access to mma area. Includes in-depth training on clinch work, teeps, and powerful low kicks. Perfect for mastering traditional techniques and conditioning.</div>
+                        <button class="service-select-btn">SELECT SERVICE</button>
+                    </div>
+
+                    <div class="service-card" data-price="500 PHP" data-service="Training: MMA" data-benefits="A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.">
+                        <div class="service-price">500 PHP</div>
+                        <div class="service-name">Training: MMA</div>
+                        <div class="service-benefits">A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.</div>
+                        <button class="service-select-btn">SELECT SERVICE</button>
+                    </div>
                 </div>
             </div>
 

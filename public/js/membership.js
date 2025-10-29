@@ -172,7 +172,42 @@ document.addEventListener('DOMContentLoaded', function() {
         delete serviceModal.dataset.tableType;
     }
 
-    // Add click handlers to table rows
+    // Add click handlers to service cards
+    function addServiceCardHandlers() {
+        const serviceCards = document.querySelectorAll('.service-card');
+
+        serviceCards.forEach(card => {
+            // Handle click on the entire card
+            card.addEventListener('click', function(e) {
+                // Don't open modal if the select button was clicked
+                if (e.target.classList.contains('service-select-btn')) {
+                    return;
+                }
+
+                const price = this.getAttribute('data-price');
+                const service = this.getAttribute('data-service');
+                const benefits = this.getAttribute('data-benefits');
+
+                openModal(price, service, benefits, 'member');
+            });
+
+            // Handle select button click
+            const selectBtn = card.querySelector('.service-select-btn');
+            if (selectBtn) {
+                selectBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+
+                    const price = card.getAttribute('data-price');
+                    const service = card.getAttribute('data-service');
+                    const benefits = card.getAttribute('data-benefits');
+
+                    openModal(price, service, benefits, 'member');
+                });
+            }
+        });
+    }
+
+    // Add click handlers to table rows (legacy support)
     function addTableRowHandlers() {
         const tables = document.querySelectorAll('.pricing-table tbody');
 
@@ -286,7 +321,8 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
 
     // Initialize
     updateCarousel();
-    addTableRowHandlers();
+    addServiceCardHandlers();
+    addTableRowHandlers(); // Keep for backward compatibility
     addPlanSelectionHandlers();
 
     // Handle window resize for responsive behavior
