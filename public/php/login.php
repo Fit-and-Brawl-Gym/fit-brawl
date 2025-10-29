@@ -50,6 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if ($user['role'] === 'admin') {
                 header("Location: admin/admin.php");
+            } elseif ($user['role'] === 'trainer') {
+                header("Location: trainer/index.php");
             } else {
                 header("Location: loggedin-index.php");
             }
