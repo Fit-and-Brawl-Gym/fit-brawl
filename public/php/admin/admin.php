@@ -77,7 +77,6 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
 <body>
 
   <?php include_once('admin_sidebar.php'); ?>
-  <?php include_once('admin_header.php'); ?>
 
   <main class="admin-main">
     <header>
@@ -208,7 +207,6 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
   }
   ?>
 
-  <?php include_once('admin_footer.php'); ?>
 </body>
 
 </html>
