@@ -7,6 +7,10 @@
 // Allow JSON responses
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../../includes/init.php';
+require_once __DIR__ . '/../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     http_response_code(403);
@@ -62,6 +66,28 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
     $stmt->bind_param('isssi', $admin_id, $date_approved, $start_date, $end_date, $id);
 
     if ($stmt->execute()) {
+        // LOG THE ACTIVITY - FIX: Don't use LEFT JOIN with m, plan_name is in user_memberships
+        $logStmt = $conn->prepare("SELECT name, plan_name, duration FROM user_memberships WHERE id = ?");
+        $logStmt->bind_param('i', $id);
+        $logStmt->execute();
+        $logResult = $logStmt->get_result();
+        $logData = $logResult->fetch_assoc();
+        $logStmt->close();
+
+        if ($logData) {
+            $logSuccess = ActivityLogger::log(
+                'subscription_approved',
+                $logData['name'],
+                $id,
+                "Approved {$logData['plan_name']} subscription for {$logData['name']} (Duration: {$logData['duration']} days)"
+            );
+
+            // Debug: Check if logging worked
+            error_log("Activity log result: " . ($logSuccess ? 'SUCCESS' : 'FAILED'));
+        } else {
+            error_log("Could not fetch subscription data for logging");
+        }
+
         echo json_encode(['success' => true, 'message' => 'Subscription approved successfully']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to approve: ' . $stmt->error]);
@@ -99,6 +125,28 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
 
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
+            // LOG THE ACTIVITY - FIX: Don't use LEFT JOIN with m
+            $logStmt = $conn->prepare("SELECT name, plan_name FROM user_memberships WHERE id = ?");
+            $logStmt->bind_param('i', $id);
+            $logStmt->execute();
+            $logResult = $logStmt->get_result();
+            $logData = $logResult->fetch_assoc();
+            $logStmt->close();
+
+            if ($logData) {
+                $logSuccess = ActivityLogger::log(
+                    'subscription_rejected',
+                    $logData['name'],
+                    $id,
+                    "Rejected {$logData['plan_name']} subscription for {$logData['name']}. Reason: {$remarks}"
+                );
+
+                // Debug: Check if logging worked
+                error_log("Activity log result: " . ($logSuccess ? 'SUCCESS' : 'FAILED'));
+            } else {
+                error_log("Could not fetch subscription data for logging");
+            }
+
             echo json_encode(['success' => true, 'message' => 'Subscription rejected successfully']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Subscription not found or already processed']);
