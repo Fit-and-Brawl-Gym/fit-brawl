@@ -31,18 +31,26 @@ INSERT INTO memberships (plan_name, class_type) VALUES
 ('Resolution Student', 'Gym');
 -- =====================
 -- SEED DATA FOR TRAINERS
+-- Updated with complete trainer information
 -- =====================
-INSERT INTO trainers (name, specialization, schedule) VALUES
-('Coach Alex', 'Boxing', 'Mon-Fri 8AM-12PM'),
-('Coach Ryan', 'MMA', 'Tue-Thu 2PM-6PM'),
-('Coach Sam', 'Muay Thai', 'Mon-Wed-Fri 1PM-5PM'),
-('Coach Jordan', 'Muay Thai', 'Tue-Thu 10AM-3PM'),
-('Coach Chris', 'Boxing', 'Mon-Fri 9AM-1PM'),
-('Coach Taylor', 'Boxing', 'Sat-Sun 10AM-2PM'),
-('Coach Morgan', 'MMA', 'Mon-Wed 3PM-7PM'),
-('Coach Casey', 'MMA', 'Tue-Thu 4PM-8PM'),
-('Coach Pat', 'Gym', 'Daily 6AM-10AM'),
-('Coach Jamie', 'Gym', 'Daily 5PM-9PM');
+INSERT INTO trainers (name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, max_clients_per_day, status) VALUES
+-- Boxing Trainers
+('Coach Thei Lei', 'thei.lei@fitxbrawl.com', '+63-917-123-4567', 'Boxing', 'Former professional boxer with 10 years of coaching experience. Specializes in technique and footwork.', 'coach-thei.jpg', 'Maria Martinez', '+63-917-123-4568', 3, 'Active'),
+('Coach Jealous Pogi', 'jealous.pogi@fitxbrawl.com', '+63-917-234-5678', 'Boxing', '5 years coaching experience. Focus on conditioning and power development.', 'coach-chris.jpg', 'Juan Santos', '+63-917-234-5679', 3, 'Active'),
+('Coach Rizz Andrei', 'rizz.andrei@fitxbrawl.com', '+63-917-345-6789', 'Boxing', 'Weekend specialist in boxing fundamentals for beginners.', 'coach-taylor.jpg', 'Ana Reyes', '+63-917-345-6790', 3, 'Active'),
+
+-- MMA Trainers
+('Coach Mikell Drei', 'mikell.drei@fitxbrawl.com', '+63-917-456-7890', 'MMA', 'MMA champion with expertise in ground game and submissions. 8 years coaching experience.', 'coach-ryan.jpg', 'Sofia Cruz', '+63-917-456-7891', 3, 'Active'),
+('Coach XL', 'coach.xl@fitxbrawl.com', '+63-917-567-8901', 'MMA', 'Certified MMA instructor specializing in striking and grappling techniques.', 'coach-morgan.jpg', 'Kim Lee', '+63-917-567-8902', 3, 'Active'),
+('Coach Sean Pogi', 'sean.pogi@fitxbrawl.com', '+63-917-678-9012', 'MMA', 'Former cage fighter turned coach. Focus on fight strategy and conditioning.', 'coach-casey.jpg', 'Pedro Diaz', '+63-917-678-9013', 3, 'On Leave'),
+
+-- Muay Thai Trainers
+('Coach Sam "Elbow King" Fernandez', 'sam.fernandez@fitxbrawl.com', '+63-917-789-0123', 'Muay Thai', 'Traditional Muay Thai instructor from Thailand. 12 years experience in the art of eight limbs.', 'coach-sam.jpg', 'Rosa Fernandez', '+63-917-789-0124', 3, 'Active'),
+('Coach Jordan Garcia', 'jordan.garcia@fitxbrawl.com', '+63-917-890-1234', 'Muay Thai', 'Competitive fighter and coach specializing in clinch work and knee strikes.', 'coach-jordan.jpg', 'Luis Garcia', '+63-917-890-1235', 3, 'Active'),
+
+-- Gym/Fitness Trainers
+('Coach Pat Anderson', 'pat.anderson@fitxbrawl.com', '+63-917-901-2345', 'Gym', 'Certified personal trainer with focus on strength and conditioning. Early morning specialist.', 'coach-pat.jpg', 'Alex Anderson', '+63-917-901-2346', 3, 'Active'),
+('Coach Jamie Ramos', 'jamie.ramos@fitxbrawl.com', '+63-917-012-3456', 'Gym', 'Evening fitness expert. Specializes in HIIT and functional training programs.', 'coach-jamie.jpg', 'Carlos Ramos', '+63-917-012-3457', 3, 'Active');
 
 -- =====================
 -- SEED DATA FOR MEMBERSHIP_TRAINERS

@@ -56,13 +56,44 @@ CREATE TABLE memberships (
 
 -- =====================
 -- TRAINERS TABLE
+-- Stores trainer information with status and soft delete support
 -- =====================
 CREATE TABLE trainers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    specialization VARCHAR(100) NOT NULL,
-    schedule TEXT
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(20) NOT NULL,
+    specialization ENUM('Gym', 'MMA', 'Boxing', 'Muay Thai') NOT NULL,
+    bio TEXT DEFAULT NULL,
+    photo VARCHAR(255) DEFAULT NULL,
+    emergency_contact_name VARCHAR(100) DEFAULT NULL,
+    emergency_contact_phone VARCHAR(20) DEFAULT NULL,
+    max_clients_per_day INT DEFAULT 3,
+    status ENUM('Active', 'Inactive', 'On Leave') DEFAULT 'Active' NOT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_trainers_status (status),
+    INDEX idx_trainers_deleted_at (deleted_at),
+    INDEX idx_trainers_specialization (specialization)
 );
+
+-- =====================
+-- TRAINER ACTIVITY LOG TABLE
+-- Tracks all changes to trainer records for audit purposes
+-- =====================
+CREATE TABLE trainer_activity_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    trainer_id INT NOT NULL,
+    admin_id INT DEFAULT NULL,
+    action VARCHAR(50) NOT NULL COMMENT 'Type of action: Added, Edited, Status Changed, Deleted',
+    details TEXT DEFAULT NULL COMMENT 'Description of what changed',
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_trainer_activity_trainer (trainer_id),
+    INDEX idx_trainer_activity_timestamp (timestamp DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Audit log for trainer management actions';
 
 -- =====================
 -- MEMBERSHIP_TRAINERS TABLE
