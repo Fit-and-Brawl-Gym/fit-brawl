@@ -3,37 +3,37 @@
 /* =========================== */
 
 .subscriptions-section {
-    background: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-radius-lg);
+    padding: var(--admin-gap-lg);
+    margin-bottom: var(--admin-section-margin-sm);
+    box-shadow: var(--admin-shadow-md);
 }
 
 .subscriptions-section h2 {
-    font-size: 20px;
+    font-size: var(--admin-font-size-2xl);
     color: #222;
-    margin-bottom: 12px;
+    margin-bottom: var(--admin-gap-sm);
 }
 
 .subscriptions-section .muted {
-    color: #999;
-    font-size: 13px;
+    color: var(--admin-text-light);
+    font-size: var(--admin-font-size-base);
 }
 
 .controls {
     display: flex;
     gap: 10px;
-    margin: 12px 0;
+    margin: var(--admin-gap-sm) 0;
 }
 
 .controls button {
     background: #f5f8f7;
-    border: 1px solid #ddd;
-    padding: 8px 14px;
-    border-radius: 6px;
+    border: 1px solid var(--admin-input-border);
+    padding: var(--admin-gap-xs) 14px;
+    border-radius: var(--admin-radius-sm);
     cursor: pointer;
-    font-weight: 600;
+    font-weight: var(--admin-font-weight-semibold);
 }
 
 .controls button:hover {
@@ -49,39 +49,39 @@
 .subs-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: var(--admin-font-size-md);
 }
 
 .subs-table thead {
-    background: #f9fafb;
+    background: var(--admin-table-header-bg);
 }
 
 .subs-table th,
 .subs-table td {
-    padding: 12px;
+    padding: var(--admin-gap-sm);
     text-align: left;
     border-bottom: 1px solid #eee;
 }
 
 .subs-table th {
-    font-weight: 700;
-    color: #555;
+    font-weight: var(--admin-font-weight-bold);
+    color: var(--admin-text-secondary);
 }
 
 .subs-table tbody tr:hover {
-    background: #fafbfc;
+    background: var(--admin-table-row-hover);
 }
 
 /* Action buttons */
 .btn-approve,
 .btn-reject {
-    padding: 6px 12px;
+    padding: 6px var(--admin-gap-sm);
     border: none;
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    color: #fff;
+    font-weight: var(--admin-font-weight-semibold);
+    font-size: var(--admin-font-size-base);
+    color: var(--admin-text-white);
 }
 
 .btn-approve {
@@ -184,7 +184,7 @@
     display: block;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #333;
+    color: #222;
 }
 
 #rejectReason {
