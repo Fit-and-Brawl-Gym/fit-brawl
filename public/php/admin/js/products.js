@@ -13,7 +13,7 @@ function openSidePanel() {
 
 
 function editProduct(product) {
-        console.log("🟢 editProduct triggered:", product);
+    console.log("🟢 editProduct triggered:", product);
     document.getElementById('panelTitle').textContent = 'Edit Product';
     document.getElementById('productId').value = product.id;
     document.getElementById('productName').value = product.name;
@@ -31,17 +31,17 @@ function editProduct(product) {
 
 
     if (imageFile) {
-    const preview = document.getElementById('imagePreview');
-    const fileName = imageFile.split('/').pop();
+        const preview = document.getElementById('imagePreview');
+        const fileName = imageFile.split('/').pop();
 
 
-    const imagePath = `/fit-brawl/uploads/products/${fileName}`;
+        const imagePath = `/fit-brawl/uploads/products/${fileName}`;
 
 
-    preview.style.backgroundImage = `url('${imagePath}')`;
-    preview.style.backgroundSize = 'cover';
-    preview.style.backgroundPosition = 'center';
-    preview.innerHTML = '';
+        preview.style.backgroundImage = `url('${imagePath}')`;
+        preview.style.backgroundSize = 'cover';
+        preview.style.backgroundPosition = 'center';
+        preview.innerHTML = '';
     } else {
         resetImagePreview();
     }
@@ -118,9 +118,9 @@ async function saveProduct(formData) {
                 stock: formData.stock
             })
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             alert('Product saved successfully!');
             closeSidePanel();
@@ -139,7 +139,7 @@ async function deleteProduct(id) {
     if (!confirm('Are you sure you want to delete this product?')) {
         return;
     }
-    
+
     try {
         const response = await fetch('api/product_actions.php', {
             method: 'POST',
@@ -151,9 +151,9 @@ async function deleteProduct(id) {
                 id: id
             })
         });
-        
+
         const result = await response.json();
-        
+
         if (result.success) {
             alert('Product deleted successfully!');
             location.reload();
