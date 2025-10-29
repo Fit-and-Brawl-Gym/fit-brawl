@@ -159,72 +159,26 @@ function test_input($data) {
 function showError($error) {
     return !empty($error) ? "<p class='error-message'>$error</p>" : "";
 }
+
+$pageTitle = "Sign Up - Fit and Brawl";
+$currentPage = "sign_up";
 ?>
 
+<?php
+// Set page variables for header
+$pageTitle = "Sign Up - Fit and Brawl";
+$currentPage = "signup";
+$additionalCSS = [
+    '../css/pages/sign-up.css?v=1',
+    '../css/components/terms-modal.css'
+];
+$additionalJS = [
+    '../js/hamburger.js'
+];
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Fit and Brawl</title>
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/sign-up.css?v=1">
-    <link rel="stylesheet" href="../css/components/footer.css">
-    <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="stylesheet" href="../css/components/terms-modal.css">
-    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-    <script src="../js/hamburger.js"></script>
-</head>
-<body>
-    <!--Header-->
-    <header>
-        <div class="wrapper">
-            <button class="hamburger-menu" id="hamburgerMenu">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
-            <div class="title">
-                <a href="index.php">
-                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
-                </a>
-                <a href="index.php">
-                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
-                </a>
-            </div>
-            <nav class="nav-bar">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
-                    <li><a href="equipment.php">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </nav>
-            <?php if(isset($_SESSION['email'])): ?>
-                <!-- Logged-in dropdown -->
-                <div class="account-dropdown">
-                    <img src="../../uploads/avatars/<?= htmlspecialchars($_SESSION['avatar']) ?>"
-             alt="Account" class="account-icon">
-                    <div class="dropdown-menu">
-                        <a href="user_profile.php">Profile</a>
-                        <a href="logout.php">Logout</a>
-                    </div>
-                </div>
-            <?php else: ?>
-                <!-- Not logged-in -->
-                <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon">
-                </a>
-            <?php endif; ?>
-        </div>
-    </header>
+// Include header
+require_once '../../includes/header.php';
+?>
 
     <!--Main-->
     <main class="signup-main">
@@ -290,43 +244,7 @@ function showError($error) {
         </section>
     </main>
 
-    <!--Footer-->
-    <footer>
-        <div class="container footer-flex">
-            <div class="footer-logo-block">
-                <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
-            </div>
-            <div class="footer-menu-block">
-                <div class="footer-menu-title">MENU</div>
-                <ul class="footer-menu-list">
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="membership.php">Membership</a></li>
-                    <li><a href="equipment.php">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </div>
-            <div class="footer-contact-block">
-                <div class="footer-contact-title">CONTACT</div>
-                <div class="footer-contact-details">
-                    1832 Oroquieta Rd, Santa Cruz, Manila,<br>
-                    1008 Metro Manila<br><br>
-                    Gmail: fitxbrawl@gmail.com
-                </div>
-            </div>
-            <div class="footer-hours-block">
-                <div class="footer-hours-title">OPENING HOURS</div>
-                <div class="footer-hours-details">
-                    Sun–Fri: 9AM to 10PM<br>
-                    Saturday: 10AM to 7PM
-                </div>
-            </div>
-        </div>
-        <div class="copyright">
-            <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
-        </div>
-    </footer>
+    <?php require_once '../../includes/footer.php'; ?>
 
     <!-- Terms and Conditions Modal -->
     <div class="terms-modal-overlay">

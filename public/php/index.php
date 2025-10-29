@@ -8,7 +8,7 @@ if(isset($_SESSION['email'])) {
 }
 
 // Set variables for header
-$pageTitle = "Fit and Brawl";
+$pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
 $additionalCSS = ["../css/pages/homepage.css"];
 

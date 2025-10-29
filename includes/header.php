@@ -155,7 +155,7 @@ if (class_exists('SessionManager')) {
     <?php endif; ?>
     <?php if (isset($additionalJS) && is_array($additionalJS)): ?>
         <?php foreach ($additionalJS as $jsFile): ?>
-    <script src="<?= htmlspecialchars($jsFile) ?>"></script>
+    <script src="<?= htmlspecialchars($jsFile) ?>" defer></script>
         <?php endforeach; ?>
     <?php endif; ?>
 </head>

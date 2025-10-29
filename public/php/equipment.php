@@ -147,75 +147,15 @@ if ($hasActiveMembership) {
 } else {
     $membershipLink = 'membership.php';
 }
-?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fit and Brawl - Equipment</title>
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/equipment.css?=v1">
-    <link rel="stylesheet" href="../css/components/footer.css">
-    <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-    <script src="../js/header-dropdown.js"></script>
-    <script src="../js/hamburger-menu.js"></script>
-    <?php if(SessionManager::isLoggedIn()): ?>
-    <link rel="stylesheet" href="../css/components/session-warning.css">
-    <script src="../js/session-timeout.js"></script>
-    <?php endif; ?>
-</head>
-<body>
-    <!--Header-->
-    <header>
-        <div class="wrapper">
-            <button class="hamburger-menu" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="title">
-                <a href="index.php">
-                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
-                </a>
-                <a href="index.php">
-                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
-                </a>
-            </div>
-            <nav class="nav-bar">
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="<?= $membershipLink ?>">Membership</a></li>
-                    <li><a href="equipment.php" class="active">Equipment</a></li>
-                    <li><a href="products.php">Products</a></li>
-                    <li><a href="contact.php">Contact</a></li>
-                    <li><a href="feedback.php">Feedback</a></li>
-                </ul>
-            </nav>
-            <?php if(isset($_SESSION['email'])): ?>
-                <!-- Logged-in dropdown -->
-                <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>"
-             alt="Account" class="account-icon">
-                    <div class="dropdown-menu">
-                        <a href="user_profile.php">Profile</a>
-                        <a href="logout.php">Logout</a>
-                    </div>
-                </div>
-            <?php else: ?>
-                <!-- Not logged-in -->
-                <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.png" alt="Account" class="account-icon">
-                </a>
-            <?php endif; ?>
-        </div>
-    </header>
+$pageTitle = "Equipment - Fit and Brawl";
+$currentPage = "equipment";
+$additionalCSS = ['../css/pages/equipment.css?=v1'];
+$additionalJS = ['../js/equipment.js'];
+
+// Include header
+require_once '../../includes/header.php';
+?>
         <div class="bg"></div>
  <!-- HERO -->
     <section class="equipment-hero">
@@ -279,22 +219,5 @@ if ($hasActiveMembership) {
         </div>
 
     </main>
-
-    <script>
-        // Load equipment data
-        fetch('equipment.php?api=true')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('equipment-container');
-                container.innerHTML = data.map(item => `
-                    <div class="equipment-card">
-                        <h3>${item.name}</h3>
-                        <p>Status: <span class="status-${item.equipment.toLowerCase().replace(/\s+/g, '-')}">${item.equipment}</span></p>
-                    </div>
-                `).join('');
-            })
-            .catch(error => console.error('Error loading equipment:', error));
-    </script>
-    <script src="../js/equipment.js"></script>
 
 <?php require_once '../../includes/footer.php'; ?>

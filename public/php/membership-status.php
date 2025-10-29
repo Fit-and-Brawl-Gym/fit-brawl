@@ -21,9 +21,9 @@ if (!$user_id) {
 
 
 $stmt = $conn->prepare("
-    SELECT request_status, plan_name, date_submitted 
-    FROM user_memberships 
-    WHERE user_id = ? 
+    SELECT request_status, plan_name, date_submitted
+    FROM user_memberships
+    WHERE user_id = ?
       AND request_status IN ('pending','rejected')
     ORDER BY date_submitted DESC
     LIMIT 1
@@ -39,20 +39,13 @@ if ($membershipRequest && $membershipRequest['date_submitted']) {
     $date = new DateTime($membershipRequest['date_submitted']);
     $formattedDate = $date->format('F j, Y \a\t g:i A'); // e.g., "October 24, 2025 at 3:45 PM"
 }
+
+$pageTitle = "Membership Status - Fit and Brawl";
+$currentPage = "membership_status";
+$additionalCSS = ['../css/pages/membership-status.css'];
+$additionalJS = [];
+require_once '../../includes/header.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Membership Status</title>
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/pages/membership-status.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
-
-<body>
     <main>
         <?php if ($membershipRequest): ?>
             <?php
@@ -127,6 +120,5 @@ if ($membershipRequest && $membershipRequest['date_submitted']) {
             </a>
         </div>
     </main>
-</body>
 
-</html>
+<?php require_once '../../includes/footer.php'; ?>

@@ -37,6 +37,9 @@ $conn->close();
 // Format dates
 $service_date_formatted = date('F d, Y', strtotime($booking['service_date']));
 $booking_date_formatted = date('F d, Y \a\t g:i A', strtotime($booking['booking_date']));
+
+$pageTitle = "Day Pass Receipt (Member) - Fit and Brawl";
+$currentPage = "receipt_member";
 ?>
 <!DOCTYPE html>
 <html lang="en">
