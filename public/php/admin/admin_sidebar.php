@@ -11,8 +11,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <aside class="sidebar">
     <div class="sidebar-header">
-        <img src="../../../images/fnb-icon.png" alt="FitXBrawl">
-        <h2>FitXBrawl</h2>
+        <img src="../../../images/header-title.svg" alt="FitXBrawl" class="logo-title"
+            style="width: 220px !important; height: auto !important; max-width: 220px !important;">
         <p>Admin Panel</p>
     </div>
     <nav>
@@ -21,17 +21,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span>Dashboard</span>
         </a>
         <a href="users.php" class="<?= $current_page == 'users.php' ? 'active' : '' ?>">
-            <i class="fas fa-users"></i>
-            <span>Members</span>
+            <i class="fas fa-id-card"></i>
+            <span>Memberships</span>
+        </a>
+        <a href="subscriptions.php" class="<?= $current_page == 'subscriptions.php' ? 'active' : '' ?>">
+            <i class="fas fa-credit-card"></i>
+            <span>Subscriptions</span>
         </a>
         <a href="trainers.php"
             class="<?= in_array($current_page, ['trainers.php', 'trainer_add.php', 'trainer_edit.php', 'trainer_view.php']) ? 'active' : '' ?>">
             <i class="fas fa-dumbbell"></i>
             <span>Trainers</span>
-        </a>
-        <a href="memberships.php" class="<?= $current_page == 'memberships.php' ? 'active' : '' ?>">
-            <i class="fas fa-id-card"></i>
-            <span>Memberships</span>
         </a>
         <a href="reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
             <i class="fas fa-calendar-alt"></i>

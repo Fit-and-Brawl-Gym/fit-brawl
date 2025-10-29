@@ -1,33 +1,33 @@
 .trainer-view-container {
     display: grid;
     grid-template-columns: 400px 1fr;
-    gap: 24px;
+    gap: var(--admin-section-margin-sm);
     align-items: start;
 }
 
 /* Profile Section */
 .profile-card {
-    background: #fff;
-    border-radius: 12px;
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-radius-xl);
     padding: 32px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--admin-shadow-card);
     position: sticky;
-    top: 24px;
+    top: var(--admin-section-margin-sm);
 }
 
 .profile-header {
     position: relative;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--admin-gap-lg);
 }
 
 .profile-avatar {
     width: 150px;
     height: 150px;
-    border-radius: 50%;
+    border-radius: var(--admin-radius-full);
     object-fit: cover;
-    border: 4px solid #00d9ff;
-    margin-bottom: 16px;
+    border: 4px solid var(--admin-color-accent);
+    margin-bottom: var(--admin-gap-md);
 }
 
 .profile-header .status-badge {
@@ -37,7 +37,7 @@
 }
 
 .profile-name {
-    font-size: 24px;
+    font-size: var(--admin-font-size-3xl);
     color: #222;
     margin: 0 0 8px 0;
     text-align: center;
@@ -45,28 +45,28 @@
 
 .profile-specialization {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: var(--admin-section-margin-sm);
 }
 
 .profile-info-grid {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: var(--admin-gap-md);
+    margin-bottom: var(--admin-section-margin-sm);
 }
 
 .info-item {
     display: flex;
-    gap: 12px;
-    padding: 12px;
-    background: #f7f8fa;
-    border-radius: 8px;
+    gap: var(--admin-gap-sm);
+    padding: var(--admin-gap-sm);
+    background: var(--admin-bg-main);
+    border-radius: var(--admin-input-radius);
 }
 
 .info-item i {
     width: 20px;
-    color: #00d9ff;
-    font-size: 18px;
+    color: var(--admin-color-accent);
+    font-size: var(--admin-font-size-xl);
 }
 
 .info-item div {
@@ -75,28 +75,28 @@
 
 .info-item label {
     display: block;
-    font-size: 12px;
-    color: #666;
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-text-muted);
     margin-bottom: 4px;
-    font-weight: 600;
+    font-weight: var(--admin-font-weight-semibold);
     text-transform: uppercase;
 }
 
 .info-item span {
     display: block;
     color: #222;
-    font-size: 14px;
+    font-size: var(--admin-font-size-md);
 }
 
 .info-item small {
     display: block;
-    color: #999;
-    font-size: 13px;
+    color: var(--admin-text-light);
+    font-size: var(--admin-font-size-base);
     margin-top: 2px;
 }
 
 .profile-bio {
-    padding-top: 20px;
+    padding-top: var(--admin-gap-lg);
     border-top: 1px solid #eee;
 }
 

@@ -8,95 +8,95 @@
 
 .feedback-toolbar {
     display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: var(--admin-gap-sm);
+    margin-bottom: var(--admin-section-margin-sm);
     flex-wrap: wrap;
     align-items: center;
 }
 
 .feedback-stats {
     display: flex;
-    gap: 16px;
-    padding: 12px 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    gap: var(--admin-gap-md);
+    padding: var(--admin-gap-sm) var(--admin-gap-lg);
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-input-radius);
+    box-shadow: var(--admin-shadow-md);
     margin-right: auto;
 }
 
 .stat-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--admin-gap-xs);
 }
 
 .stat-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: var(--admin-stat-icon-size-sm);
+    height: var(--admin-stat-icon-size-sm);
+    border-radius: var(--admin-input-radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: var(--admin-stat-icon-font-size-sm);
 }
 
 .stat-icon.total {
-    background: #e8f4f8;
-    color: #0066cc;
+    background: var(--admin-icon-bg-blue);
+    color: var(--admin-icon-color-blue);
 }
 
 .stat-icon.visible {
-    background: #d4edda;
-    color: #155724;
+    background: var(--admin-status-bg-success);
+    color: var(--admin-icon-color-green);
 }
 
 .stat-icon.hidden {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--admin-status-bg-warning);
+    color: var(--admin-icon-color-yellow);
 }
 
 .stat-content span {
     display: block;
-    font-size: 11px;
-    color: #666;
+    font-size: var(--admin-font-size-xs);
+    color: var(--admin-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .stat-content strong {
-    font-size: 18px;
+    font-size: var(--admin-font-size-xl);
     color: #222;
 }
 
 .date-filter {
     padding: 10px 40px 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #fff;
-    font-size: 14px;
+    border: 1px solid var(--admin-input-border);
+    border-radius: var(--admin-input-radius);
+    background: var(--admin-bg-white);
+    font-size: var(--admin-font-size-md);
     cursor: pointer;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-image: var(--admin-select-arrow);
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 16px;
-    color: #333;
-    font-weight: 500;
-    transition: all 0.2s;
+    color: var(--admin-text-dark);
+    font-weight: var(--admin-font-weight-medium);
+    transition: var(--admin-transition-all);
     min-width: 180px;
 }
 
 .date-filter:hover {
-    border-color: #1a1d2e;
-    background-color: #fafbfc;
+    border-color: var(--admin-input-border-hover);
+    background-color: var(--admin-bg-light);
 }
 
 .date-filter:focus {
     outline: none;
-    border-color: #1a1d2e;
-    box-shadow: 0 0 0 3px rgba(26, 29, 46, 0.1);
+    border-color: var(--admin-input-border-hover);
+    box-shadow: var(--admin-shadow-focus);
 }
 
 /* =========================== */
@@ -106,8 +106,8 @@
 .feedback-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+    gap: var(--admin-gap-lg);
+    margin-bottom: var(--admin-section-margin);
 }
 
 /* =========================== */
@@ -115,18 +115,18 @@
 /* =========================== */
 
 .feedback-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-radius-xl);
+    padding: var(--admin-gap-lg);
+    box-shadow: var(--admin-shadow-card);
+    transition: all var(--admin-transition-base) ease;
     position: relative;
     border-left: 4px solid transparent;
 }
 
 .feedback-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--admin-shadow-card-hover);
 }
 
 .feedback-card.visible {
@@ -134,7 +134,7 @@
 }
 
 .feedback-card.hidden {
-    border-left-color: #ffc107;
+    border-left-color: var(--admin-status-warning);
     opacity: 0.7;
 }
 
@@ -143,74 +143,74 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: var(--admin-gap-sm);
 }
 
 .feedback-user {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--admin-gap-sm);
 }
 
 .user-avatar {
     width: 48px;
     height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: var(--admin-radius-full);
+    background: var(--admin-gradient-purple);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-weight: 700;
-    font-size: 18px;
+    color: var(--admin-text-white);
+    font-weight: var(--admin-font-weight-bold);
+    font-size: var(--admin-font-size-xl);
     text-transform: uppercase;
 }
 
 .user-info h3 {
-    font-size: 16px;
+    font-size: var(--admin-font-size-md);
     color: #222;
     margin-bottom: 2px;
-    font-weight: 600;
+    font-weight: var(--admin-font-weight-semibold);
 }
 
 .feedback-date {
-    font-size: 12px;
-    color: #999;
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-text-light);
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
 .feedback-date i {
-    font-size: 11px;
+    font-size: var(--admin-font-size-xs);
 }
 
 /* Visibility Badge */
 .visibility-badge {
     padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 700;
+    border-radius: var(--admin-radius-badge);
+    font-size: var(--admin-font-size-xs);
+    font-weight: var(--admin-font-weight-bold);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .visibility-badge.visible {
-    background: #d4edda;
-    color: #155724;
+    background: var(--admin-status-bg-success);
+    color: var(--admin-icon-color-green);
 }
 
 .visibility-badge.hidden {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--admin-status-bg-warning);
+    color: var(--admin-icon-color-yellow);
 }
 
 /* Card Body */
 .feedback-message {
-    color: #555;
+    color: var(--admin-text-secondary);
     line-height: 1.6;
-    font-size: 14px;
-    margin-bottom: 16px;
+    font-size: var(--admin-font-size-md);
+    margin-bottom: var(--admin-gap-md);
     display: -webkit-box;
     -webkit-line-clamp: 4;
     line-clamp: 4;
@@ -226,13 +226,13 @@
 .read-more-btn {
     background: none;
     border: none;
-    color: #0066cc;
-    font-size: 13px;
-    font-weight: 600;
+    color: var(--admin-icon-color-blue);
+    font-size: var(--admin-font-size-base);
+    font-weight: var(--admin-font-weight-semibold);
     cursor: pointer;
     padding: 0;
-    margin-bottom: 12px;
-    transition: color 0.2s;
+    margin-bottom: var(--admin-gap-sm);
+    transition: color var(--admin-transition-fast);
 }
 
 .read-more-btn:hover {
@@ -243,20 +243,20 @@
 /* Card Actions */
 .feedback-actions {
     display: flex;
-    gap: 8px;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
+    gap: var(--admin-gap-xs);
+    padding-top: var(--admin-gap-sm);
+    border-top: 1px solid var(--admin-table-row-border);
 }
 
 .action-btn {
     flex: 1;
-    padding: 8px 12px;
+    padding: var(--admin-gap-xs) var(--admin-gap-sm);
     border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
+    border-radius: var(--admin-radius-sm);
+    font-size: var(--admin-font-size-base);
+    font-weight: var(--admin-font-weight-semibold);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--admin-transition-all);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,12 +264,12 @@
 }
 
 .action-btn i {
-    font-size: 12px;
+    font-size: var(--admin-font-size-sm);
 }
 
 .btn-hide {
-    background: #fff3cd;
-    color: #856404;
+    background: var(--admin-status-bg-warning);
+    color: var(--admin-icon-color-yellow);
 }
 
 .btn-hide:hover {
@@ -277,8 +277,8 @@
 }
 
 .btn-show {
-    background: #d4edda;
-    color: #155724;
+    background: var(--admin-status-bg-success);
+    color: var(--admin-icon-color-green);
 }
 
 .btn-show:hover {
