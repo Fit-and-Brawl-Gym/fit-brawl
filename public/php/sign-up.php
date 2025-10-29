@@ -120,12 +120,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = getenv('EMAIL_PORT');
 
-            $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+            $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl');
             $mail->addAddress($email, $name);
             $mail->isHTML(true);
-            $mail->Subject = 'Verify Your Email - Fit & Brawl Gym';
+            $mail->Subject = 'Verify Your Email - FitXBrawl';
             $mail->Body = "
-                <h2>Welcome to Fit & Brawl Gym, $name!</h2>
+                <h2>Welcome to FitXBrawl, $name!</h2>
                 <p>Click the link below to verify your email:</p>
                 <a href='$verificationLink'>$verificationLink</a>
                 <p>This link will confirm your account registration.</p>

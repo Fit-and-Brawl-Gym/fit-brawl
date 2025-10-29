@@ -25,18 +25,18 @@ function sendMembershipApplicationEmail($email, $name, $plan, $status = 'pending
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = getenv('EMAIL_PORT');
 
-        $mail->setFrom(getenv('EMAIL_USER'), getenv('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym');
+    $mail->setFrom(getenv('EMAIL_USER'), getenv('EMAIL_FROM_NAME') ?: 'FitXBrawl');
         $mail->addAddress($email, $name);
 
         $mail->isHTML(true);
-        $mail->Subject = "Membership application received - {$plan}";
+    $mail->Subject = "Membership application received";
 
         $body = "<p>Hi " . htmlspecialchars($name) . ",</p>";
         $body .= "<p>Thank you — we have received your membership application for <strong>" . htmlspecialchars($plan) . "</strong>.</p>";
         $body .= "<p>Your application status is: <strong>" . htmlspecialchars(ucfirst($status)) . "</strong>. Please note that we will review your payment and supporting documents. An administrator will verify your payment and update your membership.</p>";
         $body .= "<p>Once the admin approves or rejects your application you will receive another email with the result and next steps.</p>";
-        $body .= "<p>Thank you for choosing Fit & Brawl Gym.</p>";
-        $body .= "<p>— Fit & Brawl Team</p>";
+    $body .= "<p>Thank you for choosing FitXBrawl.</p>";
+    $body .= "<p>— FitXBrawl Team</p>";
 
         $mail->Body = $body;
 
@@ -72,13 +72,13 @@ function sendMembershipDecisionEmail($email, $name, $plan, $accepted = false, $s
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = getenv('EMAIL_PORT');
 
-        $mail->setFrom(getenv('EMAIL_USER'), getenv('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym');
+    $mail->setFrom(getenv('EMAIL_USER'), getenv('EMAIL_FROM_NAME') ?: 'FitXBrawl');
         $mail->addAddress($email, $name);
 
         $mail->isHTML(true);
 
         if ($accepted) {
-            $mail->Subject = "Membership approved — " . $plan;
+            $mail->Subject = "Membership approved";
             $body = "<p>Hi " . htmlspecialchars($name) . ",</p>";
             $body .= "<p>Congratulations! Your membership application for <strong>" . htmlspecialchars($plan) . "</strong> has been <strong>accepted</strong>.</p>";
             if ($start_date || $end_date) {
@@ -95,9 +95,9 @@ function sendMembershipDecisionEmail($email, $name, $plan, $accepted = false, $s
                 $body .= "</ul>";
             }
             $body .= "<p>We're excited to have you on board. Please visit your account to view membership benefits and start booking sessions.</p>";
-            $body .= "<p>— Fit & Brawl Team</p>";
+            $body .= "<p>— FitXBrawl Team</p>";
         } else {
-            $mail->Subject = "Membership application update — " . $plan;
+            $mail->Subject = "Membership application update";
             $body = "<p>Hi " . htmlspecialchars($name) . ",</p>";
             $body .= "<p>We reviewed your membership application for <strong>" . htmlspecialchars($plan) . "</strong>.</p>";
             $body .= "<p>Status: <strong>Rejected</strong>.</p>";
@@ -105,7 +105,7 @@ function sendMembershipDecisionEmail($email, $name, $plan, $accepted = false, $s
                 $body .= "<p>Remarks from admin: " . nl2br(htmlspecialchars($remarks)) . "</p>";
             }
             $body .= "<p>If you have questions or want to resubmit with corrected information, please contact us.</p>";
-            $body .= "<p>— Fit & Brawl Team</p>";
+            $body .= "<p>— FitXBrawl Team</p>";
         }
 
         $mail->Body = $body;
