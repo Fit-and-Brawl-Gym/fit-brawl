@@ -1,8 +1,8 @@
 .form-container {
-    background: #fff;
-    border-radius: 12px;
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-radius-xl);
     padding: 32px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--admin-shadow-card);
     max-width: 900px;
 }
 
@@ -13,7 +13,7 @@
 }
 
 .form-section {
-    padding-bottom: 24px;
+    padding-bottom: var(--admin-section-margin-sm);
     border-bottom: 1px solid #eee;
 }
 
@@ -23,42 +23,42 @@
 }
 
 .section-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #222;
-    margin-bottom: 20px;
+    font-size: var(--admin-font-size-xl);
+    font-weight: var(--admin-font-weight-semibold);
+    color: var(--admin-text-primary);
+    margin-bottom: var(--admin-gap-lg);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--admin-gap-xs);
 }
 
 .section-title::before {
     content: '';
     width: 4px;
     height: 20px;
-    background: #00d9ff;
+    background: var(--admin-color-accent);
     border-radius: 2px;
 }
 
 .required {
-    color: #e74c3c;
-    font-weight: 700;
+    color: var(--admin-status-cancelled);
+    font-weight: var(--admin-font-weight-bold);
 }
 
 .alert {
     padding: 14px 16px;
-    border-radius: 8px;
-    margin-bottom: 24px;
+    border-radius: var(--admin-input-radius);
+    margin-bottom: var(--admin-section-margin-sm);
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 14px;
+    font-size: var(--admin-font-size-md);
 }
 
 .alert-error {
     background: #fee;
     color: #c33;
-    border-left: 4px solid #e74c3c;
+    border-left: 4px solid var(--admin-status-cancelled);
 }
 
 .alert-success {
@@ -69,30 +69,30 @@
 
 .form-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--admin-gap-sm);
     justify-content: flex-end;
-    padding-top: 24px;
+    padding-top: var(--admin-section-margin-sm);
     border-top: 1px solid #eee;
 }
 
 input[type="file"] {
-    border: 2px dashed #ddd;
-    padding: 20px;
+    border: 2px dashed var(--admin-input-border);
+    padding: var(--admin-gap-lg);
     cursor: pointer;
     background: #f9f9f9;
 }
 
 input[type="file"]:hover {
-    border-color: #00d9ff;
+    border-color: var(--admin-color-accent);
     background: #f0fbff;
 }
 
 /* Photo preview */
 .photo-preview {
-    margin-top: 12px;
+    margin-top: var(--admin-gap-sm);
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: var(--admin-gap-md);
 }
 
 .photo-preview img {
