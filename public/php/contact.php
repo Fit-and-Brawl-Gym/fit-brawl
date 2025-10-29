@@ -100,11 +100,6 @@ if ($hasActiveMembership) {
 // Initialize session manager
 SessionManager::initialize();
 
-// Check if user is logged in
-if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
 $status = "";
 $fnameErr = $lnameErr = $emailErr = $phoneErr = $messageErr = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -115,30 +110,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $phoneNum = test_input($_POST['phone'] ?? '');
     $message = test_input($_POST['message'] ?? '');
 
-    if (empty($fname)){
+    if (empty($fname)) {
         $fnameErr = "First name is required";
-    } else{
-        if (!preg_match("/^[a-zA-Z-' ]*$/",$fname)) {
+    } else {
+        if (!preg_match("/^[a-zA-Z-' ]*$/", $fname)) {
             $nameErr = "Only letters and white space allowed";
         }
     }
-    if (empty($lname)){
+    if (empty($lname)) {
         $lnameErr = "Last name is required";
-    } else{
-        if (!preg_match("/^[a-zA-Z-' ]*$/",$lname)) {
+    } else {
+        if (!preg_match("/^[a-zA-Z-' ]*$/", $lname)) {
             $nameErr = "Only letters and white space allowed";
         }
     }
-    if (empty($email)){
+    if (empty($email)) {
         $emailErr = "Email is required";
-    } else{
+    } else {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $emailErr = "Invalid email format";
         }
     }
     if (empty($phoneNum)) {
         $phoneErr = "Phone number is required";
-    } else{
+    } else {
         if (!preg_match("/^[0-9]{10,15}$/", $phoneNum)) {
             $phoneErr = "Invalid phone number format";
         }
@@ -149,19 +144,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (empty($fnameErr) && empty($lnameErr) && empty($emailErr) && empty($phoneErr) && empty($messageErr)) {
-    $sql = "INSERT INTO contact (first_name, last_name, email, phone_number, message, date_submitted)
+        $sql = "INSERT INTO contact (first_name, last_name, email, phone_number, message, date_submitted)
             VALUES (?, ?, ?, ?, ?, NOW())";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssss", $fname, $lname, $email, $phoneNum, $message);
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sssss", $fname, $lname, $email, $phoneNum, $message);
 
-    if ($stmt->execute()) {
-        $status = "Your message has been sent successfully.";
+        if ($stmt->execute()) {
+            $status = "Your message has been sent successfully.";
 
-        $fname = $lname = $email = $phoneNum = $message = '';
-    } else {
-        $status = "Database error: " . $stmt->error;
+            $fname = $lname = $email = $phoneNum = $message = '';
+        } else {
+            $status = "Database error: " . $stmt->error;
+        }
     }
-}
 }
 
 // Determine avatar source for logged-in users
@@ -171,7 +166,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
 }
 
-function test_input($data) {
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
@@ -186,66 +182,71 @@ $additionalCSS = ["../css/pages/contact.css", "../css/components/form.css"];
 // Include header
 require_once '../../includes/header.php';
 ?>
-    <!--Main-->
-    <main>
-        <div class="bg"></div>
-        <div class="glowing-bg"></div>
-        <div class="contact-container">
-            <div class="contact-section">
-                <div class="contact-header">
-                    <h1>Contact Us</h1>
-                </div>
-                <form method="post" class="contact-form" id="contactForm">
+<!--Main-->
+<main>
+    <div class="bg"></div>
+    <div class="glowing-bg"></div>
+    <div class="contact-container">
+        <div class="contact-section">
+            <div class="contact-header">
+                <h1>Contact Us</h1>
+            </div>
+            <form method="post" class="contact-form" id="contactForm">
                 <div class="contact-details">
-                    <?php if(!empty($status)) : ?>
+                    <?php if (!empty($status)): ?>
                         <div class="success"><?= htmlspecialchars($status) ?></div>
                     <?php endif; ?>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="first-name">First Name</label>
-                            <input type="text" id="first-name" name="first-name" placeholder="Excel" value="<?= htmlspecialchars($fname ?? '') ?>">
-                            <?php if(!empty($fnameErr)) : ?>
-                        <div class="status"><?= htmlspecialchars($fnameErr) ?></div>
-                    <?php endif; ?>
+                            <input type="text" id="first-name" name="first-name" placeholder="Excel"
+                                value="<?= htmlspecialchars($fname ?? '') ?>">
+                            <?php if (!empty($fnameErr)): ?>
+                                <div class="status"><?= htmlspecialchars($fnameErr) ?></div>
+                            <?php endif; ?>
                         </div>
                         <div class="form-group">
                             <label for="last-name">Last Name</label>
-                            <input type="text" id="last-name" name="last-name" placeholder="Bondoc" value="<?= htmlspecialchars($lname ?? '') ?>">
-                            <?php if(!empty($lnameErr)) : ?>
-                        <div class="status"><?= htmlspecialchars($lnameErr) ?></div>
-                    <?php endif; ?>
+                            <input type="text" id="last-name" name="last-name" placeholder="Bondoc"
+                                value="<?= htmlspecialchars($lname ?? '') ?>">
+                            <?php if (!empty($lnameErr)): ?>
+                                <div class="status"><?= htmlspecialchars($lnameErr) ?></div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="excelpogi@gmail.com" value="<?= htmlspecialchars($email ?? '') ?>">
-                            <?php if(!empty($emailErr)) : ?>
-                        <div class="status"><?= htmlspecialchars($emailErr) ?></div>
-                    <?php endif; ?>
+                            <input type="email" id="email" name="email" placeholder="excelpogi@gmail.com"
+                                value="<?= htmlspecialchars($email ?? '') ?>">
+                            <?php if (!empty($emailErr)): ?>
+                                <div class="status"><?= htmlspecialchars($emailErr) ?></div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" placeholder="09123456789" value="<?= htmlspecialchars($phoneNum ?? '') ?>">
-                            <?php if(!empty($phoneErr)) : ?>
-                        <div class="status"><?= htmlspecialchars($phoneErr) ?></div>
-                    <?php endif; ?>
+                            <input type="tel" id="phone" name="phone" placeholder="09123456789"
+                                value="<?= htmlspecialchars($phoneNum ?? '') ?>">
+                            <?php if (!empty($phoneErr)): ?>
+                                <div class="status"><?= htmlspecialchars($phoneErr) ?></div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <div class="form-group">
-                        <textarea id="message" name="message" placeholder="Leave us a message..." value="<?= htmlspecialchars($message ?? '') ?>"></textarea>
-                        <?php if(!empty($messageErr)) : ?>
-                        <div class="status"><?= htmlspecialchars($messageErr) ?></div>
-                    <?php endif; ?>
+                        <textarea id="message" name="message" placeholder="Leave us a message..."
+                            value="<?= htmlspecialchars($message ?? '') ?>"></textarea>
+                        <?php if (!empty($messageErr)): ?>
+                            <div class="status"><?= htmlspecialchars($messageErr) ?></div>
+                        <?php endif; ?>
                     </div>
                     <div class="submit-button">
                         <button type="submit">Submit</button>
                     </div>
                 </div>
             </form>
-            </div>
         </div>
-    </main>
+    </div>
+</main>
 
 <?php require_once '../../includes/footer.php'; ?>

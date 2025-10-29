@@ -102,6 +102,70 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     }
 });
 
+// Save product (add or edit)
+async function saveProduct(formData) {
+    try {
+        const response = await fetch('api/product_actions.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: formData.id ? 'edit' : 'add',
+                id: formData.id,
+                name: formData.name,
+                category: formData.category,
+                stock: formData.stock
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Product saved successfully!');
+            closeSidePanel();
+            location.reload(); // Reload to see changes
+        } else {
+            alert('Error: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('An error occurred while saving');
+    }
+}
+
+// Delete product
+async function deleteProduct(id) {
+    if (!confirm('Are you sure you want to delete this product?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('api/product_actions.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'delete',
+                id: id
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Product deleted successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('An error occurred while deleting');
+    }
+}
+
 // Delete single product
 function deleteProduct(id, name) {
     deleteId = id;
