@@ -22,7 +22,7 @@
     right: 0;
     bottom: 0;
     background: url('../../../../images/fog-bg.png') center/cover no-repeat;
-    opacity: 0.08;
+    opacity: 0.30;
     z-index: 1;
     pointer-events: none;
 }
