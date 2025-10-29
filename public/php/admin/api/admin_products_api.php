@@ -2,6 +2,10 @@
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\api\admin_products_api.php
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../../includes/init.php';
+require_once __DIR__ . '/../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     http_response_code(403);
@@ -16,7 +20,7 @@ try {
     if ($method === 'POST') {
         $id = $_POST['id'] ?? null;
         $name = test_input($_POST['name'] ?? '');
-        $category = ($_POST['category']?? '');
+        $category = ($_POST['category'] ?? '');
         $stock = test_input(intval($_POST['stock'] ?? 0));
 
         if ($stock == 0) {
@@ -55,6 +59,24 @@ try {
         }
 
         if ($stmt->execute()) {
+            // LOG THE ACTIVITY
+            if (empty($id)) {
+                $newId = $conn->insert_id;
+                ActivityLogger::log(
+                    'product_add',
+                    null,
+                    $newId,
+                    "Added product: {$name} (Category: {$category}, Stock: {$stock}, Status: {$status})"
+                );
+            } else {
+                ActivityLogger::log(
+                    'product_edit',
+                    null,
+                    $id,
+                    "Updated product: {$name} (Category: {$category}, Stock: {$stock}, Status: {$status})"
+                );
+            }
+
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => $stmt->error]);
@@ -70,12 +92,38 @@ try {
         }
 
         if (!empty($ids)) {
+            // Get product names before deleting
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             $types = str_repeat('i', count($ids));
+            $nameStmt = $conn->prepare("SELECT id, name, category FROM products WHERE id IN ($placeholders)");
+            $nameStmt->bind_param($types, ...$ids);
+            $nameStmt->execute();
+            $nameResult = $nameStmt->get_result();
+            $productData = $nameResult->fetch_all(MYSQLI_ASSOC);
+            $nameStmt->close();
+
+            // Delete
             $stmt = $conn->prepare("DELETE FROM products WHERE id IN ($placeholders)");
             $stmt->bind_param($types, ...$ids);
 
             if ($stmt->execute()) {
+                // LOG THE ACTIVITY
+                if (count($ids) === 1 && !empty($productData)) {
+                    ActivityLogger::log(
+                        'product_delete',
+                        null,
+                        $ids[0],
+                        "Deleted product: {$productData[0]['name']} (Category: {$productData[0]['category']})"
+                    );
+                } elseif (count($ids) > 1) {
+                    ActivityLogger::log(
+                        'bulk_delete',
+                        null,
+                        null,
+                        "Bulk deleted " . count($ids) . " products"
+                    );
+                }
+
                 echo json_encode(['success' => true]);
             } else {
                 echo json_encode(['success' => false, 'message' => $stmt->error]);
@@ -90,7 +138,8 @@ try {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
-function test_input($data){
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);

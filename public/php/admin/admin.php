@@ -4,7 +4,10 @@
 // ===========================================
 
 include_once('../../../includes/init.php');
+require_once('../../../includes/activity_logger.php');
 
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 // Optional: Check admin privileges
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -29,7 +32,8 @@ if ($result)
 $pendingSubs = 0;
 if ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
   $result = $conn->query("SELECT COUNT(*) AS total FROM subscriptions WHERE status = 'Pending'");
-  if ($result) $pendingSubs = $result->fetch_assoc()['total'];
+  if ($result)
+    $pendingSubs = $result->fetch_assoc()['total'];
 } elseif ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
   // Inspect which status-like columns exist
   $has_request_status = ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'")->num_rows > 0);
@@ -38,14 +42,17 @@ if ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
 
   if ($has_request_status) {
     $result = $conn->query("SELECT COUNT(*) AS total FROM user_memberships WHERE request_status = 'pending'");
-    if ($result) $pendingSubs = $result->fetch_assoc()['total'];
+    if ($result)
+      $pendingSubs = $result->fetch_assoc()['total'];
   } elseif ($has_status) {
     $result = $conn->query("SELECT COUNT(*) AS total FROM user_memberships WHERE status IN ('Pending','pending')");
-    if ($result) $pendingSubs = $result->fetch_assoc()['total'];
+    if ($result)
+      $pendingSubs = $result->fetch_assoc()['total'];
   } elseif ($has_membership_status) {
     // Approximate pending requests: submitted but not approved/activated
     $result = $conn->query("SELECT COUNT(*) AS total FROM user_memberships WHERE membership_status IS NULL AND date_submitted IS NOT NULL AND date_approved IS NULL");
-    if ($result) $pendingSubs = $result->fetch_assoc()['total'];
+    if ($result)
+      $pendingSubs = $result->fetch_assoc()['total'];
   }
 }
 
@@ -98,48 +105,108 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
       </div>
     </section>
 
-    <!-- Optional Section: Recent Logs -->
+    <!-- Recent Activity Logs -->
     <section class="logs">
-      <h2>Recent Activity</h2>
-      <table border="1" cellpadding="6">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2>Recent Activity</h2>
+        <a href="activity-log.php" class="btn-primary"
+          style="padding: 8px 16px; text-decoration: none; font-size: 14px;">
+          <i class="fa-solid fa-eye"></i> View All
+        </a>
+      </div>
+      <table>
         <thead>
           <tr>
+            <th width="40"></th>
             <th>Admin</th>
             <th>Action</th>
+            <th>Details</th>
             <th>Date</th>
           </tr>
         </thead>
         <tbody>
           <?php
-            // Only query logs if the table exists (prevent fatal errors during schema migration)
-            if ($conn->query("SHOW TABLES LIKE 'logs'")->num_rows) {
-              $logs = $conn->query("
-                SELECT l.action, l.timestamp, u.username
-                FROM logs l
-                LEFT JOIN users u ON l.admin_id = u.id
-                ORDER BY l.timestamp DESC LIMIT 5
-              ");
-            } else {
-              $logs = false;
-            }
+          $activities = ActivityLogger::getActivities(10);
 
-          if ($logs && $logs->num_rows > 0):
-            while ($row = $logs->fetch_assoc()):
+          if (!empty($activities)):
+            foreach ($activities as $activity):
+              $iconData = ActivityLogger::getActivityIcon($activity['action_type']);
+              $timeAgo = timeAgo($activity['timestamp']);
               ?>
               <tr>
-                <td><?= htmlspecialchars($row['username'] ?? 'Unknown') ?></td>
-                <td><?= htmlspecialchars($row['action']) ?></td>
-                <td><?= htmlspecialchars($row['timestamp']) ?></td>
+                <td>
+                  <i class="fa-solid <?= $iconData['icon'] ?>"
+                    style="color: <?= $iconData['color'] ?>; font-size: 18px;"></i>
+                </td>
+                <td><strong><?= htmlspecialchars($activity['admin_name']) ?></strong></td>
+                <td><?= ucwords(str_replace('_', ' ', $activity['action_type'])) ?></td>
+                <td><?= htmlspecialchars($activity['details']) ?></td>
+                <td style="color: #999; font-size: 13px;"><?= $timeAgo ?></td>
               </tr>
-            <?php endwhile; else: ?>
+              <?php
+            endforeach;
+          else:
+            ?>
             <tr>
-              <td colspan="3" align="center">No recent activity.</td>
+              <td colspan="5" style="text-align: center; color: #999; padding: 40px;">
+                No recent activity
+              </td>
             </tr>
           <?php endif; ?>
         </tbody>
       </table>
     </section>
   </main>
+
+  <?php
+  // Helper function for time ago
+  function timeAgo($timestamp)
+  {
+    if (!$timestamp)
+      return 'N/A';
+
+    $time = strtotime($timestamp);
+    $now = time();
+    $diff = $now - $time;
+
+    // Handle future dates
+    if ($diff < 0) {
+      return date('M d, Y g:i A', $time);
+    }
+
+    // Less than 1 minute
+    if ($diff < 60) {
+      return 'Just now';
+    }
+
+    // Less than 1 hour
+    if ($diff < 3600) {
+      $mins = floor($diff / 60);
+      return $mins . ' min' . ($mins > 1 ? 's' : '') . ' ago';
+    }
+
+    // Less than 24 hours
+    if ($diff < 86400) {
+      $hours = floor($diff / 3600);
+      return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+    }
+
+    // Less than 7 days
+    if ($diff < 604800) {
+      $days = floor($diff / 86400);
+      return $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+    }
+
+    // Less than 30 days
+    if ($diff < 2592000) {
+      $weeks = floor($diff / 604800);
+      return $weeks . ' week' . ($weeks > 1 ? 's' : '') . ' ago';
+    }
+
+    // Older than 30 days - show full date
+    return date('M d, Y g:i A', $time);
+  }
+  ?>
 
   <?php include_once('admin_footer.php'); ?>
 </body>

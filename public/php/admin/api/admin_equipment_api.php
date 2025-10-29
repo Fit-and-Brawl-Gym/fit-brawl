@@ -3,6 +3,10 @@
 // Supports: ?action=fetch (GET), POST actions: add, update, delete
 // Use absolute include relative to this file for reliability
 require_once __DIR__ . '/../../../../includes/init.php';
+require_once __DIR__ . '/../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 header('Content-Type: application/json');
 
@@ -53,17 +57,35 @@ if ($method === 'POST') {
             $stmt = $conn->prepare("UPDATE equipment SET name=?, category=?, status=?, description=? WHERE id=?");
             $stmt->bind_param("ssssi", $name, $category, $status, $description, $id);
         }
-    } 
+    }
     // If adding new
     else {
         $stmt = $conn->prepare("INSERT INTO equipment (name, category, status, description, image_path) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("sssss", $name, $category, $status, $description, $imagePath);
     }
-     if ($stmt->execute()) {
-            echo json_encode(['success' => true]);
+    if ($stmt->execute()) {
+        // LOG THE ACTIVITY
+        if ($id) {
+            ActivityLogger::log(
+                'equipment_edit',
+                null,
+                $id,
+                "Updated equipment: {$name} (Category: {$category}, Status: {$status})"
+            );
         } else {
-            echo json_encode(['success' => false, 'message' => $stmt->error]);
-        }   
+            $newId = $conn->insert_id;
+            ActivityLogger::log(
+                'equipment_add',
+                null,
+                $newId,
+                "Added equipment: {$name} (Category: {$category}, Status: {$status})"
+            );
+        }
+
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => $stmt->error]);
+    }
     exit;
 }
 
@@ -76,15 +98,32 @@ if ($method === 'DELETE') {
         exit;
     }
 
+    // Get equipment name before deleting
+    $nameStmt = $conn->prepare("SELECT name, category FROM equipment WHERE id = ?");
+    $nameStmt->bind_param('i', $id);
+    $nameStmt->execute();
+    $nameResult = $nameStmt->get_result();
+    $equipmentData = $nameResult->fetch_assoc();
+    $nameStmt->close();
+
     $stmt = $conn->prepare("DELETE FROM equipment WHERE id = ?");
     $stmt->bind_param('i', $id);
 
-    
-            if ($stmt->execute()) {
-                echo json_encode(['success' => true]);
-            } else {
-                echo json_encode(['success' => false, 'message' => $stmt->error]);
-            }
+    if ($stmt->execute()) {
+        // LOG THE ACTIVITY
+        if ($equipmentData) {
+            ActivityLogger::log(
+                'equipment_delete',
+                null,
+                $id,
+                "Deleted equipment: {$equipmentData['name']} (Category: {$equipmentData['category']})"
+            );
+        }
+
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'message' => $stmt->error]);
+    }
     $stmt->close();
     exit;
 }
