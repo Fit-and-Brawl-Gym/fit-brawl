@@ -19,13 +19,13 @@ function sendOTPEmail($email, $otp) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = getenv('EMAIL_PORT');
 
-        // Recipients
-        $mail->setFrom(getenv('EMAIL_USER'), 'Fit X Brawl'); // Use same email as Username
+    // Recipients
+    $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl'); // Use same email as Username
         $mail->addAddress($email);
 
         // Content
         $mail->isHTML(true);
-        $mail->Subject = 'fitxbrawl.gym@gmail.com';
+    $mail->Subject = 'Your FitXBrawl OTP';
         $mail->Body = "Your OTP for password reset is: <b>$otp</b><br>This OTP will expire in 5 minutes.";
 
         $mail->send();
