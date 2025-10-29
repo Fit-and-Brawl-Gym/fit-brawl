@@ -292,7 +292,5 @@ require_once '../../includes/header.php';
 
     <!--Footer-->
 <?php require_once '../../includes/footer.php'; ?>
-
-    <script src="../js/header-dropdown.js"></script>
 </body>
 </html>
