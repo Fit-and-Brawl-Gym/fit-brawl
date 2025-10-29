@@ -274,7 +274,7 @@ function showError($error) {
 
                     <div class="form-options">
                         <label class="checkbox-container">
-                            <input type="checkbox" required>
+                            <input type="checkbox" id="terms-checkbox" required>
                             <span class="checkmark"></span>
                             Agree to&nbsp;<a href="#" class="terms-link">Terms and Conditions</a>
                         </label>
@@ -338,7 +338,28 @@ function showError($error) {
 
             <div class="terms-modal-body">
                 <div class="terms-sidebar">
-                    <nav>
+                    <!-- Mobile Dropdown Navigation -->
+                    <div class="terms-mobile-nav" data-active="#use-of-website">
+                        <button type="button" class="terms-dropdown-trigger" aria-expanded="false">
+                            <span class="terms-dropdown-label">1. Use of Our Website</span>
+                            <span class="terms-dropdown-icon" aria-hidden="true"></span>
+                        </button>
+                        <ul class="terms-dropdown-list" hidden>
+                            <li><button type="button" data-target="#use-of-website">1. Use of Our Website</button></li>
+                            <li><button type="button" data-target="#booking-scheduling">2. Booking and Scheduling</button></li>
+                            <li><button type="button" data-target="#payments-fees">3. Payments and Fees</button></li>
+                            <li><button type="button" data-target="#cancellations-refunds">4. Cancellations and Refunds</button></li>
+                            <li><button type="button" data-target="#health-safety">5. Health and Safety</button></li>
+                            <li><button type="button" data-target="#memberships">6. Memberships and Subscriptions</button></li>
+                            <li><button type="button" data-target="#intellectual-property">7. Intellectual Property</button></li>
+                            <li><button type="button" data-target="#limitation-liability">8. Limitation of Liability</button></li>
+                            <li><button type="button" data-target="#privacy-policy">9. Privacy Policy</button></li>
+                            <li><button type="button" data-target="#changes-terms">10. Changes to These Terms</button></li>
+                        </ul>
+                    </div>
+
+                    <!-- Desktop Sidebar Navigation -->
+                    <nav class="terms-desktop-nav">
                         <ul>
                             <li><a href="#use-of-website" class="active">1. Use of Our Website</a></li>
                             <li><a href="#booking-scheduling">2. Booking and Scheduling</a></li>
