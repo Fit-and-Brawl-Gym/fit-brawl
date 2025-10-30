@@ -362,66 +362,67 @@ h1.page-title {
     gap: var(--spacing-4);
 }
 
+
 .monthly-schedule {
-    background: rgba(26, 74, 82, 0.8);
+    background: rgba(0, 0, 0, 0.4);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-3);
+    padding: var(--spacing-5);
+    border: 1px solid rgba(213, 186, 43, 0.2);
     position: relative;
 }
+
 
 .schedule-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-3);
+    border-bottom: 2px solid rgba(213, 186, 43, 0.3);
 }
+
 
 .schedule-header h2 {
     font-family: var(--font-family-display);
     font-size: var(--font-size-2xl);
-    letter-spacing: 1.5px;
     color: var(--color-accent);
     margin: 0;
 }
 
+
 .month-nav {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: var(--spacing-1);
-    color: var(--color-text-light);
-    cursor: pointer;
-    padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-base);
+    gap: var(--spacing-2);
     transition: var(--transition-base);
-    font-size: 0.8rem;
-    position: relative;
 }
 
 .month-nav:hover {
-    background: rgba(213, 186, 43, 0.1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
+
 .month-dropdown {
+    display: none;
     position: absolute;
     top: 100%;
     right: 0;
     margin-top: var(--spacing-1);
-    background: rgba(15, 50, 56, 0.98);
-    border: 2px solid var(--color-accent);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-2);
-    display: none;
-    flex-direction: column;
-    gap: var(--spacing-1);
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    z-index: 10;
     min-width: 150px;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 100;
-    box-shadow: var(--shadow-xl);
 }
 
 .month-dropdown.active {
-    display: flex;
+    display: block;
 }
 
 /* Custom Scrollbar for Month Dropdown */

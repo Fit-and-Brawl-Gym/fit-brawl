@@ -13,19 +13,20 @@ try {
     $month = isset($_GET['month']) ? intval($_GET['month']) : date('n');
     $class_filter = isset($_GET['class']) ? trim($_GET['class']) : 'all';
     $coach_filter = isset($_GET['coach']) ? trim($_GET['coach']) : 'all';
+    $session_filter = isset($_GET['session']) ? trim($_GET['session']) : 'all';
 
     $query = "
-        SELECT 
+        SELECT
             r.id, r.class_type, r.date, r.start_time, r.end_time, r.max_slots,
             t.id AS trainer_id, t.name AS trainer_name,
             (r.max_slots - COUNT(ur.id)) AS remaining_slots
         FROM reservations r
         JOIN trainers t ON r.trainer_id = t.id
-        LEFT JOIN user_reservations ur 
-            ON r.id = ur.reservation_id 
+        LEFT JOIN user_reservations ur
+            ON r.id = ur.reservation_id
            AND ur.booking_status != 'cancelled'
-        WHERE YEAR(r.date) = ? 
-          AND MONTH(r.date) = ? 
+        WHERE YEAR(r.date) = ?
+          AND MONTH(r.date) = ?
           AND r.status = 'available'
     ";
 
@@ -44,6 +45,15 @@ try {
         $params[] = $class_map[$class_filter];
         $types .= "s";
     }
+
+    // Session filter
+    if ($session_filter === 'morning') {
+        $query .= " AND TIME(r.start_time) >= '06:00:00' AND TIME(r.start_time) < '12:00:00'";
+    } elseif ($session_filter === 'afternoon') {
+        $query .= " AND TIME(r.start_time) >= '12:00:00' AND TIME(r.start_time) < '18:00:00'";
+    } elseif ($session_filter === 'evening') {
+        $query .= " AND TIME(r.start_time) >= '18:00:00' AND TIME(r.start_time) <= '22:00:00'";
+    } // 'all' returns all sessions, so no filter
 
 
     if ($coach_filter !== 'all') {
@@ -78,9 +88,13 @@ try {
             $reservations[$day] = [];
         }
 
+        // Add slug for frontend filtering
+        $class_slug = strtolower(preg_replace('/[^a-z0-9]+/', '-', $row['class_type']));
+
         $reservations[$day][] = [
             'id' => $row['id'],
             'class' => $row['class_type'],
+            'class_slug' => $class_slug,
             'trainer' => $row['trainer_name'],
             'trainer_id' => $row['trainer_id'],
             'date' => $row['date'],
