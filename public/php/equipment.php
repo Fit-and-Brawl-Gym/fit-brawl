@@ -175,6 +175,13 @@ require_once '../../includes/header.php';
             <h2>Equipment Availability</h2>
         </div>
 
+        <!-- Filter instruction -->
+        <div style="text-align: center; margin-bottom: var(--spacing-3);">
+            <p style="color: var(--color-text-light); font-size: var(--font-size-sm); opacity: 0.9;">
+                <strong style="color: var(--color-accent);">Click</strong> a category below to filter equipment
+            </p>
+        </div>
+
         <!-- category chips (filters) -->
         <div class="categories-row" id="category-filters">
             <div class="category-chip active" data-category="cardio">

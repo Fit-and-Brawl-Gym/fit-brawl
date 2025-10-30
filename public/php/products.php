@@ -174,6 +174,13 @@ require_once '../../includes/header.php';
             <h2>Products</h2>
          </div>
 
+        <!-- Filter instruction -->
+        <div style="text-align: center; margin-bottom: var(--spacing-3);">
+            <p style="color: var(--color-text-light); font-size: var(--font-size-sm); opacity: 0.9;">
+                <strong style="color: var(--color-accent);">Click</strong> a category below to filter products
+            </p>
+        </div>
+
         <!-- Categories -->
          <div class="categories-row">
             <div class="category-chip" data-cat="supplements">

@@ -20,32 +20,29 @@ function renderEquipment(items) {
 
     return `
       <div class="equipment-card" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
-        <div class="equipment-header">
-          <div>
-            <h3>${escapeHtml(item.name)}</h3>
-            <div class="status-text"><span class="status-dot ${statusClass}"></span><span class="value">${escapeHtml(item.status)}</span></div>
-            <div class="equipment-card-category">Category: ${escapeHtml(categories.join(', '))}</div>
+        <img src="${imageSrc}"
+             alt="${escapeHtml(item.name)}"
+             class="equipment-image"
+             onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
+
+        <div class="equipment-content">
+          <div class="equipment-header">
+            <div class="equipment-info">
+              <h3>${escapeHtml(item.name)}</h3>
+              <span class="equipment-category">${escapeHtml(categories.join(', '))}</span>
+            </div>
+
+            <div class="equipment-status">
+              <span class="status-dot ${statusClass}"></span>
+              <span class="status-text">${escapeHtml(item.status)}</span>
+            </div>
           </div>
-        </div>
-        <div class="equipment-dropdown">
-          <img src="${imageSrc}" 
-               alt="${escapeHtml(item.name)}" 
-               class="equipment-image"
-               onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
-          <div class="equipment-desc">${escapeHtml(item.description || '')}</div>
+
+          <div class="equipment-desc">${escapeHtml(item.description || 'No description available.')}</div>
         </div>
       </div>
     `;
   }).join('');
-
-  // Click toggle
-  const cards = container.querySelectorAll('.equipment-card');
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      cards.forEach(c => c !== card && c.classList.remove('active'));
-      card.classList.toggle('active');
-    });
-  });
 }
 
 function escapeHtml(unsafe) {
