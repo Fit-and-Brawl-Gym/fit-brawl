@@ -98,47 +98,22 @@ INSERT INTO user_memberships (
 (2, 'John Member', 'Philippines', '123 Sample Street, City', 2, 'Brawler', '2025-09-01', '2025-12-01', 'monthly', 'active', 'approved', '2025-09-01'),
 (3, 'Jane Member', 'Philippines', '456 Example Avenue, City', 1, 'Gladiator', '2025-09-15', '2025-12-15', 'monthly', 'active', 'approved', '2025-09-15');
 
--- =====================
+-- =====================================================
 -- SEED DATA FOR RESERVATIONS
--- Sample class schedules for September 2025
--- =====================
-DELETE FROM user_reservations;
-DELETE FROM reservations;
+-- =====================================================
+-- NOTE: For production, use 'seed_trainer_schedules.sql' instead!
+-- That file contains the complete Nov-Dec 2025 schedule (~338 sessions).
+-- This seed.sql only includes basic sample data for quick testing.
+--
+-- To use the full schedule:
+--   mysql -u root -p fit_and_brawl_gym < docs/database/seed_trainer_schedules.sql
+-- =====================================================
 
-INSERT INTO reservations (trainer_id, class_type, date, start_time, end_time, max_slots, status) VALUES
--- Week 1
-(2, 'Boxing', '2025-09-01', '17:00:00', '19:00:00', 10, 'available'),
-(1, 'Muay Thai', '2025-09-02', '09:00:00', '11:00:00', 8, 'available'),
-(3, 'MMA', '2025-09-03', '13:00:00', '15:00:00', 12, 'available'),
-(2, 'Boxing', '2025-09-04', '15:00:00', '17:00:00', 10, 'available'),
--- Week 2
-(1, 'Muay Thai', '2025-09-08', '17:00:00', '19:00:00', 10, 'available'),
-(3, 'MMA', '2025-09-09', '19:00:00', '21:00:00', 8, 'available'),
-(2, 'Boxing', '2025-09-10', '13:00:00', '15:00:00', 10, 'available'),
-(1, 'Muay Thai', '2025-09-11', '17:00:00', '19:00:00', 10, 'available'),
--- Week 3
-(3, 'MMA', '2025-09-15', '17:00:00', '19:00:00', 10, 'available'),
-(2, 'Boxing', '2025-09-16', '09:00:00', '11:00:00', 12, 'available'),
-(1, 'Muay Thai', '2025-09-17', '13:00:00', '15:00:00', 10, 'available'),
-(3, 'MMA', '2025-09-18', '15:00:00', '17:00:00', 8, 'available'),
--- Week 4
-(2, 'Boxing', '2025-09-22', '17:00:00', '19:00:00', 10, 'available'),
-(1, 'Muay Thai', '2025-09-23', '19:00:00', '21:00:00', 10, 'available'),
-(3, 'MMA', '2025-09-24', '13:00:00', '15:00:00', 12, 'available'),
-(2, 'Boxing', '2025-09-25', '17:00:00', '19:00:00', 10, 'available'),
--- Week 5
-(1, 'Muay Thai', '2025-09-29', '17:00:00', '19:00:00', 10, 'available'),
-(3, 'MMA', '2025-09-30', '09:00:00', '11:00:00', 8, 'available');
-
--- =====================
--- SEED DATA FOR USER RESERVATIONS
--- Sample bookings for testing
--- =====================
-INSERT INTO user_reservations (user_id, reservation_id, booking_status) VALUES
-(2, 1, 'confirmed'),
-(2, 7, 'confirmed'),
-(3, 2, 'confirmed'),
-(3, 4, 'confirmed');
+-- Sample booking data (optional - for testing only)
+-- Uncomment if you need sample bookings
+-- INSERT INTO user_reservations (user_id, reservation_id, booking_status) VALUES
+-- (2, 1, 'confirmed'),
+-- (3, 2, 'confirmed');
 
 -- =====================
 -- SEED DATA FOR EQUIPMENT

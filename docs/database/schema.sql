@@ -4,6 +4,13 @@
 -- This schema is designed for a gym management system
 -- supporting memberships, reservations, equipment tracking,
 -- products, and user management.
+--
+-- DEPLOYMENT STEPS:
+--   1. Run this schema.sql file to create database structure
+--   2. Run seed.sql for basic data (users, memberships, equipment, products)
+--   3. Run seed_trainer_schedules.sql for complete Nov-Dec 2025 schedule
+--
+-- See docs/database/SCHEDULE_README.md for detailed instructions
 -- =============================================
 
 -- Create database
@@ -147,19 +154,23 @@ CREATE TABLE user_memberships (
 CREATE TABLE reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     trainer_id INT NOT NULL,
-    class_type ENUM('Boxing', 'Muay Thai', 'MMA') NOT NULL,
+    class_type ENUM('Boxing', 'Muay Thai', 'MMA', 'Gym') NOT NULL,
     date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    max_slots INT NOT NULL DEFAULT 10,
+    max_slots INT NOT NULL DEFAULT 1 COMMENT 'Each session has 1 slot per trainer',
     status ENUM('available', 'full', 'cancelled') DEFAULT 'available',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_session (trainer_id, class_type, date, start_time)
-);
+    UNIQUE KEY unique_session (trainer_id, class_type, date, start_time),
+    INDEX idx_reservations_date (date),
+    INDEX idx_reservations_trainer_date (trainer_id, date),
+    INDEX idx_reservations_class_date (class_type, date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Training sessions with 1 booking slot each';
 
 -- =====================
--- USER RESERVATIONS TABLE (NEW)
+-- USER RESERVATIONS TABLE
+-- Links users to their booked training sessions
 -- =====================
 CREATE TABLE user_reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -167,18 +178,13 @@ CREATE TABLE user_reservations (
     reservation_id INT NOT NULL,
     booking_status ENUM('confirmed', 'cancelled', 'completed') DEFAULT 'confirmed',
     booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    class_type VARCHAR(50) NOT NULL,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    max_slots INT NOT NULL DEFAULT 1,
-    remaining_slots INT NOT NULL DEFAULT 1,
-    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_booking (user_id, reservation_id)
-);
+    UNIQUE KEY unique_user_booking (user_id, reservation_id, booking_status) COMMENT 'User can rebook after cancellation',
+    INDEX idx_user_bookings (user_id, booking_status),
+    INDEX idx_reservation_bookings (reservation_id, booking_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='User training session bookings';
 
 -- =====================
 -- EQUIPMENT TABLE
@@ -239,21 +245,21 @@ CREATE TABLE admin_logs (
     target_id INT DEFAULT NULL COMMENT 'ID of the record that was affected',
     details TEXT DEFAULT NULL COMMENT 'Detailed description of the action',
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'When the action occurred',
-    
+
     -- Indexes for faster queries
     INDEX idx_admin_id (admin_id),
     INDEX idx_action_type (action_type),
     INDEX idx_timestamp (timestamp DESC),
     INDEX idx_target_id (target_id),
-    
+
     -- Foreign key to users table
-    CONSTRAINT fk_admin_logs_user FOREIGN KEY (admin_id) 
-        REFERENCES users(id) 
-        ON DELETE CASCADE 
+    CONSTRAINT fk_admin_logs_user FOREIGN KEY (admin_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
         ON UPDATE CASCADE
-        
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tracks all admin actions in the system';
-   
+
 -- =====================
 -- ACTIVITY LOGS TABLE
 -- =====================

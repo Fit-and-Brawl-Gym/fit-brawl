@@ -3,6 +3,9 @@ session_start();
 require_once '../../../includes/db_connect.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 
 
 error_reporting(E_ALL);
@@ -15,24 +18,45 @@ try {
     $coach_filter = isset($_GET['coach']) ? trim($_GET['coach']) : 'all';
     $session_filter = isset($_GET['session']) ? trim($_GET['session']) : 'all';
 
+    // Validate year and month
+    if ($year < 2020 || $year > 2100) {
+        echo json_encode(['success' => false, 'message' => 'Invalid year']);
+        exit;
+    }
+    if ($month < 1 || $month > 12) {
+        echo json_encode(['success' => false, 'message' => 'Invalid month']);
+        exit;
+    }
+
+    // Get current date and time for filtering
+    $currentDate = date('Y-m-d');
+    $currentTime = date('H:i:s');
+
+    // Calculate max booking date (1 month from now)
+    $maxBookingDate = date('Y-m-d', strtotime('+1 month'));
+
     $query = "
-        SELECT
+        SELECT SQL_NO_CACHE
             r.id, r.class_type, r.date, r.start_time, r.end_time, r.max_slots,
             t.id AS trainer_id, t.name AS trainer_name,
-            (r.max_slots - COUNT(ur.id)) AS remaining_slots
+            (r.max_slots - COALESCE(COUNT(ur.id), 0)) AS remaining_slots
         FROM reservations r
         JOIN trainers t ON r.trainer_id = t.id
         LEFT JOIN user_reservations ur
             ON r.id = ur.reservation_id
-           AND ur.booking_status != 'cancelled'
+           AND ur.booking_status = 'confirmed'
         WHERE YEAR(r.date) = ?
           AND MONTH(r.date) = ?
           AND r.status = 'available'
+          AND (
+              r.date > ?
+              OR (r.date = ? AND r.start_time > ?)
+          )
+          AND r.date <= ?
     ";
 
-    $params = [$year, $month];
-    $types = "ii";
-
+    $params = [$year, $month, $currentDate, $currentDate, $currentTime, $maxBookingDate];
+    $types = "iissss";
 
     $class_map = [
         'muay-thai' => 'Muay Thai',
@@ -56,18 +80,11 @@ try {
     } // 'all' returns all sessions, so no filter
 
 
-    if ($coach_filter !== 'all') {
-    $stmtCoach = $conn->prepare("SELECT id FROM trainers WHERE slug = ?");
-    $stmtCoach->bind_param("s", $coach_filter);
-    $stmtCoach->execute();
-    $resultCoach = $stmtCoach->get_result();
-
-    if ($rowCoach = $resultCoach->fetch_assoc()) {
+    if ($coach_filter !== 'all' && is_numeric($coach_filter)) {
         $query .= " AND t.id = ?";
-        $params[] = $rowCoach['id'];
+        $params[] = intval($coach_filter);
         $types .= "i";
     }
-}
 
 
     $query .= " GROUP BY r.id ORDER BY r.date, r.start_time";
@@ -91,6 +108,12 @@ try {
         // Add slug for frontend filtering
         $class_slug = strtolower(preg_replace('/[^a-z0-9]+/', '-', $row['class_type']));
 
+        $remaining = intval($row['remaining_slots']);
+        $max = intval($row['max_slots']);
+
+        // Debug log with date and time for tracking
+        error_log("Reservation ID {$row['id']} ({$row['class_type']} - {$row['date']} {$row['start_time']}): {$remaining}/{$max} slots remaining");
+
         $reservations[$day][] = [
             'id' => $row['id'],
             'class' => $row['class_type'],
@@ -101,14 +124,23 @@ try {
             'time' => date('g:i A', strtotime($row['start_time'])) . ' - ' . date('g:i A', strtotime($row['end_time'])),
             'start_time' => $row['start_time'],
             'end_time' => $row['end_time'],
-            'slots' => intval($row['remaining_slots']),
-            'max_slots' => intval($row['max_slots'])
+            'slots' => $remaining,
+            'max_slots' => $max
         ];
     }
 
+    error_log("Total days with reservations: " . count($reservations));
     echo json_encode(['success' => true, 'reservations' => $reservations]);
 
 } catch (Throwable $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    error_log("Error fetching reservations: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'An error occurred while fetching reservations. Please try again.']);
+} finally {
+    if (isset($stmt) && $stmt) {
+        $stmt->close();
+    }
+    if (isset($conn) && $conn) {
+        $conn->close();
+    }
 }
 ?>
