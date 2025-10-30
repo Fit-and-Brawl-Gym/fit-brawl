@@ -606,7 +606,7 @@ h1.page-title {
     gap: var(--spacing-4);
     width: 100%;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 
@@ -618,7 +618,7 @@ h1.page-title {
     position: relative;
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
 }
 
 
@@ -675,6 +675,7 @@ h1.page-title {
     background: rgba(255, 255, 255, 0.1);
     padding: var(--spacing-2) var(--spacing-4);
     border-radius: var(--radius-base);
+    border: 2px solid rgba(213, 186, 43, 0.3);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -901,14 +902,15 @@ h1.page-title {
     background: rgba(15, 50, 56, 0.98);
     border: 2px solid var(--color-accent);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-5);
     max-width: 500px;
     width: 100%;
     max-height: 80vh;
-    overflow-y: auto;
     box-shadow: var(--shadow-2xl);
     position: relative;
     animation: modalSlideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 @keyframes modalSlideIn {
@@ -922,22 +924,76 @@ h1.page-title {
     }
 }
 
+.modal-header {
+    background: var(--color-accent);
+    padding: var(--spacing-3);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 50px;
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.modal-body {
+    padding: var(--spacing-5);
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Custom Scrollbar for Modal Body */
+.modal-body::-webkit-scrollbar {
+    width: 10px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(45, 107, 117, 0.3);
+    border-radius: var(--radius-base);
+    margin: var(--spacing-2) 0;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
+    border-radius: var(--radius-base);
+    border: 2px solid rgba(15, 50, 56, 0.98);
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-hover);
+}
+
+/* Firefox Scrollbar Styling */
+.modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) rgba(45, 107, 117, 0.3);
+}
+
 .close-details {
-    position: absolute;
-    top: var(--spacing-3);
-    right: var(--spacing-3);
-    background: transparent;
-    border: none;
-    color: var(--color-text-light);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-full);
+    color: var(--color-text-dark);
     font-size: var(--font-size-xl);
     cursor: pointer;
     transition: var(--transition-fast);
     z-index: 11;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .close-details:hover {
-    color: var(--color-accent);
+    background: rgba(0, 0, 0, 0.4);
     transform: scale(1.1);
+}
+
+.close-details:active {
+    transform: scale(0.95);
 }
 
 .details-title {
@@ -1057,6 +1113,27 @@ h1.page-title {
     font-size: 1rem;
 }
 
+.not-allowed-message {
+    width: 100%;
+    padding: var(--spacing-2);
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-base);
+    color: #ef4444;
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    text-align: center;
+}
+
+.not-allowed-message i {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
 .booked-sessions {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(213, 186, 43, 0.2);
@@ -1064,7 +1141,8 @@ h1.page-title {
     padding: var(--spacing-5);
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
+    margin-bottom: 300px;
 }
 
 .booked-header {
@@ -1074,6 +1152,7 @@ h1.page-title {
     margin-bottom: var(--spacing-4);
     padding-bottom: var(--spacing-3);
     border-bottom: 2px solid rgba(213, 186, 43, 0.3);
+    flex-wrap: wrap;
 }
 
 .booked-header i {
@@ -1088,6 +1167,133 @@ h1.page-title {
     color: var(--color-accent);
     letter-spacing: 1.5px;
     margin: 0;
+    flex: 1;
+}
+
+.booked-month-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-left: auto;
+}
+
+.booked-month-nav {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(213, 186, 43, 0.3);
+    border-radius: var(--radius-base);
+    color: var(--color-accent);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-size: 0.9rem;
+}
+
+.booked-month-nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--color-accent);
+    transform: scale(1.05);
+}
+
+.booked-month-nav:active {
+    transform: scale(0.95);
+}
+
+.booked-month-display {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 2px solid rgba(213, 186, 43, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    transition: var(--transition-base);
+    min-width: min(150px, 40vw);
+    flex: 1;
+    justify-content: center;
+}
+
+.booked-month-display:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.booked-month-display span {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.booked-month-display i {
+    color: var(--color-accent);
+    font-size: 0.8rem;
+    margin-top: 0;
+}
+
+.booked-month-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--spacing-1);
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-base);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 100;
+    min-width: min(150px, 40vw);
+    max-width: 90vw;
+    max-height: 280px;
+}
+
+.booked-month-dropdown.active {
+    display: block;
+}
+
+/* Custom Scrollbar for Booked Month Dropdown */
+.booked-month-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.booked-month-dropdown::-webkit-scrollbar-track {
+    background: rgba(45, 107, 117, 0.3);
+    border-radius: var(--radius-base);
+}
+
+.booked-month-dropdown::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
+    border-radius: var(--radius-base);
+    border: 2px solid rgba(15, 50, 56, 0.98);
+}
+
+.booked-month-dropdown::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-hover);
+}
+
+.booked-month-option {
+    padding: var(--spacing-2) var(--spacing-3);
+    color: var(--color-text-light);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-size: 0.8rem;
+}
+
+.booked-month-option:hover {
+    background: rgba(213, 186, 43, 0.2);
+    color: var(--color-accent);
+}
+
+.booked-month-option.current {
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+    font-weight: var(--font-weight-bold);
 }
 
 .sessions-list {
@@ -1113,6 +1319,40 @@ h1.page-title {
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    position: relative;
+}
+
+.sessions-table th .sort-btn {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-dark);
+    cursor: pointer;
+    padding: 6px 8px;
+    margin-left: 6px;
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    min-width: 28px;
+    min-height: 28px;
+}
+
+.sessions-table th .sort-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(0, 0, 0, 0.5);
+    color: var(--color-bg-dark);
+    transform: scale(1.15);
+}
+
+.sessions-table th .sort-btn:active {
+    transform: scale(0.95);
+}
+
+.sessions-table th .sort-btn i {
+    pointer-events: none;
 }
 
 .sessions-table tbody tr {
@@ -1291,6 +1531,12 @@ h1.page-title {
         padding: var(--spacing-3);
     }
 
+    /* Schedule sections - consistent padding with filters */
+    .monthly-schedule,
+    .booked-sessions {
+        padding: var(--spacing-3);
+    }
+
     .section-title {
         font-size: 0.9rem;
         margin-bottom: var(--spacing-2);
@@ -1338,23 +1584,29 @@ h1.page-title {
     }
 
     /* Month Navigation - Larger touch targets */
-    .schedule-header {
+    .schedule-header,
+    .booked-header {
         padding: var(--spacing-3);
     }
 
     .month-navigation-wrapper {
+        flex-wrap: wrap;
         gap: var(--spacing-2);
+        justify-content: center;
     }
 
     .month-nav-btn {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         font-size: var(--font-size-lg);
     }
 
     .month-nav {
         padding: var(--spacing-2) var(--spacing-3);
         font-size: 0.9rem;
+        order: -1;
+        flex-basis: 100%;
+        width: 100%;
     }
 
     /* Calendar - Larger touch targets and better spacing */
@@ -1441,6 +1693,12 @@ h1.page-title {
         margin-right: var(--spacing-2);
     }
 
+    .sessions-table .session-status {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-1);
+    }
+
     .session-action {
         justify-content: flex-end;
     }
@@ -1457,7 +1715,6 @@ h1.page-title {
     }
 
     .schedule-details-content {
-        padding: var(--spacing-4);
         max-width: 100%;
         width: 100%;
         max-height: 90vh;
@@ -1475,9 +1732,17 @@ h1.page-title {
         }
     }
 
+    .modal-header {
+        padding: var(--spacing-3);
+        min-height: 56px;
+    }
+
+    .modal-body {
+        padding: var(--spacing-4);
+    }
+
     .details-title {
         font-size: var(--font-size-lg);
-        padding-right: var(--spacing-5);
     }
 
     .details-date {
@@ -1486,14 +1751,9 @@ h1.page-title {
     }
 
     .close-details {
-        top: var(--spacing-4);
-        right: var(--spacing-4);
         font-size: 1.5rem;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 40px;
+        height: 40px;
     }
 
     .sessions-list-modal {
@@ -1575,6 +1835,32 @@ h1.page-title {
         padding: var(--spacing-3);
         font-size: 0.9rem;
     }
+
+    /* Booked Sessions Month Selector - Mobile */
+    .booked-header h3 {
+        font-size: var(--font-size-xl);
+    }
+
+    .booked-month-selector {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+        flex-wrap: wrap;
+    }
+
+    .booked-month-nav {
+        width: 40px;
+        height: 40px;
+        font-size: var(--font-size-lg);
+    }
+
+    .booked-month-display {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.9rem;
+        order: -1;
+        flex-basis: 100%;
+        width: 100%;
+    }
 }
 
 /* Extra small devices (portrait phones, less than 576px) */
@@ -1602,7 +1888,7 @@ h1.page-title {
 
     .scheduling-left,
     .scheduling-right {
-        padding: var(--spacing-3);
+        padding: 0;
     }
 
     /* Compact filters for very small screens */
@@ -1626,19 +1912,15 @@ h1.page-title {
         padding: 1px 3px;
     }
 
-    /* Month navigation - stack if needed */
-    .month-navigation-wrapper {
-        flex-wrap: wrap;
-    }
-
-    .month-nav {
-        flex: 1;
-        min-width: 120px;
-    }
+    /* Month navigation - already handled in 768px breakpoint */
+    /* Booked month selector - already handled in 768px breakpoint */
 
     /* Modal takes full height on very small screens */
     .schedule-details-content {
         max-height: 95vh;
+    }
+
+    .modal-body {
         padding: var(--spacing-3);
     }
 
