@@ -4,24 +4,43 @@ ini_set('display_errors', 1);
 include '../../../includes/db_connect.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 
 try {
-    $plan = isset($_GET['plan']) ? trim($_GET['plan']) : '';
+    $class_type = isset($_GET['plan']) ? trim($_GET['plan']) : 'all';
 
-    // Build query
-    if (!empty($plan) && $plan !== 'all') {
-        $plan = strtolower($plan);
-        $sql = "
-            SELECT id, name, specialization 
-            FROM trainers 
-            WHERE LOWER(REPLACE(specialization, ' ', '-')) LIKE '%$plan%'
-        ";
+    // Map class types to trainer specializations
+    $class_to_spec_map = [
+        'boxing' => 'Boxing',
+        'muay-thai' => 'Muay Thai',
+        'mma' => 'MMA',
+        'gym' => 'Gym'
+    ];
+
+    // Build query - only get active trainers
+    if ($class_type !== 'all' && isset($class_to_spec_map[$class_type])) {
+        $specialization = $class_to_spec_map[$class_type];
+        $sql = "SELECT id, name, specialization FROM trainers WHERE status = 'Active' AND specialization = ? ORDER BY name ASC";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception('Database error: Unable to prepare statement');
+        }
+        $stmt->bind_param("s", $specialization);
     } else {
-        $sql = "SELECT id, name, specialization FROM trainers";
+        $sql = "SELECT id, name, specialization FROM trainers WHERE status = 'Active' ORDER BY name ASC";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception('Database error: Unable to prepare statement');
+        }
     }
 
-    $result = $conn->query($sql);
-    if (!$result) throw new Exception($conn->error);
+    if (!$stmt->execute()) {
+        throw new Exception('Database error: Query execution failed');
+    }
+
+    $result = $stmt->get_result();
 
     $trainers = [];
     while ($row = $result->fetch_assoc()) {
@@ -34,6 +53,15 @@ try {
     }
 
     echo json_encode(['success' => true, 'trainers' => $trainers]);
+
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    error_log("Error fetching trainers: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'An error occurred while fetching trainers. Please try again.']);
+} finally {
+    if (isset($stmt) && $stmt) {
+        $stmt->close();
+    }
+    if (isset($conn) && $conn) {
+        $conn->close();
+    }
 }
