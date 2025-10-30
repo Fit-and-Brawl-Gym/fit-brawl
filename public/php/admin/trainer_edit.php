@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $changes[] = "Status: {$trainer['status']} → $status";
 
                 // Update trainer
-                $update_query = "UPDATE trainers SET name = ?, email = ?, phone = ?, specialization = ?, bio = ?, photo = ?, 
+                $update_query = "UPDATE trainers SET name = ?, email = ?, phone = ?, specialization = ?, bio = ?, photo = ?,
                                 emergency_contact_name = ?, emergency_contact_phone = ?, status = ? WHERE id = ?";
                 $stmt = $conn->prepare($update_query);
                 $stmt->bind_param(
@@ -141,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Trainer - Admin Panel</title>
+    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/trainer-form.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

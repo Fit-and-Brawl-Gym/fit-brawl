@@ -13,6 +13,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
 <head>
   <meta charset="UTF-8">
   <title>Admin | Manage Subscriptions</title>
+  <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
   <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="css/subscriptions.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">

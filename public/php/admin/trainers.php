@@ -101,20 +101,20 @@ $sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'name';
 $sort_order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
 // Build query - With soft delete check
-$query = "SELECT t.*, 
-          (SELECT COUNT(DISTINCT ur.user_id) 
-           FROM user_reservations ur 
-           JOIN reservations r ON ur.reservation_id = r.id 
-           WHERE r.trainer_id = t.id 
-           AND ur.booking_status = 'confirmed' 
+$query = "SELECT t.*,
+          (SELECT COUNT(DISTINCT ur.user_id)
+           FROM user_reservations ur
+           JOIN reservations r ON ur.reservation_id = r.id
+           WHERE r.trainer_id = t.id
+           AND ur.booking_status = 'confirmed'
            AND ur.date = CURDATE()) as clients_today,
-          (SELECT COUNT(*) 
-           FROM user_reservations ur 
-           JOIN reservations r ON ur.reservation_id = r.id 
-           WHERE r.trainer_id = t.id 
-           AND ur.booking_status = 'confirmed' 
+          (SELECT COUNT(*)
+           FROM user_reservations ur
+           JOIN reservations r ON ur.reservation_id = r.id
+           WHERE r.trainer_id = t.id
+           AND ur.booking_status = 'confirmed'
            AND ur.date >= CURDATE()) as upcoming_bookings
-          FROM trainers t 
+          FROM trainers t
           WHERE t.deleted_at IS NULL";
 
 $params = [];
@@ -168,7 +168,7 @@ $stmt->execute();
 $trainers_result = $stmt->get_result();
 
 // Get statistics - With soft delete check and error handling
-$stats_query = "SELECT 
+$stats_query = "SELECT
                 COUNT(*) as total_trainers,
                 SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) as active_trainers,
                 SUM(CASE WHEN status = 'Inactive' THEN 1 ELSE 0 END) as inactive_trainers,
@@ -199,6 +199,7 @@ if (!$stats) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trainers Management - Admin Panel</title>
+    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/trainers.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
