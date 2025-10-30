@@ -67,7 +67,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
     </nav>
     <div class="sidebar-footer">
-        <a href="logout.php" class="logout-btn">
+        <a href="../logout.php" class="logout-btn">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>
