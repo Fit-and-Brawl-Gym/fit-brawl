@@ -33,6 +33,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fas fa-dumbbell"></i>
             <span>Trainers</span>
         </a>
+        <a href="membership_trainers.php" class="<?= $current_page == 'membership_trainers.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-link"></i>
+            <span>Trainer Assignments</span>
+        </a>
         <a href="reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
             <i class="fas fa-calendar-alt"></i>
             <span>Reservations</span>

@@ -12,6 +12,27 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 $admin_username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Admin';
 $admin_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
+// Check for new trainer credentials
+$show_credentials_modal = false;
+$new_trainer_username = '';
+$new_trainer_password = '';
+$new_trainer_name = '';
+$email_sent = false;
+
+if (isset($_SESSION['new_trainer_username'])) {
+    $show_credentials_modal = true;
+    $new_trainer_username = $_SESSION['new_trainer_username'];
+    $new_trainer_password = $_SESSION['new_trainer_password'];
+    $new_trainer_name = $_SESSION['new_trainer_name'];
+    $email_sent = $_SESSION['email_sent'] ?? false;
+
+    // Clear session variables
+    unset($_SESSION['new_trainer_username']);
+    unset($_SESSION['new_trainer_password']);
+    unset($_SESSION['new_trainer_name']);
+    unset($_SESSION['email_sent']);
+}
+
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     header('Content-Type: application/json');
@@ -465,7 +486,105 @@ if (!$stats) {
         </div>
     </div>
 
+    <!-- Trainer Credentials Modal -->
+    <?php if ($show_credentials_modal): ?>
+        <div class="modal active" id="credentialsModal">
+            <div class="modal-overlay">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 64px; color: #28a745;"></i>
+                    </div>
+                    <h3 style="text-align: center; color: var(--admin-color-primary); margin-bottom: 10px;">Trainer Account
+                        Created Successfully!</h3>
+                    <p style="text-align: center; color: #666; margin-bottom: 30px;">
+                        Account created for <strong><?= htmlspecialchars($new_trainer_name) ?></strong>
+                    </p>
+
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; color: var(--admin-color-primary);">Login Credentials:</h4>
+                        <div style="margin: 15px 0;">
+                            <label
+                                style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">Username:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="usernameDisplay"
+                                    value="<?= htmlspecialchars($new_trainer_username) ?>" readonly
+                                    style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: white;">
+                                <button onclick="copyToClipboard('usernameDisplay')" class="btn-secondary"
+                                    style="padding: 10px 15px;">
+                                    <i class="fa-solid fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin: 15px 0;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">Default
+                                Password:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="passwordDisplay"
+                                    value="<?= htmlspecialchars($new_trainer_password) ?>" readonly
+                                    style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: white;">
+                                <button onclick="copyToClipboard('passwordDisplay')" class="btn-secondary"
+                                    style="padding: 10px 15px;">
+                                    <i class="fa-solid fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="background-color: <?= $email_sent ? '#d4edda' : '#fff3cd' ?>; padding: 15px; border-radius: 8px; border-left: 4px solid <?= $email_sent ? '#28a745' : '#ffc107' ?>; margin-bottom: 20px;">
+                        <p style="margin: 0; color: <?= $email_sent ? '#155724' : '#856404' ?>;">
+                            <i class="fa-solid fa-<?= $email_sent ? 'check-circle' : 'exclamation-triangle' ?>"></i>
+                            <?php if ($email_sent): ?>
+                                <strong>Email Sent:</strong> Login credentials have been sent to the trainer's email address.
+                            <?php else: ?>
+                                <strong>Note:</strong> Email delivery failed. Please share these credentials manually with the
+                                trainer.
+                            <?php endif; ?>
+                        </p>
+                    </div>
+
+                    <div
+                        style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #d5ba2b; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #856404;">
+                            <i class="fa-solid fa-info-circle"></i>
+                            <strong>Security Reminder:</strong> The trainer will be prompted to change their password upon
+                            first login.
+                        </p>
+                    </div>
+
+                    <div class="modal-actions" style="justify-content: center;">
+                        <button class="btn-primary" onclick="closeCredentialsModal()" style="min-width: 120px;">
+                            <i class="fa-solid fa-check"></i> Got It
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <script src="js/trainers.js"></script>
+    <script>
+        function copyToClipboard(elementId) {
+            const input = document.getElementById(elementId);
+            input.select();
+            input.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(input.value).then(() => {
+                // Show temporary feedback
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                btn.style.backgroundColor = '#28a745';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.backgroundColor = '';
+                }, 2000);
+            });
+        }
+
+        function closeCredentialsModal() {
+            document.getElementById('credentialsModal').classList.remove('active');
+        }
+    </script>
 </body>
 
 </html>

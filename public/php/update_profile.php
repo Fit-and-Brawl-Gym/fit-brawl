@@ -94,15 +94,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['avatar'] = $avatar;
         }
 
+        // If password was changed and user is a trainer, mark password as changed
+        if (!empty($newPassword) && isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') {
+            $update_trainer = $conn->prepare("UPDATE trainers SET password_changed = 1 WHERE email = ?");
+            $update_trainer->bind_param("s", $email);
+            $update_trainer->execute();
+        }
+
         $_SESSION['success'] = "Profile updated successfully!";
     } else {
         $_SESSION['error'] = "Failed to update profile.";
     }
 
-    header("Location: user_profile.php");
+    // Redirect based on role
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') {
+        header("Location: trainer/profile.php");
+    } else {
+        header("Location: user_profile.php");
+    }
     exit;
 }
-function test_input($data) {
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
