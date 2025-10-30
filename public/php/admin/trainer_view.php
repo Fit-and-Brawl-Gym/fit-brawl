@@ -18,24 +18,24 @@ if (!$trainer_id) {
 
 // Fetch trainer details with stats
 $query = "SELECT t.*,
-          (SELECT COUNT(DISTINCT ur.user_id) 
-           FROM user_reservations ur 
-           JOIN reservations r ON ur.reservation_id = r.id 
-           WHERE r.trainer_id = t.id 
-           AND ur.booking_status = 'confirmed' 
+          (SELECT COUNT(DISTINCT ur.user_id)
+           FROM user_reservations ur
+           JOIN reservations r ON ur.reservation_id = r.id
+           WHERE r.trainer_id = t.id
+           AND ur.booking_status = 'confirmed'
            AND ur.date = CURDATE()) as clients_today,
-          (SELECT COUNT(*) 
-           FROM user_reservations ur 
-           JOIN reservations r ON ur.reservation_id = r.id 
-           WHERE r.trainer_id = t.id 
-           AND ur.booking_status = 'confirmed' 
+          (SELECT COUNT(*)
+           FROM user_reservations ur
+           JOIN reservations r ON ur.reservation_id = r.id
+           WHERE r.trainer_id = t.id
+           AND ur.booking_status = 'confirmed'
            AND ur.date >= CURDATE()) as upcoming_bookings,
-          (SELECT COUNT(*) 
-           FROM user_reservations ur 
-           JOIN reservations r ON ur.reservation_id = r.id 
-           WHERE r.trainer_id = t.id 
+          (SELECT COUNT(*)
+           FROM user_reservations ur
+           JOIN reservations r ON ur.reservation_id = r.id
+           WHERE r.trainer_id = t.id
            AND ur.booking_status = 'completed') as total_sessions
-          FROM trainers t 
+          FROM trainers t
           WHERE t.id = ? AND t.deleted_at IS NULL";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $trainer_id);
@@ -53,7 +53,7 @@ $sessions_query = "SELECT r.*, ur.user_id, ur.booking_status, u.username, u.emai
                    FROM reservations r
                    JOIN user_reservations ur ON ur.reservation_id = r.id
                    JOIN users u ON u.id = ur.user_id
-                   WHERE r.trainer_id = ? 
+                   WHERE r.trainer_id = ?
                    AND ur.booking_status = 'confirmed'
                    AND r.date >= CURDATE()
                    ORDER BY r.date ASC, r.start_time ASC
@@ -82,6 +82,7 @@ $log_result = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Trainer - Admin Panel</title>
+    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/trainer-view.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

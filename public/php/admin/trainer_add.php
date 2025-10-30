@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 try {
                     // Insert trainer
-                    $insert_query = "INSERT INTO trainers (name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, status, password_changed) 
+                    $insert_query = "INSERT INTO trainers (name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, status, password_changed)
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
                     $stmt = $conn->prepare($insert_query);
                     $stmt->bind_param("sssssssss", $name, $email, $phone, $specialization, $bio, $photo, $emergency_contact_name, $emergency_contact_phone, $status);
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     // Create user account
-                    $user_query = "INSERT INTO users (username, email, password, role, avatar, is_verified) 
+                    $user_query = "INSERT INTO users (username, email, password, role, avatar, is_verified)
                                    VALUES (?, ?, ?, 'trainer', ?, 1)";
                     $stmt = $conn->prepare($user_query);
                     $stmt->bind_param("ssss", $generated_username, $email, $hashed_password, $avatar);
@@ -159,6 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Trainer - Admin Panel</title>
+    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/trainer-form.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

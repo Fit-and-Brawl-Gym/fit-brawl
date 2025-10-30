@@ -53,7 +53,7 @@ $date_to = $_GET['date_to'] ?? '';
 
 // Build query
 $query = "
-    SELECT ur.id, ur.user_id, ur.class_type, ur.date, ur.start_time, ur.end_time, 
+    SELECT ur.id, ur.user_id, ur.class_type, ur.date, ur.start_time, ur.end_time,
            ur.status, ur.booked_at, ur.booking_status,
            u.username, u.email, u.avatar,
            t.id as trainer_id, t.name as trainer_name, t.specialization
@@ -109,7 +109,7 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Get stats
 $stats_query = "
-    SELECT 
+    SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) as upcoming,
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
@@ -130,6 +130,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservations Management - Fit & Brawl Admin</title>
+    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/reservations.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
