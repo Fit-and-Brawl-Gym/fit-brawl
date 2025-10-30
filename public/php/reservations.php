@@ -320,11 +320,15 @@ require_once '../../includes/header.php';
                         <!-- Schedule Details Popup -->
                         <div class="schedule-details" id="scheduleDetails" style="display: none;">
                             <div class="schedule-details-content">
-                                <button class="close-details" id="closeDetails">&times;</button>
-                                <h3 class="details-title">Available Sessions</h3>
-                                <p class="details-date" id="detailDate">Monday, November 4, 2025</p>
-                                <div class="sessions-list-modal" id="sessionsListModal">
-                                    <!-- Sessions will be populated here dynamically -->
+                                <div class="modal-header">
+                                    <button class="close-details" id="closeDetails">&times;</button>
+                                </div>
+                                <div class="modal-body">
+                                    <h3 class="details-title">Available Sessions</h3>
+                                    <p class="details-date" id="detailDate">Monday, November 4, 2025</p>
+                                    <div class="sessions-list-modal" id="sessionsListModal">
+                                        <!-- Sessions will be populated here dynamically -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -335,6 +339,33 @@ require_once '../../includes/header.php';
                         <div class="booked-header">
                             <i class="fas fa-calendar-alt"></i>
                             <h3>Booked Sessions</h3>
+                            <div class="booked-month-selector">
+                                <button class="booked-month-nav" id="prevBookedMonth">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="booked-month-display" id="bookedMonthDisplay">
+                                    <span id="bookedMonthText">All Upcoming</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                    <div class="booked-month-dropdown" id="bookedMonthDropdown">
+                                        <div class="booked-month-option" data-month="all">All Upcoming</div>
+                                        <div class="booked-month-option" data-month="1">January</div>
+                                        <div class="booked-month-option" data-month="2">February</div>
+                                        <div class="booked-month-option" data-month="3">March</div>
+                                        <div class="booked-month-option" data-month="4">April</div>
+                                        <div class="booked-month-option" data-month="5">May</div>
+                                        <div class="booked-month-option" data-month="6">June</div>
+                                        <div class="booked-month-option" data-month="7">July</div>
+                                        <div class="booked-month-option" data-month="8">August</div>
+                                        <div class="booked-month-option" data-month="9">September</div>
+                                        <div class="booked-month-option" data-month="10">October</div>
+                                        <div class="booked-month-option" data-month="11">November</div>
+                                        <div class="booked-month-option" data-month="12">December</div>
+                                    </div>
+                                </div>
+                                <button class="booked-month-nav" id="nextBookedMonth">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="sessions-list" id="sessionsList">

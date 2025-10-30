@@ -10,6 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let sessionsData = {}; // Store sessions by day
     let trainersData = {};
 
+    // Booked sessions month filter (null = show all upcoming)
+    let bookedFilterMonth = null;
+    let bookedFilterYear = null;
+
+    // Booked sessions sorting
+    let currentBookings = [];
+    let dateSortOrder = 'asc'; // 'asc' or 'desc'
+    let timeSortOrder = 'asc'; // 'asc' or 'desc'
+
     // ==========================================
     // TOAST NOTIFICATION SYSTEM
     // ==========================================
@@ -245,14 +254,23 @@ function updateCoachDropdown(classType = "all") {
         try {
             // Add timestamp to prevent caching
             const timestamp = new Date().getTime();
-            const response = await fetch(`api/get_user_bookings.php?_t=${timestamp}`, {
+            let url = `api/get_user_bookings.php?_t=${timestamp}`;
+
+            // Add month/year filter if set
+            if (bookedFilterMonth !== null && bookedFilterYear !== null) {
+                url += `&month=${bookedFilterMonth}&year=${bookedFilterYear}`;
+            }
+
+            const response = await fetch(url, {
                 cache: 'no-store'
             });
             const data = await response.json();
 
             if (data.success) {
-                updateBookingsList(data.bookings);
-                updateStats(data.bookings);
+                currentBookings = data.bookings;
+                updateBookingsList(currentBookings);
+                updateStats(currentBookings);
+                updateBookedMonthDisplay();
             }
         } catch (error) {
             console.error('Error fetching bookings:', error);
@@ -275,8 +293,18 @@ function updateCoachDropdown(classType = "all") {
                 <thead>
                     <tr>
                         <th>Class</th>
-                        <th>Date</th>
-                        <th>Time</th>
+                        <th>
+                            Date
+                            <button class="sort-btn" id="sortByDate" title="Sort by date">
+                                <i class="fas fa-sort${dateSortOrder === 'asc' ? '-up' : '-down'}"></i>
+                            </button>
+                        </th>
+                        <th>
+                            Time
+                            <button class="sort-btn" id="sortByTime" title="Sort by time">
+                                <i class="fas fa-sort${timeSortOrder === 'asc' ? '-up' : '-down'}"></i>
+                            </button>
+                        </th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -332,6 +360,48 @@ function updateCoachDropdown(classType = "all") {
                 cancelBooking(bookingId);
             });
         });
+
+        // Add event listeners to sort buttons
+        const sortByDateBtn = document.getElementById('sortByDate');
+        const sortByTimeBtn = document.getElementById('sortByTime');
+
+        if (sortByDateBtn) {
+            sortByDateBtn.addEventListener('click', function() {
+                dateSortOrder = dateSortOrder === 'asc' ? 'desc' : 'asc';
+                sortBookings('date');
+            });
+        }
+
+        if (sortByTimeBtn) {
+            sortByTimeBtn.addEventListener('click', function() {
+                timeSortOrder = timeSortOrder === 'asc' ? 'desc' : 'asc';
+                sortBookings('time');
+            });
+        }
+    }
+
+    // Sort bookings function
+    function sortBookings(sortBy) {
+        let sortedBookings = [...currentBookings];
+
+        if (sortBy === 'date') {
+            sortedBookings.sort((a, b) => {
+                const dateA = new Date(a.datetime);
+                const dateB = new Date(b.datetime);
+                return dateSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+            });
+        } else if (sortBy === 'time') {
+            sortedBookings.sort((a, b) => {
+                const timeA = new Date(a.datetime);
+                const timeB = new Date(b.datetime);
+                // For time sorting, compare only the time portion
+                const timeOnlyA = timeA.getHours() * 60 + timeA.getMinutes();
+                const timeOnlyB = timeB.getHours() * 60 + timeB.getMinutes();
+                return timeSortOrder === 'asc' ? timeOnlyA - timeOnlyB : timeOnlyB - timeOnlyA;
+            });
+        }
+
+        updateBookingsList(sortedBookings);
     }
 
     // Update stats
@@ -420,7 +490,10 @@ function updateCoachDropdown(classType = "all") {
         }
 
         // Current month days
-        const allowedClassTypes = Array.from(document.querySelectorAll('.filter-btn')).map(btn => btn.dataset.class);
+        // Get allowed class types from filter buttons (user's membership)
+        const allFilterBtns = Array.from(document.querySelectorAll('.filter-btn'));
+        const allowedClassTypes = allFilterBtns.map(btn => btn.dataset.class);
+
         for (let i = 1; i <= daysInMonth; i++) {
             const day = document.createElement('div');
             day.className = 'schedule-day';
@@ -460,10 +533,25 @@ function updateCoachDropdown(classType = "all") {
             }
 
             if (daySessions && daySessions.length > 0) {
-                onlyAllowed = daySessions.every(session => allowedClassTypes.includes(session.class_slug));
+                // Check if sessions are allowed based on user's membership
+                // If allowedClassTypes is empty (no membership), don't allow any
+                // If allowedClassTypes has values, check if AT LEAST ONE session matches
+                if (allowedClassTypes.length > 0) {
+                    // Use .some() instead of .every() - date is clickable if ANY session is allowed
+                    onlyAllowed = daySessions.some(session => allowedClassTypes.includes(session.class_slug));
+                } else {
+                    onlyAllowed = false; // No membership = no access
+                }
 
                 // Apply filters
                 let filteredSessions = [...daySessions];
+
+                // FIRST: Filter to only show sessions allowed by user's membership
+                if (allowedClassTypes.length > 0) {
+                    filteredSessions = filteredSessions.filter(session =>
+                        allowedClassTypes.includes(session.class_slug)
+                    );
+                }
 
                 if (availableOnlyFilter) {
                     filteredSessions = filteredSessions.filter(session => session.slots > 0);
@@ -475,6 +563,7 @@ function updateCoachDropdown(classType = "all") {
 
                 if (filteredSessions.length > 0) {
                     // Count sessions with available slots vs full sessions
+                    // These counts now only include sessions in the user's membership plan
                     const availableSessions = filteredSessions.filter(s => (s.slots || 0) > 0);
                     const fullSessions = filteredSessions.filter(s => (s.slots || 0) === 0);
                     const totalSessions = filteredSessions.length;
@@ -554,11 +643,26 @@ function updateCoachDropdown(classType = "all") {
 
         document.getElementById('detailDate').textContent = dateStr;
 
+        // Get allowed class types from filter buttons (user's membership)
+        const allowedClassTypes = Array.from(document.querySelectorAll('.filter-btn')).map(btn => btn.dataset.class);
+
+        // Filter sessions to only show those included in user's membership plan
+        const allowedSessions = daySessions.filter(session =>
+            allowedClassTypes.includes(session.class_slug)
+        );
+
         // Populate sessions list
         const sessionsListModal = document.getElementById('sessionsListModal');
         sessionsListModal.innerHTML = '';
 
-        daySessions.forEach(session => {
+        // Check if there are any allowed sessions
+        if (allowedSessions.length === 0) {
+            sessionsListModal.innerHTML = '<p style="color: var(--color-text-muted); text-align: center; padding: var(--spacing-4);">No sessions available for your membership plan on this date.</p>';
+            scheduleDetails.style.display = 'flex';
+            return;
+        }
+
+        allowedSessions.forEach(session => {
             const sessionCard = document.createElement('div');
             sessionCard.className = 'session-card-modal';
 
@@ -799,6 +903,132 @@ function updateCoachDropdown(classType = "all") {
     closeDetailsBtn.addEventListener('click', closeScheduleDetails);
 
     // Book session buttons are now dynamically created in showScheduleDetails()
+
+    // ==========================================
+    // BOOKED SESSIONS MONTH FILTER
+    // ==========================================
+
+    const bookedMonthDropdown = document.getElementById('bookedMonthDropdown');
+    const bookedMonthOptions = document.querySelectorAll('.booked-month-option');
+
+    // Update booked sessions month display
+    function updateBookedMonthDisplay() {
+        const displayElement = document.getElementById('bookedMonthText');
+        if (!displayElement) return;
+
+        if (bookedFilterMonth === null || bookedFilterYear === null) {
+            displayElement.textContent = 'All Upcoming';
+        } else {
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            displayElement.textContent = `${monthNames[bookedFilterMonth - 1]} ${bookedFilterYear}`;
+        }
+
+        // Update active state in dropdown
+        if (bookedMonthOptions) {
+            bookedMonthOptions.forEach(option => {
+                option.classList.remove('current');
+                const optionMonth = option.dataset.month;
+
+                if (optionMonth === 'all' && (bookedFilterMonth === null || bookedFilterYear === null)) {
+                    option.classList.add('current');
+                } else if (optionMonth !== 'all' && parseInt(optionMonth) === bookedFilterMonth) {
+                    option.classList.add('current');
+                }
+            });
+        }
+    }
+
+    // Navigate to previous month for booked sessions
+    const prevBookedMonthBtn = document.getElementById('prevBookedMonth');
+    if (prevBookedMonthBtn) {
+        prevBookedMonthBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+
+            // If currently showing "All Upcoming", start from current month
+            if (bookedFilterMonth === null || bookedFilterYear === null) {
+                const now = new Date();
+                bookedFilterMonth = now.getMonth() + 1;
+                bookedFilterYear = now.getFullYear();
+            }
+
+            // Go to previous month
+            bookedFilterMonth--;
+            if (bookedFilterMonth < 1) {
+                bookedFilterMonth = 12;
+                bookedFilterYear--;
+            }
+
+            fetchUserBookings();
+        });
+    }
+
+    // Navigate to next month for booked sessions
+    const nextBookedMonthBtn = document.getElementById('nextBookedMonth');
+    if (nextBookedMonthBtn) {
+        nextBookedMonthBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+
+            // If currently showing "All Upcoming", start from current month
+            if (bookedFilterMonth === null || bookedFilterYear === null) {
+                const now = new Date();
+                bookedFilterMonth = now.getMonth() + 1;
+                bookedFilterYear = now.getFullYear();
+            }
+
+            // Go to next month
+            bookedFilterMonth++;
+            if (bookedFilterMonth > 12) {
+                bookedFilterMonth = 1;
+                bookedFilterYear++;
+            }
+
+            fetchUserBookings();
+        });
+    }
+
+    // Toggle dropdown on month display click
+    const bookedMonthDisplay = document.getElementById('bookedMonthDisplay');
+    if (bookedMonthDisplay && bookedMonthDropdown) {
+        bookedMonthDisplay.addEventListener('click', function(e) {
+            e.stopPropagation();
+            bookedMonthDropdown.classList.toggle('active');
+        });
+    }
+
+    // Handle month selection from dropdown
+    if (bookedMonthOptions) {
+        bookedMonthOptions.forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const selectedMonth = this.dataset.month;
+
+                if (selectedMonth === 'all') {
+                    // Reset to "All Upcoming"
+                    bookedFilterMonth = null;
+                    bookedFilterYear = null;
+                } else {
+                    // Set to selected month and current year
+                    bookedFilterMonth = parseInt(selectedMonth);
+                    bookedFilterYear = new Date().getFullYear();
+                }
+
+                bookedMonthDropdown.classList.remove('active');
+                fetchUserBookings();
+            });
+        });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (bookedMonthDropdown && bookedMonthDisplay && !bookedMonthDisplay.contains(e.target)) {
+            bookedMonthDropdown.classList.remove('active');
+        }
+    });
+
+    // ==========================================
+    // END BOOKED SESSIONS MONTH FILTER
+    // ==========================================
 
     // Initialize
    (async () => {
