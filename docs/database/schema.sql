@@ -70,6 +70,7 @@ CREATE TABLE trainers (
     emergency_contact_phone VARCHAR(20) DEFAULT NULL,
     max_clients_per_day INT DEFAULT 3,
     status ENUM('Active', 'Inactive', 'On Leave') DEFAULT 'Active' NOT NULL,
+    password_changed TINYINT(1) DEFAULT 0 COMMENT 'Whether trainer has changed their default password',
     deleted_at TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
