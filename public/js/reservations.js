@@ -6,8 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedDate = null;
     let currentClassFilter = 'all';
     let currentCoachFilter = 'all';
+    let currentSessionFilter = 'all';
     let sessionsData = {}; // Store sessions by day
-    let trainersData = {}; 
+    let trainersData = {};
 
     // Calendar elements
     const calendarGrid = document.getElementById('calendarGrid');
@@ -21,6 +22,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filter elements
     const filterBtns = document.querySelectorAll('.filter-btn');
     const coachSelect = document.getElementById('coachSelect');
+    const sessionSelect = document.getElementById('sessionSelect');
+    // Session picker event
+    if (sessionSelect) {
+        sessionSelect.addEventListener('change', function() {
+            currentSessionFilter = sessionSelect.value;
+            fetchReservations();
+        });
+    }
 
     // Schedule details
     const scheduleDetails = document.getElementById('scheduleDetails');
@@ -71,7 +80,7 @@ function updateCoachDropdown(classType = "all") {
     const dropdown = document.getElementById("coachSelect");
     if (!dropdown) return;
 
-    dropdown.innerHTML = ""; 
+    dropdown.innerHTML = "";
 
     const key = classType ? classType.toLowerCase().replace(/\s+/g, "-") : "all";
     const trainers = trainersData[key] || [];
@@ -93,14 +102,14 @@ function updateCoachDropdown(classType = "all") {
         const month = currentDate.getMonth() + 1;
 
         try {
-            const response = await fetch(`api/get_reservations.php?year=${year}&month=${month}&class=${currentClassFilter}&coach=${currentCoachFilter}`);
+    const response = await fetch(`api/get_reservations.php?year=${year}&month=${month}&class=${currentClassFilter}&coach=${currentCoachFilter}&session=${currentSessionFilter}`);
             const data = await response.json();
 
             if (data.success) {
                 sessionsData = data.reservations;
                 renderSmallCalendar();
                 renderLargeCalendar();
-                
+
             }
         } catch (error) {
             console.error('Error fetching reservations:', error);
@@ -237,6 +246,8 @@ function updateCoachDropdown(classType = "all") {
         }
 
         // Current month days
+        // Get allowed class types from filter buttons
+        const allowedClassTypes = Array.from(document.querySelectorAll('.filter-btn')).map(btn => btn.dataset.class);
         for (let i = 1; i <= daysInMonth; i++) {
             const day = document.createElement('div');
             day.className = 'calendar-day';
@@ -244,18 +255,26 @@ function updateCoachDropdown(classType = "all") {
 
             // Check if this day has sessions
             const hasSession = sessionsData[i] && sessionsData[i].length > 0;
+            let onlyAllowed = true;
             if (hasSession) {
+                // If any session for this day is not in allowedClassTypes, mark as unavailable
+                onlyAllowed = sessionsData[i].every(session => allowedClassTypes.includes(session.class_slug));
                 day.classList.add('has-session');
             }
 
-            // Selected state
-            if (selectedDate && selectedDate.getDate() === i &&
-                selectedDate.getMonth() === month &&
-                selectedDate.getFullYear() === year) {
-                day.classList.add('selected');
+            // If not allowed, disable day
+            if (!onlyAllowed) {
+                day.classList.add('inactive');
+                day.title = 'Not available for your plan';
+            } else {
+                // Selected state
+                if (selectedDate && selectedDate.getDate() === i &&
+                    selectedDate.getMonth() === month &&
+                    selectedDate.getFullYear() === year) {
+                    day.classList.add('selected');
+                }
+                day.addEventListener('click', () => selectDate(new Date(year, month, i)));
             }
-
-            day.addEventListener('click', () => selectDate(new Date(year, month, i)));
             calendarGrid.appendChild(day);
         }
 
@@ -293,6 +312,7 @@ function updateCoachDropdown(classType = "all") {
         }
 
         // Current month days
+        const allowedClassTypes = Array.from(document.querySelectorAll('.filter-btn')).map(btn => btn.dataset.class);
         for (let i = 1; i <= daysInMonth; i++) {
             const day = document.createElement('div');
             day.className = 'schedule-day';
@@ -304,7 +324,9 @@ function updateCoachDropdown(classType = "all") {
 
             // Check for sessions on this day
             const daySessions = sessionsData[i];
+            let onlyAllowed = true;
             if (daySessions && daySessions.length > 0) {
+                onlyAllowed = daySessions.every(session => allowedClassTypes.includes(session.class_slug));
                 const indicator = document.createElement('div');
                 indicator.className = 'day-indicator';
 
@@ -316,8 +338,13 @@ function updateCoachDropdown(classType = "all") {
                         indicator.appendChild(dot);
                     }
                 });
-
                 day.appendChild(indicator);
+            }
+
+            if (!onlyAllowed) {
+                day.classList.add('inactive');
+                day.title = 'Not available for your plan';
+            } else if (daySessions && daySessions.length > 0) {
                 day.addEventListener('click', () => showScheduleDetails(i, daySessions));
             }
 
@@ -407,7 +434,7 @@ function updateCoachDropdown(classType = "all") {
         currentClassFilter = this.dataset.class;
         console.log('Selected class:', currentClassFilter);
 
-        await fetchTrainers(currentClassFilter); 
+        await fetchTrainers(currentClassFilter);
         fetchReservations();
     });
 });
@@ -481,7 +508,7 @@ function updateCoachDropdown(classType = "all") {
         } else {
             await fetchTrainers('all');
         }
-        
+
         await fetchUserBookings();
     } catch (err) {
         console.error('Initialization error:', err);

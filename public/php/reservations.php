@@ -198,6 +198,15 @@ require_once '../../includes/header.php';
                             </select>
                         </div>
 
+                        <h3 class="section-title">Session Picker:</h3>
+                        <div class="time-select-wrapper">
+                            <select id="sessionSelect" class="time-select">
+                                <option value="all" selected>All Sessions</option>
+                                <option value="morning">Morning Session (6:00 AM - 12:00 PM)</option>
+                                <option value="afternoon">Afternoon Session (12:00 PM - 6:00 PM)</option>
+                                <option value="evening">Evening Session (6:00 PM - 10:00 PM)</option>
+                            </select>
+                        </div>
                         <h3 class="section-title">Day/Date Selector:</h3>
                         <div class="date-selector">
                             <div class="date-header">
