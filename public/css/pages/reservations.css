@@ -751,11 +751,13 @@ h1.page-title {
     font-weight: var(--font-weight-bold);
 }
 
-.schedule-calendar {
-    margin-bottom: var(--spacing-3);
+.schedule-calendar-wrapper {
     width: 100%;
-    max-width: 100%;
-    overflow: hidden;
+    margin-bottom: var(--spacing-3);
+}
+
+.schedule-calendar {
+    width: 100%;
 }
 
 .calendar-weekdays {
@@ -830,6 +832,94 @@ h1.page-title {
     font-size: 0.75rem;
     color: var(--color-text-light);
     font-weight: var(--font-weight-medium);
+}
+
+/* Current day styling */
+.schedule-day.today {
+    background: rgba(213, 186, 43, 0.2);
+    border: 2px solid var(--color-accent);
+    box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+.schedule-day.today .day-number {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Mobile Schedule List View */
+.mobile-schedule-list {
+    display: none;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: var(--spacing-2);
+}
+
+.mobile-list-day {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(213, 186, 43, 0.2);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-3);
+}
+
+.mobile-list-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-2);
+}
+
+.mobile-list-day-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+}
+
+.mobile-list-day-sessions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.mobile-list-session {
+    background: rgba(45, 107, 117, 0.2);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-2);
+}
+
+.mobile-list-session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-1);
+}
+
+.mobile-list-session-time {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-light);
+}
+
+.mobile-list-session-info {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-1);
+}
+
+.mobile-list-session-type {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-accent);
+}
+
+.mobile-list-session-trainer {
+    color: var(--color-text-muted);
+}
+
+.mobile-list-session-action {
+    width: 100%;
+    margin-top: var(--spacing-2);
 }
 
 /* Session Availability Indicator */
@@ -1142,7 +1232,7 @@ h1.page-title {
     width: 100%;
     max-width: 100%;
     overflow: visible;
-    margin-bottom: 300px;
+    margin-bottom: var(--spacing-32);
 }
 
 .booked-header {
@@ -1609,47 +1699,48 @@ h1.page-title {
         width: 100%;
     }
 
-    /* Calendar - Larger touch targets and better spacing */
-    .calendar-weekdays {
-        gap: 2px;
-        margin-bottom: var(--spacing-2);
+    /* Mobile: Show mini calendar and list view */
+    .schedule-calendar-wrapper {
+        margin-bottom: var(--spacing-3);
     }
 
-    .weekday-label {
-        font-size: 0.7rem;
-        padding: var(--spacing-1);
+    /* Mini calendar for mobile - smaller, compact */
+    .calendar-weekdays {
+        gap: 2px;
+        margin-bottom: var(--spacing-1);
+    }
+
+    .weekday {
+        font-size: 0.6rem;
+        padding: 1px;
     }
 
     .calendar-days {
-        gap: 3px;
+        gap: 2px;
     }
 
     .schedule-day {
-        min-height: 65px;
-        padding: var(--spacing-2);
+        min-height: 45px;
+        padding: var(--spacing-1);
         cursor: pointer;
         -webkit-tap-highlight-color: rgba(213, 186, 43, 0.2);
     }
 
     .day-number {
-        font-size: 0.8rem;
-        margin-bottom: 2px;
+        font-size: 0.7rem;
+        margin-bottom: 0;
     }
 
-    .slot-indicator {
-        font-size: 0.6rem;
-        padding: 2px 4px;
-        margin-top: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    /* Hide slot indicator on mini calendar */
+    .schedule-day .slot-indicator {
+        display: none;
     }
 
-    /* Make calendar scrollable on small screens */
-    .schedule-calendar-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+    /* Show mobile list view */
+    .mobile-schedule-list {
+        display: flex !important;
     }
+
 
     /* Booked Sessions Table - Mobile responsive */
     .sessions-table {
@@ -1866,7 +1957,7 @@ h1.page-title {
 /* Extra small devices (portrait phones, less than 576px) */
 @media (max-width: 575px) {
     .reservations-container {
-        padding: 0 var(--spacing-3);
+        padding: 0 var(--spacing-2);
     }
 
     .container {
@@ -1883,12 +1974,18 @@ h1.page-title {
 
     /* Stack everything vertically */
     .scheduling-section {
-        gap: var(--spacing-3);
+        gap: var(--spacing-2);
     }
 
     .scheduling-left,
     .scheduling-right {
         padding: 0;
+    }
+
+    /* Schedule sections - reduce padding even more on very small screens */
+    .monthly-schedule,
+    .booked-sessions {
+        padding: var(--spacing-2) !important;
     }
 
     /* Compact filters for very small screens */
@@ -1897,25 +1994,7 @@ h1.page-title {
         padding: var(--spacing-2);
     }
 
-    /* Calendar - even more compact */
-    .schedule-day {
-        min-height: 55px;
-        padding: var(--spacing-1);
-    }
 
-    .day-number {
-        font-size: 0.75rem;
-    }
-
-    .slot-indicator {
-        font-size: 0.55rem;
-        padding: 1px 3px;
-    }
-
-    /* Month navigation - already handled in 768px breakpoint */
-    /* Booked month selector - already handled in 768px breakpoint */
-
-    /* Modal takes full height on very small screens */
     .schedule-details-content {
         max-height: 95vh;
     }

@@ -506,6 +506,9 @@ function updateCoachDropdown(classType = "all") {
             const currentDayDate = new Date(year, month, i);
             currentDayDate.setHours(0, 0, 0, 0);
 
+            // Check if this is today
+            const isToday = currentDayDate.getTime() === todayDateOnly.getTime();
+
             // Check if date is in the past
             const isPastDate = currentDayDate < todayDateOnly;
 
@@ -617,12 +620,23 @@ function updateCoachDropdown(classType = "all") {
                 // No visual change, just no click handler
             }
 
+            // Add 'today' class if this is the current day
+            if (isToday) {
+                day.classList.add('today');
+            }
+
             scheduleCalendar.appendChild(day);
         }
 
         // Fill remaining cells (next month preview)
+        // Calculate how many total cells we need to fill complete rows
+        // We need to fill rows that are multiples of 7
         const totalCells = scheduleCalendar.children.length;
-        const remainingCells = 35 - totalCells;
+        const daysPerWeek = 7;
+        const rowsNeeded = Math.ceil(totalCells / daysPerWeek);
+        const totalCellsNeeded = rowsNeeded * daysPerWeek;
+        const remainingCells = totalCellsNeeded - totalCells;
+
         for (let i = 1; i <= remainingCells; i++) {
             const day = document.createElement('div');
             day.className = 'schedule-day inactive';
@@ -632,6 +646,107 @@ function updateCoachDropdown(classType = "all") {
             day.appendChild(dayNum);
             scheduleCalendar.appendChild(day);
         }
+
+        // Also render mobile list view
+        renderMobileList();
+    }
+
+    // Render mobile schedule list view
+    function renderMobileList() {
+        const mobileListContainer = document.getElementById('mobileScheduleList');
+        if (!mobileListContainer) return;
+
+        mobileListContainer.innerHTML = '';
+
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Get allowed class types from filter buttons (user's membership)
+        const allFilterBtns = Array.from(document.querySelectorAll('.filter-btn'));
+        const allowedClassTypes = allFilterBtns.map(btn => btn.dataset.class);
+
+        // Sort days with sessions
+        const daysWithSessions = [];
+        for (let i = 1; i <= daysInMonth; i++) {
+            const currentDayDate = new Date(year, month, i);
+            currentDayDate.setHours(0, 0, 0, 0);
+
+            // Only show future dates
+            if (currentDayDate < todayDateOnly) continue;
+
+            let daySessions = sessionsData[i];
+            if (!daySessions || daySessions.length === 0) continue;
+
+            // Check if sessions are allowed based on user's membership
+            if (allowedClassTypes.length > 0) {
+                daySessions = daySessions.filter(session => allowedClassTypes.includes(session.class_slug));
+            } else {
+                continue; // No membership = no access
+            }
+
+            if (daySessions.length === 0) continue;
+
+            daysWithSessions.push({ day: i, sessions: daySessions });
+        }
+
+        if (daysWithSessions.length === 0) {
+            mobileListContainer.innerHTML = '<p style="color: var(--color-text-muted); text-align: center; padding: var(--spacing-4);">No sessions available this month.</p>';
+            return;
+        }
+
+        daysWithSessions.forEach(({ day, sessions }) => {
+            const date = new Date(year, month, day);
+            const dateStr = `${monthNames[month]} ${day}`;
+            const dayName = dayNames[date.getDay()];
+
+            const dayCard = document.createElement('div');
+            dayCard.className = 'mobile-list-day';
+            dayCard.innerHTML = `
+                <div class="mobile-list-day-header">
+                    <div class="mobile-list-day-title">${dayName}, ${dateStr}</div>
+                </div>
+                <div class="mobile-list-day-sessions"></div>
+            `;
+
+            const sessionsContainer = dayCard.querySelector('.mobile-list-day-sessions');
+
+            sessions.forEach(session => {
+                const isAvailable = (session.slots || 0) > 0;
+                const sessionCard = document.createElement('div');
+                sessionCard.className = 'mobile-list-session';
+                sessionCard.innerHTML = `
+                    <div class="mobile-list-session-header">
+                        <div class="mobile-list-session-time">${session.time}</div>
+                        <div class="session-status ${isAvailable ? 'available' : 'full'}">
+                            ${isAvailable ? '<i class="fas fa-check-circle"></i> Available' : '<i class="fas fa-times-circle"></i> Full'}
+                        </div>
+                    </div>
+                    <div class="mobile-list-session-info">
+                        <span class="mobile-list-session-type">${session.class}</span>
+                        <span class="mobile-list-session-trainer">${session.trainer}</span>
+                    </div>
+                `;
+
+                if (isAvailable) {
+                    const bookBtn = document.createElement('button');
+                    bookBtn.className = 'book-session-btn mobile-list-session-action';
+                    bookBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book Now';
+                    bookBtn.addEventListener('click', () => bookSession(session.id));
+                    sessionCard.appendChild(bookBtn);
+                }
+
+                sessionsContainer.appendChild(sessionCard);
+            });
+
+            mobileListContainer.appendChild(dayCard);
+        });
     }
 
     // Show schedule details

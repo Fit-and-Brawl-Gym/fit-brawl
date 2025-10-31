@@ -302,19 +302,26 @@ require_once '../../includes/header.php';
                             </div>
                         </div>
 
-                        <div class="schedule-calendar">
-                            <div class="calendar-weekdays">
-                                <div class="weekday">SUN</div>
-                                <div class="weekday">MON</div>
-                                <div class="weekday">TUE</div>
-                                <div class="weekday">WED</div>
-                                <div class="weekday">THU</div>
-                                <div class="weekday">FRI</div>
-                                <div class="weekday">SAT</div>
+                        <div class="schedule-calendar-wrapper">
+                            <div class="schedule-calendar">
+                                <div class="calendar-weekdays">
+                                    <div class="weekday">SUN</div>
+                                    <div class="weekday">MON</div>
+                                    <div class="weekday">TUE</div>
+                                    <div class="weekday">WED</div>
+                                    <div class="weekday">THU</div>
+                                    <div class="weekday">FRI</div>
+                                    <div class="weekday">SAT</div>
+                                </div>
+                                <div class="calendar-days" id="scheduleCalendar">
+                                    <!-- Calendar will be populated by JavaScript -->
+                                </div>
                             </div>
-                            <div class="calendar-days" id="scheduleCalendar">
-                                <!-- Calendar will be populated by JavaScript -->
-                            </div>
+                        </div>
+
+                        <!-- Mobile List View -->
+                        <div class="mobile-schedule-list" id="mobileScheduleList">
+                            <!-- Sessions list will be populated by JavaScript -->
                         </div>
 
                         <!-- Schedule Details Popup -->
