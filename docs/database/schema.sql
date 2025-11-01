@@ -220,7 +220,7 @@ CREATE TABLE IF NOT EXISTS products (
 
 -- =====================
 -- FEEDBACK TABLE
--- Stores user feedback and reviews
+-- Stores user feedback and reviews with voting system
 -- =====================
 CREATE TABLE feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -230,9 +230,28 @@ CREATE TABLE feedback (
     avatar VARCHAR(255) DEFAULT 'default-avatar.png',
     message TEXT NOT NULL,
     is_visible TINYINT(1) DEFAULT 1 COMMENT 'Admin can hide/show feedback',
+    helpful_count INT DEFAULT 0 COMMENT 'Number of helpful votes',
+    not_helpful_count INT DEFAULT 0 COMMENT 'Number of not helpful votes',
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_feedback_helpful (helpful_count DESC),
+    INDEX idx_feedback_date (date DESC)
 );
+
+-- =====================
+-- FEEDBACK VOTES TABLE
+-- Tracks individual user votes on feedback (helpful/not helpful)
+-- =====================
+CREATE TABLE IF NOT EXISTS feedback_votes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    feedback_id INT NOT NULL,
+    user_id INT NOT NULL,
+    vote_type ENUM('helpful', 'not_helpful') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_vote (feedback_id, user_id),
+    FOREIGN KEY (feedback_id) REFERENCES feedback(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================
 -- ADMIN ACTION LOGS TABLE

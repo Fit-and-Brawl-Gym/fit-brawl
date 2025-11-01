@@ -75,10 +75,13 @@ body::before {
     height: 150px;
     border-radius: var(--radius-full);
     object-fit: cover;
+    border: 3px solid var(--color-accent);
+    box-shadow: 0 0 20px rgba(213, 186, 43, 0.3);
 }
 
 .profile-avatar.default-icon {
-    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    box-shadow: none;
 }
 
 .profile-info {
@@ -306,12 +309,10 @@ body::before {
     width: 100px;
     height: 100px;
     border-radius: var(--radius-full);
-    border: 3px solid var(--color-accent);
     object-fit: cover;
 }
 
 .avatar-preview.default-icon {
-    background: rgba(255, 255, 255, 0.1);
     padding-left: 1px;
     object-fit: contain;
 }

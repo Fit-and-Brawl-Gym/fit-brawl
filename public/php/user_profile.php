@@ -166,7 +166,7 @@ $pageTitle = "My Profile - Fit and Brawl";
 $currentPage = "user_profile";
 // Determine avatar source
 $hasCustomAvatar = $user['avatar'] !== 'default-avatar.png' && !empty($user['avatar']);
-$avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../images/account-icon.png";
+$avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../images/account-icon.svg";
 
 // Set additional files for header
 $additionalCSS = ['../css/pages/user-profile.css'];

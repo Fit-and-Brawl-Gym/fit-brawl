@@ -11,6 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 
 $status = '';
+$feedbackSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
    $user_id = test_input($_SESSION['user_id']);
@@ -30,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($result && $row = $result->fetch_assoc()) {
        if (empty($username )){
         $username = "Anonymous $index";
-        $user_avatar = "../../images/account-icon.png";
+        $user_avatar = "../../images/account-icon.svg";
     } else{
         $user_avatar = $row['avatar'];
     }
@@ -49,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->bind_param("issss", $user_id, $username, $email, $user_avatar, $message);
 
         if ($stmt->execute()) {
-            $status = "Thanks for your feedback!";
+            $feedbackSuccess = true;
         } else {
            $status = "Error: " . $stmt->error;
         }
@@ -162,7 +163,7 @@ if (!SessionManager::isLoggedIn()) {
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
     $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
+    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
 }
 
 function test_input($data) {
@@ -175,7 +176,7 @@ function test_input($data) {
 $pageTitle = "Feedback Form - Fit and Brawl";
 $currentPage = "feedback_form";
 $additionalCSS = ['../css/pages/feedback-form.css', '../css/components/form.css'];
-$additionalJS = ['../js/feedback.js'];
+$additionalJS = ['../js/feedback-form.js'];
 require_once '../../includes/header.php';
 ?>
 
@@ -190,7 +191,7 @@ require_once '../../includes/header.php';
                 </div>
                   <form method="post" class="feedback-form" id="feedbackForm">
                       <div class="contact-details">
-                      <?php if(!empty($status)) : ?>
+                      <?php if(!empty($status) && !$feedbackSuccess) : ?>
                           <div class="status"><?= htmlspecialchars($status) ?></div>
                       <?php endif; ?>
                       <div class="form-row">
@@ -215,5 +216,20 @@ require_once '../../includes/header.php';
         </div>
     </main>
 
+    <!-- Success Modal -->
+    <div id="successModal" class="success-modal" data-show="<?= $feedbackSuccess ? 'true' : 'false' ?>">
+        <div class="success-content">
+            <div class="success-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>Thank You<span class="exclamation">!</span> Your feedback has been submitted.</h3>
+            </div>
+            <p class="success-message"> You will be redirected to the feedback page in <span id="countdown">5</span> seconds.</p>
+            <div class="success-buttons">
+                <button class="success-btn" id="redirectNow">
+                    <i class="fas fa-arrow-right"></i> Go Now
+                </button>
+            </div>
+        </div>
+    </div>
 
 <?php require_once '../../includes/footer.php'; ?>
