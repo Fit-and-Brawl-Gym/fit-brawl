@@ -113,11 +113,15 @@ if (!isset($membershipLink)) {
 
 // Determine avatar source for logged-in users
 if (!isset($avatarSrc)) {
-    $avatarSrc = '../../images/account-icon.png';
+    $avatarSrc = '../../images/account-icon.svg';
+    $hasCustomAvatar = false;
     if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-        $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.png";
+        $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
     }
+} else {
+    // If avatarSrc is already set, determine if it's custom
+    $hasCustomAvatar = isset($avatarSrc) && strpos($avatarSrc, 'uploads/avatars') !== false;
 }
 
 // Check if SessionManager is available
@@ -189,7 +193,7 @@ if (class_exists('SessionManager')) {
             <?php if (isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon">
+                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
@@ -198,7 +202,7 @@ if (class_exists('SessionManager')) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.png" alt="Account" class="account-icon">
+                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon default-icon">
                 </a>
             <?php endif; ?>
         </div>

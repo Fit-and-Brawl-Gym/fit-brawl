@@ -60,7 +60,7 @@ if (isset($_SESSION['email'])) {
 
 // Determine avatar source
 $hasCustomAvatar = $user['avatar'] !== 'default-avatar.png' && !empty($user['avatar']);
-$avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../../images/account-icon.png";
+$avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../../images/account-icon.svg";
 
 // Set variables for header
 $pageTitle = "Trainer Profile - Fit and Brawl";

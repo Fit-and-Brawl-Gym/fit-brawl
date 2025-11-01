@@ -302,3 +302,121 @@
         margin-top: var(--spacing-2);
     }
 }
+
+/* Success Modal */
+.success-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.success-modal.active {
+    display: flex;
+}
+
+.success-content {
+    background: rgba(15, 50, 56, 0.98);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-5);
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.7);
+    animation: scaleIn 0.3s ease-out;
+}
+
+.success-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+}
+
+.success-header i {
+    font-size: var(--font-size-2xl);
+    color: var(--color-success);
+}
+
+.success-header h3 {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-2xl);
+    color: var(--color-accent);
+    margin: 0;
+}
+
+.success-message {
+    color: var(--color-text-light);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-4);
+    text-align: center;
+}
+
+.success-message #countdown {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+}
+
+.exclamation {
+    font-family: var(--font-family-primary);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    font-size: var(--font-size-xl);
+    margin-left: var(--spacing-1);
+    margin-right: var(--spacing-1);
+}
+
+.success-buttons {
+    display: flex;
+    gap: var(--spacing-2);
+    justify-content: center;
+}
+
+.success-btn {
+    padding: var(--spacing-3) var(--spacing-6);
+    border: none;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    transition: var(--transition-base);
+    background: var(--color-accent);
+    color: var(--color-text-dark);
+}
+
+.success-btn:hover {
+    background: var(--color-accent-hover);
+    transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

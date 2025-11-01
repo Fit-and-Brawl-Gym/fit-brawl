@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Remove avatar
     if (removeAvatarBtn) {
         removeAvatarBtn.addEventListener('click', function() {
-            avatarPreview.src = '../../images/profile-icon.svg';
+            avatarPreview.src = '../../images/account-icon.svg';
             avatarPreview.classList.add('default-icon');
             removeAvatarBtn.classList.remove('show');
             avatarInput.value = '';
