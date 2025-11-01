@@ -562,7 +562,6 @@ h1.page-title {
     font-size: 0.75rem;
     color: var(--color-text-light);
 }
-
 /* Legend badges to match session indicators */
 .legend-badge {
     padding: 2px 8px;
@@ -1770,7 +1769,7 @@ h1.page-title {
 
     .sessions-table td {
         display: flex;
-        justify-content: space-between;
+        align-items: center;
         padding: var(--spacing-1) 0;
         border: none;
         text-align: left;
@@ -1790,12 +1789,16 @@ h1.page-title {
         gap: var(--spacing-1);
     }
 
-    .session-action {
-        justify-content: flex-end;
+    .sessions-table td.session-action {
+        justify-content: space-between;
+        margin-top: var(--spacing-2);
     }
 
-    .cancel-btn {
-        padding: var(--spacing-1) var(--spacing-2);
+    .sessions-table td.session-action > * {
+        margin-left: auto;
+    }
+
+    .session-action {
         font-size: 0.75rem;
     }
 
