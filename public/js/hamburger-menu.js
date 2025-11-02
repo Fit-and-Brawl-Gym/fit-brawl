@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Close menu when scrolling
+        // Close menu when scrolling (using wheel event to detect scroll attempts even when body overflow is hidden)
         let scrollTimeout;
         window.addEventListener('scroll', function() {
             if (navBar.classList.contains('active')) {
@@ -48,6 +48,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Close menu immediately on scroll
                 closeMenu();
+            }
+        }, { passive: true });
+
+        // Also listen for wheel events (fires even when scrolling is prevented)
+        window.addEventListener('wheel', function(event) {
+            if (navBar.classList.contains('active')) {
+                // Check if the wheel event is outside the nav menu
+                const isWheelInsideNav = navBar.contains(event.target);
+                if (!isWheelInsideNav) {
+                    closeMenu();
+                }
             }
         }, { passive: true });
 
