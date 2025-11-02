@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
-require_once '../../../includes/file_upload_security.php';
 header('Content-Type: application/json');
 
 // Check login
@@ -27,26 +26,6 @@ if (empty($service_key) || empty($name) || empty($country) || empty($address) ||
     echo json_encode(['success' => false, 'message' => 'All fields are required including service date']);
     exit;
 }
-
-// Validate and upload file securely
-if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
-    exit;
-}
-
-$uploadDir = __DIR__ . '/../../../uploads/receipts/';
-$uploadHandler = SecureFileUpload::receiptUpload($uploadDir, 10);
-
-$result = $uploadHandler->uploadFile($_FILES['receipt']);
-
-if (!$result['success']) {
-    echo json_encode(['success' => false, 'message' => $result['message']]);
-    exit;
-}
-
-$filename = 'receipt_service_' . $user_id . '_' . time() . '.' . pathinfo($result['filename'], PATHINFO_EXTENSION);
-$uploadPath = $uploadDir . $filename;
-rename($result['path'], $uploadPath);
 
 // Service configurations with codes for receipt ID
 $services = [
@@ -91,15 +70,15 @@ try {
 // Generate unique receipt ID (format: CODE-YYYYMMDD-XXXXXX)
 $receipt_id = strtoupper($service['code'] . '-' . date('Ymd') . '-' . substr(uniqid(), -6));
 
-// Insert into member_service_bookings table - NO APPROVAL NEEDED
+// Insert into member_service_bookings table - NO APPROVAL NEEDED, NO RECEIPT UPLOAD
 $stmt = $conn->prepare("
     INSERT INTO member_service_bookings
-    (receipt_id, user_id, service_key, service_name, price, is_member, name, country, permanent_address, service_date, booking_date, qr_proof, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, 'confirmed')
+    (receipt_id, user_id, service_key, service_name, price, is_member, name, country, permanent_address, service_date, booking_date, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'confirmed')
 ");
 
 $stmt->bind_param(
-    "sissdisssss",
+    "sissdissss",
     $receipt_id,
     $user_id,
     $service_key,
@@ -109,8 +88,7 @@ $stmt->bind_param(
     $name,
     $country,
     $address,
-    $service_date_mysql,
-    $filename
+    $service_date_mysql
 );
 
 if ($stmt->execute()) {

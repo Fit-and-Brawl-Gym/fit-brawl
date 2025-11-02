@@ -141,10 +141,11 @@ require_once '../../includes/header.php';
     <!--Main-->
     <main class="transaction-page">
         <div class="transaction-container">
-            <h1 class="transaction-title">COMPLETE YOUR PAYMENT</h1>
+            <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
 
             <div class="transaction-box">
                 <form id="subscriptionForm" class="subscription-form">
+                    <input type="hidden" name="service" value="<?php echo $service; ?>">
                     <div class="transaction-content">
                         <!-- Left Column -->
                         <div class="transaction-left">
@@ -204,8 +205,8 @@ require_once '../../includes/header.php';
 
                             <!-- Action Buttons -->
                             <div class="transaction-actions">
-                                <button type="button" class="confirm-payment-btn" id="confirmPaymentBtn">
-                                    CONFIRM PAYMENT
+                                <button type="submit" class="confirm-payment-btn" id="confirmPaymentBtn">
+                                    GENERATE RECEIPT
                                 </button>
                                 <button type="button" class="cancel-btn" onclick="window.location.href='membership.php'">
                                     Cancel
@@ -215,49 +216,12 @@ require_once '../../includes/header.php';
                     </div>
 
                     <p class="terms-notice">
-                        By confirming your payment, you agree to our terms and conditions. This is a single-day pass and is non-refundable.
+                        By generating your receipt, you agree to our terms and conditions. Please present this receipt at the gym entrance on your scheduled date.
                     </p>
                 </form>
             </div>
         </div>
     </main>
-
-    <!-- Receipt Upload Modal -->
-    <div class="modal-overlay" id="receiptModalOverlay"></div>
-    <div class="receipt-modal" id="receiptModal">
-        <div class="modal-header">
-            <h2>Submit Payment Receipt</h2>
-            <button class="modal-close-btn" id="closeReceiptModal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p class="modal-instruction">Please upload a screenshot or photo of your payment receipt to complete your purchase.</p>
-
-            <div class="file-upload-area" id="fileUploadArea">
-                <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
-                    <path d="M7 18C4.23858 18 2 15.7614 2 13C2 10.2386 4.23858 8 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8C19.7614 8 22 10.2386 22 13C22 15.7614 19.7614 18 17 18M12 13V21M12 13L9 16M12 13L15 16"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <p class="upload-text">Click to upload or drag and drop</p>
-                <p class="upload-subtext">PNG, JPG, PDF up to 10MB</p>
-                <input type="file" id="receiptFile" name="receipt" accept="image/*,.pdf" hidden>
-            </div>
-
-            <div class="file-preview" id="filePreview" style="display: none;">
-                <img id="previewImage" src="" alt="Receipt preview">
-                <p id="fileName"></p>
-                <button type="button" class="remove-file-btn" id="removeFile">Remove</button>
-            </div>
-
-            <div class="modal-actions">
-                <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
-                    SUBMIT RECEIPT
-                </button>
-                <button type="button" class="modal-cancel-btn" id="cancelReceiptBtn">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
 
 <script>
     // Initialize Flatpickr date picker for service date after DOM and scripts load
