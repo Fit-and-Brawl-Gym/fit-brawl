@@ -370,7 +370,7 @@
     font-family: var(--font-family-primary);
     font-weight: var(--font-weight-bold);
     color: var(--color-accent);
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
     margin-left: var(--spacing-1);
     margin-right: var(--spacing-1);
 }

@@ -4,6 +4,7 @@
 // Use absolute include relative to this file for reliability
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
+require_once __DIR__ . '/../../../../includes/file_upload_security.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
@@ -33,18 +34,18 @@ if ($method === 'POST') {
         exit;
     }
 
-    // Handle image upload
+    // Handle image upload securely
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $targetDir = __DIR__ . '/../../../../uploads/equipment/';
-        if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0777, true);
-        }
+        $uploadDir = __DIR__ . '/../../../../uploads/equipment/';
+        $uploadHandler = SecureFileUpload::imageUpload($uploadDir, 5);
 
-        $filename = uniqid() . "_" . basename($_FILES['image']['name']);
-        $targetFile = $targetDir . $filename;
+        $result = $uploadHandler->uploadFile($_FILES['image']);
 
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-            $imagePath = '../../uploads/equipment/' . $filename;
+        if ($result['success']) {
+            $imagePath = '../../uploads/equipment/' . $result['filename'];
+        } else {
+            echo json_encode(['success' => false, 'message' => $result['message']]);
+            exit;
         }
     }
 

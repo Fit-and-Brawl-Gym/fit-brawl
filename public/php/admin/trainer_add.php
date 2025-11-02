@@ -2,6 +2,7 @@
 session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/mail_config.php';
+require_once '../../../includes/file_upload_security.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -40,22 +41,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows > 0) {
             $error = 'A trainer with this email already exists.';
         } else {
-            // Handle photo upload
+            // Handle photo upload securely
             $photo = null;
             if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
                 $upload_dir = '../../../uploads/trainers/';
-                if (!file_exists($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
-                }
+                $uploadHandler = SecureFileUpload::imageUpload($upload_dir, 5);
 
-                $file_ext = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
-                $allowed_ext = ['jpg', 'jpeg', 'png'];
+                $result = $uploadHandler->uploadFile($_FILES['photo']);
 
-                if (in_array($file_ext, $allowed_ext)) {
-                    $photo = uniqid('trainer_') . '.' . $file_ext;
-                    move_uploaded_file($_FILES['photo']['tmp_name'], $upload_dir . $photo);
+                if ($result['success']) {
+                    $photo = $result['filename'];
                 } else {
-                    $error = 'Only JPG, JPEG, and PNG files are allowed.';
+                    $error = $result['message'];
                 }
             }
 
@@ -103,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($photo && file_exists('../../../uploads/trainers/' . $photo)) {
                         $avatars_dir = '../../../uploads/avatars/';
                         if (!file_exists($avatars_dir)) {
-                            mkdir($avatars_dir, 0777, true);
+                            mkdir($avatars_dir, 0750, true);
                         }
                         copy('../../../uploads/trainers/' . $photo, $avatars_dir . $photo);
                     } else {

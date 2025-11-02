@@ -1,0 +1,24 @@
+# Secure Uploads Directory
+# Prevent execution of any PHP scripts in uploads
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent execution of PHP files in uploads directory
+    RewriteCond %{THE_REQUEST} \s+.*\.php.*\sHTTP/
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# Prevent listing of directory contents
+Options -Indexes
+
+# Only allow access to image and PDF files
+<FilesMatch "\.(php|pl|py|jsp|asp|sh|cgi)$">
+    Require all denied
+</FilesMatch>
+
+# Force download for potentially dangerous files
+<FilesMatch "\.(exe|com|bat|sh)$">
+    Require all denied
+</FilesMatch>
+

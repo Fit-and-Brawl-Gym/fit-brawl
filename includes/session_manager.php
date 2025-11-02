@@ -17,7 +17,7 @@ class SessionManager {
                 'lifetime' => 0, // Session cookie (expires when browser closes)
                 'path' => '/',
                 'domain' => '', // Use default domain
-                'secure' => false, // Set to true when using HTTPS
+                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on', // Auto-detect HTTPS
                 'httponly' => true,
                 'samesite' => 'Lax'
             ]);
@@ -128,12 +128,14 @@ class SessionManager {
         }
 
         // Clear any other application cookies
+        $cookieSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
         $cookiesToClear = ['remember_password', 'email', 'session_message'];
         foreach ($cookiesToClear as $cookieName) {
             if (isset($_COOKIE[$cookieName])) {
                 setcookie($cookieName, '', [
                     'expires' => time() - 3600,
                     'path' => '/',
+                    'secure' => $cookieSecure,
                     'httponly' => true,
                     'samesite' => 'Lax'
                 ]);
@@ -147,6 +149,7 @@ class SessionManager {
             setcookie('session_message', $messageToStore, [
                 'expires' => time() + 30,
                 'path' => '/',
+                'secure' => $cookieSecure,
                 'httponly' => false,
                 'samesite' => 'Lax'
             ]);
