@@ -125,16 +125,6 @@ main.container {
     width: 100%;
 }
 
-/* Pulse animation for category chips on page load */
-@keyframes pulse-glow {
-    0%, 100% {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-    50% {
-        box-shadow: 0 2px 16px rgba(213, 186, 43, 0.5);
-    }
-}
-
 .category-chip {
     text-align: center;
     border: 2px solid rgba(213, 186, 43, 0.4);
@@ -148,7 +138,6 @@ main.container {
     transition: var(--transition-base);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
-    animation: pulse-glow 2s ease-in-out 3;
 }
 
 .category-chip img {
@@ -296,7 +285,6 @@ select#statusFilter option {
 
 .card:hover,
 .product-card:hover {
-    border-color: rgba(213, 186, 43, 0.6);
     box-shadow: 0 4px 16px rgba(213, 186, 43, 0.2);
 }
 
@@ -319,6 +307,12 @@ select#statusFilter option {
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform var(--transition-base);
+}
+
+.card:hover .product-image img,
+.product-card:hover .product-image img {
+    transform: scale(1.1);
 }
 
 /* Product Title */

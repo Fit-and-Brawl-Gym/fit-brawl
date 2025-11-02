@@ -20,10 +20,12 @@ function renderEquipment(items) {
 
     return `
       <div class="equipment-card" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
-        <img src="${imageSrc}"
-             alt="${escapeHtml(item.name)}"
-             class="equipment-image"
-             onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
+        <div class="equipment-image-container">
+          <img src="${imageSrc}"
+               alt="${escapeHtml(item.name)}"
+               class="equipment-image"
+               onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
+        </div>
 
         <div class="equipment-content">
           <div class="equipment-header">
