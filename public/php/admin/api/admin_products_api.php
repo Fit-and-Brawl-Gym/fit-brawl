@@ -3,6 +3,7 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
+require_once __DIR__ . '/../../../../includes/file_upload_security.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
@@ -32,16 +33,16 @@ try {
         }
         $imagePath = null;
         if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-            $targetDir = __DIR__ . '/../../../../uploads/products/';
-            if (!is_dir($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
+            $uploadDir = __DIR__ . '/../../../../uploads/products/';
+            $uploadHandler = SecureFileUpload::imageUpload($uploadDir, 5);
 
-            $filename = uniqid() . "_" . basename($_FILES['image']['name']);
-            $targetFile = $targetDir . $filename;
+            $result = $uploadHandler->uploadFile($_FILES['image']);
 
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-                $imagePath = '../../uploads/products/' . $filename;
+            if ($result['success']) {
+                $imagePath = '../../uploads/products/' . $result['filename'];
+            } else {
+                echo json_encode(['success' => false, 'message' => $result['message']]);
+                exit;
             }
         }
 

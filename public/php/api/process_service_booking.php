@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
+require_once '../../../includes/file_upload_security.php';
 header('Content-Type: application/json');
 
 // Check login
@@ -27,42 +28,25 @@ if (empty($service_key) || empty($name) || empty($country) || empty($address) ||
     exit;
 }
 
-// Validate file upload
+// Validate and upload file securely
 if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
     echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
     exit;
 }
 
-$receipt = $_FILES['receipt'];
-$allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-$maxSize = 10 * 1024 * 1024; // 10MB
-
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mime = finfo_file($finfo, $receipt['tmp_name']);
-finfo_close($finfo);
-
-if (!in_array($mime, $allowedTypes)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, and PDF allowed']);
-    exit;
-}
-
-if ($receipt['size'] > $maxSize) {
-    echo json_encode(['success' => false, 'message' => 'File size must be less than 10MB']);
-    exit;
-}
-
-// Save uploaded file
 $uploadDir = __DIR__ . '/../../../uploads/receipts/';
-if (!file_exists($uploadDir)) mkdir($uploadDir, 0777, true);
+$uploadHandler = SecureFileUpload::receiptUpload($uploadDir, 10);
 
-$extension = pathinfo($receipt['name'], PATHINFO_EXTENSION);
-$filename = 'receipt_service_' . $user_id . '_' . time() . '.' . $extension;
-$uploadPath = $uploadDir . $filename;
+$result = $uploadHandler->uploadFile($_FILES['receipt']);
 
-if (!move_uploaded_file($receipt['tmp_name'], $uploadPath)) {
-    echo json_encode(['success' => false, 'message' => 'Failed to upload receipt']);
+if (!$result['success']) {
+    echo json_encode(['success' => false, 'message' => $result['message']]);
     exit;
 }
+
+$filename = 'receipt_service_' . $user_id . '_' . time() . '.' . pathinfo($result['filename'], PATHINFO_EXTENSION);
+$uploadPath = $uploadDir . $filename;
+rename($result['path'], $uploadPath);
 
 // Service configurations with codes for receipt ID
 $services = [
