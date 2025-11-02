@@ -1,8 +1,17 @@
 <?php
-session_start();
+// Set anti-cache headers to prevent Firefox from caching session state
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+
+require_once '../../includes/session_manager.php';
+
+// Initialize session manager (handles session_start internally)
+SessionManager::initialize();
 
 // Redirect logged-in users to logged-in homepage
-if(isset($_SESSION['email'])) {
+if (SessionManager::isLoggedIn()) {
     header("Location: loggedin-index.php");
     exit;
 }

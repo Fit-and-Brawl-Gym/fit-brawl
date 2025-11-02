@@ -1,0 +1,20 @@
+{
+  "name": "Fit and Brawl Gym",
+  "short_name": "FitBrawl",
+  "description": "Build a body that's built for battle - Premier boxing, MMA, and Muay Thai training facility",
+  "start_url": "/fit-brawl/public/php/index.php",
+  "display": "standalone",
+  "background_color": "#002f3f",
+  "theme_color": "#d5ba2b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "../images/favicon-members.png",
+      "sizes": "60x60",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["fitness", "sports", "health"],
+  "screenshots": []
+}

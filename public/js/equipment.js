@@ -24,6 +24,7 @@ function renderEquipment(items) {
           <img src="${imageSrc}"
                alt="${escapeHtml(item.name)}"
                class="equipment-image"
+               loading="lazy"
                onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
         </div>
 

@@ -1,6 +1,6 @@
 .membership-main {
     min-height: 0;
-    background: url('../../../images/subscription-bg.png') no-repeat center / auto;
+    background: url('../../../images/subscription-bg.webp') no-repeat center / auto;
     background-size:cover;
     position: relative;
     padding-bottom: var(--spacing-16);
@@ -741,7 +741,7 @@
         left: 0;
         right: 0;
         min-height: 70vh;
-        background: url('../../../images/subscription-bg.png');
+        background: url('../../../images/subscription-bg.webp');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -792,7 +792,7 @@
         left: 0;
         right: 0;
         min-height: 70vh;
-        background: url('../../../images/subscription-bg.png');
+        background: url('../../../images/subscription-bg.webp');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;

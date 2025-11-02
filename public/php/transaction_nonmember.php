@@ -70,12 +70,24 @@ $currentPage = "transaction_daypass_non_member";
 $selectedService = $services[$service];
 $price = $selectedService['price'];
 
+// Map service to class type for trainer availability
+$serviceToClassMap = [
+    'daypass-gym' => 'gym',
+    'daypass-gym-student' => 'gym',
+    'training-boxing' => 'boxing',
+    'training-muaythai' => 'muay-thai',
+    'training-mma' => 'mma'
+];
+$classType = isset($serviceToClassMap[$service]) ? $serviceToClassMap[$service] : 'gym';
+
 $additionalCSS = [
     '../css/pages/transaction.css',
     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'
 ];
+$additionalJS = [
+    'https://cdn.jsdelivr.net/npm/flatpickr'
+];
 ?>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <style>
     .date-picker-group {
         margin-bottom: var(--spacing-4);
@@ -193,19 +205,76 @@ require_once '../../includes/header.php';
         </div>
     </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<script>
+    // Initialize Flatpickr date picker after DOM and scripts load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof flatpickr !== 'undefined') {
+            const classType = '<?php echo $classType; ?>';
 
-    <script>
-        // Initialize Flatpickr date picker
-        flatpickr("#serviceDate", {
-            minDate: "today",
-            maxDate: new Date().fp_incr(30), // 30 days from today
-            dateFormat: "F j, Y",
-            disableMobile: false,
-            onChange: function(selectedDates, dateStr, instance) {
-                console.log("Selected date:", dateStr);
-            }
-        });
+            // Fetch available dates from trainer schedules
+            fetch(`api/get_available_dates.php?class=${classType}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Extract all dates
+                        const allDates = data.available_dates.map(date => new Date(date));
+
+                        // Calculate date range
+                        const today = new Date();
+                        const maxDate = new Date();
+                        maxDate.setDate(today.getDate() + 30);
+
+                        // Invert available dates to get disabled dates
+                        const disabledDates = [];
+                        const availableDatesSet = new Set(allDates.map(d => d.toDateString()));
+
+                        for (let d = new Date(today); d <= maxDate; d.setDate(d.getDate() + 1)) {
+                            if (!availableDatesSet.has(d.toDateString())) {
+                                disabledDates.push(new Date(d));
+                            }
+                        }
+
+                        // Initialize Flatpickr with disabled dates
+                        flatpickr("#serviceDate", {
+                            minDate: "today",
+                            maxDate: new Date().fp_incr(30),
+                            dateFormat: "F j, Y",
+                            disable: disabledDates,
+                            disableMobile: false,
+                            onChange: function(selectedDates, dateStr, instance) {
+                                console.log("Selected date:", dateStr);
+                            }
+                        });
+                    } else {
+                        console.error('Failed to fetch available dates:', data.message);
+                        // Fallback: initialize without disable filter
+                        flatpickr("#serviceDate", {
+                            minDate: "today",
+                            maxDate: new Date().fp_incr(30),
+                            dateFormat: "F j, Y",
+                            disableMobile: false,
+                            onChange: function(selectedDates, dateStr, instance) {
+                                console.log("Selected date:", dateStr);
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching available dates:', error);
+                    // Fallback: initialize without disable filter
+                    flatpickr("#serviceDate", {
+                        minDate: "today",
+                        maxDate: new Date().fp_incr(30),
+                        dateFormat: "F j, Y",
+                        disableMobile: false,
+                        onChange: function(selectedDates, dateStr, instance) {
+                            console.log("Selected date:", dateStr);
+                        }
+                    });
+                });
+        } else {
+            console.error('Flatpickr not loaded');
+        }
 
         // Handle form submission
         document.getElementById('nonMemberForm').addEventListener('submit', function(e) {
@@ -241,6 +310,7 @@ require_once '../../includes/header.php';
                 btn.disabled = false;
             });
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+
+<?php require_once '../../includes/footer.php'; ?>

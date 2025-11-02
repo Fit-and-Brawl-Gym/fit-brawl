@@ -1,7 +1,7 @@
 .login-main {
     min-height: 0;
     height: auto;
-    background: var(--color-bg-dark) url('../../../images/login-bg.png') no-repeat center top / cover;
+    background: var(--color-bg-dark) url('../../../images/login-bg.webp') no-repeat center top / cover;
     position: relative;
 }
 

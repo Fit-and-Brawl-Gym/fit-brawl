@@ -302,6 +302,7 @@
         background-color: var(--color-primary);
         transform: none;
         transition: top var(--transition-slow);
+        will-change: top;
         z-index: var(--z-fixed);
         padding: var(--spacing-5) 0;
         box-shadow: var(--shadow-lg);
