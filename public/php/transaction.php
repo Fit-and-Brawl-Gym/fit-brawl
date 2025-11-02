@@ -1,9 +1,8 @@
 <?php
-session_start();
 require_once '../../includes/db_connect.php';
 require_once '../../includes/session_manager.php';
 
-// Initialize session manager
+// Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 
 // Check if user is logged in
@@ -345,7 +344,7 @@ require_once '../../includes/header.php';
 
                             <div class="payment-qr-section">
                                 <div class="qr-code-container">
-                                    <img src="../../images/qr-code.png" alt="InstaPay QR Code" class="qr-code">
+                                    <img src="../../images/qr-code.webp" alt="InstaPay QR Code" class="qr-code">
                                 </div>
                                 <p class="qr-instruction">KINDLY SCAN TO PROCEED WITH YOUR PAYMENT</p>
                             </div>

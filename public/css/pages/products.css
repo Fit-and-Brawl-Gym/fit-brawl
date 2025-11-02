@@ -16,7 +16,7 @@ body {
     flex-direction: column;
     min-height: 0;
     height: auto;
-    background: url('../../../images/equipment-products-bg.png') no-repeat center center fixed;
+    background: url('../../../images/equipment-products-bg.webp') no-repeat center center fixed;
     background-size: cover;
     position: relative;
 }
@@ -34,7 +34,7 @@ body::before {
 
 /* Hero Section */
 .products-hero {
-    background: var(--color-primary) url('../../../images/products-h1-bg.png') no-repeat center center;
+    background: var(--color-primary) url('../../../images/products-h1-bg.webp') no-repeat center center;
     background-size: cover;
     margin-top: var(--spacing-5);
     text-align: left;
@@ -308,6 +308,7 @@ select#statusFilter option {
     object-fit: cover;
     display: block;
     transition: transform var(--transition-base);
+    will-change: transform;
 }
 
 .card:hover .product-image img,

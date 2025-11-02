@@ -1,7 +1,7 @@
 .transaction-page {
     min-height: 0;
     height: auto;
-    background: url('../../../images/transaction-bg.png') no-repeat center / 150% auto;
+    background: url('../../../images/transaction-bg.webp') no-repeat center / 150% auto;
     background-size: cover;
     padding: var(--spacing-16) var(--spacing-8) var(--spacing-16);
     display: flex;

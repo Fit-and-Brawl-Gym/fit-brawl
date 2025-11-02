@@ -1,9 +1,8 @@
 <?php
-session_start();
 require_once '../../includes/db_connect.php';
 require_once '../../includes/session_manager.php';
 
-// Initialize session manager
+// Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 
 // Check if user is logged in

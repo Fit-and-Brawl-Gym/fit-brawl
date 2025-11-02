@@ -14,7 +14,7 @@ main {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 150px;
-  background-image: url('../../../images/homepage-boxer.png');
+  background-image: url('../../../images/homepage-boxer.webp');
   background-repeat: no-repeat;
   background-position: left -450px top -130px;
   background-size: auto 1100px;
@@ -205,7 +205,7 @@ main {
 
 /* Gym Overview Section */
 .gym-overview {
-  background: url('../../../images/fog-bg.png') no-repeat;
+  background: url('../../../images/fog-bg.webp') no-repeat;
   background-size: 120%;
   background-position: right -90px top -100px;
   padding: var(--spacing-24) var(--spacing-8) var(--spacing-32) var(--spacing-8);

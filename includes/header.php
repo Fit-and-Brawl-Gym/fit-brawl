@@ -4,7 +4,15 @@
  * This file contains the HTML header for all pages
  * It handles both logged-in and non-logged-in states
  *
- * Required variables that should be set before including this file:
+ * Required variables that should be set before     <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous" defer></script>
+    <script src="../js/header-dropdown.js" defer></script>
+    <script src="../js/hamburger-menu.js" defer></script>ing this file:
  * - $pageTitle: The page title (e.g., "Fit and Brawl - Contact")
  * - $currentPage: The current page identifier (e.g., "home", "membership", "equipment", "products", "contact", "feedback")
  * - $additionalCSS: (optional) Array of additional CSS files to include
@@ -14,6 +22,11 @@
  * - $membershipLink: Dynamic membership link based on user status (defaults to 'membership.php')
  * - $avatarSrc: Avatar source path (will be computed if not provided)
  */
+
+// Ensure session is started if SessionManager is available
+if (class_exists('SessionManager')) {
+    SessionManager::initialize();
+}
 
 // Set default values if not provided
 if (!isset($pageTitle)) {
@@ -131,13 +144,52 @@ if (class_exists('SessionManager')) {
 } else {
     $isLoggedIn = isset($_SESSION['email']);
 }
+
+// SEO defaults - can be overridden in individual pages
+if (!isset($metaDescription)) {
+    $metaDescription = "Fit and Brawl Gym - Build a body that's built for battle. Premier boxing, MMA, and Muay Thai training facility. Professional trainers, modern equipment, flexible membership plans.";
+}
+if (!isset($metaKeywords)) {
+    $metaKeywords = "boxing gym, MMA training, Muay Thai, fitness center, combat sports, gym membership, martial arts, personal training";
+}
+if (!isset($ogImage)) {
+    $ogImage = "../../images/homepage-boxer.webp";
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta name="keywords" content="<?= htmlspecialchars($metaKeywords) ?>">
+    <meta name="author" content="Fit and Brawl Gym">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= htmlspecialchars($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
+    <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="<?= htmlspecialchars($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
+    <meta property="twitter:title" content="<?= htmlspecialchars($pageTitle) ?>">
+    <meta property="twitter:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="twitter:image" content="<?= htmlspecialchars($ogImage) ?>">
+
     <title><?= htmlspecialchars($pageTitle) ?></title>
+
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="../css/global.css" as="style">
+    <link rel="preload" href="../css/components/header.css" as="style">
+    <link rel="preload" href="../../images/fnb-logo-yellow.svg" as="image">
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/components/footer.css">
     <link rel="stylesheet" href="../css/components/header.css">
@@ -146,13 +198,26 @@ if (class_exists('SessionManager')) {
     <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
+
+    <!-- Favicons and Touch Icons -->
     <link rel="shortcut icon" href="../../images/favicon-members.png" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon-members.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon-members.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon-members.png">
+    <link rel="manifest" href="../site.webmanifest">
+    <meta name="theme-color" content="#002f3f">
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous"></script>
-    <script src="../js/header-dropdown.js"></script>
-    <script src="../js/hamburger-menu.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous" defer></script>
+
+    <!-- Core Scripts -->
+    <script src="../js/header-dropdown.js" defer></script>
+    <script src="../js/hamburger-menu.js" defer></script>
     <?php if ($isLoggedIn): ?>
     <link rel="stylesheet" href="../css/components/session-warning.css">
     <script src="../js/session-timeout.js"></script>

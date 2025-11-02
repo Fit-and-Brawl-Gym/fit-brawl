@@ -1,6 +1,6 @@
 .verification-main {
     min-height: calc(100vh - 120px);
-    background: var(--color-bg-dark) url('../../../images/sign-up_bg.png') no-repeat center top / cover;
+    background: var(--color-bg-dark) url('../../../images/sign-up_bg.webp') no-repeat center top / cover;
     position: relative;
 }
 

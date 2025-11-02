@@ -1,10 +1,8 @@
 <?php
 // Check if this is an API request
-session_start();
-
 require_once '../../includes/session_manager.php';
 
-// Initialize session manager
+// Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 
 // Check if user is logged in

@@ -41,9 +41,9 @@
         if (!imageSrc) {
             // Generate image path from product name (e.g., "Whey Protein Powder" -> "whey-protein-powder.jpg")
             const imageName = product.name.toLowerCase().replace(/\s+/g, '-');
-            imageSrc = `../../uploads/products ${imageName}.jpg`;
+            imageSrc = `../../uploads/products/${imageName}.jpg`;
         }
- 
+
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -144,7 +144,7 @@
         const data = await response.json();
 
 
-        
+
         if (!data.success || !Array.isArray(data.data)) {
             throw new Error("Invalid API format — expected { success:true, data:[...] }");
         }

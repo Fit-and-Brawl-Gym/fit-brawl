@@ -1,0 +1,43 @@
+# Fit and Brawl Gym - Robots.txt
+# This file tells search engines what they can and cannot crawl
+
+User-agent: *
+Allow: /
+Disallow: /includes/
+Disallow: /vendor/
+Disallow: /uploads/avatars/
+Disallow: /uploads/receipts/
+Disallow: /public/php/admin/
+Disallow: /public/php/api/
+Disallow: /public/php/logout.php
+Disallow: /public/php/auth.php
+Disallow: /*.php$
+
+# Allow important pages
+Allow: /public/php/index.php
+Allow: /public/php/membership.php
+Allow: /public/php/equipment.php
+Allow: /public/php/products.php
+Allow: /public/php/contact.php
+Allow: /public/php/feedback.php
+
+# Allow CSS and JS for proper rendering
+Allow: /public/css/
+Allow: /public/js/
+Allow: /images/
+
+# Sitemap location (create this file later)
+Sitemap: https://yourwebsite.com/sitemap.xml
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1
+
+# Block common bots that don't respect robots.txt
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
