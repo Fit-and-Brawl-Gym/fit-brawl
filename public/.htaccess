@@ -76,7 +76,7 @@
 # ====================================
 <IfModule mod_headers.c>
     # Content Security Policy
-    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kit.fontawesome.com https://ka-f.fontawesome.com https://fonts.googleapis.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://ka-f.fontawesome.com https://cdn.jsdelivr.net; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com https://ka-f.fontawesome.com; connect-src 'self' https://ka-f.fontawesome.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://kit.fontawesome.com https://ka-f.fontawesome.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://ka-f.fontawesome.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; font-src 'self' data: https://fonts.gstatic.com https://ka-f.fontawesome.com; connect-src 'self' https://ka-f.fontawesome.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
 
     # Security Headers
     Header set X-Content-Type-Options "nosniff"

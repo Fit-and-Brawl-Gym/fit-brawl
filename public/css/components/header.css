@@ -1,6 +1,6 @@
 @font-face {
   font-family: zuume-rough-bold;
-  src: url(fonts/zuume-rough-bold.ttf) format("truetype");
+  src: url(./fonts/zuume-rough-bold.ttf) format("truetype");
 }
 *{
     box-sizing: border-box;

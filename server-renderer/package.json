@@ -1,0 +1,13 @@
+{
+  "name": "fit-brawl-receipt-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Headless Chrome renderer for receipts (PDF/PNG)",
+  "scripts": {
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "puppeteer": "^24.27.0"
+  }
+}

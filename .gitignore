@@ -1,1 +1,7 @@
 .env
+
+# Puppeteer cache directory
+server-renderer/.cache/
+
+# Node.js dependencies (install via npm install in server-renderer/)
+server-renderer/node_modules/

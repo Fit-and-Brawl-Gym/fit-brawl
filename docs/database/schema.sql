@@ -352,7 +352,7 @@ CREATE TABLE member_service_bookings (
     permanent_address VARCHAR(255) NOT NULL,
     service_date DATE NOT NULL,
     booking_date DATETIME NOT NULL,
-    qr_proof VARCHAR(255) NOT NULL COMMENT 'Payment receipt filename',
+    qr_proof VARCHAR(255) NULL COMMENT 'Payment receipt filename (deprecated for service bookings - use QR receipt instead)',
     status ENUM('pending', 'confirmed', 'completed', 'cancelled') DEFAULT 'confirmed',
     checked_in TINYINT(1) DEFAULT 0,
     checked_in_at DATETIME DEFAULT NULL,
