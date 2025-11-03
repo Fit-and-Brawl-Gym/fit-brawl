@@ -20,6 +20,7 @@ if (SessionManager::isLoggedIn()) {
 $pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
 $additionalCSS = ["../css/pages/homepage.css"];
+$additionalJS = ["../js/homepage.js"];
 
 // Include header
 require_once '../../includes/header.php';
@@ -35,35 +36,10 @@ require_once '../../includes/header.php';
                     BUILT FOR <span class="yellow">BATTLE</span>
                 </h1>
                 <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
-                <a href="membership.php" class="hero-btn">Be a Member</a>
-            </div>
-
-            <!-- Non-Member Pricing Table -->
-            <div class="non-member-pricing">
-                <h2 class="pricing-title">NON MEMBER SERVICES</h2>
-                <div class="pricing-table-mini">
-                    <a href="transaction_nonmember.php?service=daypass-gym" class="pricing-row">
-                        <span class="price">150 PHP</span>
-                        <span class="service">Day Pass: Gym Access</span>
-                    </a>
-                    <a href="transaction_nonmember.php?service=daypass-gym-student" class="pricing-row">
-                        <span class="price">120 PHP</span>
-                        <span class="service">Day Pass: Student Access</span>
-                    </a>
-                    <a href="transaction_nonmember.php?service=training-boxing" class="pricing-row">
-                        <span class="price">380 PHP</span>
-                        <span class="service">Training: Boxing</span>
-                    </a>
-                    <a href="transaction_nonmember.php?service=training-muaythai" class="pricing-row">
-                        <span class="price">530 PHP</span>
-                        <span class="service">Training: Muay Thai</span>
-                    </a>
-                    <a href="transaction_nonmember.php?service=training-mma" class="pricing-row">
-                        <span class="price">630 PHP</span>
-                        <span class="service">Training: MMA</span>
-                    </a>
+                <div class="hero-buttons">
+                    <a href="membership.php" class="hero-btn">Be a Member</a>
+                    <button class="hero-services-btn" id="openServicesModal">Non-Member Services</button>
                 </div>
-                <a href="membership.php" class="view-all-btn">View All Plans</a>
             </div>
         </section>
 
@@ -113,6 +89,38 @@ require_once '../../includes/header.php';
                 </div>
             </div>
         </section>
+
+        <!-- Non-Member Services Modal -->
+        <div id="servicesModal" class="services-modal">
+            <div class="services-modal-backdrop"></div>
+            <div class="services-modal-content">
+                <button class="services-modal-close" id="closeServicesModal">&times;</button>
+                <h2 class="pricing-title">NON MEMBER SERVICES</h2>
+                <div class="pricing-table-mini">
+                    <a href="transaction_nonmember.php?service=daypass-gym" class="pricing-row">
+                        <span class="price">150 PHP</span>
+                        <span class="service">Day Pass: Gym Access</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=daypass-gym-student" class="pricing-row">
+                        <span class="price">120 PHP</span>
+                        <span class="service">Day Pass: Student Access</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=training-boxing" class="pricing-row">
+                        <span class="price">380 PHP</span>
+                        <span class="service">Training: Boxing</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=training-muaythai" class="pricing-row">
+                        <span class="price">530 PHP</span>
+                        <span class="service">Training: Muay Thai</span>
+                    </a>
+                    <a href="transaction_nonmember.php?service=training-mma" class="pricing-row">
+                        <span class="price">630 PHP</span>
+                        <span class="service">Training: MMA</span>
+                    </a>
+                </div>
+                <a href="membership.php" class="view-all-btn">View All Plans</a>
+            </div>
+        </div>
     </main>
 
 <?php require_once '../../includes/footer.php'; ?>
