@@ -12,6 +12,7 @@
     padding: var(--spacing-20);
     min-height: 70vh;
     gap: var(--spacing-12);
+    position: relative;
 }
 
 .hero-content {
@@ -55,6 +56,7 @@
     background: rgba(255, 255, 255, 0.95);
     border-radius: var(--radius-2xl);
     padding: var(--spacing-8);
+    position: relative;
 }
 
 .modal-header h2 {
@@ -124,6 +126,76 @@
 .input-group input:focus {
     outline: none;
     border-color: var(--color-accent);
+}
+
+/* Username Availability Message */
+.username-availability-message {
+    min-height: 24px;
+    margin-top: 0;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.username-availability-message.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.username-availability-message.available {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+    border: 1px solid #28a745;
+}
+
+.username-availability-message.taken {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.username-availability-message.checking {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+/* Password Match Message */
+.password-match-message {
+    min-height: 24px;
+    margin-top: -12px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.password-match-message.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.password-match-message.match {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+    border: 1px solid #28a745;
+}
+
+.password-match-message.no-match {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
 }
 
 .password-group {
@@ -239,6 +311,35 @@
         padding: var(--spacing-10);
     }
 
+    .password-requirements-modal {
+        position: fixed !important;
+        left: 50% !important;
+        top: 80px !important;
+        bottom: auto !important;
+        transform: translateX(-50%) !important;
+        max-width: calc(100% - 40px);
+        min-width: 280px;
+        background: linear-gradient(135deg, #002f3f 0%, #1a4552 100%);
+        border: 2px solid var(--color-accent);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(213, 186, 43, 0.2);
+    }
+
+    .password-requirements-modal.show {
+        animation: slideInDown 0.3s ease !important;
+        transform: translateX(-50%) translateY(0) !important;
+    }
+
+    @keyframes slideInDown {
+        from {
+            transform: translateX(-50%) translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    }
+
     .modal-header h2 {
         font-size: var(--font-size-5xl);
     }
@@ -314,7 +415,71 @@
         font-size: var(--font-size-xs);
     }
 }
-/* Password Validation Styles */
+/* Password Requirements Modal Styles */
+.password-requirements-modal {
+    position: absolute;
+    left: -290px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, #002f3f 0%, #1a4552 100%);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(213, 186, 43, 0.1);
+    min-width: 280px;
+    max-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    z-index: 100;
+}
+
+@media (max-width: 1200px) {
+    .password-requirements-modal {
+        left: -280px;
+    }
+}
+
+.password-requirements-modal.show {
+    opacity: 1;
+    visibility: visible;
+    animation: slideInLeft 0.3s ease;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateY(-50%) translateX(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(-50%) translateX(0);
+        opacity: 1;
+    }
+}
+
+.password-requirements-header {
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-3);
+    border-bottom: 2px solid var(--color-accent);
+    text-align: center;
+}
+
+.password-requirements-header h4 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--font-family-display);
+}
+
+.password-requirements-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
 .password-requirements {
     margin-top: 15px;
     display: none;
@@ -327,47 +492,55 @@
 .requirements-header {
     font-size: 14px;
     font-weight: 600;
-    color: #333;
+    color: var(--color-white);
     margin-bottom: 10px;
 }
 
 .requirement-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px;
-    margin-bottom: 8px;
-    border-radius: 5px;
-    font-size: 13px;
-    background-color: #f0f0f0;
-    color: #666;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
 }
 
 .requirement-item.met {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: rgba(213, 186, 43, 0.15);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
 }
 
 .requirement-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 11px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
 }
 
 .requirement-item.met .requirement-icon {
-    background-color: #28a745;
-    color: white;
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 8px rgba(213, 186, 43, 0.4);
 }
 
-.requirement-item .requirement-icon {
-    background-color: #ccc;
-    color: white;
+.requirement-text {
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
 }
 
 .strength-indicator {

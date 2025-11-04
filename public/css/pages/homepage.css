@@ -282,7 +282,6 @@ main {
 
 .services-modal-close:hover {
   background: rgba(213, 186, 43, 0.2);
-  transform: rotate(90deg);
 }
 
 /* Gym Overview Section */

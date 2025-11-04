@@ -267,7 +267,7 @@ if (!isset($ogImage)) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon.svg" alt="Account" class="account-icon default-icon">
+                    <img src="../../images/account-icon-white.svg" alt="Account" class="account-icon default-icon">
                 </a>
             <?php endif; ?>
         </div>

@@ -184,7 +184,7 @@ require_once '../../includes/header.php';
 
         <!-- category chips (filters) -->
         <div class="categories-row" id="category-filters">
-            <div class="category-chip active" data-category="cardio">
+            <div class="category-chip" data-category="cardio">
                 <img src="../../images/cardio-icon.svg" alt="Cardio">
                 <p>Cardio</p>
             </div>

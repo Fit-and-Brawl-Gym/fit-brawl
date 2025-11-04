@@ -33,7 +33,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $username = "Anonymous $index";
         $user_avatar = "../../images/account-icon.svg";
     } else{
-        $user_avatar = $row['avatar'];
+        // Use default icon if avatar is empty or default
+        if (empty($row['avatar']) || $row['avatar'] === 'default-avatar.png' || $row['avatar'] === '') {
+            $user_avatar = "../../images/account-icon.svg";
+        } else {
+            $user_avatar = $row['avatar'];
+        }
     }
     if (empty($email)){
         $email = "anon@gmail.com";
