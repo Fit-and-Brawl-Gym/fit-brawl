@@ -5,6 +5,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 require '../../vendor/autoload.php';
 
+// Ensure email template is available to wrap replies
+include_once __DIR__ . '/../../../../includes/email_template.php';
+
 $action = $_GET['action'] ?? '';
 
 if ($action === 'fetch') {
@@ -45,8 +48,10 @@ if ($action === 'reply') {
         $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl');
         $mail->addAddress($email);
         $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body = nl2br($message);
+    $mail->Subject = $subject;
+    // sanitize and convert newlines for HTML, then apply template
+    $bodyHtml = '<div>' . nl2br(htmlspecialchars($message)) . '</div>';
+    applyEmailTemplate($mail, $bodyHtml);
 
         $mail->send();
         echo json_encode(['success' => true, 'msg' => 'Reply sent successfully!']);
