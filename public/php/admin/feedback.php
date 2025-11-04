@@ -84,6 +84,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         </div>
     </main>
 
+    <script src="js/sidebar.js"></script>
     <script src="js/feedback.js"></script>
 </body>
 
