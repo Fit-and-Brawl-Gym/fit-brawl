@@ -5,8 +5,9 @@ header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 
-require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
+// Use absolute paths based on __DIR__ to ensure includes work regardless of working directory
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -32,56 +33,72 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = test_input($_POST['email'] ?? '');
     $password = test_input($_POST['password'] ?? '');
 
-    // Fetch user
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
-
-        if ($user['is_verified'] == 0) {
-            $error = "Please verify your email before logging in.";
-        }
-        elseif (password_verify($password, $user['password'])) {
-            // Start the session using SessionManager
-            SessionManager::startSession($email);
-
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['name'] = $user['username'];
-            $_SESSION['email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['avatar'] = $user['avatar'];
-
-            // Remember Me
-            if (isset($_POST['remember'])) {
-                $token = bin2hex(random_bytes(32));
-                $token_hash = password_hash($token, PASSWORD_DEFAULT);
-
-                $stmtToken = $conn->prepare("INSERT INTO remember_password (user_id, token_hash) VALUES (?, ?)");
-                if (!$stmtToken) die("Prepare failed: " . $conn->error);
-
-                $stmtToken->bind_param("is", $user['id'], $token_hash);
-                if (!$stmtToken->execute()) die("Insert token failed: " . $stmtToken->error);
-
-                $_SESSION['remember_password'] = $token;
-            }
-
-            if ($user['role'] === 'admin') {
-                header("Location: admin/admin.php");
-            } elseif ($user['role'] === 'trainer') {
-                header("Location: trainer/index.php");
-            } else {
-                header("Location: loggedin-index.php");
-            }
-            exit;
-
-        } else {
-            $error = "Incorrect email or password.";
-        }
+    // Check if database connection is available
+    if (!isset($conn) || !$conn) {
+        $error = "Database connection error. Please try again later.";
     } else {
-        $error = "Incorrect email or password.";
+        // Fetch user
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        if (!$stmt) {
+            $error = "Database error. Please try again later.";
+        } else {
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                $user = $result->fetch_assoc();
+
+                if ($user['is_verified'] == 0) {
+                    $error = "Please verify your email before logging in.";
+                }
+                elseif (password_verify($password, $user['password'])) {
+                    // Start the session using SessionManager
+                    SessionManager::startSession($email);
+
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['name'] = $user['username'];
+                    $_SESSION['email'] = $user['email'];
+                    $_SESSION['role'] = $user['role'];
+                    $_SESSION['avatar'] = $user['avatar'];
+
+                    // Remember Me
+                    if (isset($_POST['remember'])) {
+                        try {
+                            $token = bin2hex(random_bytes(32));
+                            $token_hash = password_hash($token, PASSWORD_DEFAULT);
+
+                            $stmtToken = $conn->prepare("INSERT INTO remember_password (user_id, token_hash) VALUES (?, ?)");
+                            if ($stmtToken) {
+                                $stmtToken->bind_param("is", $user['id'], $token_hash);
+                                if ($stmtToken->execute()) {
+                                    $_SESSION['remember_password'] = $token;
+                                }
+                                $stmtToken->close();
+                            }
+                        } catch (Exception $e) {
+                            // Log error but don't fail login if remember me fails
+                            error_log("Remember me token error: " . $e->getMessage());
+                        }
+                    }
+
+                    if ($user['role'] === 'admin') {
+                        header("Location: admin/admin.php");
+                    } elseif ($user['role'] === 'trainer') {
+                        header("Location: trainer/index.php");
+                    } else {
+                        header("Location: loggedin-index.php");
+                    }
+                    exit;
+
+                } else {
+                    $error = "Incorrect email or password.";
+                }
+            } else {
+                $error = "Incorrect email or password.";
+            }
+            $stmt->close();
+        }
     }
 }
 
@@ -95,11 +112,11 @@ function test_input($data) {
 // Set variables for header
 $pageTitle = "Login - Fit and Brawl";
 $currentPage = "login";
-$additionalCSS = ["../css/pages/login.css?v=1"];
-$additionalJS = ["../js/hamburger-menu.js"];
+$additionalCSS = ["/public/css/pages/login.css?v=1"];
+$additionalJS = ["/public/js/hamburger-menu.js"];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
     <!--Main-->
@@ -155,4 +172,4 @@ require_once '../../includes/header.php';
         </section>
     </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

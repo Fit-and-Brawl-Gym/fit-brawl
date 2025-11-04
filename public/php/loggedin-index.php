@@ -1,6 +1,6 @@
 <?php
-require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -136,10 +136,10 @@ if (isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
-$additionalCSS = ["../css/pages/loggedin-homepage.css"];
+$additionalCSS = ["/public/css/pages/loggedin-homepage.css"];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
     <!--Main-->
@@ -157,4 +157,4 @@ require_once '../../includes/header.php';
         </section>
     </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

@@ -1,7 +1,7 @@
 <?php
 // Check if this is an API request
 
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -14,7 +14,7 @@ if (!SessionManager::isLoggedIn()) {
 
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
-    include '../../includes/db_connect.php';
+    include __DIR__ . '/../../includes/db_connect.php';
 
     try {
         $sql = "SELECT id, name, category as cat, stock, status, image_path as image FROM products";
@@ -46,10 +46,10 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     exit;
 }
 
-require_once '../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
 
 // Check membership status for header
-require_once '../../includes/membership_check.php';
+require_once __DIR__ . '/../../includes/membership_check.php';
 // Check active membership
 
 $hasActiveMembership = false;
@@ -148,10 +148,10 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Products - Fit and Brawl";
 $currentPage = "products";
-$additionalCSS = ["../css/pages/products.css"];
+$additionalCSS = ["/public/css/pages/products.css"];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
     <!-- HERO -->
@@ -225,6 +225,6 @@ require_once '../../includes/header.php';
 
     </main>
 
-    <script src="../js/products.js?=v1"></script>
+    <script src="/public/js/products.js?=v1"></script>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

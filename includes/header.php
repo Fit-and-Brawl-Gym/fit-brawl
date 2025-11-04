@@ -126,11 +126,11 @@ if (!isset($membershipLink)) {
 
 // Determine avatar source for logged-in users
 if (!isset($avatarSrc)) {
-    $avatarSrc = '../../images/account-icon.svg';
+    $avatarSrc = '/images/account-icon.svg';
     $hasCustomAvatar = false;
     if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-        $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
+        $avatarSrc = $hasCustomAvatar ? "/uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "/images/account-icon.svg";
     }
 } else {
     // If avatarSrc is already set, determine if it's custom
@@ -153,7 +153,7 @@ if (!isset($metaKeywords)) {
     $metaKeywords = "boxing gym, MMA training, Muay Thai, fitness center, combat sports, gym membership, martial arts, personal training";
 }
 if (!isset($ogImage)) {
-    $ogImage = "../../images/homepage-boxer.webp";
+    $ogImage = "/images/homepage-boxer.webp";
 }
 ?>
 <!DOCTYPE html>
@@ -185,14 +185,14 @@ if (!isset($ogImage)) {
     <title><?= htmlspecialchars($pageTitle) ?></title>
 
     <!-- Preload Critical Resources -->
-    <link rel="preload" href="../css/global.css" as="style">
-    <link rel="preload" href="../css/components/header.css" as="style">
-    <link rel="preload" href="../../images/fnb-logo-yellow.svg" as="image">
+    <link rel="preload" href="/public/css/global.css" as="style">
+    <link rel="preload" href="/public/css/components/header.css" as="style">
+    <link rel="preload" href="/images/fnb-logo-yellow.svg" as="image">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/components/footer.css">
-    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="/public/css/global.css">
+    <link rel="stylesheet" href="/public/css/components/footer.css">
+    <link rel="stylesheet" href="/public/css/components/header.css">
     <?php if (isset($additionalCSS) && is_array($additionalCSS)): ?>
         <?php foreach ($additionalCSS as $cssFile): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
@@ -200,11 +200,11 @@ if (!isset($ogImage)) {
     <?php endif; ?>
 
     <!-- Favicons and Touch Icons -->
-    <link rel="shortcut icon" href="../../images/favicon-members.png" type="image/x-icon">
-    <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon-members.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon-members.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon-members.png">
-    <link rel="manifest" href="../site.webmanifest">
+    <link rel="shortcut icon" href="/images/favicon-members.png" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon-members.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-members.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-members.png">
+    <link rel="manifest" href="/public/site.webmanifest">
     <meta name="theme-color" content="#002f3f">
 
     <!-- Google Fonts -->
@@ -216,11 +216,11 @@ if (!isset($ogImage)) {
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous" defer></script>
 
     <!-- Core Scripts -->
-    <script src="../js/header-dropdown.js" defer></script>
-    <script src="../js/hamburger-menu.js" defer></script>
+    <script src="/public/js/header-dropdown.js" defer></script>
+    <script src="/public/js/hamburger-menu.js" defer></script>
     <?php if ($isLoggedIn): ?>
-    <link rel="stylesheet" href="../css/components/session-warning.css">
-    <script src="../js/session-timeout.js"></script>
+    <link rel="stylesheet" href="/public/css/components/session-warning.css">
+    <script src="/public/js/session-timeout.js"></script>
     <?php endif; ?>
     <?php if (isset($additionalJS) && is_array($additionalJS)): ?>
         <?php foreach ($additionalJS as $jsFile): ?>
@@ -239,10 +239,10 @@ if (!isset($ogImage)) {
             </button>
             <div class="title">
                 <a href="index.php">
-                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                    <img src="/images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
                 <a href="index.php">
-                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
+                    <img src="/images/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
             <nav class="nav-bar">
@@ -267,7 +267,7 @@ if (!isset($ogImage)) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon-white.svg" alt="Account" class="account-icon default-icon">
+                    <img src="/images/account-icon-white.svg" alt="Account" class="account-icon default-icon">
                 </a>
             <?php endif; ?>
         </div>

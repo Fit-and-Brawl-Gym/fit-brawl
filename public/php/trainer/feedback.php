@@ -47,7 +47,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Feedback - Fit and Brawl Trainer";
 $currentPage = "feedback";
-$additionalCSS = ["../../css/pages/feedback.css?=v2"];
+$additionalCSS = ["/public/css/pages/feedback.css?=v2"];
 
 // Include header
 require_once '../../../includes/trainer_header.php';
@@ -68,6 +68,6 @@ require_once '../../../includes/trainer_header.php';
         </div>
     </main>
 
-    <script src="../../js/feedback.js"></script>
+    <script src="/public/js/feedback.js"></script>
 
 <?php require_once '../../../includes/trainer_footer.php'; ?>

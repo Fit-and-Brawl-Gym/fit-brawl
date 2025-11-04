@@ -71,7 +71,7 @@ if (isset($_SESSION['user_id'])) {
 // Set variables for header
 $pageTitle = "Home - Fit and Brawl Trainer";
 $currentPage = "home";
-$additionalCSS = ["../../css/pages/loggedin-homepage.css", "../../css/pages/trainer/home.css"];
+$additionalCSS = ["/public/css/pages/loggedin-homepage.css", "/public/css/pages/trainer/home.css"];
 
 // Include header
 require_once '../../../includes/trainer_header.php';

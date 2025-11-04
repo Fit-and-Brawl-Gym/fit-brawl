@@ -1,7 +1,61 @@
+# Environment variables (NEVER commit these!)
 .env
+.env.local
+.env.*.local
 
-# Puppeteer cache directory
+# Sensitive credentials (contains passwords!)
+app.yaml
+
+# PHP dependencies (regenerated via composer install)
+vendor/
+
+# Node modules
+node_modules/
+server-renderer/node_modules/
 server-renderer/.cache/
 
-# Node.js dependencies (install via npm install in server-renderer/)
-server-renderer/node_modules/
+# Uploads (local development only - use Cloud Storage in production)
+uploads/avatars/*
+uploads/equipment/*
+uploads/products/*
+uploads/receipts/*
+!uploads/avatars/.gitkeep
+!uploads/equipment/.gitkeep
+!uploads/products/.gitkeep
+!uploads/receipts/.gitkeep
+
+# Development files
+.vscode/
+.idea/
+*.log
+*.bak
+*.tmp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Database files
+*.sql
+*.sqlite
+*.db
+
+# Testing
+tests/
+*.test.php
+phpunit.xml
+
+# Build artifacts
+dist/
+build/
+
+# Google Cloud
+.gcloudignore
+
+# Documentation (optional - uncomment to exclude)
+# DEPLOYMENT_GCP.md
+# 503_*.md
+# GITHUB_*.md
+# COMPOSER_*.md
