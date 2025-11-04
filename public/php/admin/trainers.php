@@ -117,20 +117,18 @@ $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 $sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'name';
 $sort_order = isset($_GET['order']) ? $_GET['order'] : 'ASC';
 
-// Build query - With soft delete check
+// Build query - With soft delete check (Updated for V2 schema)
 $query = "SELECT t.*,
           (SELECT COUNT(DISTINCT ur.user_id)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND r.date = CURDATE()) as clients_today,
+           AND ur.booking_date = CURDATE()) as clients_today,
           (SELECT COUNT(*)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND r.date >= CURDATE()) as upcoming_bookings
+           AND ur.booking_date >= CURDATE()) as upcoming_bookings
           FROM trainers t
           WHERE t.deleted_at IS NULL";
 

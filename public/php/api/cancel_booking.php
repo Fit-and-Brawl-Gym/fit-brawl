@@ -1,132 +1,131 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
+require_once '../../../includes/booking_validator.php';
+require_once '../../../includes/activity_logger.php';
 
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+    echo json_encode(['success' => false, 'message' => 'Not logged in']);
     exit;
 }
 
-// Get POST data
-$booking_id = isset($_POST['booking_id']) ? intval($_POST['booking_id']) : 0;
-
-if ($booking_id <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid booking ID']);
+// Validate request method
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
 
 $user_id = $_SESSION['user_id'];
+$booking_id = isset($_POST['booking_id']) ? intval($_POST['booking_id']) : 0;
+
+if (!$booking_id) {
+    echo json_encode(['success' => false, 'message' => 'Missing booking ID']);
+    exit;
+}
 
 try {
-    // Start transaction with explicit autocommit disable
-    $conn->autocommit(false);
-    $conn->begin_transaction();
+    // Initialize validator and activity logger
+    $validator = new BookingValidator($conn);
+    ActivityLogger::init($conn);
 
-    // Verify that the booking belongs to the user and is cancellable
-    $check_query = "SELECT ur.id, ur.reservation_id, ur.booking_status, r.date, r.start_time
-                    FROM user_reservations ur
-                    JOIN reservations r ON ur.reservation_id = r.id
-                    WHERE ur.id = ? AND ur.user_id = ?
-                    FOR UPDATE";
+    // Validate cancellation (must be >24 hours before session)
+    $validation = $validator->validateCancellation($booking_id, $user_id);
 
-    $stmt = $conn->prepare($check_query);
-    if (!$stmt) {
-        throw new Exception('Database error: Unable to prepare statement');
+    if (!$validation['valid']) {
+        echo json_encode([
+            'success' => false,
+            'message' => $validation['message'],
+            'hours_remaining' => $validation['hours_remaining'] ?? null
+        ]);
+        exit;
     }
 
+    // Get booking details before cancellation
+    $stmt = $conn->prepare("
+        SELECT 
+            ur.user_id,
+            ur.trainer_id,
+            ur.session_time,
+            ur.class_type,
+            ur.booking_date,
+            t.name AS trainer_name,
+            u.username
+        FROM user_reservations ur
+        JOIN trainers t ON ur.trainer_id = t.id
+        JOIN users u ON ur.user_id = u.id
+        WHERE ur.id = ? AND ur.user_id = ?
+    ");
     $stmt->bind_param("ii", $booking_id, $user_id);
-
-    if (!$stmt->execute()) {
-        throw new Exception('Database error: Query failed');
-    }
-
+    $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows === 0) {
-        throw new Exception('Booking not found or does not belong to you');
+        echo json_encode(['success' => false, 'message' => 'Booking not found']);
+        exit;
     }
 
     $booking = $result->fetch_assoc();
+    $stmt->close();
 
-    // Check if already cancelled
-    if ($booking['booking_status'] === 'cancelled') {
-        throw new Exception('This session is already cancelled');
+    // Start transaction
+    $conn->begin_transaction();
+
+    try {
+        // Update booking status
+        $update_stmt = $conn->prepare("
+            UPDATE user_reservations 
+            SET booking_status = 'cancelled',
+                cancelled_at = NOW()
+            WHERE id = ? AND user_id = ?
+        ");
+        $update_stmt->bind_param("ii", $booking_id, $user_id);
+
+        if (!$update_stmt->execute()) {
+            throw new Exception('Failed to cancel booking');
+        }
+
+        $update_stmt->close();
+
+        // Commit transaction
+        $conn->commit();
+
+        // Log activity
+        $session_hours = $booking['session_time'] === 'Morning' ? '7-11 AM' :
+            ($booking['session_time'] === 'Afternoon' ? '1-5 PM' : '6-10 PM');
+        $log_details = "Cancelled {$booking['class_type']} session with {$booking['trainer_name']} on {$booking['booking_date']} ({$booking['session_time']}: {$session_hours})";
+        ActivityLogger::log('session_cancelled', $booking['username'], $booking_id, $log_details);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Booking cancelled successfully',
+            'details' => [
+                'booking_id' => $booking_id,
+                'trainer' => $booking['trainer_name'],
+                'class' => $booking['class_type'],
+                'date' => date('F j, Y', strtotime($booking['booking_date'])),
+                'session' => $booking['session_time']
+            ]
+        ]);
+
+    } catch (Exception $e) {
+        $conn->rollback();
+        throw $e;
     }
-
-    // Check if session has already passed
-    $session_datetime = $booking['date'] . ' ' . $booking['start_time'];
-    $session_timestamp = strtotime($session_datetime);
-    $current_timestamp = time();
-
-    if ($session_timestamp <= $current_timestamp) {
-        throw new Exception('Cannot cancel past sessions or sessions that have already started');
-    }
-
-    // Check if cancellation is within allowed time (at least 2 hours before)
-    $hours_before_session = ($session_timestamp - $current_timestamp) / 3600;
-    if ($hours_before_session < 2) {
-        throw new Exception('Cancellations must be made at least 2 hours before the session');
-    }
-
-    // Update booking status to cancelled
-    $cancel_query = "UPDATE user_reservations
-                     SET booking_status = 'cancelled'
-                     WHERE id = ? AND user_id = ? AND booking_status = 'confirmed'";
-
-    $update_stmt = $conn->prepare($cancel_query);
-    if (!$update_stmt) {
-        throw new Exception('Database error: Unable to prepare update statement');
-    }
-
-    $update_stmt->bind_param("ii", $booking_id, $user_id);
-
-    if (!$update_stmt->execute()) {
-        throw new Exception('Failed to cancel booking: ' . $update_stmt->error);
-    }
-
-    if ($update_stmt->affected_rows === 0) {
-        throw new Exception('Booking could not be cancelled. It may have already been modified.');
-    }
-
-    // Commit transaction
-    $conn->commit();
-    $conn->autocommit(true);
-
-    // Log successful cancellation for debugging
-    error_log("Successfully cancelled booking ID $booking_id for user ID $user_id (reservation ID: {$booking['reservation_id']})");
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Session cancelled successfully. Your slot has been freed up.'
-    ]);
 
 } catch (Exception $e) {
-    // Rollback on error
-    if ($conn->connect_errno) {
-        error_log("Database connection error: " . $conn->connect_error);
-    }
-    if ($conn) {
-        $conn->rollback();
-        $conn->autocommit(true);
-    }
-    error_log("Cancellation error for user $user_id, booking $booking_id: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    error_log("Cancellation error for user $user_id: " . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'An error occurred while cancelling your booking. Please try again.'
+    ]);
 } finally {
-    if (isset($stmt) && $stmt) {
-        $stmt->close();
-    }
-    if (isset($update_stmt) && $update_stmt) {
-        $update_stmt->close();
-    }
-    if ($conn) {
+    if (isset($conn)) {
         $conn->close();
     }
 }
 ?>
-

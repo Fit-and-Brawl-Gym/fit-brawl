@@ -25,11 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         if ($booking_id && in_array($new_status, ['confirmed', 'completed', 'cancelled'])) {
             // Get booking details before update (for logging)
             if ($new_status === 'cancelled') {
-                $info_query = "SELECT ur.id, u.username, t.name as trainer_name, r.class_type, r.date, r.start_time
+                $info_query = "SELECT ur.id, u.username, t.name as trainer_name, ur.class_type, 
+                               ur.booking_date as date, ur.session_time
                                FROM user_reservations ur
                                JOIN users u ON ur.user_id = u.id
-                               JOIN reservations r ON ur.reservation_id = r.id
-                               JOIN trainers t ON r.trainer_id = t.id
+                               JOIN trainers t ON ur.trainer_id = t.id
                                WHERE ur.id = ?";
                 $info_stmt = $conn->prepare($info_query);
                 $info_stmt->bind_param('i', $booking_id);
@@ -43,7 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
 
             // Log cancellation
             if ($success && $new_status === 'cancelled' && isset($booking_info)) {
-                $log_msg = "Reservation #$booking_id cancelled - Client: {$booking_info['username']}, Trainer: {$booking_info['trainer_name']}, Class: {$booking_info['class_type']}, Date: {$booking_info['date']} at {$booking_info['start_time']}";
+                $session_hours = $booking_info['session_time'] === 'Morning' ? '7-11 AM' :
+                    ($booking_info['session_time'] === 'Afternoon' ? '1-5 PM' : '6-10 PM');
+                $log_msg = "Reservation #$booking_id cancelled - Client: {$booking_info['username']}, Trainer: {$booking_info['trainer_name']}, Class: {$booking_info['class_type']}, Date: {$booking_info['date']} at {$booking_info['session_time']} ($session_hours)";
                 ActivityLogger::log('reservation_cancelled', $booking_info['username'], $booking_id, $log_msg);
             }
 
@@ -86,16 +88,15 @@ $trainer_filter = $_GET['trainer'] ?? 'all';
 $date_from = $_GET['date_from'] ?? '';
 $date_to = $_GET['date_to'] ?? '';
 
-// Build query
+// Build query - Updated for V2 schema (no reservations table)
 $query = "
-    SELECT ur.id, ur.user_id, r.class_type, r.date, r.start_time, r.end_time,
-           ur.booking_status as status, ur.booked_at,
+    SELECT ur.id, ur.user_id, ur.class_type, ur.booking_date as date, 
+           ur.session_time, ur.booking_status as status, ur.booked_at,
            u.username, u.email, u.avatar,
            t.id as trainer_id, t.name as trainer_name, t.specialization
     FROM user_reservations ur
     JOIN users u ON ur.user_id = u.id
-    JOIN reservations r ON ur.reservation_id = r.id
-    JOIN trainers t ON r.trainer_id = t.id
+    JOIN trainers t ON ur.trainer_id = t.id
     WHERE 1=1
 ";
 
@@ -122,18 +123,18 @@ if ($trainer_filter !== 'all') {
 }
 
 if ($date_from) {
-    $query .= " AND r.date >= ?";
+    $query .= " AND ur.booking_date >= ?";
     $params[] = $date_from;
     $types .= 's';
 }
 
 if ($date_to) {
-    $query .= " AND r.date <= ?";
+    $query .= " AND ur.booking_date <= ?";
     $params[] = $date_to;
     $types .= 's';
 }
 
-$query .= " ORDER BY r.date DESC, r.start_time DESC";
+$query .= " ORDER BY ur.booking_date DESC, ur.session_time DESC";
 
 $stmt = $conn->prepare($query);
 if ($stmt === false) {
@@ -334,9 +335,16 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                             }
                                             ?><br>
                                             <?php
-                                            // Display time range
-                                            if (!empty($booking['start_time']) && !empty($booking['end_time'])) {
-                                                echo date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time']));
+                                            // Display session time
+                                            if (!empty($booking['session_time'])) {
+                                                $session_hours = [
+                                                    'Morning' => '7:00 AM - 11:00 AM',
+                                                    'Afternoon' => '1:00 PM - 5:00 PM',
+                                                    'Evening' => '6:00 PM - 10:00 PM'
+                                                ];
+                                                echo '<strong>' . htmlspecialchars($booking['session_time']) . '</strong><br>';
+                                                echo '<span style="font-size: 0.85em; color: #999;">' .
+                                                    ($session_hours[$booking['session_time']] ?? 'Time not set') . '</span>';
                                             } else {
                                                 echo 'No time set';
                                             }

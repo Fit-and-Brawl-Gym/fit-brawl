@@ -181,6 +181,20 @@ body {
     padding: var(--admin-sidebar-padding) 0;
 }
 
+.nav-section-title {
+    padding: 20px var(--admin-sidebar-padding) 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 8px;
+}
+
+.nav-section-title:first-child {
+    margin-top: 0;
+}
+
 .sidebar nav a {
     display: flex;
     align-items: center;

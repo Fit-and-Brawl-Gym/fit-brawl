@@ -45,9 +45,14 @@ try {
         LEFT JOIN user_reservations ur
             ON r.id = ur.reservation_id
            AND ur.booking_status = 'confirmed'
-        WHERE YEAR(r.date) = ?
+        LEFT JOIN trainer_day_offs tdo
+            ON t.id = tdo.trainer_id
+           AND tdo.day_of_week = DAYNAME(r.date)
+           AND tdo.is_day_off = 1
+        WHERE YEAR(r.date) = ?  q
           AND MONTH(r.date) = ?
           AND r.status = 'available'
+          AND tdo.id IS NULL
           AND (
               r.date > ?
               OR (r.date = ? AND r.start_time > ?)
