@@ -44,18 +44,23 @@ if (!isset($_SESSION['email'])) {
 $hasActiveMembership = false;
 $hasAnyRequest = false;
 $gracePeriodDays = 3;
+$activeMembership = null;
+$weeklyBookings = 0;
+$upcomingBookings = [];
+$favoriteTrainer = null;
 
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
     $today = date('Y-m-d');
 
-    // Check user_memberships table
+    // Check user_memberships table and get full membership details
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT request_status, membership_status, end_date
-            FROM user_memberships
-            WHERE user_id = ?
-            ORDER BY date_submitted DESC
+            SELECT um.*, m.plan_name, m.class_type, m.price
+            FROM user_memberships um
+            JOIN memberships m ON um.plan_id = m.id
+            WHERE um.user_id = ?
+            ORDER BY um.date_submitted DESC
             LIMIT 1
         ");
 
@@ -75,23 +80,25 @@ if (isset($_SESSION['user_id'])) {
                     $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
 
                     if ($expiryWithGrace >= $today) {
-
                         $hasActiveMembership = true;
                         $hasAnyRequest = false;
+                        $activeMembership = $row;
                     }
                 }
             }
 
             $stmt->close();
         }
+    }
 
-
-    } elseif ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+    // If no membership found in user_memberships, check subscriptions table
+    if (!$hasActiveMembership && $conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT status, end_date
-            FROM subscriptions
-            WHERE user_id = ? AND status IN ('Approved','approved')
-            ORDER BY date_submitted DESC
+            SELECT s.*, m.plan_name, m.class_type, m.price
+            FROM subscriptions s
+            LEFT JOIN memberships m ON s.plan_id = m.id
+            WHERE s.user_id = ? AND s.status IN ('Approved','approved')
+            ORDER BY s.date_submitted DESC
             LIMIT 1
         ");
         if ($stmt) {
@@ -110,12 +117,85 @@ if (isset($_SESSION['user_id'])) {
                     if ($expiryWithGrace >= $today) {
                         $hasActiveMembership = true;
                         $hasAnyRequest = false;
+                        // Create activeMembership array with subscription data
+                        $activeMembership = [
+                            'plan_name' => $row['plan_name'] ?? 'Subscription',
+                            'class_type' => $row['class_type'] ?? 'All Classes',
+                            'price' => $row['price'] ?? 0,
+                            'end_date' => $endDate,
+                            'request_status' => 'approved',
+                            'membership_status' => 'active'
+                        ];
                     }
                 }
             }
 
             $stmt->close();
         }
+    }
+
+    // Get weekly bookings count
+    $weekStart = date('Y-m-d', strtotime('monday this week'));
+    $weekEnd = date('Y-m-d', strtotime('sunday this week'));
+
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) as count 
+        FROM user_reservations 
+        WHERE user_id = ? 
+        AND booking_date BETWEEN ? AND ? 
+        AND booking_status = 'confirmed'
+    ");
+    if ($stmt) {
+        $stmt->bind_param("iss", $user_id, $weekStart, $weekEnd);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $weeklyBookings = $row['count'];
+        }
+        $stmt->close();
+    }
+
+    // Get upcoming bookings (next 3)
+    $stmt = $conn->prepare("
+        SELECT ur.*, t.name as trainer_name, t.photo as trainer_photo
+        FROM user_reservations ur
+        LEFT JOIN trainers t ON ur.trainer_id = t.id
+        WHERE ur.user_id = ? 
+        AND ur.booking_date >= CURDATE()
+        AND ur.booking_status = 'confirmed'
+        ORDER BY ur.booking_date ASC, 
+                 FIELD(ur.session_time, 'Morning', 'Afternoon', 'Evening')
+        LIMIT 3
+    ");
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $upcomingBookings[] = $row;
+        }
+        $stmt->close();
+    }
+
+    // Get favorite trainer (most booked)
+    $stmt = $conn->prepare("
+        SELECT t.name, t.photo, COUNT(*) as booking_count
+        FROM user_reservations ur
+        JOIN trainers t ON ur.trainer_id = t.id
+        WHERE ur.user_id = ? 
+        AND ur.booking_status = 'confirmed'
+        GROUP BY ur.trainer_id
+        ORDER BY booking_count DESC
+        LIMIT 1
+    ");
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $favoriteTrainer = $row;
+        }
+        $stmt->close();
     }
 }
 
@@ -141,21 +221,223 @@ $additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css"];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
+
+// Time-based greeting
+$hour = date('G');
+$greeting = $hour < 12 ? 'Good Morning' : ($hour < 18 ? 'Good Afternoon' : 'Good Evening');
+$userName = $_SESSION['name'] ?? 'Member';
+
+// Calculate days remaining in membership
+$daysRemaining = 0;
+if ($activeMembership && isset($activeMembership['end_date'])) {
+    $endDate = new DateTime($activeMembership['end_date']);
+    $currentDate = new DateTime();
+    $interval = $currentDate->diff($endDate);
+    $daysRemaining = $interval->days;
+}
+
+// Session time mapping
+$sessionHours = [
+    'Morning' => '7:00 AM - 11:00 AM',
+    'Afternoon' => '1:00 PM - 5:00 PM',
+    'Evening' => '6:00 PM - 10:00 PM'
+];
 ?>
 
-    <!--Main-->
-    <main>
-        <section class="homepage-hero">
-            <div class="hero-content">
-                <div class="hero-underline top-line"></div>
-                <h1>
-                    BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
-                    BUILT FOR <span class="yellow">BATTLE</span>
-                </h1>
-                <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
-                <a href="<?= htmlspecialchars($membershipLink) ?>" class="hero-btn">View Schedule</a>
+<!--Main-->
+<main class="dashboard-main">
+    <!-- Welcome Header -->
+    <section class="welcome-section">
+        <div class="welcome-content">
+            <div class="welcome-text">
+                <h1 class="greeting"><?= htmlspecialchars($greeting) ?>, <span
+                        class="user-name"><?= htmlspecialchars($userName) ?></span></h1>
+                <p class="welcome-subtitle">Ready to push your limits today?</p>
             </div>
-        </section>
-    </main>
+            <?php if ($hasActiveMembership): ?>
+                <div class="quick-stats-bar">
+                    <div class="stat-pill">
+                        <i class="fas fa-calendar-week"></i>
+                        <span><?= $weeklyBookings ?>/12 sessions</span>
+                    </div>
+                    <div class="stat-pill">
+                        <i class="fas fa-clock"></i>
+                        <span><?= $daysRemaining ?> days left</span>
+                    </div>
+                    <?php if ($favoriteTrainer): ?>
+                        <div class="stat-pill">
+                            <i class="fas fa-star"></i>
+                            <span><?= htmlspecialchars($favoriteTrainer['name']) ?></span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <div class="dashboard-container">
+        <!-- Main Action Card - Book Session -->
+        <div class="action-card primary-action">
+            <div class="card-icon">
+                <i class="fas fa-calendar-plus"></i>
+            </div>
+            <div class="card-content">
+                <h2>Book a Session</h2>
+                <p>Schedule your next training session</p>
+            </div>
+            <a href="<?= htmlspecialchars($membershipLink) ?>" class="card-btn">
+                Book Now <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Upcoming Sessions Card -->
+            <div class="dashboard-card upcoming-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h3>
+                    <?php if (!empty($upcomingBookings)): ?>
+                        <a href="reservations.php" class="view-all">View All</a>
+                    <?php endif; ?>
+                </div>
+                <div class="card-body">
+                    <?php if (!empty($upcomingBookings)): ?>
+                        <?php foreach ($upcomingBookings as $booking): ?>
+                            <div class="booking-preview">
+                                <div class="booking-date-badge">
+                                    <div class="badge-day"><?= date('d', strtotime($booking['booking_date'])) ?></div>
+                                    <div class="badge-month"><?= date('M', strtotime($booking['booking_date'])) ?></div>
+                                </div>
+                                <div class="booking-info">
+                                    <h4><?= htmlspecialchars($booking['class_type']) ?></h4>
+                                    <p class="booking-details">
+                                        <span><i class="fas fa-clock"></i>
+                                            <?= htmlspecialchars($booking['session_time']) ?></span>
+                                        <span><i class="fas fa-user"></i>
+                                            <?= htmlspecialchars($booking['trainer_name']) ?></span>
+                                    </p>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>No upcoming sessions</p>
+                            <a href="<?= htmlspecialchars($membershipLink) ?>" class="empty-cta">Book your first session</a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Weekly Progress Card -->
+            <div class="dashboard-card progress-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-line"></i> Weekly Progress</h3>
+                </div>
+                <div class="card-body">
+                    <div class="progress-stats">
+                        <div class="progress-number">
+                            <span class="big-number"><?= $weeklyBookings ?></span>
+                            <span class="small-text">/ 12 sessions</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill"
+                                    style="width: <?= min(100, ($weeklyBookings / 12) * 100) ?>%"></div>
+                            </div>
+                            <p class="progress-label"><?= 12 - $weeklyBookings ?> sessions remaining this week</p>
+                        </div>
+                    </div>
+                    <?php if ($weeklyBookings > 0): ?>
+                        <div class="motivation-message">
+                            <?php if ($weeklyBookings >= 10): ?>
+                                <i class="fas fa-fire"></i> <span>You're on fire! Keep it up!</span>
+                            <?php elseif ($weeklyBookings >= 6): ?>
+                                <i class="fas fa-bolt"></i> <span>Great progress this week!</span>
+                            <?php else: ?>
+                                <i class="fas fa-dumbbell"></i> <span>Let's keep pushing!</span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Membership Status Card -->
+            <div class="dashboard-card membership-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-id-card"></i> Membership Status</h3>
+                </div>
+                <div class="card-body">
+                    <?php if ($hasActiveMembership && $activeMembership): ?>
+                        <div class="membership-info">
+                            <div class="membership-badge active">
+                                <i class="fas fa-check-circle"></i> Active
+                            </div>
+                            <h4 class="plan-name"><?= htmlspecialchars($activeMembership['plan_name']) ?> Plan</h4>
+                            <div class="membership-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Classes:</span>
+                                    <span
+                                        class="detail-value"><?= htmlspecialchars($activeMembership['class_type']) ?></span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Expires:</span>
+                                    <span
+                                        class="detail-value"><?= date('M d, Y', strtotime($activeMembership['end_date'])) ?></span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Days Left:</span>
+                                    <span class="detail-value highlight"><?= $daysRemaining ?> days</span>
+                                </div>
+                            </div>
+                            <a href="membership.php" class="upgrade-link">
+                                <i class="fas fa-arrow-up"></i> Upgrade Plan
+                            </a>
+                        </div>
+                    <?php elseif ($hasAnyRequest): ?>
+                        <div class="membership-pending">
+                            <i class="fas fa-hourglass-half"></i>
+                            <p>Your membership request is pending approval</p>
+                            <a href="membership-status.php" class="status-link">Check Status</a>
+                        </div>
+                    <?php else: ?>
+                        <div class="no-membership">
+                            <i class="fas fa-ticket-alt"></i>
+                            <p>You don't have an active membership</p>
+                            <a href="membership.php" class="get-membership-btn">Get Membership</a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Quick Links Card -->
+            <div class="dashboard-card quick-links-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-bolt"></i> Quick Access</h3>
+                </div>
+                <div class="card-body">
+                    <div class="quick-links-grid">
+                        <a href="user_profile.php" class="quick-link">
+                            <i class="fas fa-user-circle"></i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="equipment.php" class="quick-link">
+                            <i class="fas fa-dumbbell"></i>
+                            <span>Equipment</span>
+                        </a>
+                        <a href="products.php" class="quick-link">
+                            <i class="fas fa-shopping-bag"></i>
+                            <span>Shop</span>
+                        </a>
+                        <a href="feedback.php" class="quick-link">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
