@@ -142,19 +142,17 @@ $additionalCSS = ["../css/pages/loggedin-homepage.css"];
 require_once '../../includes/header.php';
 ?>
 
-    <!--Main-->
-    <main>
-        <section class="homepage-hero">
-            <div class="hero-content">
-                <div class="hero-underline top-line"></div>
-                <h1>
-                    BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
-                    BUILT FOR <span class="yellow">BATTLE</span>
-                </h1>
-                <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
-                <a href="<?= htmlspecialchars($membershipLink) ?>" class="hero-btn">View Schedule</a>
-            </div>
-        </section>
-    </main>
-
-<?php require_once '../../includes/footer.php'; ?>
+<!--Main-->
+<main>
+    <section class="homepage-hero">
+        <div class="hero-content">
+            <div class="hero-underline top-line"></div>
+            <h1>
+                BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
+                BUILT FOR <span class="yellow">BATTLE</span>
+            </h1>
+            <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
+            <a href="<?= htmlspecialchars($membershipLink) ?>" class="hero-btn">View Schedule</a>
+        </div>
+    </section>
+</main>
