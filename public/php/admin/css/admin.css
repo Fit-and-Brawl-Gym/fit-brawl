@@ -29,7 +29,8 @@ body {
     position: fixed;
     top: 20px;
     left: 20px;
-    z-index: 10001 !important; /* Above everything including modals */
+    z-index: 10001 !important;
+    /* Above everything including modals */
     width: 50px;
     height: 50px;
     background: var(--admin-gradient-primary);
@@ -277,12 +278,14 @@ body {
 .admin-main {
     margin-left: 0;
     padding: var(--admin-page-padding);
-    padding-top: 90px; /* Space for hamburger button */
+    padding-top: 90px;
+    /* Space for hamburger button */
     background: var(--admin-bg-main);
     min-height: 100vh;
     transition: margin-left 0.3s ease;
     position: relative;
-    z-index: 1; /* Keep content below hamburger button */
+    z-index: 1;
+    /* Keep content below hamburger button */
 }
 
 /* Header styles */

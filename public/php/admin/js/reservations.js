@@ -150,75 +150,38 @@ function ucFirst(str) {
 
 // Calendar view
 let currentDate = new Date();
-let bookingsData = [];
-
-// Fetch all bookings for calendar
-async function fetchBookingsForCalendar() {
-    try {
-        const response = await fetch('reservations.php');
-        const html = await response.text();
-        
-        // Parse bookings from the table
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const rows = doc.querySelectorAll('.reservations-table tbody tr');
-        
-        bookingsData = [];
-        rows.forEach(row => {
-            const dateCell = row.querySelector('.time-info');
-            if (dateCell) {
-                const dateText = dateCell.textContent.trim();
-                const lines = dateText.split('\n').map(l => l.trim()).filter(l => l);
-                if (lines.length >= 2) {
-                    const datePart = lines[0]; // e.g., "Oct 29, 2025"
-                    const timePart = lines[1]; // e.g., "10:00 - 11:00"
-                    
-                    // Parse the date
-                    const dateMatch = datePart.match(/(\w+)\s+(\d+),\s+(\d+)/);
-                    if (dateMatch) {
-                        const [_, month, day, year] = dateMatch;
-                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                        const monthIndex = monthNames.indexOf(month);
-                        
-                        if (monthIndex !== -1) {
-                            const bookingDate = new Date(year, monthIndex, day);
-                            const statusBadge = row.querySelector('.status-badge');
-                            const status = statusBadge ? statusBadge.dataset.status : 'scheduled';
-                            
-                            bookingsData.push({
-                                date: bookingDate,
-                                dateStr: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-                                time: timePart,
-                                status: status,
-                                client: row.querySelector('td:nth-child(2) h4')?.textContent || '',
-                                trainer: row.querySelector('td:nth-child(3)')?.textContent || '',
-                                classType: row.querySelector('td:nth-child(4)')?.textContent || ''
-                            });
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error fetching bookings:', error);
-    }
-}
+const bookings = window.bookingsData || [];
+let calendarInitialized = false;
 
 function initCalendar() {
-    fetchBookingsForCalendar().then(() => {
-        renderCalendar();
-    });
+    renderCalendar();
     
-    // Add navigation listeners
-    const navBtns = document.querySelectorAll('.calendar-nav-btn');
-    navBtns[0].onclick = () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        renderCalendar();
-    };
-    navBtns[1].onclick = () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar();
-    };
+    // Only add event listeners once
+    if (!calendarInitialized) {
+        // Navigation
+        document.getElementById('prevMonth')?.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+        
+        document.getElementById('nextMonth')?.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+        
+        // Modal close handlers
+        document.getElementById('closeDayModal')?.addEventListener('click', closeDayModal);
+        document.getElementById('dayModalOverlay')?.addEventListener('click', (e) => {
+            if (e.target.id === 'dayModalOverlay') closeDayModal();
+        });
+        
+        // ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDayModal();
+        });
+        
+        calendarInitialized = true;
+    }
 }
 
 function renderCalendar() {
@@ -230,7 +193,7 @@ function renderCalendar() {
         'July', 'August', 'September', 'October', 'November', 'December'];
     document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
     
-    // Get first day of month and number of days
+    // Get first day and days in month
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
@@ -241,97 +204,121 @@ function renderCalendar() {
     // Add weekday headers
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     weekdays.forEach(day => {
-        const weekdayDiv = document.createElement('div');
-        weekdayDiv.className = 'calendar-weekday';
-        weekdayDiv.textContent = day;
-        grid.appendChild(weekdayDiv);
+        const header = document.createElement('div');
+        header.className = 'calendar-weekday';
+        header.textContent = day;
+        grid.appendChild(header);
     });
     
     // Add empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'calendar-day empty';
-        grid.appendChild(emptyDiv);
+        const empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        empty.style.cursor = 'default';
+        empty.style.opacity = '0.3';
+        grid.appendChild(empty);
     }
     
-    // Add days of month
+    // Add day cells
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const dayBookings = bookingsData.filter(b => b.dateStr === dateStr);
+        const dayBookings = bookings.filter(b => b.date === dateStr);
         
-        const dayDiv = document.createElement('div');
-        dayDiv.className = 'calendar-day';
-        if (dayBookings.length > 0) {
-            dayDiv.classList.add('has-events');
-        }
+        const cell = document.createElement('div');
+        cell.className = 'calendar-day';
+        if (dayBookings.length > 0) cell.classList.add('has-events');
         
-        // Check if today
-        const today = new Date();
-        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-            dayDiv.classList.add('today');
-        }
-        
-        dayDiv.innerHTML = `
+        cell.innerHTML = `
             <div class="calendar-day-number">${day}</div>
             ${dayBookings.length > 0 ? `<div class="calendar-day-count">${dayBookings.length} booking${dayBookings.length > 1 ? 's' : ''}</div>` : ''}
         `;
         
-        // Add click handler to show bookings
-        if (dayBookings.length > 0) {
-            dayDiv.style.cursor = 'pointer';
-            dayDiv.onclick = () => showDayBookings(dateStr, dayBookings);
-        }
+        // Add click handler
+        cell.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Day clicked:', dateStr, day, monthNames[month], year);
+            showDayBookings(dateStr, day, monthNames[month], year);
+        });
         
-        grid.appendChild(dayDiv);
+        grid.appendChild(cell);
     }
 }
 
-function showDayBookings(dateStr, bookings) {
-    const date = new Date(dateStr);
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'];
-    const formattedDate = `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+function showDayBookings(date, day, monthName, year) {
+    console.log('showDayBookings called:', date, day, monthName, year);
+    console.log('Total bookings:', bookings.length);
     
-    let html = `
-        <div class="day-bookings-modal">
-            <div class="day-bookings-content">
-                <div class="day-bookings-header">
-                    <h3>Bookings for ${formattedDate}</h3>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="day-bookings-list">
-    `;
+    const dayBookings = bookings.filter(b => b.date === date);
+    console.log('Bookings for this day:', dayBookings);
     
-    bookings.forEach(booking => {
-        const statusClass = booking.status || 'scheduled';
-        html += `
-            <div class="day-booking-item">
-                <div class="booking-time">${booking.time}</div>
-                <div class="booking-details">
-                    <div class="booking-client"><strong>${booking.client}</strong></div>
-                    <div class="booking-info">Trainer: ${booking.trainer}</div>
-                    <div class="booking-info">Class: ${booking.classType}</div>
-                </div>
-                <span class="status-badge status-${statusClass}">${ucFirst(statusClass)}</span>
+    const modal = document.getElementById('dayModal');
+    const overlay = document.getElementById('dayModalOverlay');
+    const list = document.getElementById('dayBookingsList');
+    
+    if (!overlay || !modal || !list) {
+        console.error('Modal elements not found!');
+        return;
+    }
+    
+    // Update modal title
+    const modalDateSpan = document.querySelector('#modalDate span');
+    if (modalDateSpan) {
+        modalDateSpan.textContent = `${monthName} ${day}, ${year}`;
+    }
+    
+    // Populate bookings
+    if (dayBookings.length === 0) {
+        list.innerHTML = `
+            <div class="day-modal-empty">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                <p>No bookings for this day</p>
             </div>
         `;
-    });
-    
-    html += `
+    } else {
+        list.innerHTML = dayBookings.map(booking => `
+            <div class="day-booking-item">
+                <div class="day-booking-time">
+                    ${formatTime(booking.start_time)} - ${formatTime(booking.end_time)}
                 </div>
+                <div class="day-booking-info">
+                    <div class="day-booking-client">${escapeHtml(booking.username)}</div>
+                    <div class="day-booking-trainer">
+                        <i class="fa-solid fa-dumbbell"></i>
+                        ${escapeHtml(booking.trainer_name)} - ${escapeHtml(booking.class_type)}
+                    </div>
+                </div>
+                <span class="day-booking-status status-badge status-${booking.status}">
+                    ${capitalize(booking.status)}
+                </span>
             </div>
-        </div>
-    `;
+        `).join('');
+    }
     
-    const modalDiv = document.createElement('div');
-    modalDiv.innerHTML = html;
-    document.body.appendChild(modalDiv.firstElementChild);
-    
-    // Close modal handlers
-    const modal = document.querySelector('.day-bookings-modal');
-    modal.querySelector('.close-modal').onclick = () => modal.remove();
-    modal.onclick = (e) => {
-        if (e.target === modal) modal.remove();
-    };
+    // Show modal
+    overlay.classList.add('active');
 }
 
+function closeDayModal() {
+    document.getElementById('dayModalOverlay')?.classList.remove('active');
+}
+
+function formatTime(time) {
+    if (!time) return 'N/A';
+    const [hours, minutes] = time.split(':');
+    const h = parseInt(hours);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${minutes} ${period}`;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function capitalize(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}

@@ -325,9 +325,9 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         <!-- Calendar View -->
         <div class="calendar-container" id="calendarView">
             <div class="calendar-header">
-                <button class="calendar-nav-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="calendar-nav-btn" id="prevMonth"><i class="fa-solid fa-chevron-left"></i></button>
                 <h3 id="currentMonth"></h3>
-                <button class="calendar-nav-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                <button class="calendar-nav-btn" id="nextMonth"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <div class="calendar">
                 <div class="calendar-grid" id="calendarGrid"></div>
@@ -335,6 +335,25 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         </div>
     </main>
 
+    <!-- Day Bookings Modal -->
+    <div class="day-modal-overlay" id="dayModalOverlay">
+        <div class="day-modal" id="dayModal">
+            <div class="day-modal-header">
+                <h3 id="modalDate">Bookings for <span></span></h3>
+                <button class="modal-close-btn" id="closeDayModal">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="day-modal-body" id="dayBookingsList">
+                <!-- Bookings will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pass PHP data to JavaScript
+        window.bookingsData = <?php echo json_encode($bookings); ?>;
+    </script>
     <script src="js/sidebar.js"></script>
     <script src="js/reservations.js"></script>
 </body>

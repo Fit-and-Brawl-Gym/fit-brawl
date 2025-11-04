@@ -1,17 +1,5 @@
-/* Main Layout with Sidebar */
-.admin-main {
-    margin-left: var(--admin-sidebar-width-mobile);
-    padding: 30px;
-    min-height: 100vh;
-    transition: margin-left var(--admin-transition-base) ease;
-}
-
-@media (max-width: 1024px) {
-    .admin-main {
-        margin-left: 0;
-        padding: 30px 15px;
-    }
-}
+/* Main Layout - Remove conflicting styles, use global admin.css */
+/* .admin-main styles are now managed in admin.css for consistency */
 
 /* Page Header - Match products.php exactly */
 .page-header {
@@ -85,7 +73,7 @@
 .stat-info h3 {
     font-size: var(--admin-font-size-3xl);
     margin: 0 0 4px 0;
-    color: #222;
+    color: var(--admin-text-primary);
     font-weight: var(--admin-font-weight-bold);
 }
 
@@ -228,6 +216,15 @@
     background: #e53e3e;
 }
 
+/* View Toggle */
+.table-view {
+    display: none;
+}
+
+.table-view.active {
+    display: block;
+}
+
 /* Table Container - Match products.php exactly */
 .table-container {
     background: #fff;
@@ -251,7 +248,7 @@
     padding: 16px;
     text-align: left;
     font-weight: 600;
-    color: #222;
+    color: #333;
     font-size: 14px;
     white-space: nowrap;
 }
@@ -364,7 +361,7 @@
     text-align: left;
     cursor: pointer;
     font-size: var(--admin-font-size-md);
-    color: #222;
+    color: var(--admin-text-primary);
     transition: background var(--admin-transition-fast);
 }
 
@@ -375,7 +372,7 @@
 .time-info {
     font-family: var(--admin-font-family);
     font-weight: var(--admin-font-weight-semibold);
-    color: #222;
+    color: var(--admin-text-primary);
     line-height: 1.6;
     font-size: var(--admin-font-size-base);
 }
@@ -384,15 +381,6 @@
     text-align: center;
     padding: 40px !important;
     color: var(--admin-text-light);
-}
-
-/* Table View */
-.table-view {
-    display: none;
-}
-
-.table-view.active {
-    display: block;
 }
 
 /* Calendar View */
@@ -485,130 +473,165 @@
 
 .calendar-day-count {
     font-size: 0.75rem;
-    color: var(--admin-color-accent);
+    color: #667eea;
     margin-top: auto;
 }
 
-.calendar-day.today {
-    background: var(--admin-gradient-primary);
-    border: 2px solid var(--admin-color-accent);
-}
-
-.calendar-day.today .calendar-day-number {
-    color: white;
-    font-weight: var(--admin-font-weight-bold);
-}
-
-.calendar-day.today .calendar-day-count {
-    color: white;
-    font-weight: var(--admin-font-weight-semibold);
-}
-
 /* Day Bookings Modal */
-.day-bookings-modal {
+.day-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    display: flex;
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: none;
     align-items: center;
     justify-content: center;
-    z-index: var(--admin-z-modal);
-    animation: fadeIn 0.2s ease;
+    animation: fadeIn 0.3s ease;
 }
 
-.day-bookings-content {
-    background: white;
-    border-radius: var(--admin-radius-lg);
+.day-modal-overlay.active {
+    display: flex;
+}
+
+.day-modal {
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-radius-xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     width: 90%;
-    max-width: 600px;
+    max-width: 700px;
     max-height: 80vh;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--admin-shadow-2xl);
 }
 
-.day-bookings-header {
+.day-modal-header {
+    background: var(--admin-gradient-primary);
+    color: var(--admin-text-white);
+    padding: 24px 30px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: var(--admin-gap-lg);
-    border-bottom: 1px solid #f0f0f0;
+    justify-content: space-between;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.day-bookings-header h3 {
+.day-modal-header h3 {
     margin: 0;
-    color: #222;
-    font-size: var(--admin-font-lg);
+    font-size: var(--admin-font-size-xl);
+    font-weight: var(--admin-font-weight-semibold);
 }
 
-.close-modal {
-    background: none;
-    border: none;
-    font-size: 28px;
-    color: var(--admin-text-secondary);
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--admin-text-white);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--admin-radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--admin-radius-md);
-    transition: all 0.2s;
+    cursor: pointer;
+    transition: var(--admin-transition-all);
+    font-size: 18px;
 }
 
-.close-modal:hover {
-    background: #f7f8fa;
-    color: #222;
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg) scale(1.1);
+    border-color: var(--admin-status-cancelled);
 }
 
-.day-bookings-list {
-    padding: var(--admin-gap-lg);
+.day-modal-body {
+    padding: 24px 30px;
     overflow-y: auto;
+    flex: 1;
 }
 
 .day-booking-item {
+    background: var(--admin-bg-card);
+    border: 1px solid var(--admin-border-light);
+    border-radius: var(--admin-radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 16px;
     display: flex;
-    gap: var(--admin-gap-md);
-    padding: var(--admin-gap-md);
-    background: var(--admin-bg-secondary);
-    border-radius: var(--admin-radius-md);
-    margin-bottom: var(--admin-gap-md);
     align-items: center;
+    gap: 16px;
+    transition: var(--admin-transition-all);
+}
+
+.day-booking-item:hover {
+    box-shadow: var(--admin-shadow-card-hover);
+    border-color: var(--admin-primary);
+    transform: translateY(-2px);
 }
 
 .day-booking-item:last-child {
     margin-bottom: 0;
 }
 
-.booking-time {
-    font-weight: var(--admin-font-weight-bold);
-    color: var(--admin-color-primary);
-    font-size: var(--admin-font-md);
+.day-booking-time {
+    background: var(--admin-gradient-primary);
+    color: var(--admin-text-white);
+    padding: 8px 12px;
+    border-radius: var(--admin-radius-md);
+    font-weight: var(--admin-font-weight-semibold);
+    font-size: var(--admin-font-size-sm);
     min-width: 100px;
+    text-align: center;
 }
 
-.booking-details {
+.day-booking-info {
     flex: 1;
 }
 
-.booking-client {
-    font-size: var(--admin-font-md);
+.day-booking-client {
+    font-weight: var(--admin-font-weight-semibold);
+    color: var(--admin-text-primary);
+    font-size: var(--admin-font-size-md);
     margin-bottom: 4px;
-    color: #222;
 }
 
-.booking-info {
-    font-size: var(--admin-font-sm);
+.day-booking-trainer {
     color: var(--admin-text-secondary);
-    margin-bottom: 2px;
+    font-size: var(--admin-font-size-sm);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.day-booking-item .status-badge {
-    margin-left: auto;
+.day-booking-trainer i {
+    color: var(--admin-gold);
+}
+
+.day-booking-status {
+    padding: 6px 12px;
+    border-radius: var(--admin-radius-full);
+    font-size: var(--admin-font-size-sm);
+    font-weight: var(--admin-font-weight-semibold);
+}
+
+.day-modal-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--admin-text-light);
+}
+
+.day-modal-empty i {
+    font-size: 64px;
+    color: #ddd;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.day-modal-empty p {
+    font-size: var(--admin-font-size-lg);
+    margin: 0;
 }
 
 @keyframes fadeIn {
@@ -620,12 +643,19 @@
     }
 }
 
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-    .admin-main {
-        padding: 15px;
-    }
-
     .stats-grid {
         grid-template-columns: 1fr;
     }
