@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize calendar with current date
     const today = new Date();
     let currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Session picker event
     if (sessionSelect) {
-        sessionSelect.addEventListener('change', function() {
+        sessionSelect.addEventListener('change', function () {
             currentSessionFilter = sessionSelect.value;
             closeScheduleDetails();
             fetchReservations();
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Quick filter events
     if (availableOnlyCheckbox) {
-        availableOnlyCheckbox.addEventListener('change', function() {
+        availableOnlyCheckbox.addEventListener('change', function () {
             availableOnlyFilter = this.checked;
             closeScheduleDetails();
             renderLargeCalendar();
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (upcomingOnlyCheckbox) {
-        upcomingOnlyCheckbox.addEventListener('change', function() {
+        upcomingOnlyCheckbox.addEventListener('change', function () {
             upcomingOnlyFilter = this.checked;
             closeScheduleDetails();
             renderLargeCalendar();
@@ -137,83 +137,83 @@ document.addEventListener('DOMContentLoaded', function() {
     const monthOptions = document.querySelectorAll('.month-option');
 
     async function fetchTrainers(classType = "all") {
-    try {
-        // Add timestamp to prevent caching
-        const timestamp = new Date().getTime();
-        const response = await fetch(`api/get_trainers.php?_t=${timestamp}`, {
-            cache: 'no-store'
+        try {
+            // Add timestamp to prevent caching
+            const timestamp = new Date().getTime();
+            const response = await fetch(`api/get_trainers.php?_t=${timestamp}`, {
+                cache: 'no-store'
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                trainersData = data.trainers;
+                updateCoachDropdown(classType);
+                checkSingleClassType();
+                fetchReservations();
+            } else {
+                console.error('Failed to load trainers:', data.message);
+            }
+        } catch (err) {
+            console.error('Error fetching trainers:', err);
+        }
+    }
+
+    function checkSingleClassType() {
+        const classTypes = Object.keys(trainersData);
+        const filterContainer = document.querySelector('.class-filter');
+        if (!filterContainer) return;
+
+
+        filterContainer.style.display = classTypes.length <= 1 ? 'none' : 'flex';
+    }
+
+    function updateCoachDropdown(classType = "all") {
+        if (!trainersData || typeof trainersData !== "object") {
+            console.warn("No trainers data found");
+            return;
+        }
+
+        const dropdown = document.getElementById("coachSelect");
+        if (!dropdown) return;
+
+        // Save current selection
+        const previousSelection = currentCoachFilter;
+
+        dropdown.innerHTML = "";
+
+        // Add "All Coaches" option
+        const allOption = document.createElement("option");
+        allOption.value = "all";
+        allOption.textContent = "All Coaches";
+        dropdown.appendChild(allOption);
+
+        const key = classType ? classType.toLowerCase().replace(/\s+/g, "-") : "all";
+        const trainers = trainersData[key] || [];
+
+        // Check if previously selected coach is still available
+        let coachStillAvailable = false;
+
+        trainers.forEach(trainer => {
+            const opt = document.createElement("option");
+            opt.value = trainer.id;
+            opt.textContent = trainer.name;
+            dropdown.appendChild(opt);
+
+            if (trainer.id == previousSelection) {
+                coachStillAvailable = true;
+            }
         });
-        const data = await response.json();
 
-        if (data.success) {
-            trainersData = data.trainers;
-            updateCoachDropdown(classType);
-            checkSingleClassType();
-            fetchReservations();
+        // Restore selection if coach is still available, otherwise reset to "all"
+        if (coachStillAvailable && previousSelection !== 'all') {
+            dropdown.value = previousSelection;
+            currentCoachFilter = previousSelection;
         } else {
-            console.error('Failed to load trainers:', data.message);
+            dropdown.value = "all";
+            currentCoachFilter = "all";
         }
-    } catch (err) {
-        console.error('Error fetching trainers:', err);
+
     }
-}
-
-function checkSingleClassType() {
-    const classTypes = Object.keys(trainersData);
-    const filterContainer = document.querySelector('.class-filter');
-    if (!filterContainer) return;
-
-
-    filterContainer.style.display = classTypes.length <= 1 ? 'none' : 'flex';
-}
-
-function updateCoachDropdown(classType = "all") {
-    if (!trainersData || typeof trainersData !== "object") {
-        console.warn("No trainers data found");
-        return;
-    }
-
-    const dropdown = document.getElementById("coachSelect");
-    if (!dropdown) return;
-
-    // Save current selection
-    const previousSelection = currentCoachFilter;
-
-    dropdown.innerHTML = "";
-
-    // Add "All Coaches" option
-    const allOption = document.createElement("option");
-    allOption.value = "all";
-    allOption.textContent = "All Coaches";
-    dropdown.appendChild(allOption);
-
-    const key = classType ? classType.toLowerCase().replace(/\s+/g, "-") : "all";
-    const trainers = trainersData[key] || [];
-
-    // Check if previously selected coach is still available
-    let coachStillAvailable = false;
-
-    trainers.forEach(trainer => {
-        const opt = document.createElement("option");
-        opt.value = trainer.id;
-        opt.textContent = trainer.name;
-        dropdown.appendChild(opt);
-
-        if (trainer.id == previousSelection) {
-            coachStillAvailable = true;
-        }
-    });
-
-    // Restore selection if coach is still available, otherwise reset to "all"
-    if (coachStillAvailable && previousSelection !== 'all') {
-        dropdown.value = previousSelection;
-        currentCoachFilter = previousSelection;
-    } else {
-        dropdown.value = "all";
-        currentCoachFilter = "all";
-    }
-
-}
 
 
 
@@ -311,31 +311,31 @@ function updateCoachDropdown(classType = "all") {
                 </thead>
                 <tbody>
                     ${bookings.map(booking => {
-                        const datetime = new Date(booking.datetime);
-                        const dayName = datetime.toLocaleDateString('en-US', { weekday: 'short' });
-                        const day = datetime.getDate();
-                        const month = datetime.toLocaleDateString('en-US', { month: 'short' });
-                        const statusClass = booking.status.toLowerCase().replace(' ', '-');
+            const datetime = new Date(booking.datetime);
+            const dayName = datetime.toLocaleDateString('en-US', { weekday: 'short' });
+            const day = datetime.getDate();
+            const month = datetime.toLocaleDateString('en-US', { month: 'short' });
+            const statusClass = booking.status.toLowerCase().replace(' ', '-');
 
-                        // Check if booking is cancellable (at least 2 hours before and status is confirmed)
-                        const hoursUntilSession = (datetime - now) / (1000 * 60 * 60);
-                        const isCancellable = booking.status === 'Confirmed' && hoursUntilSession >= 2;
-                        const isCancelled = booking.status === 'Cancelled';
+            // Check if booking is cancellable (at least 2 hours before and status is confirmed)
+            const hoursUntilSession = (datetime - now) / (1000 * 60 * 60);
+            const isCancellable = booking.status === 'Confirmed' && hoursUntilSession >= 2;
+            const isCancelled = booking.status === 'Cancelled';
 
-                        let actionButton = '';
-                        if (isCancellable) {
-                            actionButton = `<button class="cancel-btn" data-booking-id="${booking.id}" title="Cancel this booking">
+            let actionButton = '';
+            if (isCancellable) {
+                actionButton = `<button class="cancel-btn" data-booking-id="${booking.id}" title="Cancel this booking">
                                 <i class="fas fa-times"></i> Cancel
                             </button>`;
-                        } else if (isCancelled) {
-                            actionButton = `<span class="cancelled-label">Cancelled</span>`;
-                        } else if (hoursUntilSession < 2 && datetime > now) {
-                            actionButton = `<span class="no-cancel-label" title="Too close to session time">Cannot cancel</span>`;
-                        } else {
-                            actionButton = `<span class="no-action-label">-</span>`;
-                        }
+            } else if (isCancelled) {
+                actionButton = `<span class="cancelled-label">Cancelled</span>`;
+            } else if (hoursUntilSession < 2 && datetime > now) {
+                actionButton = `<span class="no-cancel-label" title="Too close to session time">Cannot cancel</span>`;
+            } else {
+                actionButton = `<span class="no-action-label">-</span>`;
+            }
 
-                        return `
+            return `
                             <tr class="${isCancelled ? 'cancelled-row' : ''}">
                                 <td class="session-class" data-label="Class">${booking.class_type}</td>
                                 <td class="session-date" data-label="Date">${month} ${day} (${dayName})</td>
@@ -346,7 +346,7 @@ function updateCoachDropdown(classType = "all") {
                                 <td class="session-action" data-label="Action">${actionButton}</td>
                             </tr>
                         `;
-                    }).join('')}
+        }).join('')}
                 </tbody>
             </table>
         `;
@@ -355,7 +355,7 @@ function updateCoachDropdown(classType = "all") {
 
         // Add event listeners to cancel buttons
         document.querySelectorAll('.cancel-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const bookingId = this.getAttribute('data-booking-id');
                 cancelBooking(bookingId);
             });
@@ -366,14 +366,14 @@ function updateCoachDropdown(classType = "all") {
         const sortByTimeBtn = document.getElementById('sortByTime');
 
         if (sortByDateBtn) {
-            sortByDateBtn.addEventListener('click', function() {
+            sortByDateBtn.addEventListener('click', function () {
                 dateSortOrder = dateSortOrder === 'asc' ? 'desc' : 'asc';
                 sortBookings('date');
             });
         }
 
         if (sortByTimeBtn) {
-            sortByTimeBtn.addEventListener('click', function() {
+            sortByTimeBtn.addEventListener('click', function () {
                 timeSortOrder = timeSortOrder === 'asc' ? 'desc' : 'asc';
                 sortBookings('time');
             });
@@ -434,7 +434,7 @@ function updateCoachDropdown(classType = "all") {
     // Update month navigation text in schedule header
     function updateMonthNavText() {
         const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-                          'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+            'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
         if (currentMonthDisplay) {
             currentMonthDisplay.textContent = monthNames[currentDate.getMonth()];
         }
@@ -814,7 +814,23 @@ function updateCoachDropdown(classType = "all") {
         document.querySelectorAll('.book-session-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const reservationId = btn.getAttribute('data-reservation-id');
-                bookSession(reservationId);
+
+                // Extract session details from the session card
+                const sessionCard = btn.closest('.session-card-modal');
+                const classType = sessionCard.querySelector('.session-class-type').textContent.trim();
+                const trainer = sessionCard.querySelector('.session-trainer').textContent.trim();
+                const time = sessionCard.querySelector('.session-time').textContent.trim();
+                const dateElement = document.getElementById('detailDate');
+                const date = dateElement ? dateElement.textContent : '';
+
+                const sessionDetails = {
+                    class: classType,
+                    trainer: trainer,
+                    date: date,
+                    time: time
+                };
+
+                bookSession(reservationId, sessionDetails);
             });
         });
 
@@ -827,21 +843,109 @@ function updateCoachDropdown(classType = "all") {
     }
 
     // Close modal when clicking outside of it
-    scheduleDetails.addEventListener('click', function(e) {
+    scheduleDetails.addEventListener('click', function (e) {
         if (e.target === scheduleDetails) {
             closeScheduleDetails();
         }
     });
 
     // Close modal when pressing ESC key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && scheduleDetails.style.display === 'flex') {
             closeScheduleDetails();
         }
     });
 
+    // Show booking confirmation modal
+    function showBookingConfirmation(sessionDetails) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('bookingConfirmModal');
+            const message = document.getElementById('bookingConfirmMessage');
+            const yesBtn = document.getElementById('bookingConfirmYes');
+            const noBtn = document.getElementById('bookingConfirmNo');
+
+            // Set the confirmation message with session details
+            message.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <p style="font-size: 1.1rem; color: var(--color-text-light); margin-bottom: 20px;">
+                        Ready to book your training session?
+                    </p>
+                </div>
+                <div style="margin: 15px 0; padding: 20px; background: linear-gradient(135deg, rgba(213, 186, 43, 0.15) 0%, rgba(26, 74, 82, 0.3) 100%); border: 2px solid rgba(213, 186, 43, 0.3); border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);">
+                    <div style="display: grid; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-dumbbell" style="color: var(--color-text-dark); font-size: 16px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Class Type</div>
+                                <div style="font-size: 1.05rem; color: var(--color-accent); font-weight: 600;">${sessionDetails.class}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-user-tie" style="color: var(--color-text-dark); font-size: 16px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Trainer</div>
+                                <div style="font-size: 1.05rem; color: var(--color-text-light); font-weight: 600;">${sessionDetails.trainer}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-calendar-alt" style="color: var(--color-text-dark); font-size: 16px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Date</div>
+                                <div style="font-size: 1.05rem; color: var(--color-text-light); font-weight: 600;">${sessionDetails.date}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-clock" style="color: var(--color-text-dark); font-size: 16px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Time</div>
+                                <div style="font-size: 1.05rem; color: var(--color-text-light); font-weight: 600;">${sessionDetails.time}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.add('active');
+
+            const handleYes = () => {
+                cleanup();
+                resolve(true);
+            };
+
+            const handleNo = () => {
+                cleanup();
+                resolve(false);
+            };
+
+            const cleanup = () => {
+                modal.classList.remove('active');
+                yesBtn.removeEventListener('click', handleYes);
+                noBtn.removeEventListener('click', handleNo);
+            };
+
+            yesBtn.addEventListener('click', handleYes);
+            noBtn.addEventListener('click', handleNo);
+        });
+    }
+
     // Book session
-    async function bookSession(reservationId) {
+    async function bookSession(reservationId, sessionDetails = null) {
+        // If sessionDetails is provided, show confirmation modal
+        if (sessionDetails) {
+            const confirmed = await showBookingConfirmation(sessionDetails);
+            if (!confirmed) {
+                return; // User cancelled
+            }
+        }
+
         try {
             console.log('Attempting to book session:', reservationId);
             const formData = new FormData();
@@ -947,22 +1051,22 @@ function updateCoachDropdown(classType = "all") {
 
     // Class filter functionality
     filterBtns.forEach(btn => {
-    btn.addEventListener('click', async function() {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
+        btn.addEventListener('click', async function () {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
 
-        currentClassFilter = this.dataset.class;
-        console.log('Selected class:', currentClassFilter);
+            currentClassFilter = this.dataset.class;
+            console.log('Selected class:', currentClassFilter);
 
-        closeScheduleDetails();
-        await fetchTrainers(currentClassFilter);
-        fetchReservations();
+            closeScheduleDetails();
+            await fetchTrainers(currentClassFilter);
+            fetchReservations();
+        });
     });
-});
 
 
     // Coach select change
-    coachSelect.addEventListener('change', function() {
+    coachSelect.addEventListener('change', function () {
         currentCoachFilter = this.value;
         closeScheduleDetails();
         fetchReservations();
@@ -973,7 +1077,7 @@ function updateCoachDropdown(classType = "all") {
     const nextMonthBtn = document.getElementById('nextMonthBtn');
 
     if (prevMonthBtn) {
-        prevMonthBtn.addEventListener('click', function() {
+        prevMonthBtn.addEventListener('click', function () {
             currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
             closeScheduleDetails();
             fetchReservations();
@@ -981,7 +1085,7 @@ function updateCoachDropdown(classType = "all") {
     }
 
     if (nextMonthBtn) {
-        nextMonthBtn.addEventListener('click', function() {
+        nextMonthBtn.addEventListener('click', function () {
             currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
             closeScheduleDetails();
             fetchReservations();
@@ -990,7 +1094,7 @@ function updateCoachDropdown(classType = "all") {
 
     // Toggle month dropdown
     if (monthNavBtn) {
-        monthNavBtn.addEventListener('click', function(e) {
+        monthNavBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             monthDropdown.classList.toggle('active');
         });
@@ -998,7 +1102,7 @@ function updateCoachDropdown(classType = "all") {
 
     // Handle month selection
     monthOptions.forEach(option => {
-        option.addEventListener('click', function(e) {
+        option.addEventListener('click', function (e) {
             e.stopPropagation();
             const selectedMonth = parseInt(this.dataset.month);
             currentDate = new Date(currentDate.getFullYear(), selectedMonth, 1);
@@ -1008,7 +1112,7 @@ function updateCoachDropdown(classType = "all") {
     });
 
     // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (monthDropdown && !monthNavBtn.contains(e.target)) {
             monthDropdown.classList.remove('active');
         }
@@ -1035,7 +1139,7 @@ function updateCoachDropdown(classType = "all") {
             displayElement.textContent = 'All Upcoming';
         } else {
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                              'July', 'August', 'September', 'October', 'November', 'December'];
+                'July', 'August', 'September', 'October', 'November', 'December'];
             displayElement.textContent = `${monthNames[bookedFilterMonth - 1]} ${bookedFilterYear}`;
         }
 
@@ -1057,7 +1161,7 @@ function updateCoachDropdown(classType = "all") {
     // Navigate to previous month for booked sessions
     const prevBookedMonthBtn = document.getElementById('prevBookedMonth');
     if (prevBookedMonthBtn) {
-        prevBookedMonthBtn.addEventListener('click', function(e) {
+        prevBookedMonthBtn.addEventListener('click', function (e) {
             e.stopPropagation();
 
             // If currently showing "All Upcoming", start from current month
@@ -1081,7 +1185,7 @@ function updateCoachDropdown(classType = "all") {
     // Navigate to next month for booked sessions
     const nextBookedMonthBtn = document.getElementById('nextBookedMonth');
     if (nextBookedMonthBtn) {
-        nextBookedMonthBtn.addEventListener('click', function(e) {
+        nextBookedMonthBtn.addEventListener('click', function (e) {
             e.stopPropagation();
 
             // If currently showing "All Upcoming", start from current month
@@ -1105,7 +1209,7 @@ function updateCoachDropdown(classType = "all") {
     // Toggle dropdown on month display click
     const bookedMonthDisplay = document.getElementById('bookedMonthDisplay');
     if (bookedMonthDisplay && bookedMonthDropdown) {
-        bookedMonthDisplay.addEventListener('click', function(e) {
+        bookedMonthDisplay.addEventListener('click', function (e) {
             e.stopPropagation();
             bookedMonthDropdown.classList.toggle('active');
         });
@@ -1114,7 +1218,7 @@ function updateCoachDropdown(classType = "all") {
     // Handle month selection from dropdown
     if (bookedMonthOptions) {
         bookedMonthOptions.forEach(option => {
-            option.addEventListener('click', function(e) {
+            option.addEventListener('click', function (e) {
                 e.stopPropagation();
                 const selectedMonth = this.dataset.month;
 
@@ -1135,7 +1239,7 @@ function updateCoachDropdown(classType = "all") {
     }
 
     // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (bookedMonthDropdown && bookedMonthDisplay && !bookedMonthDisplay.contains(e.target)) {
             bookedMonthDropdown.classList.remove('active');
         }
@@ -1146,26 +1250,26 @@ function updateCoachDropdown(classType = "all") {
     // ==========================================
 
     // Initialize
-   (async () => {
-    try {
-        const firstBtn = document.querySelector('.class-filters .filter-btn') || document.querySelector('.filter-btn');
+    (async () => {
+        try {
+            const firstBtn = document.querySelector('.class-filters .filter-btn') || document.querySelector('.filter-btn');
 
-        if (firstBtn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            firstBtn.classList.add('active');
-            currentClassFilter = firstBtn.dataset.class || 'all';
-            await fetchTrainers(currentClassFilter);
+            if (firstBtn) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                firstBtn.classList.add('active');
+                currentClassFilter = firstBtn.dataset.class || 'all';
+                await fetchTrainers(currentClassFilter);
 
-        } else {
-            await fetchTrainers('all');
+            } else {
+                await fetchTrainers('all');
+            }
+
+            await fetchUserBookings();
+        } catch (err) {
+            console.error('Initialization error:', err);
+            fetchTrainers('all');
+            fetchUserBookings();
         }
-
-        await fetchUserBookings();
-    } catch (err) {
-        console.error('Initialization error:', err);
-        fetchTrainers('all');
-        fetchUserBookings();
-    }
-})();
+    })();
 
 });

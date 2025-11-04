@@ -1,9 +1,12 @@
 /* =========================== */
-/* BASE LAYOUT - ADMIN PAGES   */
+/* IMPORT ADMIN VARIABLES      */
 /* =========================== */
 
-/* Import Admin Variables */
-@import url('../../../css/admin-variables.css?v=3');
+@import url('../../../css/admin-variables.css');
+
+/* =========================== */
+/* BASE LAYOUT - ADMIN PAGES   */
+/* =========================== */
 
 * {
     margin: 0;
@@ -106,13 +109,20 @@ body {
 }
 
 .sidebar nav a .badge {
-    background: var(--admin-status-cancelled);
-    color: var(--admin-text-white);
-    font-size: var(--admin-badge-font-size-sm);
-    padding: var(--admin-badge-padding-sm);
-    border-radius: var(--admin-radius-lg);
-    font-weight: var(--admin-font-weight-bold);
-    margin-left: var(--admin-gap-xs);
+    background: var(--admin-status-cancelled) !important;
+    color: var(--admin-text-white) !important;
+    font-size: 0.65rem !important;
+    width: 18px !important;
+    height: 18px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    font-weight: var(--admin-font-weight-bold) !important;
+    margin-left: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
 }
 
 .sidebar-footer {

@@ -84,3 +84,35 @@ function sendTrainerCredentialsEmail($email, $name, $username, $password)
         return false;
     }
 }
+
+function sendContactReply($to, $subject, $htmlBody)
+{
+    $mail = new PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host = getenv('EMAIL_HOST');
+        $mail->SMTPAuth = true;
+        $mail->Username = getenv('EMAIL_USER');
+        $mail->Password = getenv('EMAIL_PASS');
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = getenv('EMAIL_PORT');
+
+        // Recipients
+        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+        $mail->addAddress($to);
+        $mail->addReplyTo(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $htmlBody;
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log('Email sending failed: ' . $e->getMessage());
+        return false;
+    }
+}

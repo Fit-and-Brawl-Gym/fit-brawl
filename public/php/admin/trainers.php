@@ -107,13 +107,13 @@ $query = "SELECT t.*,
            JOIN reservations r ON ur.reservation_id = r.id
            WHERE r.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date = CURDATE()) as clients_today,
+           AND r.date = CURDATE()) as clients_today,
           (SELECT COUNT(*)
            FROM user_reservations ur
            JOIN reservations r ON ur.reservation_id = r.id
            WHERE r.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date >= CURDATE()) as upcoming_bookings
+           AND r.date >= CURDATE()) as upcoming_bookings
           FROM trainers t
           WHERE t.deleted_at IS NULL";
 
