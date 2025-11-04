@@ -13,7 +13,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="sidebar-header">
         <img src="../../../images/header-title.svg" alt="FitXBrawl" class="logo-title"
             style="width: 220px !important; height: auto !important; max-width: 220px !important;">
-        <p>Admin Panel</p>
     </div>
     <nav>
         <a href="admin.php" class="<?= $current_page == 'admin.php' ? 'active' : '' ?>">
@@ -33,9 +32,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fa-solid fa-dumbbell"></i>
             <span>Trainers</span>
         </a>
-        <a href="membership_trainers.php" class="<?= $current_page == 'membership_trainers.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-link"></i>
-            <span>Trainer Assignments</span>
+        <a href="trainer_schedules.php" class="<?= $current_page == 'trainer_schedules.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Trainer Schedules</span>
         </a>
         <a href="reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-calendar-alt"></i>
