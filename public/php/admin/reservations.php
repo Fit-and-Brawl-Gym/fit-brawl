@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         $booking_id = intval($_POST['booking_id'] ?? 0);
         $new_status = $_POST['new_status'] ?? '';
 
-        if ($booking_id && in_array($new_status, ['scheduled', 'completed', 'cancelled'])) {
-            $stmt = $conn->prepare("UPDATE user_reservations SET status = ? WHERE id = ?");
+        if ($booking_id && in_array($new_status, ['confirmed', 'completed', 'cancelled'])) {
+            $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id = ?");
             $stmt->bind_param('si', $new_status, $booking_id);
             echo json_encode(['success' => $stmt->execute()]);
             exit;
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
 
         if (!empty($ids) && in_array($new_status, ['completed', 'cancelled'])) {
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $stmt = $conn->prepare("UPDATE user_reservations SET status = ? WHERE id IN ($placeholders)");
+            $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id IN ($placeholders)");
             $params = array_merge([$new_status], $ids);
             $stmt->bind_param(str_repeat('i', count($params)), ...$params);
             echo json_encode(['success' => $stmt->execute()]);
@@ -53,8 +53,8 @@ $date_to = $_GET['date_to'] ?? '';
 
 // Build query
 $query = "
-    SELECT ur.id, ur.user_id, ur.class_type, ur.date, ur.start_time, ur.end_time,
-           ur.status, ur.booked_at, ur.booking_status,
+    SELECT ur.id, ur.user_id, r.class_type, r.date, r.start_time, r.end_time,
+           ur.booking_status as status, ur.booked_at,
            u.username, u.email, u.avatar,
            t.id as trainer_id, t.name as trainer_name, t.specialization
     FROM user_reservations ur
@@ -75,7 +75,7 @@ if ($search) {
 }
 
 if ($status_filter !== 'all') {
-    $query .= " AND ur.status = ?";
+    $query .= " AND ur.booking_status = ?";
     $params[] = $status_filter;
     $types .= 's';
 }
@@ -87,20 +87,23 @@ if ($trainer_filter !== 'all') {
 }
 
 if ($date_from) {
-    $query .= " AND ur.date >= ?";
+    $query .= " AND r.date >= ?";
     $params[] = $date_from;
     $types .= 's';
 }
 
 if ($date_to) {
-    $query .= " AND ur.date <= ?";
+    $query .= " AND r.date <= ?";
     $params[] = $date_to;
     $types .= 's';
 }
 
-$query .= " ORDER BY ur.date DESC, ur.start_time DESC";
+$query .= " ORDER BY r.date DESC, r.start_time DESC";
 
 $stmt = $conn->prepare($query);
+if ($stmt === false) {
+    die("Query preparation failed: " . $conn->error);
+}
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
 }
@@ -111,9 +114,9 @@ $bookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stats_query = "
     SELECT
         COUNT(*) as total,
-        SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) as upcoming,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-        SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+        SUM(CASE WHEN booking_status = 'confirmed' THEN 1 ELSE 0 END) as upcoming,
+        SUM(CASE WHEN booking_status = 'completed' THEN 1 ELSE 0 END) as completed,
+        SUM(CASE WHEN booking_status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
     FROM user_reservations
 ";
 $stats = $conn->query($stats_query)->fetch_assoc();
@@ -207,7 +210,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
             </div>
             <select id="statusFilter" class="filter-dropdown">
                 <option value="all">All Statuses</option>
-                <option value="scheduled" <?php echo $status_filter === 'scheduled' ? 'selected' : ''; ?>>Scheduled
+                <option value="confirmed" <?php echo $status_filter === 'confirmed' ? 'selected' : ''; ?>>Confirmed
                 </option>
                 <option value="completed" <?php echo $status_filter === 'completed' ? 'selected' : ''; ?>>Completed
                 </option>
@@ -298,7 +301,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                             <?php
                                             // Display time range
                                             if (!empty($booking['start_time']) && !empty($booking['end_time'])) {
-                                                echo date('H:i', strtotime($booking['start_time'])) . ' - ' . date('H:i', strtotime($booking['end_time']));
+                                                echo date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time']));
                                             } else {
                                                 echo 'No time set';
                                             }
