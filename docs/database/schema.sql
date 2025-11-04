@@ -121,6 +121,26 @@ CREATE TABLE trainer_day_offs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Trainer weekly day-off schedule management';
 
 -- =====================
+-- TRAINER AVAILABILITY BLOCKS TABLE
+-- Admin blocks for trainer availability - prevents bookings during blocked times
+-- =====================
+CREATE TABLE trainer_availability_blocks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    trainer_id INT NOT NULL,
+    date DATE NOT NULL COMMENT 'Date trainer is blocked',
+    session_time ENUM('Morning', 'Afternoon', 'Evening', 'All Day') DEFAULT 'All Day' COMMENT 'Specific session or entire day',
+    reason VARCHAR(255) DEFAULT NULL COMMENT 'Reason for blocking (vacation, meeting, etc)',
+    blocked_by INT DEFAULT NULL COMMENT 'Admin who blocked this time',
+    block_status ENUM('blocked', 'available') DEFAULT 'blocked',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
+    FOREIGN KEY (blocked_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_trainer_date (trainer_id, date),
+    INDEX idx_date_session (date, session_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Admin blocks for trainer availability - prevents bookings during blocked times';
+
+-- =====================
 -- MEMBERSHIP_TRAINERS TABLE
 -- Links memberships to their assigned trainers (many-to-many)
 -- =====================
@@ -166,43 +186,28 @@ CREATE TABLE user_memberships (
 
 
 -- =====================
--- RESERVATIONS TABLE
--- =====================
-
-CREATE TABLE reservations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    trainer_id INT NOT NULL,
-    class_type ENUM('Boxing', 'Muay Thai', 'MMA', 'Gym') NOT NULL,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    max_slots INT NOT NULL DEFAULT 1 COMMENT 'Each session has 1 slot per trainer',
-    status ENUM('available', 'full', 'cancelled') DEFAULT 'available',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_session (trainer_id, class_type, date, start_time),
-    INDEX idx_reservations_date (date),
-    INDEX idx_reservations_trainer_date (trainer_id, date),
-    INDEX idx_reservations_class_date (class_type, date)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Training sessions with 1 booking slot each';
-
--- =====================
--- USER RESERVATIONS TABLE
--- Links users to their booked training sessions
+-- USER RESERVATIONS TABLE (V2 Schema)
+-- Session-based bookings - users book trainers for specific sessions
 -- =====================
 CREATE TABLE user_reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    reservation_id INT NOT NULL,
-    booking_status ENUM('confirmed', 'cancelled', 'completed') DEFAULT 'confirmed',
-    booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    trainer_id INT NOT NULL,
+    session_time ENUM('Morning', 'Afternoon', 'Evening') NOT NULL COMMENT 'Morning: 7-11 AM, Afternoon: 1-5 PM, Evening: 6-10 PM',
+    class_type ENUM('Boxing', 'Muay Thai', 'MMA', 'Gym') NOT NULL COMMENT 'Training discipline',
+    booking_date DATE NOT NULL COMMENT 'Date of the training session',
+    booking_status ENUM('confirmed', 'completed', 'cancelled', 'no-show') DEFAULT 'confirmed',
+    booked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When the booking was made',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    cancelled_at TIMESTAMP NULL DEFAULT NULL COMMENT 'When the booking was cancelled',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_booking (user_id, reservation_id, booking_status) COMMENT 'User can rebook after cancellation',
-    INDEX idx_user_bookings (user_id, booking_status),
-    INDEX idx_reservation_bookings (reservation_id, booking_status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='User training session bookings';
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
+    INDEX idx_trainer_session (trainer_id, booking_date, session_time, booking_status),
+    INDEX idx_user_week (user_id, booking_date, booking_status),
+    INDEX idx_class_session (class_type, booking_date, session_time, booking_status),
+    INDEX idx_booking_date (booking_date, booking_status),
+    INDEX idx_user_bookings (user_id, booking_status, booking_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Session-based bookings - users book trainers for specific sessions';
 
 -- =====================
 -- EQUIPMENT TABLE
@@ -406,3 +411,63 @@ CREATE TABLE non_member_bookings (
     INDEX idx_service_date (service_date),
     INDEX idx_customer_email (customer_email)
 );
+
+-- =============================================
+-- BOOKING SYSTEM V2 NOTES
+-- =============================================
+/*
+SESSION TIMES:
+- Morning: 7:00 AM - 11:00 AM (can arrive anytime in window)
+- Afternoon: 1:00 PM - 5:00 PM (can arrive anytime in window)
+- Evening: 6:00 PM - 10:00 PM (can arrive anytime in window)
+
+CLASS TYPES:
+- Boxing: Boxing training
+- Muay Thai: Muay Thai training
+- MMA: Mixed Martial Arts training
+- Gym: General fitness training
+
+BOOKING STATUS:
+- confirmed: Booking is active
+- completed: Session finished
+- cancelled: User cancelled (>24 hours before)
+- no-show: User didn't show up
+
+TRAINER AVAILABILITY:
+1. Day Offs (trainer_day_offs):
+   - Trainers have 2 day-offs per week
+   - Stored as weekly schedule (Monday-Sunday)
+   - Prevents bookings on trainer's day-off days
+
+2. Admin Blocks (trainer_availability_blocks):
+   - Admins can block specific dates/sessions
+   - Can block: Morning, Afternoon, Evening, or All Day
+   - Use for: vacations, meetings, emergencies
+   - Blocked trainers don't appear in booking selection
+
+FACILITY CAPACITY:
+- Max 2 trainers per class_type per session_time per date
+- Separate counters for each class type
+- Example: 2 Boxing trainers in Morning + 2 MMA trainers in Morning = OK
+
+WEEKLY BOOKING LIMIT:
+- Max 12 bookings per user per rolling 7-day window
+- Counts: confirmed + completed + cancelled
+- Prevents system gaming
+
+CANCELLATION POLICY:
+- Must cancel >24 hours before session
+- Cancelled bookings still count toward weekly limit
+- Cannot cancel same-day sessions
+
+VALIDATION ORDER:
+1. User has active membership
+2. Booking date is valid (future date)
+3. User doesn't have another booking at same time
+4. User has required specialization for class type
+5. Not trainer's day off
+6. No admin block for that trainer/date/session
+7. Trainer is available (not booked by someone else)
+8. Facility capacity not exceeded
+9. User weekly booking limit not exceeded
+*/
