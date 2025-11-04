@@ -1,6 +1,6 @@
 <?php
-require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -172,7 +172,7 @@ $additionalJS = ['../js/transaction.js'];
 </script>
 <?php
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
     <!--Main-->
@@ -469,9 +469,9 @@ require_once '../../includes/header.php';
         </div>
     </div>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
-    <script src="../js/transaction.js?=v2"></script>
+    <script src="/public/js/transaction.js?=v2"></script>
 </body>
 
 

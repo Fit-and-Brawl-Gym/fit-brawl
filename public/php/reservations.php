@@ -1,6 +1,6 @@
 <?php
-require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -20,7 +20,7 @@ $isLoggedIn = isset($_SESSION['email']);
 $userName = $isLoggedIn && isset($_SESSION['username']) ? $_SESSION['username'] : '';
 
 // Check membership status for header
-require_once '../../includes/membership_check.php';
+require_once __DIR__ . '/../../includes/membership_check.php';
 
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
@@ -87,7 +87,7 @@ $currentPage = "membership";
 $additionalCSS = ['../css/pages/reservations.css?v=' . time()];
 $additionalJS = ['../js/reservations.js?v=' . time()];
 
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <!--Main Content-->
@@ -407,7 +407,7 @@ require_once '../../includes/header.php';
 </main>
 
 <!--Footer-->
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 </body>
 
 </html>

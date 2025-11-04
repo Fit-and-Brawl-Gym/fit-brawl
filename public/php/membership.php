@@ -1,6 +1,7 @@
 <?php
 // Check if this is an API request
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -16,7 +17,7 @@ $isLoggedIn = isset($_SESSION['email']);
 
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
-    include '../../includes/db_connect.php';
+    include __DIR__ . '/../../includes/db_connect.php';
 
     $sql = "SELECT id, plan_name, price, duration FROM memberships";
     $result = $conn->query($sql);
@@ -40,11 +41,11 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Membership Plans - Fit and Brawl";
 $currentPage = "membership";
-$additionalCSS = ["../css/pages/membership.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/membership.css"];
 $additionalJS = [];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
     <!--Main-->
@@ -258,6 +259,6 @@ require_once '../../includes/header.php';
         // Pass login status to JavaScript
         window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
     </script>
-    <script src="../js/membership.js?=v1"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/membership.js?=v1"></script>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

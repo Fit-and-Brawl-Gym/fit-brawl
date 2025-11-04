@@ -1,10 +1,11 @@
 <?php
 session_start();
-require_once '../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+require __DIR__ . '/../../vendor/autoload.php';
 require '../../vendor/autoload.php';
 // Email template helper (adds header/footer and AltBody)
 require_once __DIR__ . '/../../includes/email_template.php';
@@ -110,7 +111,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $insertQuery->bind_param("sssss", $name, $email, $password, $role, $verificationToken);
 
     if ($insertQuery->execute()) {
-        $verificationLink = "http://localhost/fit-brawl/public/php/verify-email.php?token=" . $verificationToken;
+        // Use environment variable for APP_URL (works in both local and production)
+        $appUrl = getenv('APP_URL') ?: 'http://localhost/fit-brawl';
+        $verificationLink = $appUrl . "/public/php/verify-email.php?token=" . $verificationToken;
 
         $mail = new PHPMailer(true);
         try {
@@ -178,7 +181,7 @@ $additionalJS = [
 ];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
     <!--Main-->
@@ -245,7 +248,7 @@ require_once '../../includes/header.php';
         </section>
     </main>
 
-    <?php require_once '../../includes/footer.php'; ?>
+    <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
     <!-- Terms and Conditions Modal -->
     <div class="terms-modal-overlay">
@@ -373,6 +376,6 @@ require_once '../../includes/header.php';
         </div>
     </div>
 
-    <script src="../js/terms-modal.js"></script>
+    <script src="/public/js/terms-modal.js"></script>
 </body>
 </html>
