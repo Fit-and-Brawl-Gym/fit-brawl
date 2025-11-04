@@ -2,12 +2,16 @@
 session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/file_upload_security.php';
+require_once '../../../includes/activity_logger.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 $admin_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 $error = '';
@@ -160,6 +164,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt = $conn->prepare($log_query);
                         $stmt->bind_param("iis", $trainer_id, $admin_id, $details);
                         $stmt->execute();
+
+                        // Log to main activity log
+                        ActivityLogger::log('trainer_updated', $name, $trainer_id, "Trainer '$name' (#$trainer_id) updated. Changes: " . implode(", ", $changes));
                     }
 
                     header('Location: trainers.php?success=updated');

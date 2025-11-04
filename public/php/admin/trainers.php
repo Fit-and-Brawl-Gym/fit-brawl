@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
             $stmt->execute();
 
             // Log to main activity log
-            ActivityLogger::log('trainer', 'status_changed', "Trainer #$trainer_id status changed from $current to $new_status");
+            ActivityLogger::log('trainer_status_changed', null, $trainer_id, "Trainer #$trainer_id status changed from $current to $new_status");
 
             echo json_encode(['success' => true, 'new_status' => $new_status]);
         } else {
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
         $stmt->execute();
 
         // Log to main activity log
-        ActivityLogger::log('trainer', 'deleted', "Trainer '$trainer_name' (#$trainer_id) was deleted");
+        ActivityLogger::log('trainer_deleted', $trainer_name, $trainer_id, "Trainer '$trainer_name' (#$trainer_id) was deleted");
 
         echo json_encode(['success' => true]);
         exit;

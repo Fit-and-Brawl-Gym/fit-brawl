@@ -1,12 +1,16 @@
 <?php
 session_start();
 include_once('../../../includes/init.php');
+require_once('../../../includes/activity_logger.php');
 
 // Check if user is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../../index.php');
     exit;
 }
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
@@ -19,9 +23,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         $new_status = $_POST['new_status'] ?? '';
 
         if ($booking_id && in_array($new_status, ['confirmed', 'completed', 'cancelled'])) {
+            // Get booking details before update (for logging)
+            if ($new_status === 'cancelled') {
+                $info_query = "SELECT ur.id, u.username, t.name as trainer_name, r.class_type, r.date, r.start_time
+                               FROM user_reservations ur
+                               JOIN users u ON ur.user_id = u.id
+                               JOIN reservations r ON ur.reservation_id = r.id
+                               JOIN trainers t ON r.trainer_id = t.id
+                               WHERE ur.id = ?";
+                $info_stmt = $conn->prepare($info_query);
+                $info_stmt->bind_param('i', $booking_id);
+                $info_stmt->execute();
+                $booking_info = $info_stmt->get_result()->fetch_assoc();
+            }
+
             $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id = ?");
             $stmt->bind_param('si', $new_status, $booking_id);
-            echo json_encode(['success' => $stmt->execute()]);
+            $success = $stmt->execute();
+
+            // Log cancellation
+            if ($success && $new_status === 'cancelled' && isset($booking_info)) {
+                $log_msg = "Reservation #$booking_id cancelled - Client: {$booking_info['username']}, Trainer: {$booking_info['trainer_name']}, Class: {$booking_info['class_type']}, Date: {$booking_info['date']} at {$booking_info['start_time']}";
+                ActivityLogger::log('reservation_cancelled', $booking_info['username'], $booking_id, $log_msg);
+            }
+
+            echo json_encode(['success' => $success]);
             exit;
         }
     }
@@ -35,7 +61,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id IN ($placeholders)");
             $params = array_merge([$new_status], $ids);
             $stmt->bind_param(str_repeat('i', count($params)), ...$params);
-            echo json_encode(['success' => $stmt->execute()]);
+            $success = $stmt->execute();
+
+            // Log bulk cancellation
+            if ($success && $new_status === 'cancelled') {
+                $count = count($ids);
+                $ids_str = implode(', ', $ids);
+                ActivityLogger::log('reservation_bulk_cancelled', null, null, "Bulk cancellation: $count reservation(s) cancelled (IDs: $ids_str)");
+            }
+
+            echo json_encode(['success' => $success]);
             exit;
         }
     }
@@ -351,7 +386,6 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     </div>
 
     <script>
-        // Pass PHP data to JavaScript
         window.bookingsData = <?php echo json_encode($bookings); ?>;
     </script>
     <script src="js/sidebar.js"></script>

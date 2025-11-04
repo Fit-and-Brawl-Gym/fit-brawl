@@ -79,6 +79,7 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
                 <select name="action" class="filter-select" onchange="this.form.submit()">
                     <option value="all" <?= $actionFilter === 'all' ? 'selected' : '' ?>>All Activities</option>
                     <option value="trainer" <?= $actionFilter === 'trainer' ? 'selected' : '' ?>>Trainer Management</option>
+                    <option value="reservation" <?= $actionFilter === 'reservation' ? 'selected' : '' ?>>Reservation Management</option>
                     <option value="subscription" <?= $actionFilter === 'subscription' ? 'selected' : '' ?>>Subscription
                         Management</option>
                     <option value="equipment" <?= $actionFilter === 'equipment' ? 'selected' : '' ?>>Equipment Management
