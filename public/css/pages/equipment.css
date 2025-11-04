@@ -305,7 +305,7 @@ select#statusFilter option {
     font-size: var(--font-size-xl);
     margin-bottom: var(--spacing-2);
     font-weight: var(--font-weight-bold);
-    font-family: var(--font-family-display);
+    font-family: var(--font-family-primary);
     letter-spacing: 0.5px;
 }
 

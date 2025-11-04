@@ -43,14 +43,11 @@ async function main() {
     process.exit(2);
   }
 
-  // Let Puppeteer handle Chrome discovery - it will download if needed
   const browser = await puppeteer.launch({
     headless: 'new',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--disable-web-security',
-      '--disable-features=IsolateOrigins,site-per-process',
       '--font-render-hinting=medium',
     ],
     defaultViewport: {
