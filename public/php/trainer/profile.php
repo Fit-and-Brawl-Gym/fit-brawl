@@ -65,7 +65,7 @@ $avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($
 // Set variables for header
 $pageTitle = "Trainer Profile - Fit and Brawl";
 $currentPage = "profile";
-$additionalCSS = ["../../css/pages/user-profile.css"];
+$additionalCSS = ["/public/css/pages/user-profile.css"];
 
 // Include header
 require_once '../../../includes/trainer_header.php';
@@ -215,6 +215,6 @@ require_once '../../../includes/trainer_header.php';
     </section>
 </main>
 
-<script src="../../js/user-profile.js"></script>
+<script src="/public/js/user-profile.js"></script>
 
 <?php require_once '../../../includes/trainer_footer.php'; ?>

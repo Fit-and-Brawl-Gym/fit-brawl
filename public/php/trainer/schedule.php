@@ -81,7 +81,7 @@ if (isset($_SESSION['user_id'])) {
 // Set variables for header
 $pageTitle = "Schedule - Fit and Brawl Trainer";
 $currentPage = "schedule";
-$additionalCSS = ["../../css/pages/trainer/schedule.css"];
+$additionalCSS = ["/public/css/pages/trainer/schedule.css"];
 
 // Include header
 require_once '../../../includes/trainer_header.php';
@@ -222,6 +222,6 @@ require_once '../../../includes/trainer_header.php';
     <script>
         const trainerId = <?= json_encode($trainer_id) ?>;
     </script>
-    <script src="../../js/trainer/schedule.js"></script>
+    <script src="/public/js/trainer/schedule.js"></script>
 
 <?php require_once '../../../includes/trainer_footer.php'; ?>

@@ -1,0 +1,2 @@
+# This directory will contain product images after upload
+# In production (GCP), files will be stored in Cloud Storage instead
