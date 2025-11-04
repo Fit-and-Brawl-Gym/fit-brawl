@@ -267,6 +267,7 @@ unset($p);
         </div>
     </div>
 
+    <script src="js/sidebar.js"></script>
     <script src="js/products.js"></script>
 </body>
 

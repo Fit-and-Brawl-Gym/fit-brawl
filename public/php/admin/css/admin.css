@@ -21,13 +21,84 @@ body {
 }
 
 /* =========================== */
-/* SIDEBAR STYLES              */
+/* SIDEBAR */
 /* =========================== */
+
+/* Hamburger Menu Button */
+.hamburger-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10001 !important; /* Above everything including modals */
+    width: 50px;
+    height: 50px;
+    background: var(--admin-gradient-primary);
+    border: none;
+    border-radius: var(--admin-radius-lg);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    box-shadow: var(--admin-shadow-card);
+    transition: var(--admin-transition-all);
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+}
+
+.hamburger-btn:hover {
+    background: var(--admin-btn-primary-hover);
+    box-shadow: var(--admin-shadow-card-hover);
+    transform: scale(1.05);
+}
+
+.hamburger-btn:active {
+    transform: scale(0.95);
+}
+
+/* Hide hamburger button when sidebar is active */
+.hamburger-btn.active {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: var(--admin-text-white);
+    border-radius: 2px;
+    transition: var(--admin-transition-all);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: calc(var(--admin-z-sidebar) - 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--admin-transition-all);
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
 
 .sidebar {
     position: fixed;
     top: 0;
-    left: 0;
+    left: -100%;
     width: var(--admin-sidebar-width);
     height: 100vh;
     background: var(--admin-bg-sidebar);
@@ -36,12 +107,46 @@ body {
     display: flex;
     flex-direction: column;
     color: var(--admin-text-white);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar.active {
+    left: 0 !important;
 }
 
 .sidebar-header {
     padding: var(--admin-sidebar-padding);
     text-align: center;
     border-bottom: 1px solid var(--admin-border-sidebar);
+    position: relative;
+}
+
+.sidebar-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--admin-text-white);
+    font-size: 20px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--admin-radius-md);
+    transition: var(--admin-transition-all);
+    z-index: 10;
+}
+
+.sidebar-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--admin-status-cancelled);
+    color: var(--admin-status-cancelled);
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-header img.logo-title {
@@ -168,12 +273,16 @@ body {
     background: var(--admin-scrollbar-thumb-hover);
 }
 
-/* Main content area - offset by sidebar */
+/* Main content area - full width with hamburger menu */
 .admin-main {
-    margin-left: var(--admin-sidebar-width);
+    margin-left: 0;
     padding: var(--admin-page-padding);
+    padding-top: 90px; /* Space for hamburger button */
     background: var(--admin-bg-main);
     min-height: 100vh;
+    transition: margin-left 0.3s ease;
+    position: relative;
+    z-index: 1; /* Keep content below hamburger button */
 }
 
 /* Header styles */
@@ -400,5 +509,36 @@ header p {
 
     .search-box {
         min-width: 100%;
+    }
+
+    .hamburger-btn {
+        width: 45px;
+        height: 45px;
+        top: 15px;
+        left: 15px;
+    }
+
+    .admin-main {
+        padding-top: 80px;
+        padding-left: var(--admin-gap-md);
+        padding-right: var(--admin-gap-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .hamburger-btn {
+        width: 40px;
+        height: 40px;
+        top: 10px;
+        left: 10px;
+    }
+
+    .hamburger-btn span {
+        width: 20px;
+        height: 2px;
+    }
+
+    .admin-main {
+        padding: 70px var(--admin-gap-sm) var(--admin-gap-md) var(--admin-gap-sm);
     }
 }

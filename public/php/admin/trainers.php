@@ -586,6 +586,7 @@ if (!$stats) {
             document.getElementById('credentialsModal').classList.remove('active');
         }
     </script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

@@ -21,12 +21,13 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     <title>Announcements - Admin Panel</title>
     <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
 </head>
-<? include_once('admin_header.php'); ?>
-<? include_once('admin_sidebar.php'); ?>
 
 <body>
+    <? include_once('admin_header.php'); ?>
+    <? include_once('admin_sidebar.php'); ?>
 
 </body>
+<script src="js/sidebar.js"></script>
 <? include_once('admin_footer.php'); ?>
 
 </html>

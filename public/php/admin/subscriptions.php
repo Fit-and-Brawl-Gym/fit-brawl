@@ -102,6 +102,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
     </div>
   </div>
 
+  <script src="js/sidebar.js"></script>
   <script src="js/subscriptions.js"></script>
 </body>
 

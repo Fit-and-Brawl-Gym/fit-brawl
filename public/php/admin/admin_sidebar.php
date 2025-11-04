@@ -9,10 +9,23 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
-<aside class="sidebar">
+<!-- Hamburger Menu Button -->
+<button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="adminSidebar">
     <div class="sidebar-header">
         <img src="../../../images/header-title.svg" alt="FitXBrawl" class="logo-title"
             style="width: 220px !important; height: auto !important; max-width: 220px !important;">
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close Menu">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     <nav>
         <a href="admin.php" class="<?= $current_page == 'admin.php' ? 'active' : '' ?>">

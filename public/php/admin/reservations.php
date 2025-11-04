@@ -335,6 +335,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         </div>
     </main>
 
+    <script src="js/sidebar.js"></script>
     <script src="js/reservations.js"></script>
 </body>
 
