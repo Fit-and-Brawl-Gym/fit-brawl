@@ -1,12 +1,16 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
+require_once '../../../includes/activity_logger.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 // Get admin info if needed (optional, based on your system)
 $admin_username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Admin';
@@ -66,6 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
             $stmt->bind_param("iis", $trainer_id, $admin_id, $details);
             $stmt->execute();
 
+            // Log to main activity log
+            ActivityLogger::log('trainer', 'status_changed', "Trainer #$trainer_id status changed from $current to $new_status");
+
             echo json_encode(['success' => true, 'new_status' => $new_status]);
         } else {
             echo json_encode(['success' => false, 'error' => 'Trainer not found']);
@@ -77,6 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     if (isset($_POST['action']) && $_POST['action'] === 'delete_trainer') {
         $trainer_id = intval($_POST['trainer_id']);
 
+        // Get trainer name before deletion
+        $name_query = "SELECT name FROM trainers WHERE id = ?";
+        $stmt = $conn->prepare($name_query);
+        $stmt->bind_param("i", $trainer_id);
+        $stmt->execute();
+        $trainer_name = $stmt->get_result()->fetch_assoc()['name'] ?? 'Unknown';
+
         $delete_query = "UPDATE trainers SET deleted_at = NOW() WHERE id = ?";
         $stmt = $conn->prepare($delete_query);
         $stmt->bind_param("i", $trainer_id);
@@ -87,6 +101,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
         $stmt = $conn->prepare($log_query);
         $stmt->bind_param("ii", $trainer_id, $admin_id);
         $stmt->execute();
+
+        // Log to main activity log
+        ActivityLogger::log('trainer', 'deleted', "Trainer '$trainer_name' (#$trainer_id) was deleted");
 
         echo json_encode(['success' => true]);
         exit;
