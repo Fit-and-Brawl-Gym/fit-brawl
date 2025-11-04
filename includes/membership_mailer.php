@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 include_once __DIR__ . '/env_loader.php';
 loadEnv(__DIR__ . '/env');
+// Email template helper
+include_once __DIR__ . '/email_template.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -38,7 +40,8 @@ function sendMembershipApplicationEmail($email, $name, $plan, $status = 'pending
     $body .= "<p>Thank you for choosing FitXBrawl.</p>";
     $body .= "<p>— FitXBrawl Team</p>";
 
-        $mail->Body = $body;
+    // Wrap body in the standard site email template (adds header/footer and AltBody)
+    applyEmailTemplate($mail, $body);
 
         $mail->send();
         return true;
@@ -108,7 +111,8 @@ function sendMembershipDecisionEmail($email, $name, $plan, $accepted = false, $s
             $body .= "<p>— FitXBrawl Team</p>";
         }
 
-        $mail->Body = $body;
+    // Wrap body in the standard site email template (adds header/footer and AltBody)
+    applyEmailTemplate($mail, $body);
 
         $mail->send();
         return true;
