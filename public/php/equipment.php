@@ -4,7 +4,7 @@ session_start();
 
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
-    include '../../includes/db_connect.php';
+    include __DIR__ . '/../../includes/db_connect.php';
 
     try {
         $sql = "SELECT id, name, category, status, description, image_path FROM equipment";
@@ -38,9 +38,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
 
 // === MAIN PAGE ===
-require_once '../../includes/db_connect.php';
-require_once '../../includes/membership_check.php';
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/membership_check.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -154,7 +154,7 @@ $additionalCSS = ['../css/pages/equipment.css?=v1'];
 $additionalJS = ['../js/equipment.js'];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
         <div class="bg"></div>
  <!-- HERO -->
@@ -227,4 +227,4 @@ require_once '../../includes/header.php';
 
     </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

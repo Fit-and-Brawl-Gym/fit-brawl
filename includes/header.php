@@ -4,15 +4,7 @@
  * This file contains the HTML header for all pages
  * It handles both logged-in and non-logged-in states
  *
- * Required variables that should be set before     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous" defer></script>
-    <script src="../js/header-dropdown.js" defer></script>
-    <script src="../js/hamburger-menu.js" defer></script>ing this file:
+ * Required variables that should be set before including this file:
  * - $pageTitle: The page title (e.g., "Fit and Brawl - Contact")
  * - $currentPage: The current page identifier (e.g., "home", "membership", "equipment", "products", "contact", "feedback")
  * - $additionalCSS: (optional) Array of additional CSS files to include
@@ -22,6 +14,9 @@
  * - $membershipLink: Dynamic membership link based on user status (defaults to 'membership.php')
  * - $avatarSrc: Avatar source path (will be computed if not provided)
  */
+
+// Load environment configuration
+require_once __DIR__ . '/config.php';
 
 // Ensure session is started if SessionManager is available
 if (class_exists('SessionManager')) {
@@ -126,11 +121,11 @@ if (!isset($membershipLink)) {
 
 // Determine avatar source for logged-in users
 if (!isset($avatarSrc)) {
-    $avatarSrc = '../../images/account-icon.svg';
+    $avatarSrc = IMAGES_PATH . '/account-icon.svg';
     $hasCustomAvatar = false;
     if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-        $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
+        $avatarSrc = $hasCustomAvatar ? UPLOADS_PATH . "/avatars/" . htmlspecialchars($_SESSION['avatar']) : IMAGES_PATH . "/account-icon.svg";
     }
 } else {
     // If avatarSrc is already set, determine if it's custom
@@ -153,7 +148,7 @@ if (!isset($metaKeywords)) {
     $metaKeywords = "boxing gym, MMA training, Muay Thai, fitness center, combat sports, gym membership, martial arts, personal training";
 }
 if (!isset($ogImage)) {
-    $ogImage = "../../images/homepage-boxer.webp";
+    $ogImage = IMAGES_PATH . "/homepage-boxer.webp";
 }
 ?>
 <!DOCTYPE html>
@@ -185,14 +180,14 @@ if (!isset($ogImage)) {
     <title><?= htmlspecialchars($pageTitle) ?></title>
 
     <!-- Preload Critical Resources -->
-    <link rel="preload" href="../css/global.css" as="style">
-    <link rel="preload" href="../css/components/header.css" as="style">
-    <link rel="preload" href="../../images/fnb-logo-yellow.svg" as="image">
+    <link rel="preload" href="<?= PUBLIC_PATH ?>/css/global.css" as="style">
+    <link rel="preload" href="<?= PUBLIC_PATH ?>/css/components/header.css" as="style">
+    <link rel="preload" href="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" as="image">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/components/footer.css">
-    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/global.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/footer.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/header.css">
     <?php if (isset($additionalCSS) && is_array($additionalCSS)): ?>
         <?php foreach ($additionalCSS as $cssFile): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
@@ -200,11 +195,11 @@ if (!isset($ogImage)) {
     <?php endif; ?>
 
     <!-- Favicons and Touch Icons -->
-    <link rel="shortcut icon" href="../../images/favicon-members.png" type="image/x-icon">
-    <link rel="apple-touch-icon" sizes="180x180" href="../../images/favicon-members.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="../../images/favicon-members.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="../../images/favicon-members.png">
-    <link rel="manifest" href="../site.webmanifest">
+    <link rel="shortcut icon" href="<?= IMAGES_PATH ?>/favicon-members.png" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?= IMAGES_PATH ?>/favicon-members.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= IMAGES_PATH ?>/favicon-members.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= IMAGES_PATH ?>/favicon-members.png">
+    <link rel="manifest" href="<?= PUBLIC_PATH ?>/site.webmanifest">
     <meta name="theme-color" content="#002f3f">
 
     <!-- Google Fonts -->
@@ -216,11 +211,11 @@ if (!isset($ogImage)) {
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous" defer></script>
 
     <!-- Core Scripts -->
-    <script src="../js/header-dropdown.js" defer></script>
-    <script src="../js/hamburger-menu.js" defer></script>
+    <script src="<?= PUBLIC_PATH ?>/js/header-dropdown.js" defer></script>
+    <script src="<?= PUBLIC_PATH ?>/js/hamburger-menu.js" defer></script>
     <?php if ($isLoggedIn): ?>
-    <link rel="stylesheet" href="../css/components/session-warning.css">
-    <script src="../js/session-timeout.js"></script>
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/session-warning.css">
+    <script src="<?= PUBLIC_PATH ?>/js/session-timeout.js"></script>
     <?php endif; ?>
     <?php if (isset($additionalJS) && is_array($additionalJS)): ?>
         <?php foreach ($additionalJS as $jsFile): ?>
@@ -239,10 +234,10 @@ if (!isset($ogImage)) {
             </button>
             <div class="title">
                 <a href="index.php">
-                    <img src="../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                    <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
                 <a href="index.php">
-                    <img src="../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
+                    <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
             <nav class="nav-bar">
@@ -267,7 +262,7 @@ if (!isset($ogImage)) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="login.php" class="account-link">
-                    <img src="../../images/account-icon-white.svg" alt="Account" class="account-icon default-icon">
+                    <img src="<?= IMAGES_PATH ?>/account-icon-white.svg" alt="Account" class="account-icon default-icon">
                 </a>
             <?php endif; ?>
         </div>
