@@ -9,6 +9,7 @@ if (!isset($_SESSION['email']) || !isset($_SESSION['role']) || $_SESSION['role']
 
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/session_manager.php';
+require_once __DIR__ . '/../../../includes/config.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -65,7 +66,7 @@ $avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($
 // Set variables for header
 $pageTitle = "Trainer Profile - Fit and Brawl";
 $currentPage = "profile";
-$additionalCSS = ["/public/css/pages/user-profile.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/user-profile.css"];
 
 // Include header
 require_once '../../../includes/trainer_header.php';
@@ -215,6 +216,6 @@ require_once '../../../includes/trainer_header.php';
     </section>
 </main>
 
-<script src="/public/js/user-profile.js"></script>
+<script src="<?= PUBLIC_PATH ?>/js/user-profile.js"></script>
 
 <?php require_once '../../../includes/trainer_footer.php'; ?>

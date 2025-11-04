@@ -6,6 +6,7 @@ header('Pragma: no-cache');
 header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -19,8 +20,8 @@ if (SessionManager::isLoggedIn()) {
 // Set variables for header
 $pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
-$additionalCSS = ["/public/css/pages/homepage.css"];
-$additionalJS = ["/public/js/homepage.js"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/homepage.css"];
+$additionalJS = [PUBLIC_PATH . "/js/homepage.js"];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';

@@ -2,6 +2,7 @@
 session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/session_manager.php';
+require_once __DIR__ . '/../../../includes/config.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -47,7 +48,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Feedback - Fit and Brawl Trainer";
 $currentPage = "feedback";
-$additionalCSS = ["/public/css/pages/feedback.css?=v2"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/feedback.css?=v2"];
 
 // Include header
 require_once '../../../includes/trainer_header.php';
@@ -68,6 +69,6 @@ require_once '../../../includes/trainer_header.php';
         </div>
     </main>
 
-    <script src="/public/js/feedback.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/feedback.js"></script>
 
 <?php require_once '../../../includes/trainer_footer.php'; ?>
