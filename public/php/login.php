@@ -96,7 +96,7 @@ function test_input($data) {
 $pageTitle = "Login - Fit and Brawl";
 $currentPage = "login";
 $additionalCSS = ["../css/pages/login.css?v=1"];
-$additionalJS = ["../js/hamburger.js"];
+$additionalJS = ["../js/hamburger-menu.js"];
 
 // Include header
 require_once '../../includes/header.php';
