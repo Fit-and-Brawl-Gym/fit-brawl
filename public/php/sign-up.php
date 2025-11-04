@@ -6,6 +6,9 @@ loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 require __DIR__ . '/../../vendor/autoload.php';
+require '../../vendor/autoload.php';
+// Email template helper (adds header/footer and AltBody)
+require_once __DIR__ . '/../../includes/email_template.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $name = test_input($_POST['name']);
@@ -126,12 +129,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
             $mail->addAddress($email, $name);
             $mail->isHTML(true);
             $mail->Subject = 'Verify Your Email - FitXBrawl';
-            $mail->Body = "
-                <h2>Welcome to FitXBrawl, $name!</h2>
-                <p>Click the link below to verify your email:</p>
-                <a href='$verificationLink'>$verificationLink</a>
-                <p>This link will confirm your account registration.</p>
-            ";
+            $html = "<h2>Welcome to FitXBrawl, " . htmlspecialchars($name) . "!</h2>"
+                . "<p>Click the link below to verify your email:</p>"
+                . "<p><a href='" . htmlspecialchars($verificationLink) . "'>" . htmlspecialchars($verificationLink) . "</a></p>"
+                . "<p>This link will confirm your account registration.</p>";
+            applyEmailTemplate($mail, $html);
 
             $mail->send();
 
@@ -162,6 +164,11 @@ function showError($error) {
     return !empty($error) ? "<p class='error-message'>$error</p>" : "";
 }
 
+$pageTitle = "Sign Up - Fit and Brawl";
+$currentPage = "sign_up";
+?>
+
+<?php
 // Set page variables for header
 $pageTitle = "Sign Up - Fit and Brawl";
 $currentPage = "signup";
@@ -170,9 +177,7 @@ $additionalCSS = [
     '../css/components/terms-modal.css'
 ];
 $additionalJS = [
-    '../js/hamburger-menu.js',
-    '../js/password-validation.js',
-    '../js/username-checker.js'
+    '../js/hamburger.js'
 ];
 
 // Include header
@@ -196,7 +201,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <h2>Create an account</h2>
                 </div>
 
-                <form action="sign-up.php" method="post" class="signup-form" autocomplete="off">
+                <form action="sign-up.php" method="post" class="signup-form">
                     <h3>ARE YOU READY TO BECOME THE BETTER VERSION OF YOURSELF?</h3>
 
                     <?= showError($_SESSION['register_error'] ?? ''); ?>
@@ -205,32 +210,25 @@ require_once __DIR__ . '/../../includes/header.php';
                     <p class="success-message"><?= $_SESSION['success_message']; ?></p>
                     <?php unset($_SESSION['success_message']); ?>
                     <?php endif; ?>
-
-                    <!-- Username Availability Message -->
-                    <div class="username-availability-message" id="usernameAvailabilityMessage"></div>
-
                     <div class="input-group">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="name" id="usernameInput" placeholder="Name" autocomplete="off" required>
+                        <input type="text" name="name" placeholder="Name" required>
                     </div>
 
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="Email" autocomplete="off" required>
+                        <input type="email" name="email" placeholder="Email" required>
                     </div>
 
                     <div class="input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" name="password" id="passwordInput" placeholder="Password" autocomplete="new-password" required>
+                        <input type="password" name="password" placeholder="Password" required>
                     </div>
 
                     <div class="input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" name="confirm_password" id="confirmPasswordInput" placeholder="Confirm Password" autocomplete="new-password" required>
+                        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
                     </div>
-
-                    <!-- Password Match Message -->
-                    <div class="password-match-message" id="passwordMatchMessage"></div>
 
                     <div class="form-options">
                         <label class="checkbox-container">
@@ -246,35 +244,6 @@ require_once __DIR__ . '/../../includes/header.php';
                         Already have an account? <a href="login.php">Sign in here.</a>
                     </p>
                 </form>
-
-                <!-- Password Requirements Modal -->
-                <div class="password-requirements-modal" id="passwordRequirementsModal">
-                <div class="password-requirements-header">
-                    <h4>Password Requirements</h4>
-                </div>
-                <div class="password-requirements-list" id="passwordRequirements">
-                    <div class="requirement-item" id="req-length">
-                        <span class="requirement-icon">✗</span>
-                        <span class="requirement-text">At least 8 characters</span>
-                    </div>
-                    <div class="requirement-item" id="req-uppercase">
-                        <span class="requirement-icon">✗</span>
-                        <span class="requirement-text">One uppercase letter</span>
-                    </div>
-                    <div class="requirement-item" id="req-lowercase">
-                        <span class="requirement-icon">✗</span>
-                        <span class="requirement-text">One lowercase letter</span>
-                    </div>
-                    <div class="requirement-item" id="req-number">
-                        <span class="requirement-icon">✗</span>
-                        <span class="requirement-text">One number</span>
-                    </div>
-                    <div class="requirement-item" id="req-special">
-                        <span class="requirement-icon">✗</span>
-                        <span class="requirement-text">One special character (!@#$%^&*)</span>
-                    </div>
-                </div>
-            </div>
             </div>
         </section>
     </main>
