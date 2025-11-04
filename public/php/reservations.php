@@ -99,13 +99,13 @@ require_once '../../includes/header.php';
         <div id="confirmModal" class="confirm-modal">
             <div class="confirm-content">
                 <div class="confirm-header">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3>Confirm Action</h3>
+                    <i class="fas fa-calendar-check" id="confirmModalIcon"></i>
+                    <h3 id="confirmModalTitle">Confirm Booking</h3>
                 </div>
                 <p id="confirmMessage" class="confirm-message"></p>
                 <div class="confirm-buttons">
                     <button class="confirm-btn confirm-yes" id="confirmYes">
-                        <i class="fas fa-check"></i> Yes, Continue
+                        <i class="fas fa-check"></i> Confirm Booking
                     </button>
                     <button class="confirm-btn confirm-no" id="confirmNo">
                         <i class="fas fa-times"></i> Cancel
@@ -217,6 +217,26 @@ require_once '../../includes/header.php';
                                     <option disabled>No trainers assigned</option>
                                 <?php endif; ?>
                             </select>
+                        </div>
+
+                        <!-- Small Calendar Widget -->
+                        <div class="calendar-widget">
+                            <div class="calendar-header">
+                                <button class="calendar-nav" id="prevMonth">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="calendar-date">
+                                    <span id="monthDisplay">09</span>
+                                    <span id="monthName">SEP</span>
+                                    <span id="yearDisplay">2025</span>
+                                </div>
+                                <button class="calendar-nav" id="nextMonth">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="calendar-grid" id="calendarGrid">
+                                <!-- Calendar grid will be populated by JavaScript -->
+                            </div>
                         </div>
 
                         <h3 class="section-title">Time of Day:</h3>
