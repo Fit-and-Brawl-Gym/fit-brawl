@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const plansViewport = document.querySelector('.plans-viewport');
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const inquireBtn = document.getElementById('inquireBtn');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    let currentIndex = 1; // Start with Gladiator in the middle
+    let currentIndex = 0; // Start at the beginning
     const totalPlans = planCards.length;
 
     // Check if we're on a smaller/taller screen (portrait mobile)
@@ -28,47 +28,45 @@ document.addEventListener('DOMContentLoaded', function() {
         return window.innerWidth <= 768 && window.innerHeight >= 600;
     }
 
+    function getCardDimensions() {
+        if (planCards.length === 0) return { width: 380, gap: 32 };
+
+        const firstCard = planCards[0];
+        const cardStyle = window.getComputedStyle(firstCard);
+        const viewportStyle = window.getComputedStyle(plansViewport);
+
+        // Get actual card width including margins
+        const cardWidth = firstCard.offsetWidth;
+
+        // Get gap from the viewport
+        const gap = parseInt(viewportStyle.gap) || 32;
+
+        return { width: cardWidth, gap: gap };
+    }
+
     function updateCarousel() {
         // Skip carousel logic if in stacked view
         if (isStackedView()) {
-            // Show all cards in stacked mode
-            planCards.forEach((card) => {
-                card.classList.remove('center', 'left', 'right', 'hidden', 'featured-size');
-            });
+            plansViewport.style.transform = 'translateX(0)';
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
             return;
         }
 
-        // Remove all position classes from all cards
-        planCards.forEach((card) => {
-            card.classList.remove('center', 'left', 'right', 'hidden', 'featured-size');
-        });
+        // Show carousel buttons
+        prevBtn.style.display = 'flex';
+        nextBtn.style.display = 'flex';
 
-        // Calculate which 3 plans to show
-        const leftIndex = currentIndex - 1;
-        const centerIndex = currentIndex;
-        const rightIndex = currentIndex + 1;
+        // Get current dimensions
+        const { width: cardWidth, gap } = getCardDimensions();
 
-        // Position cards
-        planCards.forEach((card, index) => {
-            if (index === leftIndex && leftIndex >= 0) {
-                card.classList.add('left');
-            } else if (index === centerIndex) {
-                card.classList.add('center');
-
-                // Add featured-size class only to center card if it's not Gladiator
-                if (!card.classList.contains('gladiator-plan')) {
-                    card.classList.add('featured-size');
-                }
-            } else if (index === rightIndex && rightIndex < totalPlans) {
-                card.classList.add('right');
-            } else {
-                card.classList.add('hidden');
-            }
-        });
+        // Calculate the offset for the current card
+        const offset = -currentIndex * (cardWidth + gap);
+        plansViewport.style.transform = `translateX(${offset}px)`;
 
         // Update button states
         prevBtn.disabled = currentIndex === 0;
-        nextBtn.disabled = currentIndex === totalPlans - 1;
+        nextBtn.disabled = currentIndex >= totalPlans - 1;
 
         if (currentIndex === 0) {
             prevBtn.style.opacity = '0.5';
@@ -78,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             prevBtn.style.cursor = 'pointer';
         }
 
-        if (currentIndex === totalPlans - 1) {
+        if (currentIndex >= totalPlans - 1) {
             nextBtn.style.opacity = '0.5';
             nextBtn.style.cursor = 'not-allowed';
         } else {
@@ -178,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         serviceCards.forEach(card => {
             // Handle click on the entire card
-            card.addEventListener('click', function(e) {
+            card.addEventListener('click', function (e) {
                 // Don't open modal if the select button was clicked
                 if (e.target.classList.contains('service-select-btn')) {
                     return;
@@ -194,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle select button click
             const selectBtn = card.querySelector('.service-select-btn');
             if (selectBtn) {
-                selectBtn.addEventListener('click', function(e) {
+                selectBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
 
                     const price = card.getAttribute('data-price');
@@ -219,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             rows.forEach(row => {
                 row.style.cursor = 'pointer';
 
-                row.addEventListener('click', function() {
+                row.addEventListener('click', function () {
                     const cells = this.querySelectorAll('td');
                     const price = cells[0].textContent.trim();
                     const service = cells[1].textContent.trim();
@@ -232,38 +230,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add click handlers for "Select Plan" buttons
-function addPlanSelectionHandlers() {
-    const selectPlanButtons = document.querySelectorAll('.select-btn');
+    function addPlanSelectionHandlers() {
+        const selectPlanButtons = document.querySelectorAll('.select-btn');
 
-    selectPlanButtons.forEach(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
+        selectPlanButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
 
-            const planCard = this.closest('.plan-card');
-            if (!planCard) {
-                console.error('Plan card not found for clicked button.');
-                return;
-            }
+                const planCard = this.closest('.plan-card');
+                if (!planCard) {
+                    console.error('Plan card not found for clicked button.');
+                    return;
+                }
 
-            let planType = planCard.getAttribute('data-plan');
-            let category = planCard.getAttribute('data-category') || 'regular';
-
-
-            const variant = this.getAttribute('data-variant');
-            if (variant) {
-
-                planType = `${planType}-${variant}`;
-            }
+                let planType = planCard.getAttribute('data-plan');
+                let category = planCard.getAttribute('data-category') || 'regular';
 
 
-            window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
+                const variant = this.getAttribute('data-variant');
+                if (variant) {
+
+                    planType = `${planType}-${variant}`;
+                }
+
+
+                window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
+            });
         });
-    });
-}
+    }
 
 
-// Run this after your cards are loaded
-document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
+    // Run this after your cards are loaded
+    document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
 
 
     // Service name to key mapping
@@ -276,7 +274,7 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
     };
 
     // Update the purchase button click handler
-    purchaseBtn.addEventListener('click', function() {
+    purchaseBtn.addEventListener('click', function () {
         const serviceName = modalService.textContent;
         const serviceKey = serviceMapping[serviceName];
         // Only member table exists now
@@ -290,7 +288,7 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
         }
     });
 
-    inquireBtn.addEventListener('click', function() {
+    inquireBtn.addEventListener('click', function () {
         const service = modalService.textContent;
         // Redirect to contact page with service info
         window.location.href = `contact.php?service=${encodeURIComponent(service)}`;
@@ -309,12 +307,12 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
     // });
 
     // Event listeners for carousel
-    nextBtn.addEventListener('click', function(e) {
+    nextBtn.addEventListener('click', function (e) {
         e.preventDefault();
         nextSlide();
     });
 
-    prevBtn.addEventListener('click', function(e) {
+    prevBtn.addEventListener('click', function (e) {
         e.preventDefault();
         prevSlide();
     });
@@ -327,15 +325,15 @@ document.addEventListener('DOMContentLoaded', addPlanSelectionHandlers);
 
     // Handle window resize for responsive behavior
     let resizeTimer;
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
+        resizeTimer = setTimeout(function () {
             updateCarousel();
         }, 250);
     });
 
     // Optional: Add keyboard navigation
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (serviceModal.classList.contains('active')) {
             if (e.key === 'Escape') {
                 closeModal();
