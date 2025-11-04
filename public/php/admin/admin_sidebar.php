@@ -9,17 +9,34 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
-<aside class="sidebar">
+<!-- Hamburger Menu Button -->
+<button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="adminSidebar">
     <div class="sidebar-header">
         <img src="../../../images/header-title.svg" alt="FitXBrawl" class="logo-title"
             style="width: 220px !important; height: auto !important; max-width: 220px !important;">
-        <p>Admin Panel</p>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close Menu">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     <nav>
+        <!-- OVERVIEW -->
+        <div class="nav-section-title">Overview</div>
         <a href="admin.php" class="<?= $current_page == 'admin.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-home"></i>
             <span>Dashboard</span>
         </a>
+
+        <!-- MEMBERSHIP MANAGEMENT -->
+        <div class="nav-section-title">Membership Management</div>
         <a href="users.php" class="<?= $current_page == 'users.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-id-card"></i>
             <span>Memberships</span>
@@ -28,19 +45,25 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fa-solid fa-credit-card"></i>
             <span>Subscriptions</span>
         </a>
+
+        <!-- TRAINER & SCHEDULE MANAGEMENT -->
+        <div class="nav-section-title">Trainers & Schedules</div>
         <a href="trainers.php"
             class="<?= in_array($current_page, ['trainers.php', 'trainer_add.php', 'trainer_edit.php', 'trainer_view.php']) ? 'active' : '' ?>">
             <i class="fa-solid fa-dumbbell"></i>
             <span>Trainers</span>
         </a>
-        <a href="membership_trainers.php" class="<?= $current_page == 'membership_trainers.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-link"></i>
-            <span>Trainer Assignments</span>
+        <a href="trainer-schedules.php" class="<?= $current_page == 'trainer-schedules.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-calendar-xmark"></i>
+            <span>Schedule Blocks</span>
         </a>
         <a href="reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-calendar-alt"></i>
+            <i class="fa-solid fa-calendar-check"></i>
             <span>Reservations</span>
         </a>
+
+        <!-- FACILITY MANAGEMENT -->
+        <div class="nav-section-title">Facility Management</div>
         <a href="equipment.php" class="<?= $current_page == 'equipment.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-tools"></i>
             <span>Equipment</span>
@@ -49,17 +72,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fa-solid fa-shopping-bag"></i>
             <span>Products</span>
         </a>
+
+        <!-- COMMUNICATIONS -->
+        <div class="nav-section-title">Communications</div>
         <a href="feedback.php" class="<?= $current_page == 'feedback.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-comment-dots"></i>
             <span>Feedback</span>
-        </a>
-        <a href="activity-log.php" class="<?= $current_page == 'activity-log.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-history"></i>
-            <span>Activity Log</span>
-        </a>
-        <a href="system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-server"></i>
-            <span>System Status</span>
         </a>
         <a href="announcements.php" class="<?= $current_page == 'announcements.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-bullhorn"></i>
@@ -68,6 +86,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-address-book"></i>
             <span>Contacts</span>
+        </a>
+
+        <!-- SYSTEM -->
+        <div class="nav-section-title">System</div>
+        <a href="activity-log.php" class="<?= $current_page == 'activity-log.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-history"></i>
+            <span>Activity Log</span>
+        </a>
+        <a href="system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
+            <i class="fa-solid fa-server"></i>
+            <span>System Status</span>
         </a>
     </nav>
     <div class="sidebar-footer">

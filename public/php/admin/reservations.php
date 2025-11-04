@@ -1,12 +1,16 @@
 <?php
 session_start();
 include_once('../../../includes/init.php');
+require_once('../../../includes/activity_logger.php');
 
 // Check if user is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../../index.php');
     exit;
 }
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
@@ -19,9 +23,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         $new_status = $_POST['new_status'] ?? '';
 
         if ($booking_id && in_array($new_status, ['confirmed', 'completed', 'cancelled'])) {
+            // Get booking details before update (for logging)
+            if ($new_status === 'cancelled') {
+                $info_query = "SELECT ur.id, u.username, t.name as trainer_name, ur.class_type, 
+                               ur.booking_date as date, ur.session_time
+                               FROM user_reservations ur
+                               JOIN users u ON ur.user_id = u.id
+                               JOIN trainers t ON ur.trainer_id = t.id
+                               WHERE ur.id = ?";
+                $info_stmt = $conn->prepare($info_query);
+                $info_stmt->bind_param('i', $booking_id);
+                $info_stmt->execute();
+                $booking_info = $info_stmt->get_result()->fetch_assoc();
+            }
+
             $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id = ?");
             $stmt->bind_param('si', $new_status, $booking_id);
-            echo json_encode(['success' => $stmt->execute()]);
+            $success = $stmt->execute();
+
+            // Log cancellation
+            if ($success && $new_status === 'cancelled' && isset($booking_info)) {
+                $session_hours = $booking_info['session_time'] === 'Morning' ? '7-11 AM' :
+                    ($booking_info['session_time'] === 'Afternoon' ? '1-5 PM' : '6-10 PM');
+                $log_msg = "Reservation #$booking_id cancelled - Client: {$booking_info['username']}, Trainer: {$booking_info['trainer_name']}, Class: {$booking_info['class_type']}, Date: {$booking_info['date']} at {$booking_info['session_time']} ($session_hours)";
+                ActivityLogger::log('reservation_cancelled', $booking_info['username'], $booking_id, $log_msg);
+            }
+
+            echo json_encode(['success' => $success]);
             exit;
         }
     }
@@ -35,7 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id IN ($placeholders)");
             $params = array_merge([$new_status], $ids);
             $stmt->bind_param(str_repeat('i', count($params)), ...$params);
-            echo json_encode(['success' => $stmt->execute()]);
+            $success = $stmt->execute();
+
+            // Log bulk cancellation
+            if ($success && $new_status === 'cancelled') {
+                $count = count($ids);
+                $ids_str = implode(', ', $ids);
+                ActivityLogger::log('reservation_bulk_cancelled', null, null, "Bulk cancellation: $count reservation(s) cancelled (IDs: $ids_str)");
+            }
+
+            echo json_encode(['success' => $success]);
             exit;
         }
     }
@@ -51,16 +88,15 @@ $trainer_filter = $_GET['trainer'] ?? 'all';
 $date_from = $_GET['date_from'] ?? '';
 $date_to = $_GET['date_to'] ?? '';
 
-// Build query
+// Build query - Updated for V2 schema (no reservations table)
 $query = "
-    SELECT ur.id, ur.user_id, r.class_type, r.date, r.start_time, r.end_time,
-           ur.booking_status as status, ur.booked_at,
+    SELECT ur.id, ur.user_id, ur.class_type, ur.booking_date as date, 
+           ur.session_time, ur.booking_status as status, ur.booked_at,
            u.username, u.email, u.avatar,
            t.id as trainer_id, t.name as trainer_name, t.specialization
     FROM user_reservations ur
     JOIN users u ON ur.user_id = u.id
-    JOIN reservations r ON ur.reservation_id = r.id
-    JOIN trainers t ON r.trainer_id = t.id
+    JOIN trainers t ON ur.trainer_id = t.id
     WHERE 1=1
 ";
 
@@ -87,18 +123,18 @@ if ($trainer_filter !== 'all') {
 }
 
 if ($date_from) {
-    $query .= " AND r.date >= ?";
+    $query .= " AND ur.booking_date >= ?";
     $params[] = $date_from;
     $types .= 's';
 }
 
 if ($date_to) {
-    $query .= " AND r.date <= ?";
+    $query .= " AND ur.booking_date <= ?";
     $params[] = $date_to;
     $types .= 's';
 }
 
-$query .= " ORDER BY r.date DESC, r.start_time DESC";
+$query .= " ORDER BY ur.booking_date DESC, ur.session_time DESC";
 
 $stmt = $conn->prepare($query);
 if ($stmt === false) {
@@ -299,9 +335,16 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                             }
                                             ?><br>
                                             <?php
-                                            // Display time range
-                                            if (!empty($booking['start_time']) && !empty($booking['end_time'])) {
-                                                echo date('g:i A', strtotime($booking['start_time'])) . ' - ' . date('g:i A', strtotime($booking['end_time']));
+                                            // Display session time
+                                            if (!empty($booking['session_time'])) {
+                                                $session_hours = [
+                                                    'Morning' => '7:00 AM - 11:00 AM',
+                                                    'Afternoon' => '1:00 PM - 5:00 PM',
+                                                    'Evening' => '6:00 PM - 10:00 PM'
+                                                ];
+                                                echo '<strong>' . htmlspecialchars($booking['session_time']) . '</strong><br>';
+                                                echo '<span style="font-size: 0.85em; color: #999;">' .
+                                                    ($session_hours[$booking['session_time']] ?? 'Time not set') . '</span>';
                                             } else {
                                                 echo 'No time set';
                                             }
@@ -325,9 +368,9 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         <!-- Calendar View -->
         <div class="calendar-container" id="calendarView">
             <div class="calendar-header">
-                <button class="calendar-nav-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="calendar-nav-btn" id="prevMonth"><i class="fa-solid fa-chevron-left"></i></button>
                 <h3 id="currentMonth"></h3>
-                <button class="calendar-nav-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                <button class="calendar-nav-btn" id="nextMonth"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <div class="calendar">
                 <div class="calendar-grid" id="calendarGrid"></div>
@@ -335,6 +378,25 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         </div>
     </main>
 
+    <!-- Day Bookings Modal -->
+    <div class="day-modal-overlay" id="dayModalOverlay">
+        <div class="day-modal" id="dayModal">
+            <div class="day-modal-header">
+                <h3 id="modalDate">Bookings for <span></span></h3>
+                <button class="modal-close-btn" id="closeDayModal">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="day-modal-body" id="dayBookingsList">
+                <!-- Bookings will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.bookingsData = <?php echo json_encode($bookings); ?>;
+    </script>
+    <script src="js/sidebar.js"></script>
     <script src="js/reservations.js"></script>
 </body>
 

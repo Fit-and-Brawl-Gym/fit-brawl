@@ -2,12 +2,16 @@
 session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/file_upload_security.php';
+require_once '../../../includes/activity_logger.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 $admin_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 $error = '';
@@ -34,6 +38,17 @@ if (!$trainer) {
     exit;
 }
 
+// Fetch current day-offs
+$day_offs_query = "SELECT day_of_week FROM trainer_day_offs WHERE trainer_id = ? AND is_day_off = TRUE";
+$stmt = $conn->prepare($day_offs_query);
+$stmt->bind_param("i", $trainer_id);
+$stmt->execute();
+$day_offs_result = $stmt->get_result();
+$current_day_offs = [];
+while ($row = $day_offs_result->fetch_assoc()) {
+    $current_day_offs[] = $row['day_of_week'];
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
@@ -44,10 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $emergency_contact_name = trim($_POST['emergency_contact_name']);
     $emergency_contact_phone = trim($_POST['emergency_contact_phone']);
     $status = $_POST['status'];
+    $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
 
     // Validate required fields
     if (empty($name) || empty($email) || empty($phone) || empty($specialization)) {
         $error = 'Please fill in all required fields.';
+    } elseif (count($day_offs) !== 2) {
+        $error = 'You must select exactly 2 days off per week.';
     } else {
         // Check if email already exists (excluding current trainer)
         $check_query = "SELECT id FROM trainers WHERE email = ? AND id != ? AND deleted_at IS NULL";
@@ -91,6 +109,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $changes[] = "Specialization: {$trainer['specialization']} → $specialization";
                 if ($trainer['status'] !== $status)
                     $changes[] = "Status: {$trainer['status']} → $status";
+                
+                // Check day-off changes
+                $old_day_offs = implode(', ', $current_day_offs);
+                $new_day_offs = implode(', ', $day_offs);
+                if ($old_day_offs !== $new_day_offs) {
+                    $changes[] = "Day-offs: $old_day_offs → $new_day_offs";
+                }
 
                 // Update trainer
                 $update_query = "UPDATE trainers SET name = ?, email = ?, phone = ?, specialization = ?, bio = ?, photo = ?,
@@ -111,6 +136,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 if ($stmt->execute()) {
+                    // Update day-off schedule
+                    $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                    
+                    // First, set all days as working days
+                    $update_all_days = "UPDATE trainer_day_offs SET is_day_off = FALSE WHERE trainer_id = ?";
+                    $stmt = $conn->prepare($update_all_days);
+                    $stmt->bind_param("i", $trainer_id);
+                    $stmt->execute();
+                    
+                    // Then mark selected days as day-offs
+                    if (!empty($day_offs)) {
+                        $placeholders = implode(',', array_fill(0, count($day_offs), '?'));
+                        $update_days = "UPDATE trainer_day_offs SET is_day_off = TRUE 
+                                       WHERE trainer_id = ? AND day_of_week IN ($placeholders)";
+                        $stmt = $conn->prepare($update_days);
+                        $types = str_repeat('s', count($day_offs));
+                        $params = array_merge([$trainer_id], $day_offs);
+                        $stmt->bind_param("i$types", ...$params);
+                        $stmt->execute();
+                    }
+                    
                     // Log activity
                     if (!empty($changes)) {
                         $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Edited', ?)";
@@ -118,6 +164,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt = $conn->prepare($log_query);
                         $stmt->bind_param("iis", $trainer_id, $admin_id, $details);
                         $stmt->execute();
+
+                        // Log to main activity log
+                        ActivityLogger::log('trainer_updated', $name, $trainer_id, "Trainer '$name' (#$trainer_id) updated. Changes: " . implode(", ", $changes));
                     }
 
                     header('Location: trainers.php?success=updated');
@@ -265,6 +314,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
+                <div class="form-section">
+                    <h3 class="section-title">Weekly Schedule <span class="required">*</span></h3>
+                    <p class="section-description">Select exactly 2 days off per week for this trainer</p>
+
+                    <div class="days-grid">
+                        <?php 
+                        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        foreach ($days as $day): 
+                            $is_checked = in_array($day, $current_day_offs);
+                            $short_day = substr($day, 0, 3);
+                        ?>
+                            <label class="day-checkbox <?= $is_checked ? 'checked' : '' ?>">
+                                <input type="checkbox" 
+                                       name="day_offs[]" 
+                                       value="<?= $day ?>" 
+                                       <?= $is_checked ? 'checked' : '' ?>>
+                                <div class="day-label">
+                                    <span class="day-full"><?= $day ?></span>
+                                    <span class="day-short"><?= $short_day ?></span>
+                                </div>
+                                <div class="checkbox-indicator">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="day-off-counter">
+                        <i class="fas fa-calendar-xmark"></i>
+                        <span id="dayOffCount">0</span> day(s) off selected (Required: 2)
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <a href="trainers.php" class="btn-secondary">Cancel</a>
                     <button type="submit" class="btn-primary">
@@ -274,6 +355,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </main>
+
+    <script>
+        // Day-off selection handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.day-checkbox input[type="checkbox"]');
+            const counter = document.getElementById('dayOffCount');
+            const form = document.querySelector('.trainer-form');
+
+            function updateDayOffCount() {
+                const checkedCount = document.querySelectorAll('.day-checkbox input[type="checkbox"]:checked').length;
+                counter.textContent = checkedCount;
+                
+                // Update visual state
+                checkboxes.forEach(checkbox => {
+                    const label = checkbox.closest('.day-checkbox');
+                    if (checkbox.checked) {
+                        label.classList.add('checked');
+                    } else {
+                        label.classList.remove('checked');
+                    }
+                });
+
+                // Update counter color
+                if (checkedCount === 2) {
+                    counter.parentElement.style.color = 'var(--admin-status-success)';
+                } else {
+                    counter.parentElement.style.color = 'var(--admin-status-danger)';
+                }
+            }
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateDayOffCount);
+            });
+
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                const checkedCount = document.querySelectorAll('.day-checkbox input[type="checkbox"]:checked').length;
+                
+                if (checkedCount !== 2) {
+                    e.preventDefault();
+                    alert('You must select exactly 2 days off per week.');
+                    return false;
+                }
+            });
+
+            // Initialize count
+            updateDayOffCount();
+        });
+    </script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>
