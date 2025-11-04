@@ -83,9 +83,11 @@ $plans = [
         'yearly' => 15000,
         'has_discount' => false,
         'benefits' => [
-            'Muay Thai Training with Coach Thei',
+            'Muay Thai Training with Professional Coaches',
             'MMA Area Access',
-            'Free Orientation and Fitness Assessment'
+            'Free Orientation and Fitness Assessment',
+            'Shower Access',
+            'Locker Access'
         ]
     ],
     'gladiator' => [
@@ -94,11 +96,12 @@ $plans = [
         'yearly' => 35000,
         'has_discount' => true,
         'benefits' => [
-            'Boxing Training with Coach Rieze',
-            'MMA Training with Coach Carlo',
+            'Boxing Training with Professional Coaches',
+            'MMA Training with Professional Coaches',
             'Boxing and MMA Area Access',
             'Gym Equipment Access',
             'Jakuzi Access',
+            'Shower Access',
             'Locker Access'
         ]
     ],
@@ -108,9 +111,11 @@ $plans = [
         'yearly' => 15000,
         'has_discount' => false,
         'benefits' => [
-            'Boxing Training with Coach Rieze',
+            'Boxing Training with Professional Coaches',
             'MMA Area Access',
-            'Free Orientation and Fitness Assessment'
+            'Free Orientation and Fitness Assessment',
+            'Shower Access',
+            'Locker Access'
         ]
     ],
     'clash' => [
@@ -119,9 +124,11 @@ $plans = [
         'yearly' => 15000,
         'has_discount' => false,
         'benefits' => [
-            'MMA Training with Coach Carlo',
+            'MMA Training with Professional Coaches',
             'MMA Area Access',
-            'Free Orientation and Fitness Assessment'
+            'Free Orientation and Fitness Assessment',
+            'Shower Access',
+            'Locker Access'
         ]
     ],
     'resolution-regular' => [
@@ -130,7 +137,9 @@ $plans = [
         'yearly' => 10000,
         'has_discount' => false,
         'benefits' => [
-            'Gym Equipment Access with Face Recognition'
+            'Gym Equipment Access with Face Recognition',
+            'Shower Access',
+            'Locker Access'
         ]
     ]
 ];
@@ -164,8 +173,8 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
 $pageTitle = "Transaction - Fit and Brawl";
 $currentPage = "transaction";
-$additionalCSS = ['../css/pages/transaction.css?v=' . time() . mt_rand()];
-$additionalJS = ['../js/transaction.js?v=' . time() . mt_rand()];
+$additionalCSS = ['../css/pages/transaction.css'];
+$additionalJS = ['../js/transaction.js'];
 ?>
 <script>
     const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
