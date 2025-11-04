@@ -88,20 +88,56 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
     <!-- Dashboard Cards -->
     <section class="cards">
       <div class="card">
+        <div class="card-icon">
+          <i class="fa-solid fa-users"></i>
+        </div>
         <h2><?= $totalMembers ?></h2>
         <p>Total Members</p>
       </div>
       <div class="card">
+        <div class="card-icon">
+          <i class="fa-solid fa-dumbbell"></i>
+        </div>
         <h2><?= $totalTrainers ?></h2>
         <p>Active Trainers</p>
       </div>
-      <div class="card">
+      <div class="card <?= $pendingSubs > 0 ? 'has-pending' : '' ?>">
+        <div class="card-icon">
+          <i class="fa-solid fa-clock"></i>
+        </div>
         <h2><?= $pendingSubs ?></h2>
         <p>Pending Subscriptions</p>
+        <?php if ($pendingSubs > 0): ?>
+          <a href="subscriptions.php" class="card-action">Review Now →</a>
+        <?php endif; ?>
       </div>
-      <div class="card">
+      <div class="card <?= $pendingRes > 0 ? 'has-pending' : '' ?>">
+        <div class="card-icon">
+          <i class="fa-solid fa-calendar-check"></i>
+        </div>
         <h2><?= $pendingRes ?></h2>
         <p>Pending Reservations</p>
+        <?php if ($pendingRes > 0): ?>
+          <a href="reservations.php" class="card-action">Review Now →</a>
+        <?php endif; ?>
+      </div>
+      <?php
+      // Get unread contact count
+      $unreadContacts = 0;
+      $unread_query = $conn->query("SELECT COUNT(*) as count FROM contact WHERE status = 'unread' AND (archived = 0 OR archived IS NULL) AND deleted_at IS NULL");
+      if ($unread_query && $unread_row = $unread_query->fetch_assoc()) {
+        $unreadContacts = $unread_row['count'];
+      }
+      ?>
+      <div class="card card-contacts <?= $unreadContacts > 0 ? 'has-unread' : '' ?>">
+        <div class="card-icon">
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+        <h2><?= $unreadContacts ?></h2>
+        <p>Unread Messages</p>
+        <?php if ($unreadContacts > 0): ?>
+          <a href="contacts.php" class="card-action">View Messages →</a>
+        <?php endif; ?>
       </div>
     </section>
 
