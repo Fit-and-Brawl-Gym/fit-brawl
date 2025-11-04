@@ -155,6 +155,7 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
             </table>
         </section>
     </main>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

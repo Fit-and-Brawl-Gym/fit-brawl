@@ -397,6 +397,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             updateDayOffCount();
         });
     </script>
+    <script src="js/sidebar.js"></script>
 </body>
 
 </html>

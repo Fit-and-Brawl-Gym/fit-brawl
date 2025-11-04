@@ -115,6 +115,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         </div>
     </div>
 
+    <script src="js/sidebar.js"></script>
     <script src="js/contacts.js"></script>
 </body>
 
