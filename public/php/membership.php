@@ -1,6 +1,7 @@
 <?php
 // Check if this is an API request
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -40,7 +41,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Membership Plans - Fit and Brawl";
 $currentPage = "membership";
-$additionalCSS = ["/public/css/pages/membership.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/membership.css"];
 $additionalJS = [];
 
 // Include header
@@ -258,6 +259,6 @@ require_once __DIR__ . '/../../includes/header.php';
         // Pass login status to JavaScript
         window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
     </script>
-    <script src="/public/js/membership.js?=v1"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/membership.js?=v1"></script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

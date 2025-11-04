@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/membership_check.php';
 
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 
 
@@ -177,7 +178,7 @@ function test_input($data)
 // Set variables for header
 $pageTitle = "Fit and Brawl - Contact";
 $currentPage = "contact";
-$additionalCSS = ["/public/css/pages/contact.css", "/public/css/components/form.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/contact.css", PUBLIC_PATH . "/css/components/form.css"];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';

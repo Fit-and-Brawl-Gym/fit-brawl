@@ -2,6 +2,7 @@
 // Check if this is an API request
 
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -148,7 +149,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Products - Fit and Brawl";
 $currentPage = "products";
-$additionalCSS = ["/public/css/pages/products.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/products.css"];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
@@ -225,6 +226,6 @@ require_once __DIR__ . '/../../includes/header.php';
 
     </main>
 
-    <script src="/public/js/products.js?=v1"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/products.js?=v1"></script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

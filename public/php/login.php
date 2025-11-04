@@ -8,6 +8,7 @@ header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 // Use absolute paths based on __DIR__ to ensure includes work regardless of working directory
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -112,8 +113,8 @@ function test_input($data) {
 // Set variables for header
 $pageTitle = "Login - Fit and Brawl";
 $currentPage = "login";
-$additionalCSS = ["/public/css/pages/login.css?v=1"];
-$additionalJS = ["/public/js/hamburger-menu.js"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/login.css?v=1"];
+$additionalJS = [PUBLIC_PATH . "/js/hamburger-menu.js"];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';

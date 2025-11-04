@@ -2,6 +2,7 @@
 session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/session_manager.php';
+require_once __DIR__ . '/../../../includes/config.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -71,7 +72,7 @@ if (isset($_SESSION['user_id'])) {
 // Set variables for header
 $pageTitle = "Home - Fit and Brawl Trainer";
 $currentPage = "home";
-$additionalCSS = ["/public/css/pages/loggedin-homepage.css", "/public/css/pages/trainer/home.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css", PUBLIC_PATH . "/css/pages/trainer/home.css"];
 
 // Include header
 require_once '../../../includes/trainer_header.php';
