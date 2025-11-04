@@ -1,0 +1,77 @@
+steps:
+  # Create app.yaml from template with secrets
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cat > app.yaml << 'EOF'
+        runtime: php81
+
+        env_variables:
+          DB_HOST: '/cloudsql/fit-and-brawl-gym:asia-southeast1:fit-brawl-db'
+          DB_NAME: 'fit_and_brawl_gym'
+          DB_USER: 'root'
+          DB_PASS: '${_DB_PASSWORD}'
+          DB_PORT: '3306'
+          APP_URL: 'https://fit-and-brawl-gym.appspot.com'
+          EMAIL_HOST: 'smtp.gmail.com'
+          EMAIL_PORT: '587'
+          EMAIL_USER: 'mikellandreirazon@gmail.com'
+          EMAIL_PASS: '${_EMAIL_PASSWORD}'
+          RECEIPT_RENDERER_URL: 'https://receipt-renderer-441193964417.asia-southeast1.run.app'
+          GCP_PROJECT_ID: 'fit-and-brawl-gym'
+          GCP_STORAGE_BUCKET: 'fit-brawl-uploads'
+
+        handlers:
+          - url: /(robots\.txt|sitemap\.xml)
+            static_files: \1
+            upload: (robots\.txt|sitemap\.xml)
+            secure: always
+
+          - url: /public/(.*\.(css|js|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|pdf|webmanifest))
+            static_files: public/\1
+            upload: public/.*\.(css|js|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|pdf|webmanifest)
+            secure: always
+            http_headers:
+              Cache-Control: 'public, max-age=3600'
+
+          - url: /images/(.*\.(png|jpg|jpeg|gif|svg|webp))
+            static_files: images/\1
+            upload: images/.*\.(png|jpg|jpeg|gif|svg|webp)
+            secure: always
+            http_headers:
+              Cache-Control: 'public, max-age=3600'
+
+          - url: /.*
+            script: auto
+            secure: always
+
+        automatic_scaling:
+          target_cpu_utilization: 0.65
+          target_throughput_utilization: 0.6
+          min_instances: 0
+          max_instances: 2
+
+        beta_settings:
+          cloud_sql_instances: fit-and-brawl-gym:asia-southeast1:fit-brawl-db
+
+        liveness_check:
+          path: "/health.php"
+        readiness_check:
+          path: "/health.php"
+        EOF
+
+  # Deploy to App Engine
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'app'
+      - 'deploy'
+      - '--quiet'
+
+timeout: 1800s
+
+# Substitution variables (set in trigger settings)
+substitutions:
+  _DB_PASSWORD: 'FitAndBrawl123!'
+  _EMAIL_PASSWORD: 'hgog lwge gdtd hvut'
