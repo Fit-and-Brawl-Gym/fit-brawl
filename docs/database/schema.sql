@@ -58,8 +58,7 @@ CREATE TABLE remember_password (
 CREATE TABLE memberships (
     id INT AUTO_INCREMENT PRIMARY KEY,
     plan_name VARCHAR(50) NOT NULL,
-    class_type VARCHAR(100) NOT NULL,
-    price DECIMAL(10,2) NOT NULL DEFAULT 0.00
+    class_type VARCHAR(100) NOT NULL
 );
 
 -- =====================
