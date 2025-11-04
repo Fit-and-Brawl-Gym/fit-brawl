@@ -166,6 +166,10 @@
 
 .confirm-header i {
     font-size: var(--font-size-2xl);
+    color: var(--color-accent);
+}
+
+.confirm-header i.fa-exclamation-triangle {
     color: var(--color-warning);
 }
 
