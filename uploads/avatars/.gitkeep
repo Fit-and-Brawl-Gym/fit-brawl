@@ -1,0 +1,2 @@
+# This directory will contain user avatars after upload
+# In production (GCP), files will be stored in Cloud Storage instead

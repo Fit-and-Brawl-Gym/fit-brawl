@@ -7,10 +7,10 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-require_once '../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
 
 // Check membership status for header
-require_once '../../includes/membership_check.php';
+require_once __DIR__ . '/../../includes/membership_check.php';
 
 $hasActiveMembership = false;
 $hasAnyRequest = false;
@@ -98,7 +98,7 @@ if ($hasActiveMembership) {
 } else {
     $membershipLink = 'membership.php';
 }
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -173,7 +173,7 @@ $additionalCSS = ['../css/pages/user-profile.css'];
 $additionalJS = ['../js/user-profile.js'];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
     <!--Main-->
@@ -302,10 +302,10 @@ require_once '../../includes/header.php';
         </section>
     </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
-    <script src="../js/header-dropdown.js"></script>
-    <script src="../js/user-profile.js"></script>
+    <script src="/public/js/header-dropdown.js"></script>
+    <script src="/public/js/user-profile.js"></script>
 </body>
 
 </html>

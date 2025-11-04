@@ -16,7 +16,7 @@ $redirectUrl = $receiptPage . '?id=' . urlencode($id);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Download Receipt - Fit & Brawl</title>
-    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="/public/css/global.css">
     <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <style>
         body {

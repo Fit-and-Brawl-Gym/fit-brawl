@@ -1,7 +1,8 @@
 <?php
 
-require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -10,7 +11,7 @@ SessionManager::initialize();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
     header('Content-Type: application/json');
-    include '../../includes/db_connect.php';
+    include __DIR__ . '/../../includes/db_connect.php';
 
     $method = $_SERVER['REQUEST_METHOD'];
 
@@ -243,7 +244,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Feedback - Fit and Brawl";
 $currentPage = "feedback";
-$additionalCSS = ["../css/pages/feedback.css?=v2"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/feedback.css?=v2"];
 
 // Include header
 require_once '../../includes/header.php';
@@ -358,7 +359,7 @@ require_once '../../includes/header.php';
     </div>
 </footer>
 
-<script src="../js/feedback.js"></script>
+<script src="<?= PUBLIC_PATH ?>/js/feedback.js"></script>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 <?php
-require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -136,23 +137,25 @@ if (isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
-$additionalCSS = ["../css/pages/loggedin-homepage.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css"];
 
 // Include header
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
-<!--Main-->
-<main>
-    <section class="homepage-hero">
-        <div class="hero-content">
-            <div class="hero-underline top-line"></div>
-            <h1>
-                BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
-                BUILT FOR <span class="yellow">BATTLE</span>
-            </h1>
-            <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
-            <a href="<?= htmlspecialchars($membershipLink) ?>" class="hero-btn">View Schedule</a>
-        </div>
-    </section>
-</main>
+    <!--Main-->
+    <main>
+        <section class="homepage-hero">
+            <div class="hero-content">
+                <div class="hero-underline top-line"></div>
+                <h1>
+                    BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
+                    BUILT FOR <span class="yellow">BATTLE</span>
+                </h1>
+                <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
+                <a href="<?= htmlspecialchars($membershipLink) ?>" class="hero-btn">View Schedule</a>
+            </div>
+        </section>
+    </main>
+
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

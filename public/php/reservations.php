@@ -1,6 +1,6 @@
 <?php
-require_once '../../includes/db_connect.php';
-require_once '../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/session_manager.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -53,7 +53,7 @@ $currentPage = "membership";
 $additionalCSS = ['../css/pages/reservations.css?v=' . time()];
 $additionalJS = ['../js/reservations.js?v=' . time() . mt_rand()];
 
-require_once '../../includes/header.php';
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <!--Main Content-->
