@@ -189,6 +189,224 @@ select option {
     padding: 8px 16px;
 }
 
+/* Day-Off Selection Styles */
+.section-description {
+    color: var(--admin-text-muted);
+    font-size: var(--admin-font-size-md);
+    margin-top: -12px;
+    margin-bottom: var(--admin-gap-lg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-description::before {
+    content: '\f05a';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: var(--admin-color-accent);
+    font-size: var(--admin-font-size-lg);
+}
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--admin-gap-md);
+    margin-bottom: var(--admin-gap-lg);
+    padding: var(--admin-gap-lg);
+    background: var(--admin-bg-light);
+    border-radius: var(--admin-radius-xl);
+    border: 1px solid var(--admin-border-light);
+}
+
+.day-checkbox {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease;
+}
+
+.day-checkbox:active {
+    transform: scale(0.95);
+}
+
+.day-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.day-checkbox .day-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--admin-gap-md) var(--admin-gap-sm);
+    background: var(--admin-bg-white);
+    border: 2px solid var(--admin-border-light);
+    border-radius: var(--admin-radius-lg);
+    transition: all 0.3s ease;
+    min-height: 90px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.day-checkbox .day-label::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(0, 47, 63, 0.03) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.day-checkbox .day-full {
+    font-size: var(--admin-font-size-sm);
+    font-weight: var(--admin-font-weight-bold);
+    color: var(--admin-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.day-checkbox .day-short {
+    display: none;
+    font-size: var(--admin-font-size-sm);
+    font-weight: var(--admin-font-weight-bold);
+    color: var(--admin-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.day-checkbox .checkbox-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    background: var(--admin-bg-white);
+    border: 2px solid var(--admin-border-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.day-checkbox .checkbox-indicator i {
+    font-size: 11px;
+    color: var(--admin-text-white);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    transform: scale(0);
+}
+
+.day-checkbox:hover .day-label {
+    border-color: var(--admin-color-primary);
+    box-shadow: 0 4px 12px rgba(0, 47, 63, 0.12);
+    transform: translateY(-2px);
+}
+
+.day-checkbox:hover .day-label::before {
+    opacity: 1;
+}
+
+.day-checkbox:hover .checkbox-indicator {
+    border-color: var(--admin-color-primary);
+    transform: scale(1.1);
+}
+
+.day-checkbox.checked .day-label {
+    background: var(--admin-gradient-red);
+    border-color: var(--admin-status-cancelled);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.day-checkbox.checked .day-label::before {
+    opacity: 0;
+}
+
+.day-checkbox.checked .day-full,
+.day-checkbox.checked .day-short {
+    color: var(--admin-text-white);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.day-checkbox.checked .checkbox-indicator {
+    background: var(--admin-btn-danger-hover);
+    border-color: var(--admin-btn-danger-hover);
+    transform: scale(1);
+}
+
+.day-checkbox.checked .checkbox-indicator i {
+    opacity: 1;
+    transform: scale(1);
+    animation: checkPop 0.3s ease;
+}
+
+@keyframes checkPop {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.day-off-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--admin-gap-sm);
+    padding: var(--admin-gap-md) var(--admin-gap-lg);
+    background: linear-gradient(135deg, var(--admin-bg-white) 0%, var(--admin-bg-light) 100%);
+    border-radius: var(--admin-radius-lg);
+    font-weight: var(--admin-font-weight-bold);
+    font-size: var(--admin-font-size-md);
+    color: var(--admin-status-danger);
+    border: 2px solid var(--admin-border-light);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.day-off-counter i {
+    font-size: var(--admin-font-size-xl);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.day-off-counter #dayOffCount {
+    font-size: var(--admin-font-size-xl);
+    font-weight: var(--admin-font-weight-bold);
+    min-width: 20px;
+    text-align: center;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .form-container {
@@ -202,5 +420,28 @@ select option {
     .form-actions button,
     .form-actions a {
         width: 100%;
+    }
+
+    .days-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .day-checkbox .day-full {
+        display: none;
+    }
+
+    .day-checkbox .day-short {
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .days-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .day-checkbox .day-label {
+        padding: var(--admin-gap-sm) 6px;
+        min-height: 60px;
     }
 }

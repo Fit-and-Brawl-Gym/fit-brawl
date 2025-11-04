@@ -104,6 +104,23 @@ CREATE TABLE trainer_activity_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Audit log for trainer management actions';
 
 -- =====================
+-- TRAINER DAY OFFS TABLE
+-- Manages trainer weekly day-off schedule (2 days per week)
+-- =====================
+CREATE TABLE trainer_day_offs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    trainer_id INT NOT NULL,
+    day_of_week ENUM('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday') NOT NULL,
+    is_day_off BOOLEAN DEFAULT TRUE COMMENT 'TRUE = day off, FALSE = working day',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_trainer_day (trainer_id, day_of_week),
+    INDEX idx_trainer_day_offs_trainer (trainer_id),
+    INDEX idx_day_off_schedule (trainer_id, is_day_off)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Trainer weekly day-off schedule management';
+
+-- =====================
 -- MEMBERSHIP_TRAINERS TABLE
 -- Links memberships to their assigned trainers (many-to-many)
 -- =====================
@@ -301,7 +318,14 @@ CREATE TABLE contact (
     email VARCHAR(100) NOT NULL,
     phone_number VARCHAR(20),
     message TEXT NOT NULL,
+    status ENUM('unread', 'read') DEFAULT 'unread',
+    archived TINYINT(1) DEFAULT 0,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+    INDEX idx_contact_status ON contact(status);
+    INDEX idx_contact_archived ON contact(archived);
+    INDEX idx_contact_deleted ON contact(deleted_at);
 );
 
 -- =====================
