@@ -53,39 +53,40 @@ function applyEmailTemplate(PHPMailer $mail, string $innerHtml, array $opts = []
     $logoCid = null;
     $embedPath = null;
 
-    // Try to embed header-title and footer-title images as well (so emails don't rely on remote localhost URLs)
-    $headerTitleCid = null;
-    $headerTitleCid = null;
-    $footerTitleCid = null;
-    // Prefer a PNG for email clients (best). Try header-title.png, then header-title.svg, then footer-title.png as final fallback.
-    $headerTitlePath = __DIR__ . '/../images/header-title.png';
-    if (!file_exists($headerTitlePath)) $headerTitlePath = __DIR__ . '/../images/header-title.svg';
-    if (!file_exists($headerTitlePath)) $headerTitlePath = __DIR__ . '/../images/footer-title.png';
-    if (file_exists($headerTitlePath)) {
+    // Only use explicit mail-header.png / mail-footer.png as header/footer banners.
+    // Legacy header-title/footer-title fallbacks have been removed per request.
+    $mailHeaderCid = null;
+    $mailFooterCid = null;
+
+    // Prefer an explicit mail header banner if provided (more robust for dark-mode)
+    $mailHeaderPath = __DIR__ . '/../images/mail-header.png';
+    if (!file_exists($mailHeaderPath)) $mailHeaderPath = __DIR__ . '/../images/mail-header.jpg';
+    if (file_exists($mailHeaderPath)) {
         try {
-            $htBasename = basename($headerTitlePath);
-            $htExt = strtolower(pathinfo($headerTitlePath, PATHINFO_EXTENSION));
-            $htMime = $htExt === 'png' ? 'image/png' : ($htExt === 'svg' ? 'image/svg+xml' : mime_content_type($headerTitlePath));
-            $mail->addEmbeddedImage($headerTitlePath, 'header_title_cid', $htBasename, 'base64', $htMime);
-            $headerTitleCid = 'header_title_cid';
+            $mhBasename = basename($mailHeaderPath);
+            $mhExt = strtolower(pathinfo($mailHeaderPath, PATHINFO_EXTENSION));
+            $mhMime = $mhExt === 'png' ? 'image/png' : ($mhExt === 'jpg' || $mhExt === 'jpeg' ? 'image/jpeg' : mime_content_type($mailHeaderPath));
+            $mail->addEmbeddedImage($mailHeaderPath, 'mail_header_cid', $mhBasename, 'base64', $mhMime);
+            $mailHeaderCid = 'mail_header_cid';
         } catch (\Exception $e) {
-            error_log('applyEmailTemplate header title embed failed: ' . $e->getMessage());
-            $headerTitleCid = null;
+            error_log('applyEmailTemplate mail header embed failed: ' . $e->getMessage());
+            $mailHeaderCid = null;
         }
     }
 
-    $footerTitlePath = __DIR__ . '/../images/footer-title.png';
-    if (!file_exists($footerTitlePath)) $footerTitlePath = __DIR__ . '/../images/footer-title.svg';
-    if (file_exists($footerTitlePath)) {
+    // Prefer an explicit mail footer banner if provided
+    $mailFooterPath = __DIR__ . '/../images/mail-footer.png';
+    if (!file_exists($mailFooterPath)) $mailFooterPath = __DIR__ . '/../images/mail-footer.jpg';
+    if (file_exists($mailFooterPath)) {
         try {
-            $ftBasename = basename($footerTitlePath);
-            $ftExt = strtolower(pathinfo($footerTitlePath, PATHINFO_EXTENSION));
-            $ftMime = $ftExt === 'png' ? 'image/png' : ($ftExt === 'svg' ? 'image/svg+xml' : mime_content_type($footerTitlePath));
-            $mail->addEmbeddedImage($footerTitlePath, 'footer_title_cid', $ftBasename, 'base64', $ftMime);
-            $footerTitleCid = 'footer_title_cid';
+            $mfBasename = basename($mailFooterPath);
+            $mfExt = strtolower(pathinfo($mailFooterPath, PATHINFO_EXTENSION));
+            $mfMime = $mfExt === 'png' ? 'image/png' : ($mfExt === 'jpg' || $mfExt === 'jpeg' ? 'image/jpeg' : mime_content_type($mailFooterPath));
+            $mail->addEmbeddedImage($mailFooterPath, 'mail_footer_cid', $mfBasename, 'base64', $mfMime);
+            $mailFooterCid = 'mail_footer_cid';
         } catch (\Exception $e) {
-            error_log('applyEmailTemplate footer title embed failed: ' . $e->getMessage());
-            $footerTitleCid = null;
+            error_log('applyEmailTemplate mail footer embed failed: ' . $e->getMessage());
+            $mailFooterCid = null;
         }
     }
 
@@ -112,90 +113,50 @@ function applyEmailTemplate(PHPMailer $mail, string $innerHtml, array $opts = []
 
     // Header - mimic site header: logo (and optional header title image if available)
     // If a banner image exists, use it as a full-width header banner for a stronger visual (preferred)
-    $bannerPath = __DIR__ . '/../images/email-banner.png';
-    if (!file_exists($bannerPath)) $bannerPath = __DIR__ . '/../images/email-banner.jpg';
-    if (file_exists($bannerPath)) {
-        // Try to embed banner if possible
+    // If an explicit mail-header image was embedded use that first, otherwise fall back to email-banner
+    if (!empty($mailHeaderCid)) {
+        $bannerCid = $mailHeaderCid;
+    } else {
+        // No fallback banner: only explicit mail-header.png is used for the header per request
         $bannerCid = null;
-        try {
-            $bnBasename = basename($bannerPath);
-            $bnExt = strtolower(pathinfo($bannerPath, PATHINFO_EXTENSION));
-            $bnMime = $bnExt === 'png' ? 'image/png' : ($bnExt === 'jpg' || $bnExt === 'jpeg' ? 'image/jpeg' : mime_content_type($bannerPath));
-            // use a deterministic cid name
-            $mail->addEmbeddedImage($bannerPath, 'email_banner_cid', $bnBasename, 'base64', $bnMime);
-            $bannerCid = 'email_banner_cid';
-        } catch (\Exception $e) {
-            error_log('applyEmailTemplate banner embed failed: ' . $e->getMessage());
-            $bannerCid = null;
-        }
-        if ($bannerCid) {
-            // Render banner as a centered boxed element (not full-bleed)
-            $html .= '<tr><td align="center" style="padding:0">';
-            $html .= '<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;margin:0 auto;background:' . $headerBg . ';padding:0;border-radius:0">';
-            $html .= '<tr><td style="padding:0">';
-            // limit banner width slightly to fit box and appear less dominant
-            // center the banner image and avoid stretching so the logo inside can be centered
-            $html .= '<img src="cid:' . htmlspecialchars($bannerCid) . '" alt="Header" style="display:block;margin:0 auto;width:auto;max-width:560px;height:auto;image-rendering:auto;-webkit-filter:none;filter:none;">';
-            $html .= '</td></tr></table></td></tr>';
-        }
+    }
+    if (!empty($bannerCid)) {
+        // Render banner as a centered element with no extra cell padding or borders
+        // to avoid mail clients (Gmail mobile) adding a white card/outline.
+        $html .= '<tr><td align="center" style="padding:0;line-height:0;border-collapse:collapse">';
+        $html .= '<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;margin:0 auto;padding:0;border-collapse:collapse;border-spacing:0;background:' . $headerBg . ';">';
+        $html .= '<tr><td style="padding:0;line-height:0">';
+    // Use full-width responsive image and remove borders/outlines; expand max-width to full 600px so desktop header fills the content box
+    $html .= '<img src="cid:' . htmlspecialchars($bannerCid) . '" alt="Header" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;width:100%;max-width:600px;height:auto;line-height:0;-webkit-filter:none;filter:none;">';
+        $html .= '</td></tr></table></td></tr>';
     }
 
-    // Header: boxed dark container centered (does not span full email width)
-    $html .= '<tr><td align="center" style="padding:18px 0">';
-    // boxed header: add bgcolor and stronger inline background-color to resist client dark-mode
-    $html .= '<table width="600" cellpadding="0" cellspacing="0" role="presentation" bgcolor="' . $headerBg . '" style="max-width:600px;margin:0 auto;background-color:' . $headerBg . ' !important;padding:14px 18px;border-radius:4px;text-align:center;">';
-    $html .= '<tr><td align="center" valign="middle" style="vertical-align:middle;text-align:center;">';
-    // Center the header-title (site name) within the dark box.
-    // Use the same decision we made earlier when attempting to embed the header title.
-    // If we successfully embedded it, reference the CID. Otherwise, prefer an existing SVG, then PNG, as a remote src.
-    if (!empty($headerTitleCid)) {
-        $html .= '<img src="cid:' . htmlspecialchars($headerTitleCid) . '" alt="FitXBrawl" style="display:block;margin:0 auto;height:auto;max-width:260px;image-rendering:auto;-webkit-filter:none;filter:none;">';
-    } else {
-        // determine which file exists for a remote fallback (prefer svg)
-        $remoteHeader = null;
-        if (file_exists(__DIR__ . '/../images/header-title.svg')) {
-            $remoteHeader = 'header-title.svg';
-        } elseif (file_exists(__DIR__ . '/../images/header-title.png')) {
-            $remoteHeader = 'header-title.png';
-        } elseif (file_exists(__DIR__ . '/../images/footer-title.png')) {
-            // final fallback to footer title PNG if header image is missing
-            $remoteHeader = 'footer-title.png';
-        }
-        if ($remoteHeader) {
-            $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $html .= '<img src="' . $scheme . '://' . htmlspecialchars($_SERVER['HTTP_HOST'] ?? 'localhost') . '/fit-brawl/images/' . rawurlencode($remoteHeader) . '" alt="FitXBrawl" style="display:block;margin:0 auto;height:auto;max-width:260px;image-rendering:auto;-webkit-filter:none;filter:none;">';
-        }
-    }
-    $html .= '</td></tr>';
-    $html .= '</table>';
-    $html .= '</td></tr>';
+    // (Removed boxed site-title header; only the mail-header banner will be used)
     // Body
-    $html .= '<tr><td align="center" style="background-color:#ffffff;padding:28px 0" bgcolor="#ffffff">';
+    // reduce bottom padding so footer sits directly after content (helps mobile clients)
+    $html .= '<tr><td align="center" style="background-color:#ffffff;padding:18px 0 0" bgcolor="#ffffff">';
     $html .= '<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;margin:0 auto"><tr><td class="content" style="background-color:#ffffff !important;padding:22px;border-radius:4px;color:#111111 !important;" bgcolor="#ffffff">';
     $html .= $innerHtml;
     $html .= '</td></tr></table>';
     $html .= '</td></tr>';
 
     // Footer
-    // Footer - compact boxed dark container centered
-    $html .= '<tr><td align="center" style="padding:10px 0">';
-    $html .= '<table width="600" cellpadding="0" cellspacing="0" role="presentation" bgcolor="' . $footerBg . '" style="max-width:600px;margin:0 auto;background-color:' . $footerBg . ' !important;padding:10px 18px;border-radius:4px"><tr><td align="center" style="font-size:13px;line-height:18px;color:' . $textColor . '">';
-    // try to use footer-title image if available for the footer heading
-    $footerTitlePath = __DIR__ . '/../images/footer-title.png';
-    if (file_exists($footerTitlePath)) {
-        if (!empty($footerTitleCid)) {
-            $html .= '<div style="margin-bottom:4px"><img src="cid:' . htmlspecialchars($footerTitleCid) . '" alt="FITXBRAWL" style="height:auto;max-width:120px; display:block; margin:0 auto;image-rendering:auto;-webkit-filter:none;filter:none;"></div>';
-        } else {
-            $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $html .= '<div style="margin-bottom:4px"><img src="' . $scheme . '://' . htmlspecialchars($_SERVER['HTTP_HOST'] ?? 'localhost') . '/fit-brawl/images/' . rawurlencode(basename($footerTitlePath)) . '" alt="FITXBRAWL" style="height:auto;max-width:120px; display:block; margin:0 auto"></div>';
-        }
+    // Footer - if a mail-footer image exists, render it cleanly with no extra box to avoid white outlines
+    if (!empty($mailFooterCid)) {
+        // remove top padding so footer sits flush with above content
+        $html .= '<tr><td align="center" style="padding:0;line-height:0;border-collapse:collapse">';
+        $html .= '<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;margin:0 auto;padding:0;border-collapse:collapse;border-spacing:0;">';
+        $html .= '<tr><td style="padding:0;line-height:0;text-align:center">';
+    $html .= '<img src="cid:' . htmlspecialchars($mailFooterCid) . '" alt="FITXBRAWL" style="display:block;border:0;outline:none;text-decoration:none;width:100%;max-width:600px;height:auto;line-height:0;">';
+        $html .= '</td></tr></table></td></tr>';
     } else {
+        // No mail-footer image; show a simple textual brand heading
+        $html .= '<tr><td align="center" style="padding:10px 0"><table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;margin:0 auto"><tr><td align="center" style="font-size:13px;line-height:18px;color:' . $textColor . '">';
         $html .= '<div style="font-weight:600;margin-bottom:4px">' . htmlspecialchars('FITXBRAWL') . '</div>';
+        $html .= '</td></tr></table></td></tr>';
     }
 
-    // compact address lines with tighter line-height
-    $html .= '<div style="margin:0;padding:0;font-size:13px;line-height:18px;color:' . $textColor . ';">' . nl2br(htmlspecialchars($opts['footerAddress'])) . '</div>';
-    $html .= '<div style="margin-top:6px;font-size:13px;line-height:18px;color:' . $textColor . ';">Gmail: <a href="mailto:' . htmlspecialchars($opts['footerEmail']) . '" style="color:' . $textColor . ';text-decoration:underline">' . htmlspecialchars($opts['footerEmail']) . '</a></div>';
+    // Footer contact lines removed — footer will be image-only when mail-footer.png is provided
     $html .= '</td></tr></table>';
     $html .= '</td></tr>';
 
