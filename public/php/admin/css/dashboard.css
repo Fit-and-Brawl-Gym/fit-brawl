@@ -4,9 +4,28 @@
 
 .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--admin-gap-lg);
     margin-bottom: var(--admin-section-margin);
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 1400px) {
+    .cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .cards {
+        grid-template-columns: 1fr;
+    }
 }
 
 .card {
@@ -15,11 +34,17 @@
     padding: var(--admin-card-padding);
     border-radius: var(--admin-radius-lg);
     box-shadow: var(--admin-shadow-card);
-    transition: transform var(--admin-transition-fast);
+    transition: all var(--admin-transition-fast);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .card:hover {
     transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .card h2 {
@@ -31,6 +56,83 @@
 .card p {
     color: #ccc;
     font-size: var(--admin-font-size-md);
+}
+
+/* Card Icons */
+.card-icon {
+    font-size: 2.5rem;
+    color: var(--admin-color-accent);
+    margin-bottom: 1rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.card:hover .card-icon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Pending/Alert Cards */
+.card.has-pending,
+.card.has-unread {
+    border: 2px solid var(--admin-color-accent);
+    background: linear-gradient(135deg, var(--admin-bg-dark) 0%, #003545 100%);
+}
+
+.card.has-pending .card-icon,
+.card.has-unread .card-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.card.has-unread .card-icon {
+    animation: shake 0.5s infinite;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+/* Card Action Button */
+.card-action {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--admin-color-accent);
+    color: var(--admin-bg-dark);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.card-action:hover {
+    background: #e5c935;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(213, 186, 43, 0.3);
 }
 
 /* Logs section */
