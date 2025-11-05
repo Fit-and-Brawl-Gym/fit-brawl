@@ -79,10 +79,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fa-solid fa-comment-dots"></i>
             <span>Feedback</span>
         </a>
-        <a href="announcements.php" class="<?= $current_page == 'announcements.php' ? 'active' : '' ?>">
+       <!-- <a href="announcements.php" class="<?= $current_page == 'announcements.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-bullhorn"></i>
             <span>Announcements</span>
-        </a>
+        </a> -->
         <a href="contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-address-book"></i>
             <span>Contacts</span>
@@ -94,10 +94,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fa-solid fa-history"></i>
             <span>Activity Log</span>
         </a>
-        <a href="system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
+        <!-- <a href="system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-server"></i>
             <span>System Status</span>
-        </a>
+        </a> -->
     </nav>
     <div class="sidebar-footer">
         <a href="../logout.php" class="logout-btn">

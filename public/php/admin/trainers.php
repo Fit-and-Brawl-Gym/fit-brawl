@@ -347,7 +347,7 @@ if (!$stats) {
                                 <tr data-trainer-id="<?= $trainer['id'] ?>">
                                     <td>
                                         <div class="trainer-info">
-                                            <img src="<?= !empty($trainer['photo']) ? '../../../uploads/trainers/' . htmlspecialchars($trainer['photo']) : '../../../images/default-trainer.png' ?>"
+                                            <img src="../../../images/account-icon.svg"
                                                 alt="<?= htmlspecialchars($trainer['name']) ?>" class="trainer-avatar">
                                             <span><?= htmlspecialchars($trainer['name']) ?></span>
                                         </div>
@@ -422,7 +422,7 @@ if (!$stats) {
                     <?php while ($trainer = $trainers_result->fetch_assoc()): ?>
                         <div class="trainer-card" data-trainer-id="<?= $trainer['id'] ?>">
                             <div class="card-header">
-                                <img src="<?= !empty($trainer['photo']) ? '../../../uploads/trainers/' . htmlspecialchars($trainer['photo']) : '../../../images/default-trainer.png' ?>"
+                                <img src="../../../images/account-icon.svg"
                                     alt="<?= htmlspecialchars($trainer['name']) ?>" class="card-avatar">
                                 <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $trainer['status'])) ?>"
                                     onclick="toggleStatus(<?= $trainer['id'] ?>)" style="cursor: pointer;"

@@ -74,8 +74,15 @@ class SessionTimer {
 
     async extendSession() {
         try {
-            const response = await fetch('extend_session.php');
+            const publicPath = window.PUBLIC_PATH || '/fit-brawl/public';
+            const url = `${publicPath}/php/extend_session.php`;
+            console.log('Extending session with URL:', url);
+            
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+            
             const data = await response.json();
+            console.log('Response data:', data);
 
             if (!data.success) {
                 console.error('Failed to extend session on server');
