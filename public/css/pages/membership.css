@@ -28,6 +28,7 @@
     animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     max-width: 600px;
     width: 90%;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -148,6 +149,7 @@
 .plan-card {
     min-width: 380px;
     background: rgba(255, 255, 255, 0.03);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-3xl);
@@ -225,6 +227,7 @@
 /* Gladiator Plan - Featured */
 .gladiator-plan {
     background: rgba(255, 206, 0, 0.05);
+    -webkit-backdrop-filter: blur(15px);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 206, 0, 0.25);
     box-shadow: 0 8px 32px rgba(255, 206, 0, 0.15),
@@ -365,6 +368,7 @@
     top: 50%;
     transform: translateY(-50%);
     background: rgba(255, 206, 0, 0.15);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 206, 0, 0.3);
     color: var(--color-accent);
@@ -453,6 +457,7 @@
 /* Service Card */
 .service-card {
     background: rgba(255, 255, 255, 0.03);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-2xl);
@@ -540,12 +545,14 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.9);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
 .modal-content {
     position: relative;
     background: rgba(255, 255, 255, 0.05);
+    -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-3xl);
@@ -573,6 +580,7 @@
     top: var(--spacing-6);
     right: var(--spacing-6);
     background: rgba(255, 206, 0, 0.1);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 206, 0, 0.3);
     color: var(--color-accent);
@@ -721,6 +729,7 @@
     max-width: 800px;
     padding: var(--spacing-12);
     background: rgba(255, 255, 255, 0.03);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-3xl);
@@ -993,7 +1002,6 @@
         pointer-events: auto !important;
         width: 100%;
         max-width: 380px;
-        min-height: auto;
     }
 
     /* Reorder cards - Gladiator first on mobile */
