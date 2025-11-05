@@ -319,7 +319,8 @@
     position: relative;
 }
 
-.status-scheduled {
+.status-scheduled,
+.status-confirmed {
     background: #e3f2fd;
     color: #1976d2;
 }

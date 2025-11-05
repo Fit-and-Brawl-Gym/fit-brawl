@@ -75,13 +75,20 @@ body::before {
     height: 150px;
     border-radius: var(--radius-full);
     object-fit: cover;
-    border: 3px solid var(--color-accent);
-    box-shadow: 0 0 20px rgba(213, 186, 43, 0.3);
+    /* Remove yellow border/glow */
+    border: none;
+    box-shadow: none;
 }
 
 .profile-avatar.default-icon {
     border: none;
     box-shadow: none;
+}
+
+/* Icon shown instead of trainer name */
+.trainer-name-icon {
+    width: 48px;
+    height: 48px;
 }
 
 .profile-info {

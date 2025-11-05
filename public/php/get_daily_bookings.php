@@ -34,21 +34,20 @@ function getTimeCategory($time) {
 // Get all bookings for this trainer on this date
 $query = "
     SELECT
-        ur.id,
-        ur.booking_status,
-        ur.class_type,
-        ur.start_time,
-        ur.end_time,
-        u.username as member_name,
+        r.id,
+        r.booking_status,
+        r.start_time,
+        r.end_time,
+        u.name as member_name,
         u.email as member_email,
-        r.max_slots
-    FROM user_reservations ur
-    JOIN reservations r ON ur.reservation_id = r.id
-    JOIN users u ON ur.user_id = u.id
+        ct.class_name as class_type
+    FROM reservations r
+    JOIN users u ON r.user_id = u.id
+    LEFT JOIN class_types ct ON r.class_type_id = ct.id
     WHERE r.trainer_id = ?
-    AND r.date = ?
-    AND ur.booking_status != 'cancelled'
-    ORDER BY ur.start_time
+    AND r.reservation_date = ?
+    AND r.booking_status = 'confirmed'
+    ORDER BY r.start_time
 ";
 
 $stmt = $conn->prepare($query);

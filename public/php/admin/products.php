@@ -1,6 +1,7 @@
 <?php
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\products.php
 include_once('../../../includes/init.php');
+require_once '../../../includes/config.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -267,6 +268,10 @@ unset($p);
         </div>
     </div>
 
+    <script>
+        // Pass PHP environment paths to JavaScript
+        window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
+    </script>
     <script src="js/sidebar.js"></script>
     <script src="js/products.js"></script>
 </body>

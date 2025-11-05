@@ -55,7 +55,7 @@ function renderRowForTable(sub, tableId) {
   const member = escapeHtml(sub.username || '');
   const plan = escapeHtml(sub.plan_name || '—');
   const price = (sub.price !== undefined && sub.price !== null) ? escapeHtml(sub.price) : '—';
-  const qrLink = sub.qr_proof ? `<a class="qr-link" href="../../../../uploads/${encodeURIComponent(sub.qr_proof)}" target="_blank">View</a>` : '—';
+  const qrLink = sub.qr_proof ? `<a class="qr-link" href="${window.UPLOADS_PATH}/receipts/${encodeURIComponent(sub.qr_proof)}" target="_blank">View</a>` : '—';
   const niceDate = formatDate(sub.date_submitted || sub.date_submitted || '');
   const remarks = sub.remarks || '';
 
@@ -321,7 +321,7 @@ async function loadSubscriptions(type, tableBodyId) {
                     <td>${sub.id}</td>
                     <td>${escapeHtml(sub.member)}</td>
                     <td>${escapeHtml(sub.plan)}</td>
-                    <td>${sub.qr_proof ? `<a href="../../../../uploads/qr_proofs/${escapeHtml(sub.qr_proof)}" target="_blank" class="qr-link">View</a>` : '—'}</td>
+                    <td>${sub.qr_proof ? `<a href="${window.UPLOADS_PATH}/receipts/${escapeHtml(sub.qr_proof)}" target="_blank" class="qr-link">View</a>` : '—'}</td>
                     <td>${formatDateTime(sub.date_submitted)}</td>
                     <td>
                         <button class="btn-approve" onclick="approveSubscription(${sub.id})">Approve</button>
@@ -333,7 +333,7 @@ async function loadSubscriptions(type, tableBodyId) {
                     <td>${sub.id}</td>
                     <td>${escapeHtml(sub.member)}</td>
                     <td>${escapeHtml(sub.plan)}</td>
-                    <td>${sub.qr_proof ? `<a href="../../../../uploads/qr_proofs/${escapeHtml(sub.qr_proof)}" target="_blank" class="qr-link">View</a>` : '—'}</td>
+                    <td>${sub.qr_proof ? `<a href="${window.UPLOADS_PATH}/receipts/${escapeHtml(sub.qr_proof)}" target="_blank" class="qr-link">View</a>` : '—'}</td>
                     <td>${sub.start_date ? formatDate(sub.start_date) : '—'}</td>
                     <td>${sub.end_date ? formatDate(sub.end_date) : '—'}</td>
                 `;

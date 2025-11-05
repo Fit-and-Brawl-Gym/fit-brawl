@@ -102,7 +102,8 @@ require_once '../../../includes/trainer_header.php';
                 class="profile-avatar <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
         </div>
         <div class="profile-info">
-            <h1><?= htmlspecialchars($user['username']) ?></h1>
+            <!-- Show account icon instead of trainer name -->
+            <img src="<?= IMAGES_PATH ?>/account-icon.svg" alt="Trainer" class="trainer-name-icon">
             <p class="profile-email"><?= htmlspecialchars($user['email']) ?></p>
             <p class="profile-role"> Trainer</p>
             <div class="profile-actions">

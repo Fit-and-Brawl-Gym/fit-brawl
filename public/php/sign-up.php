@@ -63,8 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     }
 
     // must contain at least one special character
-    if (!preg_match('/[!@#$%^&*]/', $password)) {
-        $errors[] = "Password must contain at least one special character (!@#$%^&*)";
+    if (!preg_match('/[!@#$%^&*?]/', $password)) {
+        $errors[] = "Password must contain at least one special character (!@#$%^&*?)";
     }
 
     return $errors;
@@ -173,11 +173,12 @@ $currentPage = "sign_up";
 $pageTitle = "Sign Up - Fit and Brawl";
 $currentPage = "signup";
 $additionalCSS = [
-    '../css/pages/sign-up.css?v=1',
+    '../css/pages/sign-up.css?v=5',
     '../css/components/terms-modal.css'
 ];
 $additionalJS = [
-    '../js/hamburger.js'
+    '../js/hamburger.js',
+    '../js/password-validation.js'
 ];
 
 // Include header
@@ -220,15 +221,55 @@ require_once __DIR__ . '/../../includes/header.php';
                         <input type="email" name="email" placeholder="Email" required>
                     </div>
 
-                    <div class="input-group">
+                    <div class="input-group password-input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" name="password" placeholder="Password" required>
+                        <input type="password" id="passwordInput" name="password" placeholder="Password" required>
+                        <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
                     </div>
 
-                    <div class="input-group">
-                        <i class="fas fa-key"></i>
-                        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                    <!-- Password Requirements Modal -->
+                    <div class="password-requirements-modal" id="passwordRequirementsModal">
+                        <div class="password-requirements-header">
+                            <h4>Password Requirements</h4>
+                        </div>
+                        <div class="password-requirements-list">
+                            <div class="requirement-item" id="req-length">
+                                <span class="requirement-icon">✗</span>
+                                <span class="requirement-text">At least 8 characters</span>
+                            </div>
+                            <div class="requirement-item" id="req-uppercase">
+                                <span class="requirement-icon">✗</span>
+                                <span class="requirement-text">One uppercase letter</span>
+                            </div>
+                            <div class="requirement-item" id="req-lowercase">
+                                <span class="requirement-icon">✗</span>
+                                <span class="requirement-text">One lowercase letter</span>
+                            </div>
+                            <div class="requirement-item" id="req-number">
+                                <span class="requirement-icon">✗</span>
+                                <span class="requirement-text">One number</span>
+                            </div>
+                            <div class="requirement-item" id="req-special">
+                                <span class="requirement-icon">✗</span>
+                                <span class="requirement-text">One special character (!@#$%^&*?)</span>
+                            </div>
+                        </div>
+                        <div class="strength-indicator" id="strengthIndicator">
+                            <div class="strength-bar">
+                                <div class="strength-bar-fill" id="strengthBarFill"></div>
+                            </div>
+                            <span class="strength-text" id="strengthText">Strength: Weak</span>
+                        </div>
                     </div>
+
+                    <div class="input-group password-input-group">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Confirm Password" required>
+                        <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
+                    </div>
+
+                    <!-- Password Match Message -->
+                    <div class="password-match-message" id="passwordMatchMessage"></div>
 
                     <div class="form-options">
                         <label class="checkbox-container">
