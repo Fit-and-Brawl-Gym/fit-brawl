@@ -2,7 +2,7 @@
 
 ## System Overview
 
-Fit & Brawl is a comprehensive gym management system built with PHP, MySQL, and deployed on Google Cloud Platform.
+Fit & Brawl is a comprehensive gym management system built with PHP and MySQL.
 
 ---
 
@@ -15,7 +15,7 @@ graph TB
         Mobile[Mobile Browser]
     end
 
-    subgraph "Google Cloud Platform - App Engine"
+    subgraph "Application Server"
         subgraph "Frontend Layer"
             PHP_Frontend[PHP Pages<br/>- Public Pages<br/>- Admin Panel<br/>- Trainer Dashboard]
             StaticAssets[Static Assets<br/>CSS/JS/Images]
@@ -38,7 +38,7 @@ graph TB
             SessionMgr[Session Manager<br/>- Session Handling<br/>- Timeout Management]
             ActivityLog[Activity Logger<br/>- Admin Actions<br/>- Audit Trail]
             EmailService[Email Service<br/>- PHPMailer<br/>- SMTP Configuration]
-            FileUpload[File Upload Handler<br/>- Security Validation<br/>- Cloud Storage Integration]
+            FileUpload[File Upload Handler<br/>- Security Validation<br/>- File Storage]
             RateLimiter[Rate Limiter<br/>- API Protection<br/>- Request Throttling]
         end
 
@@ -49,13 +49,12 @@ graph TB
     end
 
     subgraph "Data Layer"
-        MySQL[(MySQL Database<br/>Cloud SQL<br/>- Users<br/>- Memberships<br/>- Reservations<br/>- Trainers<br/>- Equipment<br/>- Products<br/>- Feedback<br/>- Activity Logs)]
+        MySQL[(MySQL Database<br/>- Users<br/>- Memberships<br/>- Reservations<br/>- Trainers<br/>- Equipment<br/>- Products<br/>- Feedback<br/>- Activity Logs)]
     end
 
     subgraph "External Services"
-        GCS[Google Cloud Storage<br/>- Avatar Uploads<br/>- Receipt Images<br/>- Product Images<br/>- Equipment Images]
+        FileStorage[File Storage<br/>- Avatar Uploads<br/>- Receipt Images<br/>- Product Images<br/>- Equipment Images]
         SMTP[SMTP Server<br/>Gmail<br/>- Email Verification<br/>- Notifications]
-        CloudRun[Cloud Run Service<br/>- Receipt Renderer<br/>- PDF Generation]
     end
 
     Browser --> PHP_Frontend
@@ -107,8 +106,7 @@ graph TB
     Contact --> MySQL
     ActivityLog --> MySQL
 
-    FileUpload --> GCS
-    Receipt --> CloudRun
+    FileUpload --> FileStorage
     EmailService --> SMTP
 
     style Browser fill:#e1f5ff
@@ -116,9 +114,8 @@ graph TB
     style PHP_Frontend fill:#fff4e6
     style StaticAssets fill:#fff4e6
     style MySQL fill:#ffe6e6
-    style GCS fill:#e6ffe6
+    style FileStorage fill:#e6ffe6
     style SMTP fill:#e6ffe6
-    style CloudRun fill:#e6ffe6
 ```
 
 ---
@@ -183,11 +180,10 @@ graph LR
 |-------|-----------|
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
 | **Backend** | PHP 8.1 |
-| **Database** | MySQL (Cloud SQL) |
-| **Cloud Platform** | Google App Engine |
-| **Storage** | Google Cloud Storage |
+| **Database** | MySQL |
+| **Storage** | Local File System |
 | **Email** | PHPMailer + SMTP (Gmail) |
-| **PDF Generation** | Cloud Run Service |
+| **PDF Generation** | Server-side PHP |
 | **Session Management** | PHP Sessions |
 | **Security** | Password Hashing (bcrypt), CSRF Protection, Rate Limiting |
 
@@ -277,7 +273,7 @@ sequenceDiagram
     participant Frontend
     participant FileUpload
     participant Security
-    participant GCS
+    participant FileStorage
     participant Database
 
     User->>Frontend: Upload File (Avatar/Receipt)
@@ -287,8 +283,8 @@ sequenceDiagram
     Security->>Security: Check File Size
     Security->>Security: Scan for Malware
     alt File Valid
-        FileUpload->>GCS: Upload to Cloud Storage
-        GCS-->>FileUpload: File URL
+        FileUpload->>FileStorage: Save File to Storage
+        FileStorage-->>FileUpload: File Path
         FileUpload->>Database: Save File Path
         FileUpload-->>Frontend: Upload Success
         Frontend-->>User: File Uploaded
@@ -296,41 +292,6 @@ sequenceDiagram
         FileUpload-->>Frontend: Error Message
         Frontend-->>User: Upload Failed
     end
-```
-
----
-
-## Deployment Architecture
-
-```mermaid
-graph TB
-    subgraph "Development"
-        LocalDev[Local Development<br/>XAMPP/WAMP<br/>MySQL Local]
-    end
-
-    subgraph "Production - Google Cloud Platform"
-        AppEngine[App Engine<br/>PHP 8.1 Runtime<br/>Auto-scaling]
-        CloudSQL[Cloud SQL<br/>MySQL Instance<br/>High Availability]
-        CloudStorage[Cloud Storage<br/>File Storage<br/>CDN Enabled]
-        CloudRun[Cloud Run<br/>Receipt Renderer<br/>Containerized]
-    end
-
-    subgraph "External Services"
-        Gmail[Gmail SMTP<br/>Email Service]
-        DNS[DNS Provider<br/>Domain Management]
-    end
-
-    LocalDev -.->|Deploy| AppEngine
-    AppEngine --> CloudSQL
-    AppEngine --> CloudStorage
-    AppEngine --> CloudRun
-    AppEngine --> Gmail
-    DNS --> AppEngine
-
-    style AppEngine fill:#4285f4,color:#fff
-    style CloudSQL fill:#4285f4,color:#fff
-    style CloudStorage fill:#4285f4,color:#fff
-    style CloudRun fill:#4285f4,color:#fff
 ```
 
 ---
@@ -384,29 +345,22 @@ graph TB
 
 ---
 
-## Questions for Clarification
+## Additional Information
 
-Before finalizing the diagram, I'd like to confirm:
+### System Requirements
+- PHP 8.1 or higher
+- MySQL 5.7 or higher
+- Web server (Apache/Nginx)
+- SMTP server access for email functionality
 
-1. **External Integrations**: Are there any third-party services (payment gateways, SMS services, etc.) that should be included?
-
-2. **Caching Layer**: Is there any caching mechanism (Redis, Memcached) in use?
-
-3. **CDN**: Is Cloud CDN used for static assets, or are they served directly from App Engine?
-
-4. **Monitoring**: Are there any monitoring/logging services integrated (Cloud Monitoring, Cloud Logging)?
-
-5. **Backup Strategy**: Should database backup/replication strategy be included?
-
-6. **Mobile App**: Is there a native mobile app, or is it web-only?
-
-7. **Load Balancing**: Are there multiple App Engine instances behind a load balancer?
-
-8. **CI/CD**: Is there a CI/CD pipeline (Cloud Build) that should be documented?
+### Development Environment
+- Local development typically uses XAMPP/WAMP
+- MySQL database for local testing
+- File storage on local filesystem
 
 Would you like me to:
 - Add more detail to any specific component?
 - Create separate diagrams for specific flows (e.g., membership approval workflow)?
-- Include infrastructure diagrams (network, security groups)?
-- Add data flow diagrams for specific processes?
+- Include data flow diagrams for specific processes?
+- Document specific business logic workflows?
 
