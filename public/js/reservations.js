@@ -435,19 +435,26 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        trainersGrid.innerHTML = trainers.map(trainer => `
-            <div class="trainer-card ${trainer.status}" 
-                 data-trainer-id="${trainer.id}" 
-                 data-trainer-name="${trainer.name}"
-                 onclick="selectTrainer(${trainer.id}, '${trainer.name}', '${trainer.status}')">
+        trainersGrid.innerHTML = trainers.map(trainer => {
+            // Escape HTML to prevent attribute breaking with quotes
+            const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
+            // Always use account icon for trainer avatars
+            const photoSrc = `../../images/account-icon.svg`;
+            return `
+            <div class="trainer-card ${trainer.status}"
+                 data-trainer-id="${trainer.id}"
+                 data-trainer-name="${escapedName}"
+                 data-trainer-status="${trainer.status}"
+                 onclick="selectTrainer(${trainer.id}, this.dataset.trainerName, this.dataset.trainerStatus)">
                 <span class="trainer-status-badge ${trainer.status}">${trainer.status}</span>
-                <img src="../../uploads/trainers/${trainer.photo || 'default-trainer.jpg'}" 
-                     alt="${trainer.name}" 
+                <img src="${photoSrc}"
+                     alt="${escapedName}"
                      class="trainer-photo">
                 <h3 class="trainer-name">${trainer.name}</h3>
                 <p class="trainer-specialty">${trainer.specialization}</p>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     function updateCapacityInfo(data) {

@@ -120,9 +120,10 @@ $currentPage = "receipt_non_member";
             margin-bottom: var(--spacing-4);
             box-sizing: border-box;
             /* Force exact color rendering for all browsers */
-            -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+
         }
 
         .receipt-header {

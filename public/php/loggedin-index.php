@@ -56,7 +56,7 @@ if (isset($_SESSION['user_id'])) {
     // Check user_memberships table and get full membership details
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT um.*, m.plan_name, m.class_type, m.price
+            SELECT um.*, m.plan_name, m.class_type
             FROM user_memberships um
             JOIN memberships m ON um.plan_id = m.id
             WHERE um.user_id = ?
@@ -139,10 +139,10 @@ if (isset($_SESSION['user_id'])) {
     $weekEnd = date('Y-m-d', strtotime('sunday this week'));
 
     $stmt = $conn->prepare("
-        SELECT COUNT(*) as count 
-        FROM user_reservations 
-        WHERE user_id = ? 
-        AND booking_date BETWEEN ? AND ? 
+        SELECT COUNT(*) as count
+        FROM user_reservations
+        WHERE user_id = ?
+        AND booking_date BETWEEN ? AND ?
         AND booking_status = 'confirmed'
     ");
     if ($stmt) {
@@ -160,10 +160,10 @@ if (isset($_SESSION['user_id'])) {
         SELECT ur.*, t.name as trainer_name, t.photo as trainer_photo
         FROM user_reservations ur
         LEFT JOIN trainers t ON ur.trainer_id = t.id
-        WHERE ur.user_id = ? 
+        WHERE ur.user_id = ?
         AND ur.booking_date >= CURDATE()
         AND ur.booking_status = 'confirmed'
-        ORDER BY ur.booking_date ASC, 
+        ORDER BY ur.booking_date ASC,
                  FIELD(ur.session_time, 'Morning', 'Afternoon', 'Evening')
         LIMIT 3
     ");
@@ -182,7 +182,7 @@ if (isset($_SESSION['user_id'])) {
         SELECT t.name, t.photo, COUNT(*) as booking_count
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
-        WHERE ur.user_id = ? 
+        WHERE ur.user_id = ?
         AND ur.booking_status = 'confirmed'
         GROUP BY ur.trainer_id
         ORDER BY booking_count DESC
