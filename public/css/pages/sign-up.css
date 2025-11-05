@@ -104,13 +104,61 @@
     margin-bottom: 1.5rem;
 }
 
-.input-group i {
+.input-group.password-input-group {
+    position: relative;
+}
+
+.input-group.password-input-group input {
+    width: 100%;
+    padding: var(--spacing-3) 10px var(--spacing-3) 50px;
+    border: 2px solid #ddd;
+    border-radius: var(--radius-2xl);
+    font-size: var(--font-size-base);
+    background: var(--color-text-light);
+    transition: var(--transition-base);
+}
+
+.input-group.password-input-group input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.input-group i:not(.eye-toggle) {
     position: absolute;
     left: var(--spacing-4);
     top: 50%;
     transform: translateY(-50%);
     color: var(--color-text-muted);
     font-size: var(--font-size-lg);
+    pointer-events: none;
+}
+
+/* Eye toggle icon - always visible regardless of eye/eye-slash state */
+.input-group.password-input-group .eye-toggle,
+.input-group.password-input-group .eye-toggle.fa-eye,
+.input-group.password-input-group .eye-toggle.fa-eye-slash {
+    position: absolute;
+    right: var(--spacing-4);
+    left: auto !important;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all 0.2s ease;
+    z-index: 10;
+    pointer-events: auto;
+    opacity: 1 !important;
+    visibility: visible !important;
+    font-size: var(--font-size-lg);
+    display: inline-block !important;
+    width: auto;
+    height: auto;
+    text-align: center;
+    line-height: 1;
+}
+
+.input-group.password-input-group .eye-toggle:hover {
+    color: var(--color-accent);
 }
 
 .input-group input {
@@ -373,7 +421,7 @@
     }
 
     .checkbox-container input {
-        scale: 2.5;
+        scale: 2;
         margin-right: var(--spacing-6);
         margin-left: var(--spacing-4);
     }
@@ -596,16 +644,6 @@
 
 .strength-text.strong {
     color: #28a745;
-}
-
-.eye-toggle {
-    cursor: pointer;
-    color: #999;
-    transition: color 0.2s;
-}
-
-.eye-toggle:hover {
-    color: #333;
 }
 
 .input-group-wrapper {

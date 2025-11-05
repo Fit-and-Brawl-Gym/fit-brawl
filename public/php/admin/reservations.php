@@ -1,6 +1,7 @@
 <?php
 session_start();
 include_once('../../../includes/init.php');
+require_once('../../../includes/config.php');
 require_once('../../../includes/activity_logger.php');
 
 // Check if user is admin
@@ -25,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         if ($booking_id && in_array($new_status, ['confirmed', 'completed', 'cancelled'])) {
             // Get booking details before update (for logging)
             if ($new_status === 'cancelled') {
-                $info_query = "SELECT ur.id, u.username, t.name as trainer_name, ur.class_type, 
+                $info_query = "SELECT ur.id, u.username, t.name as trainer_name, ur.class_type,
                                ur.booking_date as date, ur.session_time
                                FROM user_reservations ur
                                JOIN users u ON ur.user_id = u.id
@@ -90,7 +91,7 @@ $date_to = $_GET['date_to'] ?? '';
 
 // Build query - Updated for V2 schema (no reservations table)
 $query = "
-    SELECT ur.id, ur.user_id, ur.class_type, ur.booking_date as date, 
+    SELECT ur.id, ur.user_id, ur.class_type, ur.booking_date as date,
            ur.session_time, ur.booking_status as status, ur.booked_at,
            u.username, u.email, u.avatar,
            t.id as trainer_id, t.name as trainer_name, t.specialization
@@ -310,12 +311,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                     <td>
                                         <div class="client-info">
                                             <?php
-                                            // Fix avatar path
-                                            $avatar_path = !empty($booking['avatar']) && file_exists("../../uploads/" . $booking['avatar'])
-                                                ? "../../uploads/" . htmlspecialchars($booking['avatar'])
-                                                : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 24 24' fill='%23ddd'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                                            // Fix avatar path - use environment-aware paths
+                                            $default_avatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 24 24' fill='%23ddd'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                                            $avatar_path = !empty($booking['avatar']) ? UPLOADS_PATH . '/avatars/' . htmlspecialchars($booking['avatar']) : $default_avatar;
                                             ?>
-                                            <img src="<?php echo $avatar_path; ?>" alt="Avatar" class="client-avatar">
+                                            <img src="<?php echo $avatar_path; ?>" alt="Avatar" class="client-avatar" onerror="this.src='<?php echo $default_avatar; ?>'">
                                             <div class="client-details">
                                                 <h4><?php echo htmlspecialchars($booking['username']); ?></h4>
                                                 <p><?php echo htmlspecialchars($booking['email']); ?></p>

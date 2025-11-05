@@ -121,3 +121,4 @@ foreach ($filesToFix as $file) {
 echo "\nFixed $fixedCount files.\n";
 echo "Done!\n";
 
+

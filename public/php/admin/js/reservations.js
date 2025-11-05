@@ -60,7 +60,8 @@ document.querySelectorAll('.status-badge').forEach(badge => {
         const dropdown = document.createElement('div');
         dropdown.className = 'status-dropdown';
 
-        ['scheduled', 'completed', 'cancelled'].forEach(status => {
+        // Fixed: Use confirmed instead of scheduled to match database
+        ['confirmed', 'completed', 'cancelled'].forEach(status => {
             if (status !== currentStatus) {
                 const btn = document.createElement('button');
                 btn.textContent = '✓ ' + ucFirst(status);
