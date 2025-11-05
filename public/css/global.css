@@ -14,11 +14,14 @@
 
 :root {
   /* Brand Colors */
-  --color-primary: #002f3f; /* Dark teal from header */
+  --color-primary: #002f3f;
+  /* Dark teal from header */
   --color-primary-light: #2d6b75;
   --color-primary-dark: #0f3238;
-  --color-secondary: #4a7c87; /* Medium teal */
-  --color-accent: #d5ba2b; /* Gold/Yellow from buttons and highlights */
+  --color-secondary: #4a7c87;
+  /* Medium teal */
+  --color-accent: #d5ba2b;
+  /* Gold/Yellow from buttons and highlights */
   --color-accent-hover: #b8941f;
 
   /* Background Colors */
@@ -48,19 +51,32 @@
   --font-family-display: 'zuume-rough-bold', 'Poppins', sans-serif;
 
   /* Font Sizes */
-  --font-size-xs: 0.75rem;     /* 12px */
-  --font-size-sm: 0.875rem;    /* 14px */
-  --font-size-base: 1rem;      /* 16px */
-  --font-size-lg: 1.125rem;    /* 18px */
-  --font-size-xl: 1.25rem;     /* 20px */
-  --font-size-2xl: 1.5rem;     /* 24px */
-  --font-size-3xl: 1.875rem;   /* 30px */
-  --font-size-4xl: 2.25rem;    /* 36px */
-  --font-size-5xl: 3rem;       /* 48px */
-  --font-size-6xl: 4rem;       /* 64px */
-  --font-size-7xl: 5rem;       /* 80px */
-  --font-size-8xl: 6rem;       /* 96px */
-  --font-size-9xl: 8rem;       /* 128px */
+  --font-size-xs: 0.75rem;
+  /* 12px */
+  --font-size-sm: 0.875rem;
+  /* 14px */
+  --font-size-base: 1rem;
+  /* 16px */
+  --font-size-lg: 1.125rem;
+  /* 18px */
+  --font-size-xl: 1.25rem;
+  /* 20px */
+  --font-size-2xl: 1.5rem;
+  /* 24px */
+  --font-size-3xl: 1.875rem;
+  /* 30px */
+  --font-size-4xl: 2.25rem;
+  /* 36px */
+  --font-size-5xl: 3rem;
+  /* 48px */
+  --font-size-6xl: 4rem;
+  /* 64px */
+  --font-size-7xl: 5rem;
+  /* 80px */
+  --font-size-8xl: 6rem;
+  /* 96px */
+  --font-size-9xl: 8rem;
+  /* 128px */
 
 
   /* Font Weights */
@@ -81,19 +97,32 @@
 
   /* Spacing Scale */
   --spacing-0: 0;
-  --spacing-1: 0.25rem;   /* 4px */
-  --spacing-2: 0.5rem;    /* 8px */
-  --spacing-3: 0.75rem;   /* 12px */
-  --spacing-4: 1rem;      /* 16px */
-  --spacing-5: 1.25rem;   /* 20px */
-  --spacing-6: 1.5rem;    /* 24px */
-  --spacing-8: 2rem;      /* 32px */
-  --spacing-10: 2.5rem;   /* 40px */
-  --spacing-12: 3rem;     /* 48px */
-  --spacing-16: 4rem;     /* 64px */
-  --spacing-20: 5rem;     /* 80px */
-  --spacing-24: 6rem;     /* 96px */
-  --spacing-32: 8rem;     /* 128px */
+  --spacing-1: 0.25rem;
+  /* 4px */
+  --spacing-2: 0.5rem;
+  /* 8px */
+  --spacing-3: 0.75rem;
+  /* 12px */
+  --spacing-4: 1rem;
+  /* 16px */
+  --spacing-5: 1.25rem;
+  /* 20px */
+  --spacing-6: 1.5rem;
+  /* 24px */
+  --spacing-8: 2rem;
+  /* 32px */
+  --spacing-10: 2.5rem;
+  /* 40px */
+  --spacing-12: 3rem;
+  /* 48px */
+  --spacing-16: 4rem;
+  /* 64px */
+  --spacing-20: 5rem;
+  /* 80px */
+  --spacing-24: 6rem;
+  /* 96px */
+  --spacing-32: 8rem;
+  /* 128px */
 
   /* Border Radius */
   --radius-none: 0;
@@ -203,13 +232,19 @@ select {
 }
 
 /* Basic Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
   margin-bottom: var(--spacing-4);
 }
 
-h1, h2 {
+h1,
+h2 {
   font-family: var(--font-family-display);
   text-transform: uppercase;
 }
@@ -226,7 +261,8 @@ a {
 }
 
 /* Lists */
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -236,3 +272,112 @@ main {
   min-height: 0;
 }
 
+/* ========================================
+   MODERN UI UTILITIES
+   ======================================== */
+
+/* Glass Card Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-2xl);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: var(--transition-base);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 206, 0, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Gradient Button */
+.gradient-btn {
+  background: linear-gradient(135deg, var(--color-accent) 0%, #ffd700 100%);
+  border: none;
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-3) var(--spacing-6);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-fog);
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: 0 4px 16px rgba(255, 206, 0, 0.3);
+}
+
+.gradient-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 206, 0, 0.4);
+}
+
+/* Section Headers */
+.section-header {
+  text-align: center;
+  margin-bottom: var(--spacing-12);
+}
+
+.section-title {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-black);
+  color: var(--color-white);
+  margin-bottom: var(--spacing-2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.section-subtitle {
+  font-size: var(--font-size-lg);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: var(--font-weight-normal);
+}
+
+/* Container Utilities */
+.container-fluid {
+  width: 100%;
+  padding: 0 var(--spacing-6);
+}
+
+.container-xl {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-6);
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.badge-accent {
+  background: var(--color-accent);
+  color: var(--color-fog);
+}
+
+.badge-success {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+/* Icon Utilities */
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 206, 0, 0.1);
+  border: 1px solid rgba(255, 206, 0, 0.2);
+}
+
+.icon-wrapper i {
+  font-size: var(--font-size-3xl);
+  color: var(--color-accent);
+}

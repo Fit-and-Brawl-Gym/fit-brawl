@@ -94,7 +94,7 @@ if (isset($_SESSION['user_id'])) {
     // If no membership found in user_memberships, check subscriptions table
     if (!$hasActiveMembership && $conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT s.*, m.plan_name, m.class_type, m.price
+            SELECT s.*, m.plan_name, m.class_type
             FROM subscriptions s
             LEFT JOIN memberships m ON s.plan_id = m.id
             WHERE s.user_id = ? AND s.status IN ('Approved','approved')
