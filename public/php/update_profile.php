@@ -12,6 +12,7 @@ if (!isset($_SESSION['email'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = test_input($_POST['username']);
     $email = test_input($_POST['email']);
+    $currentPassword = test_input($_POST['current_password']);
     $newPassword = test_input($_POST['new_password']);
     $confirmPassword = test_input($_POST['confirm_password']);
     $removeAvatar = isset($_POST['remove_avatar']) && $_POST['remove_avatar'] === '1';
@@ -21,11 +22,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validate passwords match if provided
     if (!empty($newPassword)) {
+        // Check if current password is provided
+        if (empty($currentPassword)) {
+            $_SESSION['error'] = "Current password is required to change your password.";
+            header("Location: user_profile.php");
+            exit;
+        }
+
         if ($newPassword !== $confirmPassword) {
             $_SESSION['error'] = "Passwords do not match.";
             header("Location: user_profile.php");
             exit;
         }
+
+        // Get current password hash from database
+        $stmt = $conn->prepare("SELECT password FROM users WHERE email = ?");
+        $stmt->bind_param("s", $currentEmail);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $currentPasswordHash = $row['password'];
+
+            // Verify current password is correct
+            if (!password_verify($currentPassword, $currentPasswordHash)) {
+                $_SESSION['error'] = "Current password is incorrect.";
+                $stmt->close();
+                header("Location: user_profile.php");
+                exit;
+            }
+
+            // Verify if new password matches the current password
+            if (password_verify($newPassword, $currentPasswordHash)) {
+                $_SESSION['error'] = "New password cannot be the same as your current password.";
+                $stmt->close();
+                header("Location: user_profile.php");
+                exit;
+            }
+        }
+        $stmt->close();
     }
 
     // Handle avatar upload or removal

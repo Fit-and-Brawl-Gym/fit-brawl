@@ -249,17 +249,58 @@ require_once __DIR__ . '/../../includes/header.php';
                         required>
                 </div>
 
+                <!-- Current Password (required to change password) -->
+                <div class="form-group password-field full-width" id="currentPasswordGroup" style="display: none;">
+                    <label for="current_password">Current Password (Required to change password)</label>
+                    <input type="password" name="current_password" id="current_password" placeholder="Enter current password">
+                </div>
+
                 <!-- New Password -->
-                <div class="form-group">
+                <div class="form-group password-field new-password">
                     <label for="new_password">New Password (Leave blank to keep current)</label>
-                    <input type="password" name="new_password" id="new_password" placeholder="Enter new password">
+                    <div class="input-group-wrapper">
+                        <input type="password" name="new_password" id="new_password" placeholder="Enter new password">
+                        <div class="password-requirements-modal" id="profilePasswordRequirements" aria-hidden="true">
+                            <div class="password-requirements-header">
+                                <h4>Password Requirements</h4>
+                            </div>
+                            <div class="password-requirements-list">
+                                <div class="requirement-item" data-req="length">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">At least 8 characters</span>
+                                </div>
+                                <div class="requirement-item" data-req="uppercase">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One uppercase letter</span>
+                                </div>
+                                <div class="requirement-item" data-req="lowercase">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One lowercase letter</span>
+                                </div>
+                                <div class="requirement-item" data-req="number">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One number</span>
+                                </div>
+                                <div class="requirement-item" data-req="special">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One special (!@#$%^&*)</span>
+                                </div>
+                                <div class="same-as-current-warning" id="sameAsCurrentWarning">
+                                    ⚠️ Cannot be the same as current password
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Confirm Password -->
-                <div class="form-group">
+                <div class="form-group password-field confirm-password">
                     <label for="confirm_password">Confirm New Password</label>
-                    <input type="password" name="confirm_password" id="confirm_password"
-                        placeholder="Confirm new password">
+                    <div class="input-group-wrapper">
+                        <input type="password" name="confirm_password" id="confirm_password"
+                            placeholder="Confirm new password">
+                        <div class="password-match-message" id="profilePasswordMatch" aria-hidden="true"></div>
+                    </div>
                 </div>
 
                 <!-- Form Actions -->
@@ -277,8 +318,8 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
-    <script src="/public/js/header-dropdown.js"></script>
-    <script src="/public/js/user-profile.js"></script>
+    <script src="../js/header-dropdown.js"></script>
+    <script src="../js/user-profile.js"></script>
 </body>
 
 </html>
