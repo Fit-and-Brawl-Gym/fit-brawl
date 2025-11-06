@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleEditBtn = document.getElementById('toggleEditBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
     const editProfileSection = document.getElementById('editProfileSection');
+    const profileHeader = document.querySelector('.profile-header');
     const avatarInput = document.getElementById('avatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
     const removeAvatarBtn = document.getElementById('removeAvatarBtn');
@@ -19,6 +20,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cancelEditBtn) {
         cancelEditBtn.addEventListener('click', function() {
             editProfileSection.classList.remove('active');
+            // Smoothly return to the top context (profile header) with offset for sticky header
+            const stickyHeader = document.querySelector('header');
+            const offset = stickyHeader ? Math.min(120, stickyHeader.offsetHeight || 0) : 96;
+            if (profileHeader) {
+                const y = profileHeader.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         });
     }
 
