@@ -133,16 +133,19 @@ if (isset($_SESSION['user_id'])) {
         }
     }
 
-    // Get weekly bookings count
-    $weekStart = date('Y-m-d', strtotime('monday this week'));
-    $weekEnd = date('Y-m-d', strtotime('sunday this week'));
+    // Get weekly bookings count (current week: Monday to Sunday)
+    // Calculate the start of the week (Monday)
+    $currentDayOfWeek = date('N'); // 1 (Monday) to 7 (Sunday)
+    $daysSinceMonday = $currentDayOfWeek - 1;
+    $weekStart = date('Y-m-d', strtotime("-{$daysSinceMonday} days"));
+    $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
 
     $stmt = $conn->prepare("
         SELECT COUNT(*) as count 
         FROM user_reservations 
         WHERE user_id = ? 
         AND booking_date BETWEEN ? AND ? 
-        AND booking_status = 'confirmed'
+        AND booking_status IN ('confirmed', 'completed')
     ");
     if ($stmt) {
         $stmt->bind_param("iss", $user_id, $weekStart, $weekEnd);
