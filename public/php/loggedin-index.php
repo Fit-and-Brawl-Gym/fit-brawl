@@ -121,7 +121,6 @@ if (isset($_SESSION['user_id'])) {
                         $activeMembership = [
                             'plan_name' => $row['plan_name'] ?? 'Subscription',
                             'class_type' => $row['class_type'] ?? 'All Classes',
-                            'price' => $row['price'] ?? 0,
                             'end_date' => $endDate,
                             'request_status' => 'approved',
                             'membership_status' => 'active'
@@ -139,10 +138,10 @@ if (isset($_SESSION['user_id'])) {
     $weekEnd = date('Y-m-d', strtotime('sunday this week'));
 
     $stmt = $conn->prepare("
-        SELECT COUNT(*) as count
-        FROM user_reservations
-        WHERE user_id = ?
-        AND booking_date BETWEEN ? AND ?
+        SELECT COUNT(*) as count 
+        FROM user_reservations 
+        WHERE user_id = ? 
+        AND booking_date BETWEEN ? AND ? 
         AND booking_status = 'confirmed'
     ");
     if ($stmt) {
@@ -160,10 +159,10 @@ if (isset($_SESSION['user_id'])) {
         SELECT ur.*, t.name as trainer_name, t.photo as trainer_photo
         FROM user_reservations ur
         LEFT JOIN trainers t ON ur.trainer_id = t.id
-        WHERE ur.user_id = ?
+        WHERE ur.user_id = ? 
         AND ur.booking_date >= CURDATE()
         AND ur.booking_status = 'confirmed'
-        ORDER BY ur.booking_date ASC,
+        ORDER BY ur.booking_date ASC, 
                  FIELD(ur.session_time, 'Morning', 'Afternoon', 'Evening')
         LIMIT 3
     ");
@@ -182,7 +181,7 @@ if (isset($_SESSION['user_id'])) {
         SELECT t.name, t.photo, COUNT(*) as booking_count
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
-        WHERE ur.user_id = ?
+        WHERE ur.user_id = ? 
         AND ur.booking_status = 'confirmed'
         GROUP BY ur.trainer_id
         ORDER BY booking_count DESC
@@ -217,7 +216,7 @@ if (isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
-$additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css?v=" . time()];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
@@ -409,35 +408,6 @@ $sessionHours = [
                     <?php endif; ?>
                 </div>
             </div>
-
-            <!-- Quick Links Card -->
-            <div class="dashboard-card quick-links-card">
-                <div class="card-header">
-                    <h3><i class="fas fa-bolt"></i> Quick Access</h3>
-                </div>
-                <div class="card-body">
-                    <div class="quick-links-grid">
-                        <a href="user_profile.php" class="quick-link">
-                            <i class="fas fa-user-circle"></i>
-                            <span>My Profile</span>
-                        </a>
-                        <a href="equipment.php" class="quick-link">
-                            <i class="fas fa-dumbbell"></i>
-                            <span>Equipment</span>
-                        </a>
-                        <a href="products.php" class="quick-link">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>Shop</span>
-                        </a>
-                        <a href="feedback.php" class="quick-link">
-                            <i class="fas fa-comment-dots"></i>
-                            <span>Feedback</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </main>
-
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
