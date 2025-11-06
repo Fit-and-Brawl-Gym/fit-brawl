@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const inquireBtn = document.getElementById('inquireBtn');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    let currentIndex = 0; // Start at the beginning
+    let currentIndex = 2; // Start at Gladiator card (index 2)
     const totalPlans = planCards.length;
 
     // Check if we're on a smaller/taller screen (portrait mobile)
@@ -28,26 +28,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return window.innerWidth <= 768 && window.innerHeight >= 600;
     }
 
-    function getCardDimensions() {
-        if (planCards.length === 0) return { width: 380, gap: 32 };
-
-        const firstCard = planCards[0];
-        const cardStyle = window.getComputedStyle(firstCard);
-        const viewportStyle = window.getComputedStyle(plansViewport);
-
-        // Get actual card width including margins
-        const cardWidth = firstCard.offsetWidth;
-
-        // Get gap from the viewport
-        const gap = parseInt(viewportStyle.gap) || 32;
-
-        return { width: cardWidth, gap: gap };
-    }
-
+    // Update card positions for overlapping carousel effect
     function updateCarousel() {
         // Skip carousel logic if in stacked view
         if (isStackedView()) {
-            plansViewport.style.transform = 'translateX(0)';
+            // Reset all cards to default positioning for stacked view
+            planCards.forEach((card) => {
+                card.removeAttribute('data-position');
+                card.style.position = 'relative';
+                card.style.transform = 'none';
+                card.style.opacity = '1';
+            });
             prevBtn.style.display = 'none';
             nextBtn.style.display = 'none';
             return;
@@ -57,12 +48,11 @@ document.addEventListener('DOMContentLoaded', function () {
         prevBtn.style.display = 'flex';
         nextBtn.style.display = 'flex';
 
-        // Get current dimensions
-        const { width: cardWidth, gap } = getCardDimensions();
-
-        // Calculate the offset for the current card
-        const offset = -currentIndex * (cardWidth + gap);
-        plansViewport.style.transform = `translateX(${offset}px)`;
+        // Update each card's position relative to current index
+        planCards.forEach((card, index) => {
+            const position = index - currentIndex;
+            card.setAttribute('data-position', position);
+        });
 
         // Update button states
         prevBtn.disabled = currentIndex === 0;
