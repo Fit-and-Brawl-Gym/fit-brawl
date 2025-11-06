@@ -80,7 +80,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <p class="plan-subtitle">MEMBERSHIP IN MUAY THAI</p>
                     <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                     <ul class="plan-features">
-                        <li>Muay Thai Training with Coach Thei</li>
+                        <li>Muay Thai Training with Professional Coaches</li>
                         <li>MMA Area Access</li>
                         <li>Free Orientation and Fitness Assessment</li>
                         <li>Shower Access</li>
@@ -97,8 +97,8 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="price-main">3500 PHP <span>/MONTH</span></div>
                     </div>
                     <ul class="plan-features">
-                        <li>Boxing Training with Coach Rieze</li>
-                        <li>MMA Training with Coach Carlo</li>
+                        <li>Boxing Training with Professional Coaches</li>
+                        <li>MMA Training with Professional Coaches</li>
                         <li>Boxing and MMA Area Access</li>
                         <li>Gym Equipment Access</li>
                         <li>Jakuzzi Access</li>
@@ -113,7 +113,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <p class="plan-subtitle">MEMBERSHIP IN BOXING</p>
                     <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                     <ul class="plan-features">
-                        <li>Boxing Training with Coach Rieze</li>
+                        <li>Boxing Training with Professional Coaches</li>
                         <li>MMA Area Access</li>
                         <li>Free Orientation and Fitness Assessment</li>
                         <li>Shower Access</li>
@@ -127,7 +127,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <p class="plan-subtitle">MEMBERSHIP IN MMA</p>
                     <div class="plan-price">1500 PHP <span>/MONTH</span></div>
                     <ul class="plan-features">
-                        <li>MMA Training with Coach Carlo</li>
+                        <li>MMA Training with Professional Coaches</li>
                         <li>MMA Area Access</li>
                         <li>Free Orientation and Fitness Assessment</li>
                         <li>Shower Access</li>
