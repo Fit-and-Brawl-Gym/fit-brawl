@@ -1,10 +1,37 @@
+body {
+    background-image: url('../../../images/homepage-boxer.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Gradient Overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right,
+            rgba(0, 47, 63, 0.95) 0%,
+            rgba(0, 47, 63, 0.85) 50%,
+            rgba(0, 47, 63, 0.7) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
 .transaction-page {
     min-height: 100vh;
-    background-color: var(--color-bg-dark);
     padding: var(--spacing-20) var(--spacing-8) var(--spacing-16);
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 1;
 }
 
 .transaction-container {
@@ -38,14 +65,20 @@
 
 /* Main Transaction Box */
 .transaction-box {
-    background: rgba(255, 255, 255, 0.03);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 47, 63, 0.7);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 206, 0, 0.15);
     border-radius: var(--radius-3xl);
     padding: var(--spacing-12) var(--spacing-10);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     position: relative;
+    transition: var(--transition-base);
+}
+
+.transaction-box:hover {
+    border-color: rgba(255, 206, 0, 0.25);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
 }
 
 /* Two Column Layout */

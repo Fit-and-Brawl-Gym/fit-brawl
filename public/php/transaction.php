@@ -173,7 +173,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
 $pageTitle = "Transaction - Fit and Brawl";
 $currentPage = "transaction";
-$additionalCSS = ['../css/pages/transaction.css'];
+$additionalCSS = ['../css/pages/transaction.css?v=' . time()];
 $additionalJS = ['../js/transaction.js'];
 ?>
 <script>
