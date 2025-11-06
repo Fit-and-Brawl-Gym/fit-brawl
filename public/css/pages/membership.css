@@ -2,11 +2,37 @@
    MEMBERSHIP PAGE - MODERN DASHBOARD STYLE
    =================================== */
 
-.membership-main {
+body {
     min-height: 100vh;
     background-color: var(--color-bg-dark);
+    background-image: url('../../../images/logged_in-bg.webp');
+    background-repeat: no-repeat;
+    background-position: center right;
+    background-size: cover;
+    background-attachment: fixed;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right,
+            rgba(0, 47, 63, 0.95) 0%,
+            rgba(0, 47, 63, 0.85) 50%,
+            rgba(0, 47, 63, 0.7) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.membership-main {
+    min-height: 100vh;
     padding-bottom: var(--spacing-16);
     position: relative;
+    z-index: 1;
 }
 
 /* ===================================
@@ -86,10 +112,12 @@
    =================================== */
 
 .membership-hero {
-    background: linear-gradient(135deg, rgba(255, 206, 0, 0.1) 0%, rgba(0, 47, 63, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(255, 206, 0, 0.08) 0%, rgba(0, 47, 63, 0.7) 100%);
+    backdrop-filter: blur(10px);
     padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
-    border-bottom: 2px solid rgba(255, 206, 0, 0.1);
+    border-bottom: 2px solid rgba(255, 206, 0, 0.2);
     text-align: center;
+    position: relative;
 }
 
 .hero-title {
@@ -120,26 +148,37 @@
 }
 
 /* ===================================
-   PLANS CAROUSEL SECTION
+   PLANS CAROUSEL SECTION - OVERLAPPING CARDS
    =================================== */
 
 .plans-carousel {
     padding: var(--spacing-16) 0;
     position: relative;
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
+    overflow: visible;
 }
 
 .plans-container {
-    overflow: hidden;
+    overflow: visible;
     padding: 0 var(--spacing-20);
+    position: relative;
+    min-height: 620px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .plans-viewport {
+    position: relative;
+    width: 100%;
+    min-width: 1000px;
+    height: 600px;
     display: flex;
-    gap: var(--spacing-8);
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: var(--spacing-4) 0;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    margin-top: var(--spacing-8);
 }
 
 /* ===================================
@@ -147,25 +186,104 @@
    =================================== */
 
 .plan-card {
-    min-width: 380px;
-    background: rgba(255, 255, 255, 0.03);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: absolute;
+    width: 400px;
+    max-width: 90vw;
+    background: rgba(0, 47, 63, 0.7);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 206, 0, 0.15);
     border-radius: var(--radius-3xl);
     padding: var(--spacing-8);
-    transition: var(--transition-base);
-    position: relative;
-    flex-shrink: 0;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
     flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transform-origin: center center;
+    cursor: pointer;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Center/Active Card */
+.plan-card[data-position="0"] {
+    opacity: 1;
+    z-index: 10;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1);
+}
+
+/* Cards to the left */
+.plan-card[data-position="-1"] {
+    transform: translate(calc(-50% - 320px), -50%) scale(0.9);
+    opacity: 0.5;
+    z-index: 5;
+    pointer-events: none;
+    filter: brightness(0.7) blur(2px);
+}
+
+.plan-card[data-position="-2"] {
+    transform: translate(calc(-50% - 380px), -50%) scale(0.85);
+    opacity: 0.3;
+    z-index: 3;
+    pointer-events: none;
+    filter: brightness(0.5) blur(4px);
+}
+
+.plan-card[data-position^="-"][data-position$="3"],
+.plan-card[data-position^="-"][data-position$="4"],
+.plan-card[data-position^="-"][data-position$="5"],
+.plan-card[data-position^="-"][data-position$="6"],
+.plan-card[data-position^="-"][data-position$="7"],
+.plan-card[data-position^="-"][data-position$="8"] {
+    transform: translate(calc(-50% - 420px), -50%) scale(0.8);
+    opacity: 0.15;
+    z-index: 1;
+    pointer-events: none;
+    filter: brightness(0.4) blur(6px);
+}
+
+/* Cards to the right */
+.plan-card[data-position="1"] {
+    transform: translate(calc(-50% + 320px), -50%) scale(0.9);
+    opacity: 0.5;
+    z-index: 5;
+    pointer-events: none;
+    filter: brightness(0.7) blur(2px);
+}
+
+.plan-card[data-position="2"] {
+    transform: translate(calc(-50% + 380px), -50%) scale(0.85);
+    opacity: 0.3;
+    z-index: 3;
+    pointer-events: none;
+    filter: brightness(0.5) blur(4px);
+}
+
+.plan-card[data-position="3"],
+.plan-card[data-position="4"],
+.plan-card[data-position="5"],
+.plan-card[data-position="6"],
+.plan-card[data-position="7"],
+.plan-card[data-position="8"] {
+    transform: translate(calc(-50% + 420px), -50%) scale(0.8);
+    opacity: 0.15;
+    z-index: 1;
+    pointer-events: none;
+    filter: brightness(0.4) blur(6px);
 }
 
 .plan-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 206, 0, 0.3);
-    transform: translateY(-8px);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* Active card hover (center card) */
+.plan-card[data-position="0"]:hover {
+    transform: translate(-50%, -50%) scale(1.02);
+    border-color: rgba(255, 206, 0, 0.4);
+    background: rgba(0, 47, 63, 0.85);
 }
 
 /* Popular Badge */
@@ -433,8 +551,19 @@
     text-align: center;
     text-transform: uppercase;
     padding: var(--spacing-5) var(--spacing-4);
-    margin: 0 0 var(--spacing-6) 0;
+    margin: 0 0 var(--spacing-2) 0;
     letter-spacing: 2px;
+}
+
+.pricing-subtitle {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-base);
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 var(--spacing-6) 0;
+    font-weight: var(--font-weight-medium);
 }
 
 /* Services Grid Layout */
@@ -810,37 +939,70 @@
     }
 
     .plans-carousel {
-        padding: 0 var(--spacing-16);
-        min-height: 650px;
-    }
-
-    .plan-card {
-        min-width: 280px;
-    }
-
-    .plan-name {
-        font-size: var(--font-size-5xl);
-    }
-
-    .pricing-section {
-        padding: 0 var(--spacing-8);
-    }
-
-    .plans-container {
         padding: var(--spacing-8) 0;
     }
 
+    .plans-container {
+        min-height: 560px;
+        padding: 0 var(--spacing-4);
+    }
+
     .plans-viewport {
-        min-height: 550px;
-        gap: var(--spacing-4);
+        height: 540px;
     }
 
     .plan-card {
-        min-width: 260px;
+        width: 320px;
+    }
+
+    /* Center card on mobile */
+    .plan-card[data-position="0"] {
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+
+    /* Adjust overlapping positions for mobile - closer spacing */
+    .plan-card[data-position="-1"] {
+        transform: translate(calc(-50% - 220px), -50%) scale(0.85);
+        opacity: 0.4;
+        filter: brightness(0.7) blur(3px);
+    }
+
+    .plan-card[data-position="-2"],
+    .plan-card[data-position^="-"][data-position$="3"],
+    .plan-card[data-position^="-"][data-position$="4"],
+    .plan-card[data-position^="-"][data-position$="5"],
+    .plan-card[data-position^="-"][data-position$="6"] {
+        transform: translate(calc(-50% - 260px), -50%) scale(0.75);
+        opacity: 0.2;
+        filter: brightness(0.5) blur(5px);
+    }
+
+    .plan-card[data-position="1"] {
+        transform: translate(calc(-50% + 220px), -50%) scale(0.85);
+        opacity: 0.4;
+        filter: brightness(0.7) blur(3px);
+    }
+
+    .plan-card[data-position="2"],
+    .plan-card[data-position="3"],
+    .plan-card[data-position="4"],
+    .plan-card[data-position="5"],
+    .plan-card[data-position="6"] {
+        transform: translate(calc(-50% + 260px), -50%) scale(0.75);
+        opacity: 0.2;
+        filter: brightness(0.5) blur(5px);
+    }
+
+    .plan-name {
+        font-size: var(--font-size-4xl);
+    }
+
+    .pricing-section {
+        padding: 0 var(--spacing-6);
     }
 
     .plan-price {
-        font-size: var(--font-size-3xl);
+        font-size: var(--font-size-2xl);
     }
 
     .select-btn {

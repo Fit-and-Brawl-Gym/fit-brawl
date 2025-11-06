@@ -44,7 +44,7 @@ body::before {
   backdrop-filter: blur(10px);
   padding: var(--spacing-8) var(--spacing-6);
   border-bottom: 2px solid rgba(255, 206, 0, 0.2);
-  position: relative; 
+  position: relative;
 }
 
 .welcome-content {

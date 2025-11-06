@@ -74,7 +74,19 @@ require_once __DIR__ . '/../../includes/header.php';
 
         <div class="plans-container" id="plansContainer">
             <div class="plans-viewport">
-                <!-- All plans in order -->
+                <!-- All plans in order - Resolution first, Gladiator in center -->
+                <div class="plan-card" data-plan="resolution-regular" data-category="non-member">
+                    <h3 class="plan-name">RESOLUTION</h3>
+                    <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
+                    <div class="plan-price">1000 PHP <span>/MONTH</span></div>
+                    <ul class="plan-features">
+                        <li>Gym Equipment Access with Face Recognition</li>
+                        <li>Shower Access</li>
+                        <li>Locker Access</li>
+                    </ul>
+                    <button class="select-btn">SELECT PLAN</button>
+                </div>
+
                 <div class="plan-card" data-plan="brawler" data-category="member">
                     <h3 class="plan-name">BRAWLER</h3>
                     <p class="plan-subtitle">MEMBERSHIP IN MUAY THAI</p>
@@ -135,18 +147,6 @@ require_once __DIR__ . '/../../includes/header.php';
                     </ul>
                     <button class="select-btn">SELECT PLAN</button>
                 </div>
-
-                <div class="plan-card" data-plan="resolution-regular" data-category="non-member">
-                    <h3 class="plan-name">RESOLUTION</h3>
-                    <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
-                    <div class="plan-price">1000 PHP <span>/MONTH</span></div>
-                    <ul class="plan-features">
-                        <li>Gym Equipment Access with Face Recognition</li>
-                        <li>Shower Access</li>
-                        <li>Locker Access</li>
-                    </ul>
-                    <button class="select-btn">SELECT PLAN</button>
-                </div>
             </div>
         </div>
 
@@ -158,31 +158,13 @@ require_once __DIR__ . '/../../includes/header.php';
     <!-- Pricing Tables -->
     <section class="pricing-section">
         <div class="pricing-header" id="pricingHeader">
-            <h2 class="pricing-title">MEMBER ADDITIONAL SERVICES</h2>
+            <h2 class="pricing-title">TRAIN FOR A DAY</h2>
+            <p class="pricing-subtitle">Single Day Passes</p>
         </div>
 
         <!-- Members Services -->
         <div class="services-grid-container active" id="memberTable">
             <div class="services-grid">
-                <div class="service-card" data-price="90 PHP" data-service="Day Pass: Gym Access"
-                    data-benefits="Full-day access to all gym facilities and equipment, including the weight room, cardio machines, and functional training areas. Perfect for a one-off workout or for travelers.">
-                    <div class="service-price">90 PHP</div>
-                    <div class="service-name">Day Pass: Gym Access</div>
-                    <div class="service-benefits">Full-day access to all gym facilities and equipment, including the
-                        weight room, cardio machines, and functional training areas. Perfect for a one-off workout or
-                        for travelers.</div>
-                    <button class="service-select-btn">SELECT SERVICE</button>
-                </div>
-
-                <div class="service-card" data-price="70 PHP" data-service="Day Pass: Student Access"
-                    data-benefits="Discounted full-day access to all gym facilities (weight room, cardio, etc.). Must present a valid student ID upon entry.">
-                    <div class="service-price">70 PHP</div>
-                    <div class="service-name">Day Pass: Student Access</div>
-                    <div class="service-benefits">Discounted full-day access to all gym facilities (weight room, cardio,
-                        etc.). Must present a valid student ID upon entry.</div>
-                    <button class="service-select-btn">SELECT SERVICE</button>
-                </div>
-
                 <div class="service-card" data-price="350 PHP" data-service="Training: Boxing"
                     data-benefits="Full-day access to boxing area. Focused on footwork, defense, and power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight strategies.">
                     <div class="service-price">350 PHP</div>
