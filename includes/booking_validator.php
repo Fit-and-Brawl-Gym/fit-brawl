@@ -162,18 +162,24 @@ class BookingValidator
      */
     public function validateWeeklyLimit($user_id, $booking_date)
     {
-        // Calculate 7-day rolling window
-        $window_start = date('Y-m-d', strtotime($booking_date . ' -6 days'));
-        $window_end = $booking_date;
+        // Calculate week boundaries (Sunday to Saturday) for the booking date
+        $booking_timestamp = strtotime($booking_date);
+        $day_of_week = date('w', $booking_timestamp); // 0 (Sunday) to 6 (Saturday)
+
+        // Calculate Sunday of the week
+        $week_start = date('Y-m-d', strtotime($booking_date . ' -' . $day_of_week . ' days'));
+
+        // Calculate Saturday of the week
+        $week_end = date('Y-m-d', strtotime($week_start . ' +6 days'));
 
         $stmt = $this->conn->prepare("
             SELECT COUNT(*) as booking_count
             FROM user_reservations 
             WHERE user_id = ? 
             AND booking_date BETWEEN ? AND ?
-            AND booking_status IN ('confirmed', 'completed', 'cancelled')
+            AND booking_status IN ('confirmed', 'completed')
         ");
-        $stmt->bind_param("iss", $user_id, $window_start, $window_end);
+        $stmt->bind_param("iss", $user_id, $week_start, $week_end);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
@@ -182,19 +188,23 @@ class BookingValidator
         $booking_count = (int) $row['booking_count'];
 
         if ($booking_count >= 12) {
+            $week_start_formatted = date('M j', strtotime($week_start));
+            $week_end_formatted = date('M j', strtotime($week_end));
             return [
                 'valid' => false,
-                'message' => 'You have reached the maximum of 12 bookings per week',
+                'message' => "You have reached the maximum of 12 bookings for the week of {$week_start_formatted} - {$week_end_formatted}",
                 'count' => $booking_count,
-                'window_start' => $window_start,
-                'window_end' => $window_end
+                'week_start' => $week_start,
+                'week_end' => $week_end
             ];
         }
 
         return [
             'valid' => true,
             'count' => $booking_count,
-            'remaining' => 12 - $booking_count
+            'remaining' => 12 - $booking_count,
+            'week_start' => $week_start,
+            'week_end' => $week_end
         ];
     }
 
@@ -306,8 +316,8 @@ class BookingValidator
         // Get session start time based on session_time
         $session_starts = [
             'Morning' => '07:00:00',
-            'Afternoon' => '13:00:00',
-            'Evening' => '18:00:00'
+            'Afternoon' => '12:00:00',
+            'Evening' => '17:00:00'
         ];
 
         $session_datetime = $booking['booking_date'] . ' ' . $session_starts[$booking['session_time']];
@@ -315,10 +325,10 @@ class BookingValidator
         $now_timestamp = time();
         $hours_until_session = ($session_timestamp - $now_timestamp) / 3600;
 
-        if ($hours_until_session < 24) {
+        if ($hours_until_session < 12) {
             return [
                 'valid' => false,
-                'message' => 'Cancellations must be made at least 24 hours before the session',
+                'message' => 'Cancellations must be made at least 12 hours before the session',
                 'hours_remaining' => round($hours_until_session, 1)
             ];
         }

@@ -85,18 +85,21 @@ try {
     }
     $stmt->close();
 
-    // Calculate weekly bookings (rolling 7-day window from today)
-    $window_start = date('Y-m-d', strtotime('-6 days'));
-    $window_end = date('Y-m-d');
+    // Calculate weekly bookings (current week: Monday to Sunday)
+    // Get the start of the week (Monday)
+    $current_day_of_week = date('N'); // 1 (Monday) to 7 (Sunday)
+    $days_since_monday = $current_day_of_week - 1;
+    $week_start = date('Y-m-d', strtotime("-{$days_since_monday} days"));
+    $week_end = date('Y-m-d', strtotime($week_start . ' +6 days'));
 
     $weekly_stmt = $conn->prepare("
         SELECT COUNT(*) as booking_count
         FROM user_reservations 
         WHERE user_id = ? 
         AND booking_date BETWEEN ? AND ?
-        AND booking_status IN ('confirmed', 'completed', 'cancelled')
+        AND booking_status IN ('confirmed', 'completed')
     ");
-    $weekly_stmt->bind_param("iss", $user_id, $window_start, $window_end);
+    $weekly_stmt->bind_param("iss", $user_id, $week_start, $week_end);
     $weekly_stmt->execute();
     $weekly_result = $weekly_stmt->get_result();
     $weekly_row = $weekly_result->fetch_assoc();
