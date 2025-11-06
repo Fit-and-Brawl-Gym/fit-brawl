@@ -123,29 +123,7 @@ $user = $stmt->get_result()->fetch_assoc();
 $membershipPlan = isset($row['plan_name']) ? $row['plan_name'] : "N/A";
 $nextPayment = isset($endDate) ? date('F j, Y', strtotime($endDate)) : "N/A";
 
-// Calculate gym streak (number of consecutive days with activity)
-$gymStreak = 0;
-$streakQuery = $conn->prepare("SELECT activity_date FROM training_sessions WHERE user_id = ? ORDER BY activity_date DESC LIMIT 7");
-if ($streakQuery) {
-    $streakQuery->bind_param("i", $user_id);
-    $streakQuery->execute();
-    $streakResult = $streakQuery->get_result();
-    $dates = [];
-    while ($row = $streakResult->fetch_assoc()) {
-        $dates[] = $row['activity_date'];
-    }
-    // Simple streak calculation
-    $expected = date('Y-m-d');
-    foreach ($dates as $date) {
-        if ($date === $expected) {
-            $gymStreak++;
-            $expected = date('Y-m-d', strtotime($expected . ' -1 day'));
-        } else {
-            break;
-        }
-    }
-    $streakQuery->close();
-}
+// Removed gym streak calculation per request
 
 // Fetch last training session
 $lastTrainingDate = $lastTrainingType = $lastTrainerName = "N/A";
@@ -211,12 +189,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <span class="info-label">Next Payment</span>
                     <span class="info-value"><?= htmlspecialchars($nextPayment) ?></span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Gym Streak</span>
-                    <span class="info-value highlight">
-                        <i class="fas fa-fire"></i> <?= $gymStreak ?> Days
-                    </span>
-                </div>
+
             </section>
 
             <!-- Recent Activity -->
