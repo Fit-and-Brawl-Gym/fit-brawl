@@ -79,8 +79,8 @@ if ($hasActiveMembership && $currentPlanKey && $plan === $currentPlanKey) {
 $plans = [
     'brawler' => [
         'name' => 'BRAWLER PLAN',
-        'monthly' => 1500,
-        'yearly' => 15000,
+        'monthly' => 11500,
+        'yearly' => 138000,
         'has_discount' => false,
         'benefits' => [
             'Muay Thai Training with Professional Coaches',
@@ -92,8 +92,8 @@ $plans = [
     ],
     'gladiator' => [
         'name' => 'GLADIATOR PLAN',
-        'monthly' => 3500,
-        'yearly' => 35000,
+        'monthly' => 14500,
+        'yearly' => 174000,
         'has_discount' => true,
         'benefits' => [
             'Boxing Training with Professional Coaches',
@@ -107,8 +107,8 @@ $plans = [
     ],
     'champion' => [
         'name' => 'CHAMPION PLAN',
-        'monthly' => 1500,
-        'yearly' => 15000,
+        'monthly' => 7000,
+        'yearly' => 84000,
         'has_discount' => false,
         'benefits' => [
             'Boxing Training with Professional Coaches',
@@ -120,8 +120,8 @@ $plans = [
     ],
     'clash' => [
         'name' => 'CLASH PLAN',
-        'monthly' => 1500,
-        'yearly' => 15000,
+        'monthly' => 13500,
+        'yearly' => 162000,
         'has_discount' => false,
         'benefits' => [
             'MMA Training with Professional Coaches',
@@ -133,8 +133,8 @@ $plans = [
     ],
     'resolution-regular' => [
         'name' => 'RESOLUTION PLAN',
-        'monthly' => 1000,
-        'yearly' => 10000,
+        'monthly' => 2200,
+        'yearly' => 26400,
         'has_discount' => false,
         'benefits' => [
             'Gym Equipment Access with Face Recognition',
@@ -173,7 +173,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 
 $pageTitle = "Transaction - Fit and Brawl";
 $currentPage = "transaction";
-$additionalCSS = ['../css/pages/transaction.css'];
+$additionalCSS = ['../css/pages/transaction.css?v=' . time()];
 $additionalJS = ['../js/transaction.js'];
 ?>
 <script>
