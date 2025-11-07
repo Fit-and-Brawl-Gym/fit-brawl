@@ -32,6 +32,7 @@ body::before {
     min-height: 100vh;
     padding-bottom: var(--spacing-16);
     position: relative;
+    z-index: 1;
 }
 
 /* ===================================
@@ -423,7 +424,6 @@ body::before {
     font-size: var(--font-size-lg);
     color: rgba(255, 255, 255, 0.5);
     font-weight: var(--font-weight-medium);
-    -webkit-text-fill-color: rgba(0, 0, 0, 0.7);
 }
 
 .plan-features {

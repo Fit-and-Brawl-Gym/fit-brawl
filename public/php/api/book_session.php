@@ -111,8 +111,8 @@ try {
 
         $count_stmt = $conn->prepare("
             SELECT COUNT(*) as booking_count
-            FROM user_reservations
-            WHERE user_id = ?
+            FROM user_reservations 
+            WHERE user_id = ? 
             AND booking_date BETWEEN ? AND ?
             AND booking_status IN ('confirmed', 'completed')
         ");

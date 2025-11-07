@@ -319,8 +319,8 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
-    <script src="/public/js/header-dropdown.js"></script>
-    <script src="/public/js/user-profile.js"></script>
+    <script src="../js/header-dropdown.js"></script>
+    <script src="../js/user-profile.js"></script>
 </body>
 
 </html>

@@ -17,7 +17,8 @@ include_once __DIR__ . '/email_template.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-function sendOTPEmail($email, $otp) {
+function sendOTPEmail($email, $otp)
+{
     $mail = new PHPMailer(true);
 
     try {
@@ -30,8 +31,8 @@ function sendOTPEmail($email, $otp) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = getenv('EMAIL_PORT');
 
-    // Recipients
-    $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl'); // Use same email as Username
+        // Recipients
+        $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl'); // Use same email as Username
         $mail->addAddress($email);
 
         // Content
@@ -49,7 +50,8 @@ function sendOTPEmail($email, $otp) {
     }
 }
 
-function sendTrainerCredentialsEmail($email, $name, $username, $password) {
+function sendTrainerCredentialsEmail($email, $name, $username, $password)
+{
     $mail = new PHPMailer(true);
 
     try {
