@@ -137,18 +137,18 @@ function sendContactReply($email, $subject, $replyMessage, $originalMessage = ''
         // Build the inner HTML content for the email template
         $innerHtml = '<p>Hello,</p>';
         $innerHtml .= '<p>Thank you for contacting Fit & Brawl Gym. Here is our response to your inquiry:</p>';
-        
+
         $innerHtml .= '<div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #d5ba2b; margin: 20px 0; border-radius: 4px;">';
         $innerHtml .= nl2br(htmlspecialchars($replyMessage));
         $innerHtml .= '</div>';
-        
+
         if ($originalMessage) {
             $innerHtml .= '<div style="background: #f0f0f0; padding: 15px; margin-top: 20px; border-radius: 4px; font-size: 0.9em;">';
             $innerHtml .= '<strong>Your Original Message:</strong><br>';
             $innerHtml .= nl2br(htmlspecialchars($originalMessage));
             $innerHtml .= '</div>';
         }
-        
+
         $innerHtml .= '<div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">';
         $innerHtml .= '<p><strong>Best regards,</strong><br>Fit & Brawl Gym Team</p>';
         $innerHtml .= '<p style="font-size: 0.9em; color: #666;">';

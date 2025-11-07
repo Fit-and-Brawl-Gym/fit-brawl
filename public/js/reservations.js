@@ -957,7 +957,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="trainer-status-badge ${trainer.status}">${trainer.status}</span>
                 <img src="${photoSrc}"
                      alt="${escapedName}"
-                     class="trainer-photo">
+                     class="trainer-photo default-icon"
+                     onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
                 <h3 class="trainer-name">${trainer.name}</h3>
                 <p class="trainer-specialty">${trainer.specialization}</p>
             </div>
