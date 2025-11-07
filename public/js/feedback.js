@@ -122,15 +122,18 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             return `
-                <div class="feedback-card ${cardClass}">
-                    ${cardClass === 'left' ? `<img src="${avatar}" alt="${item.username}" class="${defaultIconClass}">` : ''}
+                <div class="feedback-card">
                     <div class="bubble">
-                        <h3>${item.username}</h3>
+                        <div class="bubble-header">
+                            <img src="${avatar}" alt="${item.username}" class="${defaultIconClass}" onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
+                            <div>
+                                <h3>${item.username}</h3>
+                                <span class="feedback-date">${formattedDate}</span>
+                            </div>
+                        </div>
                         <p>${item.message}</p>
-                        <span class="feedback-date">${formattedDate}</span>
                         ${votingHTML}
                     </div>
-                    ${cardClass === 'right' ? `<img src="${avatar}" alt="${item.username}" class="${defaultIconClass}">` : ''}
                 </div>
             `;
         }).join('');
@@ -252,4 +255,166 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // ==========================
+    // Feedback Modal Functionality
+    // ==========================
+
+    const feedbackModal = document.getElementById('feedbackModal');
+    const openModalBtn = document.getElementById('openFeedbackModal');
+    const closeModalBtn = document.getElementById('closeFeedbackModal');
+    const cancelBtn = document.getElementById('cancelFeedback');
+    const feedbackForm = document.getElementById('feedbackSubmitForm');
+    const messageTextarea = document.getElementById('feedbackMessage');
+    const charCountSpan = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitFeedback');
+    const successModal = document.getElementById('successModal');
+    const closeSuccessBtn = document.getElementById('closeSuccessModal');
+
+    // Open modal
+    if (openModalBtn) {
+        openModalBtn.addEventListener('click', function() {
+            feedbackModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+            messageTextarea.focus();
+        });
+    }
+
+    // Close modal function
+    function closeFeedbackModal() {
+        feedbackModal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scroll
+        feedbackForm.reset();
+        if (charCountSpan) charCountSpan.textContent = '0';
+    }
+
+    // Close modal events
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeFeedbackModal);
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeFeedbackModal);
+    }
+
+    // Close on outside click
+    feedbackModal.addEventListener('click', function(e) {
+        if (e.target === feedbackModal) {
+            closeFeedbackModal();
+        }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && feedbackModal.classList.contains('active')) {
+            closeFeedbackModal();
+        }
+    });
+
+    // Character counter
+    if (messageTextarea && charCountSpan) {
+        messageTextarea.addEventListener('input', function() {
+            const count = this.value.length;
+            charCountSpan.textContent = count;
+
+            // Visual feedback for max length
+            if (count > 900) {
+                charCountSpan.style.color = '#ff6b6b';
+            } else {
+                charCountSpan.style.color = '';
+            }
+        });
+    }
+
+    // Form submission
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(feedbackForm);
+            const data = {
+                message: formData.get('message'),
+                name: formData.get('name') || '',
+                email: formData.get('email') || ''
+            };
+
+            // Validate message
+            if (!data.message || data.message.trim().length === 0) {
+                alert('Please enter your feedback message.');
+                return;
+            }
+
+            if (data.message.length > 1000) {
+                alert('Message exceeds maximum length of 1000 characters.');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+            // Submit feedback
+            fetch('api/submit_feedback.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    // Close feedback modal
+                    closeFeedbackModal();
+
+                    // Show success modal
+                    showSuccessModal();
+
+                    // Reload feedback to show new submission
+                    setTimeout(() => {
+                        loadFeedback();
+                    }, 500);
+                } else {
+                    throw new Error(result.message || 'Failed to submit feedback');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting feedback:', error);
+                alert(error.message || 'An error occurred while submitting your feedback. Please try again.');
+            })
+            .finally(() => {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+            });
+        });
+    }
+
+    // Show success modal
+    function showSuccessModal() {
+        successModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Auto close after 3 seconds
+        setTimeout(() => {
+            closeSuccessModal();
+        }, 3000);
+    }
+
+    // Close success modal
+    function closeSuccessModal() {
+        successModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (closeSuccessBtn) {
+        closeSuccessBtn.addEventListener('click', closeSuccessModal);
+    }
+
+    // Close success modal on outside click
+    successModal.addEventListener('click', function(e) {
+        if (e.target === successModal) {
+            closeSuccessModal();
+        }
+    });
 });
