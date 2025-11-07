@@ -78,8 +78,8 @@ try {
     try {
         // Insert booking
         $insert_stmt = $conn->prepare("
-            INSERT INTO user_reservations 
-            (user_id, trainer_id, session_time, class_type, booking_date, booking_status) 
+            INSERT INTO user_reservations
+            (user_id, trainer_id, session_time, class_type, booking_date, booking_status)
             VALUES (?, ?, ?, ?, ?, 'confirmed')
         ");
         $insert_stmt->bind_param("iisss", $user_id, $trainer_id, $session_time, $class_type, $booking_date);

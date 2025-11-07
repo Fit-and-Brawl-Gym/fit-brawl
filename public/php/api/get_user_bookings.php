@@ -17,7 +17,7 @@ $user_id = $_SESSION['user_id'];
 try {
     // Get all user bookings
     $stmt = $conn->prepare("
-        SELECT 
+        SELECT
             ur.id AS booking_id,
             ur.trainer_id,
             t.name AS trainer_name,
@@ -28,12 +28,12 @@ try {
             ur.booking_status,
             ur.booked_at,
             ur.cancelled_at,
-            CASE 
+            CASE
                 WHEN ur.session_time = 'Morning' THEN '7-11 AM'
                 WHEN ur.session_time = 'Afternoon' THEN '1-5 PM'
                 WHEN ur.session_time = 'Evening' THEN '6-10 PM'
             END AS session_hours,
-            CASE 
+            CASE
                 WHEN ur.booking_date < CURDATE() THEN 'past'
                 WHEN ur.booking_date = CURDATE() THEN 'today'
                 ELSE 'upcoming'
@@ -94,8 +94,8 @@ try {
 
     $weekly_stmt = $conn->prepare("
         SELECT COUNT(*) as booking_count
-        FROM user_reservations 
-        WHERE user_id = ? 
+        FROM user_reservations
+        WHERE user_id = ?
         AND booking_date BETWEEN ? AND ?
         AND booking_status IN ('confirmed', 'completed')
     ");

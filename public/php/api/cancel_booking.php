@@ -47,7 +47,7 @@ try {
 
     // Get booking details before cancellation
     $stmt = $conn->prepare("
-        SELECT 
+        SELECT
             ur.user_id,
             ur.trainer_id,
             ur.session_time,
@@ -78,7 +78,7 @@ try {
     try {
         // Update booking status
         $update_stmt = $conn->prepare("
-            UPDATE user_reservations 
+            UPDATE user_reservations
             SET booking_status = 'cancelled',
                 cancelled_at = NOW()
             WHERE id = ? AND user_id = ?

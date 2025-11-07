@@ -49,7 +49,7 @@ try {
             ON t.id = tdo.trainer_id
            AND tdo.day_of_week = DAYNAME(r.date)
            AND tdo.is_day_off = 1
-        WHERE YEAR(r.date) = ?  q
+        WHERE YEAR(r.date) = ?
           AND MONTH(r.date) = ?
           AND r.status = 'available'
           AND tdo.id IS NULL

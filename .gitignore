@@ -14,7 +14,7 @@ node_modules/
 server-renderer/node_modules/
 server-renderer/.cache/
 
-# Uploads 
+# Uploads
 uploads/avatars/*
 uploads/equipment/*
 uploads/products/*
@@ -42,3 +42,6 @@ desktop.ini
 *.sqlite
 *.db
 
+.env
+.env
+.env

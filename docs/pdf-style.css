@@ -1,0 +1,212 @@
+/* PDF Styling for Sorting Algorithms Documentation */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14pt;
+    line-height: 1.8;
+    color: #333;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+/* Headings */
+h1 {
+    font-size: 32pt;
+    color: #1a1a1a;
+    border-bottom: 4px solid #4CAF50;
+    padding-bottom: 15px;
+    margin-top: 30px;
+    margin-bottom: 25px;
+}
+
+h2 {
+    font-size: 24pt;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-top: 35px;
+    margin-bottom: 20px;
+    page-break-after: avoid;
+}
+
+h3 {
+    font-size: 18pt;
+    color: #34495e;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    page-break-after: avoid;
+}
+
+h4 {
+    font-size: 15pt;
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+/* Paragraphs */
+p {
+    font-size: 14pt;
+    line-height: 1.8;
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+/* Lists */
+ul, ol {
+    font-size: 14pt;
+    line-height: 1.8;
+    margin-left: 25px;
+    margin-bottom: 20px;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+/* Code blocks */
+pre {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-left: 4px solid #4CAF50;
+    padding: 20px;
+    font-size: 12pt;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+code {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #f5f5f5;
+    padding: 3px 8px;
+    font-size: 13pt;
+    border-radius: 3px;
+    color: #c7254e;
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+    color: #333;
+    font-size: 12pt;
+}
+
+/* Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 25px 0;
+    font-size: 13pt;
+    page-break-inside: avoid;
+}
+
+thead {
+    background-color: #4CAF50;
+    color: white;
+}
+
+th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14pt;
+    border: 1px solid #ddd;
+}
+
+td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    line-height: 1.6;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 5px solid #3498db;
+    background-color: #f0f8ff;
+    padding: 15px 20px;
+    margin: 20px 0;
+    font-size: 14pt;
+    font-style: italic;
+}
+
+/* Strong/Bold text */
+strong, b {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* Emphasis/Italic */
+em, i {
+    font-style: italic;
+    color: #555;
+}
+
+/* Links */
+a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Horizontal rules */
+hr {
+    border: none;
+    border-top: 2px solid #ddd;
+    margin: 30px 0;
+}
+
+/* Special sections */
+.intro {
+    background-color: #e8f5e9;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+/* Page breaks */
+.page-break {
+    page-break-before: always;
+}
+
+/* Prevent orphans and widows */
+p, li {
+    orphans: 3;
+    widows: 3;
+}
+
+h1, h2, h3, h4 {
+    page-break-after: avoid;
+}
+
+/* Footer styling */
+footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 2px solid #ddd;
+    font-size: 12pt;
+    color: #777;
+    text-align: center;
+}
+
+/* Adjust spacing for better readability */
+section {
+    margin-bottom: 40px;
+}
+
+/* ASCII art and pre-formatted text boxes */
+pre:not([class*="language-"]) {
+    background-color: #fafafa;
+    border: 2px solid #e0e0e0;
+}
