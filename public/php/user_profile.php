@@ -253,6 +253,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 <div class="form-group password-field full-width" id="currentPasswordGroup" style="display: none;">
                     <label for="current_password">Current Password (Required to change password)</label>
                     <input type="password" name="current_password" id="current_password" placeholder="Enter current password">
+                    <div class="current-password-warning" id="currentPasswordWarning" aria-live="polite"></div>
                 </div>
 
                 <!-- New Password -->

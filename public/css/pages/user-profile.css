@@ -43,9 +43,9 @@ body::before {
 	right: 0;
 	bottom: 0;
 	background: linear-gradient(to right,
-		rgba(0, 47, 63, 0.80) 0%,
-		rgba(0, 47, 63, 0.60) 50%,
-		rgba(0, 47, 63, 0.40) 100%);
+		rgba(0, 47, 63, 0.50) 0%,
+		rgba(0, 47, 63, 0.40) 50%,
+		rgba(0, 47, 63, 0.30) 100%);
 	z-index: 0;
 	pointer-events: none;
 }
@@ -727,6 +727,24 @@ body::before {
 .btn-cancel:focus-visible {
 	outline: none;
 	box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25), 0 6px 18px rgba(0,0,0,0.35);
+}
+
+/* Inline warning beneath current password field */
+.current-password-warning {
+	display: none;
+	margin-top: var(--spacing-2);
+	padding: 10px 12px;
+	border-radius: var(--radius-md);
+	font-size: var(--font-size-sm);
+	background-color: rgba(220, 53, 69, 0.12);
+	color: #dc3545;
+	border: 1px solid rgba(220, 53, 69, 0.35);
+	font-weight: var(--font-weight-semibold);
+	text-align: left;
+}
+
+.current-password-warning.show {
+	display: block;
 }
 
 @media (max-width: 768px) {
