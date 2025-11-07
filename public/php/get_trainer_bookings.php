@@ -24,13 +24,12 @@ $start_date = "$year-" . str_pad($month, 2, '0', STR_PAD_LEFT) . "-01";
 $end_date = date("Y-m-t", strtotime($start_date));
 
 $query = "
-    SELECT DISTINCT DATE(r.date) as booking_date
-    FROM user_reservations ur
-    JOIN reservations r ON ur.reservation_id = r.id
-    WHERE r.trainer_id = ?
-    AND r.date BETWEEN ? AND ?
-    AND ur.booking_status != 'cancelled'
-    ORDER BY r.date
+    SELECT DISTINCT DATE(reservation_date) as booking_date
+    FROM reservations
+    WHERE trainer_id = ?
+    AND reservation_date BETWEEN ? AND ?
+    AND booking_status = 'confirmed'
+    ORDER BY reservation_date
 ";
 
 $stmt = $conn->prepare($query);

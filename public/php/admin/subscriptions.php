@@ -6,6 +6,9 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
   header("Location: ../login.php");
   exit();
 }
+
+// Load environment config for paths
+require_once '../../../includes/config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,6 +105,10 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
     </div>
   </div>
 
+  <script>
+    // Pass PHP environment paths to JavaScript
+    window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
+  </script>
   <script src="js/sidebar.js"></script>
   <script src="js/subscriptions.js"></script>
 </body>

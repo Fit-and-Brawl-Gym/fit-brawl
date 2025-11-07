@@ -16,7 +16,7 @@
             uppercase: /[A-Z]/,
             lowercase: /[a-z]/,
             number: /[0-9]/,
-            special: /[!@#$%^&*]/
+            special: /[!@#$%^&*?]/
         };
 
         // Requirement elements
@@ -130,6 +130,14 @@
         // Event listeners
         if (passwordInput && passwordRequirementsModal) {
             passwordInput.addEventListener('input', (e) => {
+                // Toggle has-value class on parent
+                const parentGroup = passwordInput.closest('.password-input-group');
+                if (e.target.value.length > 0) {
+                    if (parentGroup) parentGroup.classList.add('has-value');
+                } else {
+                    if (parentGroup) parentGroup.classList.remove('has-value');
+                }
+
                 // Show modal only when user types (has content)
                 if (e.target.value.length > 0) {
                     passwordRequirementsModal.classList.add('show');
@@ -164,6 +172,18 @@
         }
 
         if (confirmPasswordInput && passwordRequirementsModal) {
+            confirmPasswordInput.addEventListener('input', (e) => {
+                // Toggle has-value class on parent
+                const parentGroup = confirmPasswordInput.closest('.password-input-group');
+                if (e.target.value.length > 0) {
+                    if (parentGroup) parentGroup.classList.add('has-value');
+                } else {
+                    if (parentGroup) parentGroup.classList.remove('has-value');
+                }
+
+                checkPasswordMatch();
+            });
+
             confirmPasswordInput.addEventListener('focus', () => {
                 // Show modal if password field has content
                 if (passwordInput && passwordInput.value.length > 0) {
@@ -179,8 +199,6 @@
                     }
                 }, 150);
             });
-
-            confirmPasswordInput.addEventListener('input', checkPasswordMatch);
         }
 
         // Toggle password visibility
