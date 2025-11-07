@@ -289,6 +289,26 @@
     outline: none;
 }
 
+/* Hide browser-native password reveal UI so only our custom eye icon is visible */
+.input-group.password-input-group input {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Edge / IE built-in reveal and clear */
+.input-group.password-input-group input::-ms-reveal,
+.input-group.password-input-group input::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Chromium/WebKit built-in decoration (attempt to hide native reveal button) */
+.input-group.password-input-group input::-webkit-textfield-decoration-container,
+.input-group.password-input-group input::-webkit-textfield-decoration-button {
+    display: none !important;
+}
+
 .form-options {
     display: flex;
     justify-content: flex-start;
