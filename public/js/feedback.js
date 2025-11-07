@@ -1,5 +1,5 @@
 // Feedback page with filtering and voting system
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('feedback-section');
     const searchInput = document.getElementById('searchInput');
     const planFilter = document.getElementById('planFilter');
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadFeedback();
 
     // Event listeners for filters
-    searchInput.addEventListener('input', function() {
+    searchInput.addEventListener('input', function () {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             loadFeedback();
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const voteButtons = container.querySelectorAll('.vote-btn');
 
         voteButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const feedbackId = this.getAttribute('data-feedback-id');
                 const voteType = this.getAttribute('data-vote-type');
                 const isActive = this.classList.contains('active');
@@ -176,23 +176,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 vote_type: voteType
             })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update UI
-                updateVoteUI(feedbackId, data);
-            } else {
-                alert(data.message || 'Failed to record vote');
-            }
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    updateVoteUI(feedbackId, data);
+                } else {
+                    alert(data.message || 'Failed to record vote');
+                }
 
-            // Re-enable buttons
-            allButtons.forEach(btn => btn.disabled = false);
-        })
-        .catch(error => {
-            console.error('Error voting:', error);
-            alert('An error occurred. Please try again.');
-            allButtons.forEach(btn => btn.disabled = false);
-        });
+                // Re-enable buttons
+                allButtons.forEach(btn => btn.disabled = false);
+            })
+            .catch(error => {
+                console.error('Error voting:', error);
+                alert('An error occurred. Please try again.');
+                allButtons.forEach(btn => btn.disabled = false);
+            });
     }
 
     // Update vote UI
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (backToTopBtn) {
         // Show/hide button based on scroll position
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             if (window.pageYOffset > 300) {
                 backToTopBtn.classList.add('visible');
             } else {
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Scroll to top when clicked
-        backToTopBtn.addEventListener('click', function() {
+        backToTopBtn.addEventListener('click', function () {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Open modal
     if (openModalBtn) {
-        openModalBtn.addEventListener('click', function() {
+        openModalBtn.addEventListener('click', function () {
             feedbackModal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scroll
             messageTextarea.focus();
@@ -298,14 +298,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Close on outside click
-    feedbackModal.addEventListener('click', function(e) {
+    feedbackModal.addEventListener('click', function (e) {
         if (e.target === feedbackModal) {
             closeFeedbackModal();
         }
     });
 
     // Close on escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && feedbackModal.classList.contains('active')) {
             closeFeedbackModal();
         }
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Character counter
     if (messageTextarea && charCountSpan) {
-        messageTextarea.addEventListener('input', function() {
+        messageTextarea.addEventListener('input', function () {
             const count = this.value.length;
             charCountSpan.textContent = count;
 
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Form submission
     if (feedbackForm) {
-        feedbackForm.addEventListener('submit', function(e) {
+        feedbackForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
             const formData = new FormData(feedbackForm);
@@ -361,32 +361,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === 'success') {
-                    // Close feedback modal
-                    closeFeedbackModal();
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        // Close feedback modal
+                        closeFeedbackModal();
 
-                    // Show success modal
-                    showSuccessModal();
+                        // Show success modal
+                        showSuccessModal();
 
-                    // Reload feedback to show new submission
-                    setTimeout(() => {
-                        loadFeedback();
-                    }, 500);
-                } else {
-                    throw new Error(result.message || 'Failed to submit feedback');
-                }
-            })
-            .catch(error => {
-                console.error('Error submitting feedback:', error);
-                alert(error.message || 'An error occurred while submitting your feedback. Please try again.');
-            })
-            .finally(() => {
-                // Re-enable submit button
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
-            });
+                        // Reload feedback to show new submission
+                        setTimeout(() => {
+                            loadFeedback();
+                        }, 500);
+                    } else {
+                        throw new Error(result.message || 'Failed to submit feedback');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting feedback:', error);
+                    alert(error.message || 'An error occurred while submitting your feedback. Please try again.');
+                })
+                .finally(() => {
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+                });
         });
     }
 
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Close success modal on outside click
-    successModal.addEventListener('click', function(e) {
+    successModal.addEventListener('click', function (e) {
         if (e.target === successModal) {
             closeSuccessModal();
         }

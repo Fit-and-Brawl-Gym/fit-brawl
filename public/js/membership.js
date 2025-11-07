@@ -163,8 +163,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add click handlers to service cards
     function addServiceCardHandlers() {
         const serviceCards = document.querySelectorAll('.service-card');
+        const memberTable = document.getElementById('memberTable');
+        const hasMembership = memberTable && memberTable.getAttribute('data-has-membership') === 'true';
 
         serviceCards.forEach(card => {
+            // Skip disabled cards
+            if (card.classList.contains('disabled') || hasMembership) {
+                return;
+            }
+
             // Handle click on the entire card
             card.addEventListener('click', function (e) {
                 // Don't open modal if the select button was clicked
@@ -181,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Handle select button click
             const selectBtn = card.querySelector('.service-select-btn');
-            if (selectBtn) {
+            if (selectBtn && !selectBtn.disabled) {
                 selectBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
 
@@ -312,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
     addServiceCardHandlers();
     addTableRowHandlers(); // Keep for backward compatibility
     addPlanSelectionHandlers();
+    initComparisonTable();
 
     // Handle window resize for responsive behavior
     let resizeTimer;
@@ -339,4 +347,79 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // ===================================
+    // COMPARISON TABLE FUNCTIONALITY
+    // ===================================
+    function initComparisonTable() {
+        const toggleBtn = document.getElementById('comparisonToggleBtn');
+        const tableContainer = document.getElementById('comparisonTableContainer');
+
+        if (!toggleBtn || !tableContainer) {
+            console.log('Comparison table elements not found');
+            return;
+        }
+
+        const toggleText = toggleBtn.querySelector('.toggle-text');
+        const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+
+        // Toggle table visibility
+        toggleBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isActive = tableContainer.classList.contains('active');
+            console.log('Click! isActive:', isActive);
+
+            if (isActive) {
+                // Close table
+                console.log('Removing active class...');
+                tableContainer.classList.remove('active');
+                toggleBtn.classList.remove('active');
+                if (toggleText) toggleText.textContent = 'Compare Plans';
+                console.log('Active removed, classes now:', tableContainer.className);
+            } else {
+                // Open table
+                console.log('Adding active class...');
+                tableContainer.classList.add('active');
+                toggleBtn.classList.add('active');
+                if (toggleText) toggleText.textContent = 'Hide Comparison';
+                console.log('Active added, classes now:', tableContainer.className);
+
+                // Debug computed styles
+                const computedStyle = window.getComputedStyle(tableContainer);
+                console.log('Computed display:', computedStyle.display);
+                console.log('Computed background:', computedStyle.background);
+                console.log('Computed padding:', computedStyle.padding);
+                console.log('Computed visibility:', computedStyle.visibility);
+                console.log('Element position:', tableContainer.getBoundingClientRect());
+
+                // Smooth scroll to table
+                setTimeout(() => {
+                    tableContainer.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }, 300);
+            }
+        });
+
+        // Add click handlers to comparison select buttons
+        const comparisonSelectBtns = document.querySelectorAll('.comparison-select-btn');
+
+        comparisonSelectBtns.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const planType = this.getAttribute('data-plan');
+                const category = this.getAttribute('data-category');
+
+                if (planType && category) {
+                    window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
+                }
+            });
+        });
+
+        console.log('Comparison table initialized successfully');
+    }
 });

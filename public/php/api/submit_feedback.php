@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 try {
     // Get POST data
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     if (!$data) {
         throw new Exception('Invalid request data');
     }
 
     $message = isset($data['message']) ? trim($data['message']) : '';
-    
+
     // Validate message
     if (empty($message)) {
         throw new Exception('Message cannot be empty');
@@ -36,21 +36,21 @@ try {
 
     // Check if user is logged in
     $isLoggedIn = isset($_SESSION['user_id']);
-    
+
     if ($isLoggedIn) {
         // Logged-in user submission
         $user_id = $_SESSION['user_id'];
-        
+
         // Get user info from database
         $stmt = $conn->prepare("SELECT username, avatar FROM users WHERE id = ?");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         if ($row = $result->fetch_assoc()) {
             $username = $row['username'];
             $email = $_SESSION['email'] ?? '';
-            
+
             // Determine avatar
             if (empty($row['avatar']) || $row['avatar'] === 'default-avatar.png') {
                 $avatar = "../../images/account-icon.svg";
@@ -60,15 +60,15 @@ try {
         } else {
             throw new Exception('User not found');
         }
-        
+
         $stmt->close();
-        
+
     } else {
         // Non-logged in user submission
         $user_id = null;
         $name = isset($data['name']) ? trim($data['name']) : '';
         $email = isset($data['email']) ? trim($data['email']) : '';
-        
+
         // Generate anonymous name if not provided
         if (empty($name)) {
             // Get anonymous count
@@ -80,17 +80,17 @@ try {
         } else {
             $username = $name;
         }
-        
+
         // Use anonymous email if not provided
         if (empty($email)) {
             $email = "anonymous@fitxbrawl.com";
         }
-        
+
         // Validate email format if provided
         if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new Exception('Invalid email format');
         }
-        
+
         $avatar = "../../images/account-icon.svg";
     }
 
@@ -102,9 +102,9 @@ try {
     // Insert feedback into database
     $sql = "INSERT INTO feedback (user_id, username, email, avatar, message, date, is_visible, helpful_count, not_helpful_count) 
             VALUES (?, ?, ?, ?, ?, NOW(), 1, 0, 0)";
-    
+
     $stmt = $conn->prepare($sql);
-    
+
     if ($isLoggedIn) {
         $stmt->bind_param("issss", $user_id, $username, $email, $avatar, $message);
     } else {
@@ -114,7 +114,7 @@ try {
 
     if ($stmt->execute()) {
         $feedback_id = $stmt->insert_id;
-        
+
         echo json_encode([
             'status' => 'success',
             'message' => 'Thank you for your feedback!',

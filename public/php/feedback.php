@@ -350,16 +350,12 @@ require_once '../../includes/header.php';
                     <span>Posting as: <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Member') ?></strong></span>
                 </div>
             <?php endif; ?>
-            
+
             <div class="form-group">
                 <label for="feedbackMessage">Your Feedback <span class="required">*</span></label>
-                <textarea 
-                    id="feedbackMessage" 
-                    name="message" 
-                    rows="6" 
+                <textarea id="feedbackMessage" name="message" rows="6"
                     placeholder="Share your experience with our gym, trainers, facilities, or anything else..."
-                    required
-                ></textarea>
+                    required></textarea>
                 <div class="char-counter">
                     <span id="charCount">0</span> / 1000 characters
                 </div>
