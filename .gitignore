@@ -42,3 +42,4 @@ desktop.ini
 *.sqlite
 *.db
 
+.env
