@@ -313,10 +313,10 @@ function closeReplyModal() {
     const modal = document.getElementById('replyModal');
     const form = document.getElementById('replyForm');
     const submitButton = form.querySelector('button[type="submit"]');
-    
+
     modal.classList.remove('active');
     form.reset();
-    
+
     // Reset submit button state
     if (submitButton) {
         submitButton.disabled = false;
@@ -333,7 +333,7 @@ async function handleReplySubmit(e) {
     // Get the submit button
     const submitButton = e.target.querySelector('button[type="submit"]');
     const originalButtonHtml = submitButton.innerHTML;
-    
+
     // Prevent multiple submissions
     if (submitButton.disabled) {
         return;
@@ -382,7 +382,7 @@ async function handleReplySubmit(e) {
             }
             throw new Error('Network error: Unable to connect to server. Please check your connection and try again.');
         }
-        
+
         clearTimeout(timeoutId);
 
         // Check if response is OK
@@ -416,7 +416,7 @@ async function handleReplySubmit(e) {
     } catch (error) {
         console.error('Error sending reply:', error);
         showToast('Failed to send reply: ' + error.message, 'error');
-        
+
         // Re-enable button on error
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonHtml;
