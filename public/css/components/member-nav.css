@@ -1,16 +1,16 @@
-/* Trainer Navigation Icon Styles */
+/* Member Navigation Icon Styles */
 
-.trainer-nav ul {
+.member-nav ul {
     display: flex;
     gap: var(--spacing-3);
     align-items: center;
 }
 
-.trainer-nav li {
+.member-nav li {
     list-style: none;
 }
 
-.trainer-nav a {
+.member-nav a {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -24,7 +24,7 @@
     text-decoration: none;
 }
 
-.trainer-nav a i {
+.member-nav a i {
     font-size: 1.6rem;
     color: var(--color-text-light);
     transition: color 0.3s ease;
@@ -37,29 +37,29 @@
 }
 
 /* Hover State: Yellow Icon, Transparent Background */
-.trainer-nav a:hover {
+.member-nav a:hover {
     background: transparent;
 }
 
-.trainer-nav a:hover i {
+.member-nav a:hover i {
     color: var(--color-accent);
 }
 
 /* Active State: Yellow Background, White Icon */
-.trainer-nav a.active {
+.member-nav a.active {
     background: var(--color-accent);
     box-shadow: 0 4px 8px rgba(213, 186, 43, 0.3);
 }
 
-.trainer-nav a.active i {
+.member-nav a.active i {
     color: var(--color-bg-dark);
 }
 
-.trainer-nav a.active:hover {
+.member-nav a.active:hover {
     background: var(--color-accent);
 }
 
-.trainer-nav a.active:hover i {
+.member-nav a.active:hover i {
     color: var(--color-bg-dark);
 }
 
@@ -73,12 +73,12 @@
     }
 }
 
-.trainer-nav a.active {
+.member-nav a.active {
     animation: pulse 2s ease-in-out infinite;
 }
 
 /* Tooltip on hover */
-.trainer-nav a::after {
+.member-nav a::after {
     content: attr(title);
     position: absolute;
     bottom: -35px;
@@ -96,14 +96,14 @@
     z-index: 100;
 }
 
-.trainer-nav a:hover::after {
+.member-nav a:hover::after {
     opacity: 1;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     /* In mobile hamburger menu, show text links instead of icons */
-    .trainer-nav a {
+    .member-nav a {
         min-width: auto;
         width: 100%;
         padding: var(--spacing-4) var(--spacing-6);
@@ -111,67 +111,83 @@
         border-radius: 0;
     }
 
-    .trainer-nav a i {
+    .member-nav a i {
         display: none; /* Hide icons in mobile menu */
     }
 
     /* Show text instead */
-    .trainer-nav a::before {
+    .member-nav a::before {
         font-size: var(--font-size-base);
         color: var(--color-text-light);
         font-family: var(--font-family-primary);
         font-weight: var(--font-weight-medium);
     }
 
-    .trainer-nav a[href*="index.php"]::before {
+    .member-nav a[href*="index.php"]::before {
         content: "Home";
     }
 
-    .trainer-nav a[href*="schedule.php"]::before {
+    .member-nav a[title="Membership"]::before {
+        content: "Membership";
+    }
+
+    .member-nav a[title="Schedule"]::before {
         content: "Schedule";
     }
 
-    .trainer-nav a[href*="feedback.php"]::before {
+    .member-nav a[href*="equipment.php"]::before {
+        content: "Equipment";
+    }
+
+    .member-nav a[href*="products.php"]::before {
+        content: "Products";
+    }
+
+    .member-nav a[href*="contact.php"]::before {
+        content: "Contact";
+    }
+
+    .member-nav a[href*="feedback.php"]::before {
         content: "Feedback";
     }
 
-    .trainer-nav a.active::before {
+    .member-nav a.active::before {
         color: var(--color-accent);
         font-weight: var(--font-weight-bold);
     }
 
-    .trainer-nav a:hover::before {
+    .member-nav a:hover::before {
         color: var(--color-accent);
     }
 
     /* Mobile specific styles */
-    .trainer-nav ul {
+    .member-nav ul {
         flex-direction: column;
         gap: 0;
         width: 100%;
     }
 
-    .trainer-nav li {
+    .member-nav li {
         width: 100%;
         max-width: 400px;
     }
 
-    .trainer-nav a {
+    .member-nav a {
         border-bottom: 1px solid rgba(213, 186, 43, 0.2);
     }
 
-    .trainer-nav a:hover {
+    .member-nav a:hover {
         background-color: rgba(213, 186, 43, 0.1);
     }
 
-    .trainer-nav a.active {
+    .member-nav a.active {
         background: rgba(213, 186, 43, 0.2);
         animation: none;
         box-shadow: none;
     }
 
     /* Hide tooltip in mobile */
-    .trainer-nav a::after {
+    .member-nav a::after {
         display: none;
     }
 }
@@ -181,7 +197,7 @@
         padding: var(--spacing-3) var(--spacing-4);
     }
 
-    .trainer-nav a {
+    .member-nav a {
         padding: var(--spacing-3) var(--spacing-5);
     }
 }
