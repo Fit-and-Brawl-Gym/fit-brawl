@@ -52,8 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 if ($user['is_verified'] == 0) {
                     $error = "Please verify your email before logging in.";
-                }
-                elseif (password_verify($password, $user['password'])) {
+                } elseif (password_verify($password, $user['password'])) {
                     // Start the session using SessionManager
                     SessionManager::startSession($email);
 
@@ -103,7 +102,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-function test_input($data) {
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
@@ -120,57 +120,57 @@ $additionalJS = [PUBLIC_PATH . "/js/hamburger-menu.js"];
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
-    <!--Main-->
-    <main class="login-main">
-        <section class="login-hero">
-            <div class="hero-content">
-                <div class="hero-line"></div>
-                <h1 class="hero-title">
-                    STRONG TODAY <span class="yellow">  STRONGER </span> TOMORROW
-                </h1>
-                <div class="hero-underline"></div>
+<!--Main-->
+<main class="login-main">
+    <section class="login-hero">
+        <div class="hero-content">
+            <div class="hero-line"></div>
+            <h1 class="hero-title">
+                STRONG TODAY <span class="yellow"> STRONGER </span> TOMORROW
+            </h1>
+            <div class="hero-underline"></div>
+        </div>
+
+        <div class="login-modal">
+            <div class="modal-header">
+                <h2>Sign in to access your account</h2>
             </div>
 
-            <div class="login-modal">
-                <div class="modal-header">
-                    <h2>Sign in to access your account</h2>
+            <form method="post" class="login-form" id="loginForm">
+                <h3>ARE YOU READY TO FOR THE NEXT CHALLENGE?</h3>
+                <?php if (!empty($error)): ?>
+                    <div class="error-box"><?= htmlspecialchars($error) ?></div>
+                <?php endif; ?>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" placeholder="Email"
+                        value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
                 </div>
 
-                <form method="post" class="login-form" id="loginForm">
-                    <h3>ARE YOU READY TO FOR THE NEXT CHALLENGE?</h3>
-                    <?php if(!empty($error)) : ?>
-                        <div class="error-box"><?= htmlspecialchars($error) ?></div>
-                    <?php endif; ?>
-                    <div class="input-group">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" placeholder="Email"
-                        value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-key"></i>
                     </div>
+                    <input type="password" name="password" id="password" placeholder="Password" required>
+                </div>
 
-                    <div class="input-group password-group">
-                        <div class="icon-left">
-                            <i class="fas fa-key"></i>
-                        </div>
-                        <input type="password" name="password" id="password" placeholder="Password" required>
-                    </div>
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
+                </div>
 
-                    <div class="form-options">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="remember" name="remember">
-                            <span class="checkmark"></span>
-                            Remember me
-                        </label>
-                        <a href="forgot-password.php" class="forgot-password">Forgot Password?</a>
-                    </div>
+                <button type="submit" name="login" class="login-btn">Log-in</button>
 
-                    <button type="submit" name="login" class="login-btn">Log-in</button>
-
-                    <p class="signup-link">
-                        Don't have an account yet? <a href="sign-up.php">Create an account.</a>
-                    </p>
-                </form>
-            </div>
-        </section>
-    </main>
+                <p class="signup-link">
+                    Don't have an account yet? <a href="sign-up.php">Create an account.</a>
+                </p>
+            </form>
+        </div>
+    </section>
+</main>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
