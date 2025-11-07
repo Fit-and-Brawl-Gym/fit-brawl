@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bio = trim($_POST['bio']);
     $emergency_contact_name = trim($_POST['emergency_contact_name']);
     $emergency_contact_phone = trim($_POST['emergency_contact_phone']);
-    $status = $_POST['status'];
+    $status = 'Active'; // Default status is always Active
 
     // Get day-offs from form
     $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];

@@ -81,7 +81,7 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
 
   <main class="admin-main">
     <header>
-      <h1>Welcome, <?= htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?> 👋</h1>
+      <h1>Welcome, <?= htmlspecialchars($_SESSION['username'] ?? 'Admin'); ?></h1>
       <p>Here’s an overview of your gym’s activity.</p>
     </header>
 

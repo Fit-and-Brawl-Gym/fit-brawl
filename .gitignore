@@ -14,7 +14,7 @@ node_modules/
 server-renderer/node_modules/
 server-renderer/.cache/
 
-# Uploads (local development only - use Cloud Storage in production)
+# Uploads 
 uploads/avatars/*
 uploads/equipment/*
 uploads/products/*
@@ -42,20 +42,3 @@ desktop.ini
 *.sqlite
 *.db
 
-# Testing
-tests/
-*.test.php
-phpunit.xml
-
-# Build artifacts
-dist/
-build/
-
-# Google Cloud
-.gcloudignore
-
-# Documentation (optional - uncomment to exclude)
-# DEPLOYMENT_GCP.md
-# 503_*.md
-# GITHUB_*.md
-# COMPOSER_*.md

@@ -211,6 +211,10 @@ if (!isset($ogImage)) {
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous" defer></script>
 
     <!-- Core Scripts -->
+    <script>
+        // Make PUBLIC_PATH available to JavaScript
+        window.PUBLIC_PATH = <?= json_encode(PUBLIC_PATH) ?>;
+    </script>
     <script src="<?= PUBLIC_PATH ?>/js/header-dropdown.js" defer></script>
     <script src="<?= PUBLIC_PATH ?>/js/hamburger-menu.js" defer></script>
     <?php if ($isLoggedIn): ?>
