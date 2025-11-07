@@ -113,7 +113,7 @@ function test_input($data) {
 // Set variables for header
 $pageTitle = "Login - Fit and Brawl";
 $currentPage = "login";
-$additionalCSS = [PUBLIC_PATH . "/css/pages/login.css?v=1"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/login.css?v=" . time()];
 $additionalJS = [PUBLIC_PATH . "/js/hamburger-menu.js"];
 
 // Include header
