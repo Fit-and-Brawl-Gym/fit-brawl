@@ -14,18 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const requirementsModal = document.getElementById('profilePasswordRequirements');
     const matchMessage = document.getElementById('profilePasswordMatch');
     const sameAsCurrentWarning = document.getElementById('sameAsCurrentWarning');
-
-    console.log('User profile elements loaded:', {
-        currentPasswordInput: !!currentPasswordInput,
-        currentPasswordGroup: !!currentPasswordGroup,
-        newPasswordInput: !!newPasswordInput,
-        sameAsCurrentWarning: !!sameAsCurrentWarning,
-        requirementsModal: !!requirementsModal
-    });
-
-    if (currentPasswordInput) {
-        console.log('Current password input element ID:', currentPasswordInput.id);
-    }
+    const currentPasswordWarning = document.getElementById('currentPasswordWarning');
 
     // Toggle edit profile section
     if (toggleEditBtn) {
@@ -99,33 +88,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('.edit-profile-form');
     if (form) {
         form.addEventListener('submit', function(e) {
-            const currentPassword = document.getElementById('current_password').value;
-            const newPassword = document.getElementById('new_password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
+            const currentPassword = currentPasswordInput ? currentPasswordInput.value.trim() : '';
+            const newPassword = newPasswordInput ? newPasswordInput.value.trim() : '';
+            const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value.trim() : '';
+
+            if (currentPasswordWarning) {
+                currentPasswordWarning.textContent = '';
+                currentPasswordWarning.classList.remove('show');
+            }
+
+            if (sameAsCurrentWarning) {
+                sameAsCurrentWarning.classList.remove('show');
+            }
 
             if (newPassword || confirmPassword) {
-                // Check if current password is provided when changing password
+                // Ensure current password field is visible when attempting to change password
+                if (currentPasswordGroup) {
+                    currentPasswordGroup.style.display = 'block';
+                }
+
                 if (!currentPassword) {
                     e.preventDefault();
-                    alert('Please enter your current password to change your password.');
+                    if (currentPasswordWarning) {
+                        currentPasswordWarning.textContent = 'Please enter your current password to change your password.';
+                        currentPasswordWarning.classList.add('show');
+                    }
+                    if (currentPasswordInput) {
+                        currentPasswordInput.focus();
+                    }
                     return false;
                 }
 
                 if (newPassword !== confirmPassword) {
                     e.preventDefault();
-                    alert('New passwords do not match!');
+                    if (matchMessage) {
+                        matchMessage.textContent = 'Passwords do not match';
+                        matchMessage.classList.add('show', 'no-match');
+                        matchMessage.classList.remove('match');
+                        matchMessage.setAttribute('aria-hidden', 'false');
+                    }
+                    if (confirmPasswordInput) {
+                        confirmPasswordInput.focus();
+                    }
                     return false;
                 }
 
-                // Check if new password is same as current password
                 if (newPassword === currentPassword) {
                     e.preventDefault();
-                    // Show the warning in the modal instead of alert
                     if (sameAsCurrentWarning) {
                         sameAsCurrentWarning.classList.add('show');
                         showRequirements(true);
                     }
-                    // Scroll to the new password field
                     if (newPasswordInput) {
                         newPasswordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         newPasswordInput.focus();
@@ -140,13 +153,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newPasswordInput && currentPasswordGroup) {
         newPasswordInput.addEventListener('input', function() {
             if (this.value.length > 0) {
-                console.log('Showing current password field');
                 currentPasswordGroup.style.display = 'block';
             } else if (!confirmPasswordInput.value) {
-                console.log('Hiding current password field');
                 currentPasswordGroup.style.display = 'none';
                 if (currentPasswordInput) {
                     currentPasswordInput.value = '';
+                }
+                if (currentPasswordWarning) {
+                    currentPasswordWarning.textContent = '';
+                    currentPasswordWarning.classList.remove('show');
                 }
             }
         });
@@ -160,6 +175,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentPasswordGroup.style.display = 'none';
                 if (currentPasswordInput) {
                     currentPasswordInput.value = '';
+                }
+                if (currentPasswordWarning) {
+                    currentPasswordWarning.textContent = '';
+                    currentPasswordWarning.classList.remove('show');
                 }
             }
         });
@@ -177,33 +196,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function checkSameAsCurrentPassword() {
-        if (!sameAsCurrentWarning || !currentPasswordInput || !newPasswordInput) {
-            console.log('Missing elements:', {
-                warning: !!sameAsCurrentWarning,
-                current: !!currentPasswordInput,
-                new: !!newPasswordInput
-            });
-            return;
-        }
+        if (!sameAsCurrentWarning || !currentPasswordInput || !newPasswordInput) return;
         const currentVal = currentPasswordInput.value.trim();
         const newVal = newPasswordInput.value.trim();
 
-        console.log('Checking passwords:', {
-            currentVal: currentVal ? '***' : '(empty)',
-            newVal: newVal ? '***' : '(empty)',
-            match: currentVal === newVal,
-            bothFilled: !!(currentVal && newVal)
-        });
-
-        // Only show warning if both fields have values and they match
         if (currentVal && newVal && currentVal === newVal) {
             sameAsCurrentWarning.classList.add('show');
-            console.log('Warning shown - passwords match!');
+            showRequirements(true);
         } else {
             sameAsCurrentWarning.classList.remove('show');
-            if (currentVal && newVal && currentVal !== newVal) {
-                console.log('Warning hidden - passwords different');
-            }
         }
     }
 
@@ -225,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateMatchMessage() {
         if (!matchMessage || !confirmPasswordInput) return;
-        const currentVal = currentPasswordInput ? currentPasswordInput.value : '';
         const newVal = newPasswordInput ? newPasswordInput.value : '';
         const confVal = confirmPasswordInput.value;
 
@@ -238,14 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         matchMessage.classList.add('show');
         matchMessage.setAttribute('aria-hidden', 'false');
-
-        // Check if new password matches current password
-        if (newVal && currentVal && newVal === currentVal) {
-            matchMessage.textContent = 'New password cannot be the same as current password';
-            matchMessage.classList.add('no-match');
-            matchMessage.classList.remove('match');
-            return;
-        }
 
         if (newVal && confVal && newVal === confVal) {
             matchMessage.textContent = 'Passwords match';
@@ -261,8 +253,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newPasswordInput) {
         newPasswordInput.addEventListener('focus', () => showRequirements(true));
         newPasswordInput.addEventListener('blur', () => {
-            // Keep visible if input has value to aid user; hide if empty
-            if (!newPasswordInput.value) showRequirements(false);
+            // Hide the requirements modal when user is done typing
+            showRequirements(false);
         });
         newPasswordInput.addEventListener('input', () => {
             const status = evaluatePassword(newPasswordInput.value || '');
@@ -274,14 +266,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (currentPasswordInput) {
-        console.log('Current password input listener attached');
         currentPasswordInput.addEventListener('input', () => {
-            console.log('Current password input event fired, value:', currentPasswordInput.value ? '***' : '(empty)');
+            if (currentPasswordWarning && currentPasswordInput.value.trim()) {
+                currentPasswordWarning.textContent = '';
+                currentPasswordWarning.classList.remove('show');
+            }
             checkSameAsCurrentPassword();
             updateMatchMessage();
         });
-    } else {
-        console.log('Current password input NOT found!');
     }
 
     if (confirmPasswordInput) {
