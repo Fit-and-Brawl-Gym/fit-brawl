@@ -23,9 +23,9 @@ body::before {
     right: 0;
     bottom: 0;
     background: linear-gradient(to right,
-            rgba(0, 47, 63, 0.95) 0%,
-            rgba(0, 47, 63, 0.85) 50%,
-            rgba(0, 47, 63, 0.7) 100%);
+            rgba(0, 47, 63, 0.5) 0%,
+            rgba(0, 47, 63, 0.4) 50%,
+            rgba(0, 47, 63, 0.3) 100%);
     z-index: 0;
     pointer-events: none;
 }
@@ -2620,6 +2620,11 @@ body::before {
     object-fit: cover;
     border: 3px solid var(--color-accent);
     margin: 0 auto var(--spacing-1);
+}
+
+.trainer-photo.default-icon {
+    border: none;
+    object-fit: contain;
 }
 
 .trainer-name {
