@@ -14,31 +14,5 @@ node_modules/
 server-renderer/node_modules/
 server-renderer/.cache/
 
-# Uploads 
-uploads/avatars/*
-uploads/equipment/*
-uploads/products/*
-uploads/receipts/*
-!uploads/avatars/.gitkeep
-!uploads/equipment/.gitkeep
-!uploads/products/.gitkeep
-!uploads/receipts/.gitkeep
-
-# Development files
-.vscode/
-.idea/
-*.log
-*.bak
-*.tmp
-*~
-
-# OS files
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Database files
-*.sql
-*.sqlite
-*.db
-
+# Node.js dependencies (install via npm install in server-renderer/)
+server-renderer/node_modules/

@@ -314,12 +314,75 @@ require_once '../../includes/header.php';
         <button class="back-to-top" aria-label="Back to top">
             <i class="fas fa-chevron-up"></i>
         </button>
-        <a href="feedback-form.php" class="floating-btn">
+        <button class="floating-btn" id="openFeedbackModal">
+            <i class="fas fa-comment-dots"></i>
             Share your feedback!
-        </a>
-
+        </button>
     </div>
 </main>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" class="feedback-modal">
+    <div class="feedback-modal-content">
+        <div class="feedback-modal-header">
+            <h2>Share Your Experience</h2>
+            <button class="close-modal" id="closeFeedbackModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="feedbackSubmitForm" class="feedback-modal-form">
+            <?php if (!isset($_SESSION['user_id'])): ?>
+                <!-- Non-logged in users see name and email fields -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="feedbackName">Name (Optional)</label>
+                        <input type="text" id="feedbackName" name="name" placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="feedbackEmail">Email (Optional)</label>
+                        <input type="email" id="feedbackEmail" name="email" placeholder="your.email@example.com">
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- Logged in users don't see name/email fields -->
+                <div class="logged-in-notice">
+                    <i class="fas fa-user-check"></i>
+                    <span>Posting as: <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Member') ?></strong></span>
+                </div>
+            <?php endif; ?>
+
+            <div class="form-group">
+                <label for="feedbackMessage">Your Feedback <span class="required">*</span></label>
+                <textarea id="feedbackMessage" name="message" rows="6"
+                    placeholder="Share your experience with our gym, trainers, facilities, or anything else..."
+                    required></textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> / 1000 characters
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" id="cancelFeedback">Cancel</button>
+                <button type="submit" class="btn-submit" id="submitFeedback">
+                    <i class="fas fa-paper-plane"></i>
+                    Submit Feedback
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="success-modal">
+    <div class="success-modal-content">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>Thank You!</h3>
+        <p>Your feedback has been submitted successfully.</p>
+        <button class="btn-success-close" id="closeSuccessModal">Got it!</button>
+    </div>
+</div>
 
 <!--Footer-->
 <footer>

@@ -45,8 +45,8 @@ class BookingValidator
         $day_of_week = date('l', strtotime($booking_date));
 
         $stmt = $this->conn->prepare("
-            SELECT is_day_off 
-            FROM trainer_day_offs 
+            SELECT is_day_off
+            FROM trainer_day_offs
             WHERE trainer_id = ? AND day_of_week = ? AND is_day_off = 1
         ");
         $stmt->bind_param("is", $trainer_id, $day_of_week);
@@ -68,10 +68,10 @@ class BookingValidator
     public function validateAdminBlock($trainer_id, $booking_date, $session_time)
     {
         $stmt = $this->conn->prepare("
-            SELECT reason 
-            FROM trainer_availability_blocks 
-            WHERE trainer_id = ? 
-            AND date = ? 
+            SELECT reason
+            FROM trainer_availability_blocks
+            WHERE trainer_id = ?
+            AND date = ?
             AND (session_time = ? OR session_time = 'All Day')
             AND block_status = 'blocked'
         ");
@@ -96,11 +96,11 @@ class BookingValidator
     public function validateTrainerAvailability($trainer_id, $booking_date, $session_time)
     {
         $stmt = $this->conn->prepare("
-            SELECT id 
-            FROM user_reservations 
-            WHERE trainer_id = ? 
-            AND booking_date = ? 
-            AND session_time = ? 
+            SELECT id
+            FROM user_reservations
+            WHERE trainer_id = ?
+            AND booking_date = ?
+            AND session_time = ?
             AND booking_status = 'confirmed'
         ");
         $stmt->bind_param("iss", $trainer_id, $booking_date, $session_time);
@@ -123,10 +123,10 @@ class BookingValidator
     {
         $query = "
             SELECT COUNT(DISTINCT trainer_id) as trainer_count
-            FROM user_reservations 
-            WHERE class_type = ? 
-            AND booking_date = ? 
-            AND session_time = ? 
+            FROM user_reservations
+            WHERE class_type = ?
+            AND booking_date = ?
+            AND session_time = ?
             AND booking_status = 'confirmed'
         ";
 
@@ -162,18 +162,24 @@ class BookingValidator
      */
     public function validateWeeklyLimit($user_id, $booking_date)
     {
-        // Calculate 7-day rolling window
-        $window_start = date('Y-m-d', strtotime($booking_date . ' -6 days'));
-        $window_end = $booking_date;
+        // Calculate week boundaries (Sunday to Saturday) for the booking date
+        $booking_timestamp = strtotime($booking_date);
+        $day_of_week = date('w', $booking_timestamp); // 0 (Sunday) to 6 (Saturday)
+
+        // Calculate Sunday of the week
+        $week_start = date('Y-m-d', strtotime($booking_date . ' -' . $day_of_week . ' days'));
+
+        // Calculate Saturday of the week
+        $week_end = date('Y-m-d', strtotime($week_start . ' +6 days'));
 
         $stmt = $this->conn->prepare("
             SELECT COUNT(*) as booking_count
-            FROM user_reservations 
-            WHERE user_id = ? 
+            FROM user_reservations
+            WHERE user_id = ?
             AND booking_date BETWEEN ? AND ?
-            AND booking_status IN ('confirmed', 'completed', 'cancelled')
+            AND booking_status IN ('confirmed', 'completed')
         ");
-        $stmt->bind_param("iss", $user_id, $window_start, $window_end);
+        $stmt->bind_param("iss", $user_id, $week_start, $week_end);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
@@ -182,19 +188,23 @@ class BookingValidator
         $booking_count = (int) $row['booking_count'];
 
         if ($booking_count >= 12) {
+            $week_start_formatted = date('M j', strtotime($week_start));
+            $week_end_formatted = date('M j', strtotime($week_end));
             return [
                 'valid' => false,
-                'message' => 'You have reached the maximum of 12 bookings per week',
+                'message' => "You have reached the maximum of 12 bookings for the week of {$week_start_formatted} - {$week_end_formatted}",
                 'count' => $booking_count,
-                'window_start' => $window_start,
-                'window_end' => $window_end
+                'week_start' => $week_start,
+                'week_end' => $week_end
             ];
         }
 
         return [
             'valid' => true,
             'count' => $booking_count,
-            'remaining' => 12 - $booking_count
+            'remaining' => 12 - $booking_count,
+            'week_start' => $week_start,
+            'week_end' => $week_end
         ];
     }
 
@@ -204,11 +214,11 @@ class BookingValidator
     public function validateUserDoubleBooking($user_id, $booking_date, $session_time)
     {
         $stmt = $this->conn->prepare("
-            SELECT class_type, trainer_id 
-            FROM user_reservations 
-            WHERE user_id = ? 
-            AND booking_date = ? 
-            AND session_time = ? 
+            SELECT class_type, trainer_id
+            FROM user_reservations
+            WHERE user_id = ?
+            AND booking_date = ?
+            AND session_time = ?
             AND booking_status = 'confirmed'
         ");
         $stmt->bind_param("iss", $user_id, $booking_date, $session_time);
@@ -239,10 +249,10 @@ class BookingValidator
     public function validateMembership($user_id)
     {
         $stmt = $this->conn->prepare("
-            SELECT id 
-            FROM user_memberships 
-            WHERE user_id = ? 
-            AND membership_status = 'active' 
+            SELECT id
+            FROM user_memberships
+            WHERE user_id = ?
+            AND membership_status = 'active'
             AND end_date >= CURDATE()
         ");
         $stmt->bind_param("i", $user_id);
@@ -283,8 +293,8 @@ class BookingValidator
     public function validateCancellation($booking_id, $user_id)
     {
         $stmt = $this->conn->prepare("
-            SELECT booking_date, session_time, booking_status 
-            FROM user_reservations 
+            SELECT booking_date, session_time, booking_status
+            FROM user_reservations
             WHERE id = ? AND user_id = ?
         ");
         $stmt->bind_param("ii", $booking_id, $user_id);
@@ -306,8 +316,8 @@ class BookingValidator
         // Get session start time based on session_time
         $session_starts = [
             'Morning' => '07:00:00',
-            'Afternoon' => '13:00:00',
-            'Evening' => '18:00:00'
+            'Afternoon' => '12:00:00',
+            'Evening' => '17:00:00'
         ];
 
         $session_datetime = $booking['booking_date'] . ' ' . $session_starts[$booking['session_time']];
@@ -315,10 +325,10 @@ class BookingValidator
         $now_timestamp = time();
         $hours_until_session = ($session_timestamp - $now_timestamp) / 3600;
 
-        if ($hours_until_session < 24) {
+        if ($hours_until_session < 12) {
             return [
                 'valid' => false,
-                'message' => 'Cancellations must be made at least 24 hours before the session',
+                'message' => 'Cancellations must be made at least 12 hours before the session',
                 'hours_remaining' => round($hours_until_session, 1)
             ];
         }

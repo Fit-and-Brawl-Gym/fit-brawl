@@ -123,29 +123,7 @@ $user = $stmt->get_result()->fetch_assoc();
 $membershipPlan = isset($row['plan_name']) ? $row['plan_name'] : "N/A";
 $nextPayment = isset($endDate) ? date('F j, Y', strtotime($endDate)) : "N/A";
 
-// Calculate gym streak (number of consecutive days with activity)
-$gymStreak = 0;
-$streakQuery = $conn->prepare("SELECT activity_date FROM training_sessions WHERE user_id = ? ORDER BY activity_date DESC LIMIT 7");
-if ($streakQuery) {
-    $streakQuery->bind_param("i", $user_id);
-    $streakQuery->execute();
-    $streakResult = $streakQuery->get_result();
-    $dates = [];
-    while ($row = $streakResult->fetch_assoc()) {
-        $dates[] = $row['activity_date'];
-    }
-    // Simple streak calculation
-    $expected = date('Y-m-d');
-    foreach ($dates as $date) {
-        if ($date === $expected) {
-            $gymStreak++;
-            $expected = date('Y-m-d', strtotime($expected . ' -1 day'));
-        } else {
-            break;
-        }
-    }
-    $streakQuery->close();
-}
+// Removed gym streak calculation per request
 
 // Fetch last training session
 $lastTrainingDate = $lastTrainingType = $lastTrainerName = "N/A";
@@ -211,12 +189,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <span class="info-label">Next Payment</span>
                     <span class="info-value"><?= htmlspecialchars($nextPayment) ?></span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Gym Streak</span>
-                    <span class="info-value highlight">
-                        <i class="fas fa-fire"></i> <?= $gymStreak ?> Days
-                    </span>
-                </div>
+
             </section>
 
             <!-- Recent Activity -->
@@ -276,17 +249,59 @@ require_once __DIR__ . '/../../includes/header.php';
                         required>
                 </div>
 
+                <!-- Current Password (required to change password) -->
+                <div class="form-group password-field full-width" id="currentPasswordGroup" style="display: none;">
+                    <label for="current_password">Current Password (Required to change password)</label>
+                    <input type="password" name="current_password" id="current_password" placeholder="Enter current password">
+                    <div class="current-password-warning" id="currentPasswordWarning" aria-live="polite"></div>
+                </div>
+
                 <!-- New Password -->
-                <div class="form-group">
+                <div class="form-group password-field new-password">
                     <label for="new_password">New Password (Leave blank to keep current)</label>
-                    <input type="password" name="new_password" id="new_password" placeholder="Enter new password">
+                    <div class="input-group-wrapper">
+                        <input type="password" name="new_password" id="new_password" placeholder="Enter new password">
+                        <div class="password-requirements-modal" id="profilePasswordRequirements" aria-hidden="true">
+                            <div class="password-requirements-header">
+                                <h4>Password Requirements</h4>
+                            </div>
+                            <div class="password-requirements-list">
+                                <div class="requirement-item" data-req="length">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">At least 8 characters</span>
+                                </div>
+                                <div class="requirement-item" data-req="uppercase">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One uppercase letter</span>
+                                </div>
+                                <div class="requirement-item" data-req="lowercase">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One lowercase letter</span>
+                                </div>
+                                <div class="requirement-item" data-req="number">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One number</span>
+                                </div>
+                                <div class="requirement-item" data-req="special">
+                                    <span class="requirement-icon">•</span>
+                                    <span class="requirement-text">One special (!@#$%^&*)</span>
+                                </div>
+                                <div class="same-as-current-warning" id="sameAsCurrentWarning">
+                                    ⚠️ Cannot be the same as current password
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Confirm Password -->
-                <div class="form-group">
+                <div class="form-group password-field confirm-password">
                     <label for="confirm_password">Confirm New Password</label>
-                    <input type="password" name="confirm_password" id="confirm_password"
-                        placeholder="Confirm new password">
+                    <div class="input-group-wrapper">
+                        <input type="password" name="confirm_password" id="confirm_password"
+                            placeholder="Confirm new password">
+                        <div class="password-match-message" id="profilePasswordMatch" aria-hidden="true"></div>
+                    </div>
                 </div>
 
                 <!-- Form Actions -->

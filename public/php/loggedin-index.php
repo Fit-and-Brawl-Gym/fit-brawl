@@ -121,7 +121,6 @@ if (isset($_SESSION['user_id'])) {
                         $activeMembership = [
                             'plan_name' => $row['plan_name'] ?? 'Subscription',
                             'class_type' => $row['class_type'] ?? 'All Classes',
-                            'price' => $row['price'] ?? 0,
                             'end_date' => $endDate,
                             'request_status' => 'approved',
                             'membership_status' => 'active'
@@ -134,16 +133,19 @@ if (isset($_SESSION['user_id'])) {
         }
     }
 
-    // Get weekly bookings count
-    $weekStart = date('Y-m-d', strtotime('monday this week'));
-    $weekEnd = date('Y-m-d', strtotime('sunday this week'));
+    // Get weekly bookings count (current week: Monday to Sunday)
+    // Calculate the start of the week (Monday)
+    $currentDayOfWeek = date('N'); // 1 (Monday) to 7 (Sunday)
+    $daysSinceMonday = $currentDayOfWeek - 1;
+    $weekStart = date('Y-m-d', strtotime("-{$daysSinceMonday} days"));
+    $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
 
     $stmt = $conn->prepare("
         SELECT COUNT(*) as count
         FROM user_reservations
         WHERE user_id = ?
         AND booking_date BETWEEN ? AND ?
-        AND booking_status = 'confirmed'
+        AND booking_status IN ('confirmed', 'completed')
     ");
     if ($stmt) {
         $stmt->bind_param("iss", $user_id, $weekStart, $weekEnd);
@@ -217,7 +219,7 @@ if (isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
-$additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css?v=" . time()];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
@@ -409,35 +411,6 @@ $sessionHours = [
                     <?php endif; ?>
                 </div>
             </div>
-
-            <!-- Quick Links Card -->
-            <div class="dashboard-card quick-links-card">
-                <div class="card-header">
-                    <h3><i class="fas fa-bolt"></i> Quick Access</h3>
-                </div>
-                <div class="card-body">
-                    <div class="quick-links-grid">
-                        <a href="user_profile.php" class="quick-link">
-                            <i class="fas fa-user-circle"></i>
-                            <span>My Profile</span>
-                        </a>
-                        <a href="equipment.php" class="quick-link">
-                            <i class="fas fa-dumbbell"></i>
-                            <span>Equipment</span>
-                        </a>
-                        <a href="products.php" class="quick-link">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>Shop</span>
-                        </a>
-                        <a href="feedback.php" class="quick-link">
-                            <i class="fas fa-comment-dots"></i>
-                            <span>Feedback</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </main>
-
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

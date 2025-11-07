@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const inquireBtn = document.getElementById('inquireBtn');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    let currentIndex = 0; // Start at the beginning
+    let currentIndex = 2; // Start at Gladiator card (index 2)
     const totalPlans = planCards.length;
 
     // Check if we're on a smaller/taller screen (portrait mobile)
@@ -28,26 +28,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return window.innerWidth <= 768 && window.innerHeight >= 600;
     }
 
-    function getCardDimensions() {
-        if (planCards.length === 0) return { width: 380, gap: 32 };
-
-        const firstCard = planCards[0];
-        const cardStyle = window.getComputedStyle(firstCard);
-        const viewportStyle = window.getComputedStyle(plansViewport);
-
-        // Get actual card width including margins
-        const cardWidth = firstCard.offsetWidth;
-
-        // Get gap from the viewport
-        const gap = parseInt(viewportStyle.gap) || 32;
-
-        return { width: cardWidth, gap: gap };
-    }
-
+    // Update card positions for overlapping carousel effect
     function updateCarousel() {
         // Skip carousel logic if in stacked view
         if (isStackedView()) {
-            plansViewport.style.transform = 'translateX(0)';
+            // Reset all cards to default positioning for stacked view
+            planCards.forEach((card) => {
+                card.removeAttribute('data-position');
+                card.style.position = 'relative';
+                card.style.transform = 'none';
+                card.style.opacity = '1';
+            });
             prevBtn.style.display = 'none';
             nextBtn.style.display = 'none';
             return;
@@ -57,12 +48,11 @@ document.addEventListener('DOMContentLoaded', function () {
         prevBtn.style.display = 'flex';
         nextBtn.style.display = 'flex';
 
-        // Get current dimensions
-        const { width: cardWidth, gap } = getCardDimensions();
-
-        // Calculate the offset for the current card
-        const offset = -currentIndex * (cardWidth + gap);
-        plansViewport.style.transform = `translateX(${offset}px)`;
+        // Update each card's position relative to current index
+        planCards.forEach((card, index) => {
+            const position = index - currentIndex;
+            card.setAttribute('data-position', position);
+        });
 
         // Update button states
         prevBtn.disabled = currentIndex === 0;
@@ -173,8 +163,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add click handlers to service cards
     function addServiceCardHandlers() {
         const serviceCards = document.querySelectorAll('.service-card');
+        const memberTable = document.getElementById('memberTable');
+        const hasMembership = memberTable && memberTable.getAttribute('data-has-membership') === 'true';
 
         serviceCards.forEach(card => {
+            // Skip disabled cards
+            if (card.classList.contains('disabled') || hasMembership) {
+                return;
+            }
+
             // Handle click on the entire card
             card.addEventListener('click', function (e) {
                 // Don't open modal if the select button was clicked
@@ -191,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Handle select button click
             const selectBtn = card.querySelector('.service-select-btn');
-            if (selectBtn) {
+            if (selectBtn && !selectBtn.disabled) {
                 selectBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
 
@@ -322,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function () {
     addServiceCardHandlers();
     addTableRowHandlers(); // Keep for backward compatibility
     addPlanSelectionHandlers();
+    initComparisonTable();
 
     // Handle window resize for responsive behavior
     let resizeTimer;
@@ -349,4 +347,79 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+
+    // ===================================
+    // COMPARISON TABLE FUNCTIONALITY
+    // ===================================
+    function initComparisonTable() {
+        const toggleBtn = document.getElementById('comparisonToggleBtn');
+        const tableContainer = document.getElementById('comparisonTableContainer');
+
+        if (!toggleBtn || !tableContainer) {
+            console.log('Comparison table elements not found');
+            return;
+        }
+
+        const toggleText = toggleBtn.querySelector('.toggle-text');
+        const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+
+        // Toggle table visibility
+        toggleBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isActive = tableContainer.classList.contains('active');
+            console.log('Click! isActive:', isActive);
+
+            if (isActive) {
+                // Close table
+                console.log('Removing active class...');
+                tableContainer.classList.remove('active');
+                toggleBtn.classList.remove('active');
+                if (toggleText) toggleText.textContent = 'Compare Plans';
+                console.log('Active removed, classes now:', tableContainer.className);
+            } else {
+                // Open table
+                console.log('Adding active class...');
+                tableContainer.classList.add('active');
+                toggleBtn.classList.add('active');
+                if (toggleText) toggleText.textContent = 'Hide Comparison';
+                console.log('Active added, classes now:', tableContainer.className);
+
+                // Debug computed styles
+                const computedStyle = window.getComputedStyle(tableContainer);
+                console.log('Computed display:', computedStyle.display);
+                console.log('Computed background:', computedStyle.background);
+                console.log('Computed padding:', computedStyle.padding);
+                console.log('Computed visibility:', computedStyle.visibility);
+                console.log('Element position:', tableContainer.getBoundingClientRect());
+
+                // Smooth scroll to table
+                setTimeout(() => {
+                    tableContainer.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                }, 300);
+            }
+        });
+
+        // Add click handlers to comparison select buttons
+        const comparisonSelectBtns = document.querySelectorAll('.comparison-select-btn');
+
+        comparisonSelectBtns.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const planType = this.getAttribute('data-plan');
+                const category = this.getAttribute('data-category');
+
+                if (planType && category) {
+                    window.location.href = `transaction.php?plan=${encodeURIComponent(planType)}&category=${encodeURIComponent(category)}&billing=monthly`;
+                }
+            });
+        });
+
+        console.log('Comparison table initialized successfully');
+    }
 });
