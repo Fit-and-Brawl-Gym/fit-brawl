@@ -1,27 +1,42 @@
-// ===================================
-// BOOKING PAGE V2 - SESSION-BASED BOOKING
-// ===================================
-
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialize calendar with current date
-    const today = new Date();
-    let currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    let currentClassFilter = 'all';
-    let currentCoachFilter = 'all';
-    let currentSessionFilter = 'all';
-    let availableOnlyFilter = false;
-    let upcomingOnlyFilter = true;
-    let sessionsData = {}; // Store sessions by day
-    let trainersData = {};
+    // Booking state
+    const bookingState = {
+        date: null,
+        session: null,
+        classType: null,
+        trainerId: null,
+        trainerName: null,
+        currentStep: 1,
+        facilityFull: false,
+        hasAvailableTrainers: false,
+        weeklyLimit: 12,
+        currentWeekCount: 0,
+        currentWeekRemaining: 12,
+        selectedWeekCount: 0,
+        selectedWeekFull: false
+    };
 
-    // Booked sessions month filter (null = show all upcoming)
-    let bookedFilterMonth = null;
-    let bookedFilterYear = null;
+    // Calendar state
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
 
-    // Booked sessions sorting
-    let currentBookings = [];
-    let dateSortOrder = 'asc'; // 'asc' or 'desc'
-    let timeSortOrder = 'asc'; // 'asc' or 'desc'
+    // Bookings data storage
+    let allBookingsData = {
+        upcoming: [],
+        past: [],
+        cancelled: [],
+        all: [] // Store all bookings for week calculations
+    };
+
+    // Initialize
+    init();
+
+    function init() {
+        loadWeeklyBookings();
+        loadUserBookings();
+        renderCalendar();
+        setupEventListeners();
+    }
 
     // ===================================
     // TOAST NOTIFICATIONS
@@ -54,1225 +69,1190 @@ document.addEventListener('DOMContentLoaded', function () {
         }, duration);
     }
 
-    // Custom confirm dialog
-    function showConfirm(message) {
-        return new Promise((resolve) => {
-            const modal = document.getElementById('confirmModal');
-            const messageEl = document.getElementById('confirmMessage');
-            const yesBtn = document.getElementById('confirmYes');
-            const noBtn = document.getElementById('confirmNo');
+    // ===================================
+    // LOAD WEEKLY BOOKINGS COUNT
+    // ===================================
+    function loadWeeklyBookings() {
+        fetch('api/get_user_bookings.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const count = data.summary.weekly_count;
+                    const remaining = data.summary.weekly_remaining;
+                    const limit = data.summary.weekly_limit || 12;
 
-            messageEl.textContent = message;
-            modal.classList.add('active');
+                    // Store current week data
+                    bookingState.currentWeekCount = count;
+                    bookingState.currentWeekRemaining = remaining;
+                    bookingState.weeklyLimit = limit;
 
-            function cleanup() {
-                modal.classList.remove('active');
-                yesBtn.replaceWith(yesBtn.cloneNode(true));
-                noBtn.replaceWith(noBtn.cloneNode(true));
-            }
+                    // Store all bookings for per-week calculations
+                    allBookingsData.all = data.bookings || [];
 
-            document.getElementById('confirmYes').onclick = () => {
-                cleanup();
-                resolve(true);
-            };
+                    const weeklyCountEl = document.getElementById('weeklyBookingsCount');
+                    const weeklyTextEl = document.getElementById('weeklyProgressText');
 
-            document.getElementById('confirmNo').onclick = () => {
-                cleanup();
-                resolve(false);
-            };
-
-            modal.onclick = (e) => {
-                if (e.target === modal) {
-                    cleanup();
-                    resolve(false);
+                    if (weeklyCountEl) {
+                        weeklyCountEl.textContent = count;
+                    }
+                    if (weeklyTextEl) {
+                        if (remaining === 0) {
+                            weeklyTextEl.textContent = `This week's limit reached (${limit} max)`;
+                            weeklyTextEl.style.color = '#ff9800';
+                        } else {
+                            weeklyTextEl.textContent = `${remaining} bookings remaining this week`;
+                            weeklyTextEl.style.color = '';
+                        }
+                    }
                 }
-            };
-        });
-    }
-    // ==========================================
-    // END TOAST NOTIFICATION SYSTEM
-    // ==========================================
-
-    // Calendar elements
-    const scheduleCalendar = document.getElementById('scheduleCalendar');
-
-    // Filter elements
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const coachSelect = document.getElementById('coachSelect');
-    const sessionSelect = document.getElementById('sessionSelect');
-    const availableOnlyCheckbox = document.getElementById('availableOnly');
-    const upcomingOnlyCheckbox = document.getElementById('upcomingOnly');
-
-    // Session picker event
-    if (sessionSelect) {
-        sessionSelect.addEventListener('change', function () {
-            currentSessionFilter = sessionSelect.value;
-            closeScheduleDetails();
-            fetchReservations();
-        });
-    }
-
-    // Quick filter events
-    if (availableOnlyCheckbox) {
-        availableOnlyCheckbox.addEventListener('change', function () {
-            availableOnlyFilter = this.checked;
-            closeScheduleDetails();
-            renderLargeCalendar();
-        });
-    }
-
-    if (upcomingOnlyCheckbox) {
-        upcomingOnlyCheckbox.addEventListener('change', function () {
-            upcomingOnlyFilter = this.checked;
-            closeScheduleDetails();
-            renderLargeCalendar();
-        });
-    }
-
-    // Schedule details
-    const scheduleDetails = document.getElementById('scheduleDetails');
-    const closeDetailsBtn = document.getElementById('closeDetails');
-
-    // Month navigation in schedule header
-    const monthNavBtn = document.querySelector('#monthNavBtn');
-    const monthDropdown = document.getElementById('monthDropdown');
-    const currentMonthDisplay = document.getElementById('currentMonthDisplay');
-    const monthOptions = document.querySelectorAll('.month-option');
-
-    async function fetchTrainers(classType = "all") {
-        try {
-            // Add timestamp to prevent caching
-            const timestamp = new Date().getTime();
-            const response = await fetch(`api/get_trainers.php?_t=${timestamp}`, {
-                cache: 'no-store'
+            })
+            .catch(error => {
+                console.error('Error loading weekly bookings:', error);
             });
-            const data = await response.json();
+    }
 
-            if (data.success) {
-                trainersData = data.trainers;
-                updateCoachDropdown(classType);
-                checkSingleClassType();
-                fetchReservations();
-            } else {
-                console.error('Failed to load trainers:', data.message);
+    // Helper function to get week boundaries (Sunday to Saturday)
+    function getWeekBoundaries(dateStr) {
+        const date = new Date(dateStr + 'T00:00:00');
+        const dayOfWeek = date.getDay(); // 0 (Sunday) to 6 (Saturday)
+
+        // Calculate Sunday of the week
+        const sunday = new Date(date);
+        sunday.setDate(date.getDate() - dayOfWeek);
+        sunday.setHours(0, 0, 0, 0);
+
+        // Calculate Saturday of the week
+        const saturday = new Date(sunday);
+        saturday.setDate(sunday.getDate() + 6);
+        saturday.setHours(0, 0, 0, 0);
+
+        // Format dates as YYYY-MM-DD without timezone conversion
+        const formatDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        return {
+            start: formatDate(sunday),
+            end: formatDate(saturday)
+        };
+    }
+
+    // Check how many bookings are in a specific week
+    function getBookingCountForWeek(dateStr) {
+        const weekBounds = getWeekBoundaries(dateStr);
+
+        const count = allBookingsData.all.filter(booking => {
+            // Only count confirmed and completed bookings
+            if (booking.status !== 'confirmed' && booking.status !== 'completed') {
+                return false;
             }
-        } catch (err) {
-            console.error('Error fetching trainers:', err);
+
+            return booking.date >= weekBounds.start && booking.date <= weekBounds.end;
+        }).length;
+
+        return count;
+    }
+
+    function checkWeeklyLimitForDate(dateStr) {
+        const count = getBookingCountForWeek(dateStr);
+        bookingState.selectedWeekCount = count;
+        bookingState.selectedWeekFull = count >= bookingState.weeklyLimit;
+
+        // Update warning display
+        updateWeeklyLimitWarning(dateStr);
+
+        return !bookingState.selectedWeekFull;
+    }
+
+    function updateWeeklyLimitWarning(dateStr) {
+        const wizardSection = document.querySelector('.booking-wizard-section');
+        if (!wizardSection) return;
+
+        const existingWarning = wizardSection.querySelector('.weekly-limit-warning');
+
+        if (bookingState.selectedWeekFull) {
+            const weekBounds = getWeekBoundaries(dateStr);
+            const weekStart = new Date(weekBounds.start + 'T00:00:00');
+            const weekEnd = new Date(weekBounds.end + 'T00:00:00');
+
+            if (!existingWarning) {
+                const warning = document.createElement('div');
+                warning.className = 'weekly-limit-warning';
+                warning.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>
+                        <h3>Weekly Booking Limit Reached</h3>
+                        <p>You've already booked ${bookingState.selectedWeekCount} sessions for the week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (maximum ${bookingState.weeklyLimit} per week). Please select a date from a different week.</p>
+                    </div>
+                `;
+                wizardSection.insertBefore(warning, wizardSection.firstChild);
+            } else {
+                // Update existing warning
+                existingWarning.querySelector('p').textContent =
+                    `You've already booked ${bookingState.selectedWeekCount} sessions for the week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (maximum ${bookingState.weeklyLimit} per week). Please select a date from a different week.`;
+            }
+        } else {
+            // Remove warning if week is not full
+            if (existingWarning) {
+                existingWarning.remove();
+            }
         }
     }
 
-    function checkSingleClassType() {
-        const classTypes = Object.keys(trainersData);
-        const filterContainer = document.querySelector('.class-filter');
-        if (!filterContainer) return;
-
-
-        filterContainer.style.display = classTypes.length <= 1 ? 'none' : 'flex';
+    // ===================================
+    // LOAD USER BOOKINGS
+    // ===================================
+    function loadUserBookings() {
+        fetch('api/get_user_bookings.php')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Bookings API Response:', data); // Debug log
+                if (data.success) {
+                    console.log('Grouped bookings:', data.grouped); // Debug log
+                    console.log('Summary:', data.summary); // Debug log
+                    renderBookings(data.grouped);
+                    // Counts are updated in applyBookingsFilter(), called by renderBookings()
+                } else {
+                    console.error('API returned error:', data.message);
+                    document.getElementById('upcomingBookings').innerHTML =
+                        `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
+                    document.getElementById('pastBookings').innerHTML =
+                        `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
+                    document.getElementById('cancelledBookings').innerHTML =
+                        `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading bookings:', error);
+                document.getElementById('upcomingBookings').innerHTML =
+                    '<p class="empty-message">Failed to load bookings</p>';
+                document.getElementById('pastBookings').innerHTML =
+                    '<p class="empty-message">Failed to load bookings</p>';
+                document.getElementById('cancelledBookings').innerHTML =
+                    '<p class="empty-message">Failed to load bookings</p>';
+            });
     }
 
-    function updateCoachDropdown(classType = "all") {
-        if (!trainersData || typeof trainersData !== "object") {
-            console.warn("No trainers data found");
+    function renderBookings(grouped) {
+        console.log('Rendering bookings - upcoming:', grouped.upcoming?.length, 'today:', grouped.today?.length, 'past:', grouped.past?.length); // Debug log
+
+        // Combine all bookings from server groups
+        const allBookings = [...(grouped.today || []), ...(grouped.upcoming || []), ...(grouped.past || [])];
+
+        // Get current date and time
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        const sessionEndTimes = {
+            'Morning': 11,
+            'Afternoon': 17,
+            'Evening': 22
+        };
+
+        // Re-categorize bookings based on current time
+        const upcomingList = [];
+        const pastList = [];
+        const cancelledList = [];
+
+        allBookings.forEach(booking => {
+            // Separate cancelled bookings first
+            if (booking.status === 'cancelled') {
+                cancelledList.push(booking);
+                return;
+            }
+
+            const bookingDate = new Date(booking.date + 'T00:00:00');
+            bookingDate.setHours(0, 0, 0, 0);
+
+            // If booking date is in the future
+            if (bookingDate > today) {
+                upcomingList.push(booking);
+            }
+            // If booking date is today
+            else if (bookingDate.getTime() === today.getTime()) {
+                const currentHour = now.getHours();
+                const sessionEnd = sessionEndTimes[booking.session_time] || 24;
+
+                // If session hasn't ended yet, it's upcoming
+                if (currentHour < sessionEnd) {
+                    upcomingList.push(booking);
+                } else {
+                    // Session has ended, move to past
+                    pastList.push(booking);
+                }
+            }
+            // Booking date is in the past
+            else {
+                pastList.push(booking);
+            }
+        });
+
+        // Sort upcoming by date ascending (earliest first), then by session time
+        upcomingList.sort((a, b) => {
+            const dateCompare = new Date(a.date) - new Date(b.date);
+            if (dateCompare !== 0) return dateCompare;
+
+            // If same date, sort by session time (Morning, Afternoon, Evening)
+            const sessionOrder = { 'Morning': 1, 'Afternoon': 2, 'Evening': 3 };
+            return sessionOrder[a.session_time] - sessionOrder[b.session_time];
+        });
+
+        // Sort past bookings by date descending (most recent first)
+        pastList.sort((a, b) => {
+            const dateCompare = new Date(b.date) - new Date(a.date);
+            if (dateCompare !== 0) return dateCompare;
+
+            // If same date, sort by session time (Evening, Afternoon, Morning - reverse)
+            const sessionOrder = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
+            return sessionOrder[a.session_time] - sessionOrder[b.session_time];
+        });
+
+        // Sort cancelled bookings by date descending (most recent first)
+        cancelledList.sort((a, b) => {
+            const dateCompare = new Date(b.date) - new Date(a.date);
+            if (dateCompare !== 0) return dateCompare;
+
+            const sessionOrder = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
+            return sessionOrder[a.session_time] - sessionOrder[b.session_time];
+        });
+
+        // Store the full data for filtering
+        allBookingsData.upcoming = upcomingList;
+        allBookingsData.past = pastList;
+        allBookingsData.cancelled = cancelledList;
+
+        // Update stat cards with next upcoming session
+        updateStatCards(upcomingList);
+
+        // Apply current filter
+        applyBookingsFilter();
+    }
+
+    function applyBookingsFilter() {
+        const filterValue = document.getElementById('classFilter')?.value || 'all';
+
+        // Filter upcoming bookings
+        let filteredUpcoming = allBookingsData.upcoming;
+        if (filterValue !== 'all') {
+            filteredUpcoming = allBookingsData.upcoming.filter(booking =>
+                booking.class_type === filterValue
+            );
+        }
+
+        // Filter past bookings
+        let filteredPast = allBookingsData.past;
+        if (filterValue !== 'all') {
+            filteredPast = allBookingsData.past.filter(booking =>
+                booking.class_type === filterValue
+            );
+        }
+
+        // Filter cancelled bookings
+        let filteredCancelled = allBookingsData.cancelled;
+        if (filterValue !== 'all') {
+            filteredCancelled = allBookingsData.cancelled.filter(booking =>
+                booking.class_type === filterValue
+            );
+        }
+
+        renderBookingList('upcomingBookings', filteredUpcoming);
+        renderBookingList('pastBookings', filteredPast);
+        renderBookingList('cancelledBookings', filteredCancelled);
+
+        // Update counts with filtered data
+        document.getElementById('upcomingCount').textContent = filteredUpcoming.length;
+        document.getElementById('pastCount').textContent = filteredPast.length;
+        document.getElementById('cancelledCount').textContent = filteredCancelled.length;
+    }
+
+    function updateStatCards(upcomingList) {
+        const upcomingClassEl = document.getElementById('upcomingClass');
+        const upcomingDateEl = document.getElementById('upcomingDate');
+        const upcomingTrainerEl = document.getElementById('upcomingTrainer');
+        const trainerSubtextEl = document.getElementById('trainerSubtext');
+
+        if (!upcomingList || upcomingList.length === 0) {
+            if (upcomingClassEl) upcomingClassEl.textContent = '-';
+            if (upcomingDateEl) upcomingDateEl.textContent = 'No upcoming sessions';
+            if (upcomingTrainerEl) upcomingTrainerEl.textContent = '-';
+            if (trainerSubtextEl) trainerSubtextEl.textContent = '-';
             return;
         }
 
-        const dropdown = document.getElementById("coachSelect");
-        if (!dropdown) return;
+        // Get current date and time
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
 
-        // Save current selection
-        const previousSelection = currentCoachFilter;
+        // Find the first truly upcoming booking (not past)
+        let nextBooking = null;
+        for (const booking of upcomingList) {
+            const bookingDate = new Date(booking.date + 'T00:00:00');
+            bookingDate.setHours(0, 0, 0, 0);
 
-        dropdown.innerHTML = "";
-
-        // Add "All Coaches" option
-        const allOption = document.createElement("option");
-        allOption.value = "all";
-        allOption.textContent = "All Coaches";
-        dropdown.appendChild(allOption);
-
-        const key = classType ? classType.toLowerCase().replace(/\s+/g, "-") : "all";
-        const trainers = trainersData[key] || [];
-
-        // Check if previously selected coach is still available
-        let coachStillAvailable = false;
-
-        trainers.forEach(trainer => {
-            const opt = document.createElement("option");
-            opt.value = trainer.id;
-            opt.textContent = trainer.name;
-            dropdown.appendChild(opt);
-
-            if (trainer.id == previousSelection) {
-                coachStillAvailable = true;
+            // If booking is in the future, use it
+            if (bookingDate > today) {
+                nextBooking = booking;
+                break;
             }
-        });
 
-        // Restore selection if coach is still available, otherwise reset to "all"
-        if (coachStillAvailable && previousSelection !== 'all') {
-            dropdown.value = previousSelection;
-            currentCoachFilter = previousSelection;
-        } else {
-            dropdown.value = "all";
-            currentCoachFilter = "all";
-        }
+            // If booking is today, check if session hasn't ended yet
+            if (bookingDate.getTime() === today.getTime()) {
+                const currentHour = now.getHours();
+                const sessionEnd = {
+                    'Morning': 11,
+                    'Afternoon': 17,
+                    'Evening': 22
+                };
 
-    }
-
-
-
-    // Fetch reservations from server
-    async function fetchReservations() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth() + 1;
-
-        try {
-            // Add timestamp to prevent caching
-            const timestamp = new Date().getTime();
-            const response = await fetch(`api/get_reservations.php?year=${year}&month=${month}&class=${currentClassFilter}&coach=${currentCoachFilter}&session=${currentSessionFilter}&_t=${timestamp}`, {
-                cache: 'no-store',
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
+                if (currentHour < (sessionEnd[booking.session_time] || 24)) {
+                    nextBooking = booking;
+                    break;
                 }
-            });
-            const data = await response.json();
+            }
+        }
 
-            if (data.success) {
-                console.log('Reservations data received:', data.reservations);
-                console.log('Number of days with sessions:', Object.keys(data.reservations).length);
-                sessionsData = data.reservations;
-                console.log('Rendering calendar with updated data...');
-                renderLargeCalendar();
-                console.log('Calendar render complete');
+        // If no valid upcoming booking found
+        if (!nextBooking) {
+            if (upcomingClassEl) upcomingClassEl.textContent = '-';
+            if (upcomingDateEl) upcomingDateEl.textContent = 'No upcoming sessions';
+            if (upcomingTrainerEl) upcomingTrainerEl.textContent = '-';
+            if (trainerSubtextEl) trainerSubtextEl.textContent = '-';
+            return;
+        }
+
+        // Parse the date properly
+        const bookingDate = new Date(nextBooking.date + 'T00:00:00');
+        bookingDate.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const isToday = bookingDate.getTime() === today.getTime();
+        const isTomorrow = bookingDate.getTime() === tomorrow.getTime();
+
+        // Update class name
+        if (upcomingClassEl) {
+            upcomingClassEl.textContent = nextBooking.class_type;
+        }
+
+        // Update date info
+        if (upcomingDateEl) {
+            let dateText = '';
+            if (isToday) {
+                dateText = `Today, ${nextBooking.session_time}`;
+            } else if (isTomorrow) {
+                dateText = `Tomorrow, ${nextBooking.session_time}`;
             } else {
-                console.error('Failed to fetch reservations:', data.message);
+                dateText = `${bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${nextBooking.session_time}`;
             }
-        } catch (error) {
-            console.error('Error fetching reservations:', error);
+            upcomingDateEl.textContent = dateText;
+        }
+
+        // Update trainer info
+        if (upcomingTrainerEl) {
+            upcomingTrainerEl.textContent = nextBooking.trainer_name;
+        }
+
+        if (trainerSubtextEl) {
+            trainerSubtextEl.textContent = nextBooking.session_hours || nextBooking.session_time;
         }
     }
 
-    // Fetch user bookings
-    async function fetchUserBookings() {
-        try {
-            // Add timestamp to prevent caching
-            const timestamp = new Date().getTime();
-            let url = `api/get_user_bookings.php?_t=${timestamp}`;
+    function renderBookingList(containerId, bookings) {
+        const container = document.getElementById(containerId);
+        console.log(`Rendering ${containerId}:`, bookings); // Debug log
 
-            // Add month/year filter if set
-            if (bookedFilterMonth !== null && bookedFilterYear !== null) {
-                url += `&month=${bookedFilterMonth}&year=${bookedFilterYear}`;
-            }
-
-            const response = await fetch(url, {
-                cache: 'no-store'
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                currentBookings = data.bookings;
-                updateBookingsList(currentBookings);
-                updateStats(currentBookings);
-                updateBookedMonthDisplay();
-            }
-        } catch (error) {
-            console.error('Error fetching bookings:', error);
-        }
-    }
-
-    // Update bookings list
-    function updateBookingsList(bookings) {
-        const sessionsList = document.getElementById('sessionsList');
-
-        if (bookings.length === 0) {
-            sessionsList.innerHTML = '<p style="color: var(--color-text-muted); text-align: center; padding: var(--spacing-4);">No booked sessions</p>';
+        if (!bookings || bookings.length === 0) {
+            container.innerHTML = '<p class="empty-message">No bookings found</p>';
             return;
         }
 
         const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
 
-        const tableHTML = `
-            <table class="sessions-table">
-                <thead>
-                    <tr>
-                        <th>Class</th>
-                        <th>
-                            Date
-                            <button class="sort-btn" id="sortByDate" title="Sort by date">
-                                <i class="fas fa-sort${dateSortOrder === 'asc' ? '-up' : '-down'}"></i>
-                            </button>
-                        </th>
-                        <th>
-                            Time
-                            <button class="sort-btn" id="sortByTime" title="Sort by time">
-                                <i class="fas fa-sort${timeSortOrder === 'asc' ? '-up' : '-down'}"></i>
-                            </button>
-                        </th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${bookings.map(booking => {
-            const datetime = new Date(booking.datetime);
-            const dayName = datetime.toLocaleDateString('en-US', { weekday: 'short' });
-            const day = datetime.getDate();
-            const month = datetime.toLocaleDateString('en-US', { month: 'short' });
-            const statusClass = booking.status.toLowerCase().replace(' ', '-');
+        const sessionStartTimes = {
+            'Morning': 7,    // 7 AM
+            'Afternoon': 12, // 12 PM
+            'Evening': 17    // 5 PM
+        };
 
-            // Check if booking is cancellable (at least 2 hours before and status is confirmed)
-            const hoursUntilSession = (datetime - now) / (1000 * 60 * 60);
-            const isCancellable = booking.status === 'Confirmed' && hoursUntilSession >= 2;
-            const isCancelled = booking.status === 'Cancelled';
+        const sessionEndTimes = {
+            'Morning': 11,
+            'Afternoon': 17,
+            'Evening': 22
+        };
 
-            let actionButton = '';
-            if (isCancellable) {
-                actionButton = `<button class="cancel-btn" data-booking-id="${booking.id}" title="Cancel this booking">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>`;
-            } else if (isCancelled) {
-                actionButton = `<span class="cancelled-label">Cancelled</span>`;
-            } else if (hoursUntilSession < 2 && datetime > now) {
-                actionButton = `<span class="no-cancel-label" title="Too close to session time">Cannot cancel</span>`;
-            } else {
-                actionButton = `<span class="no-action-label">-</span>`;
+        container.innerHTML = bookings.map(booking => {
+            // Determine if this booking can actually be cancelled based on current time and 12-hour policy
+            const bookingDate = new Date(booking.date + 'T00:00:00');
+            const sessionStartHour = sessionStartTimes[booking.session_time] || 7;
+
+            // Create datetime for session start
+            const sessionStartDateTime = new Date(booking.date + 'T00:00:00');
+            sessionStartDateTime.setHours(sessionStartHour, 0, 0, 0);
+
+            // Calculate hours until session starts
+            const hoursUntilSession = (sessionStartDateTime - now) / (1000 * 60 * 60);
+
+            let canActuallyCancelNow = false;
+            let isWithinCancellationWindow = false;
+            let hasSessionPassed = false;
+
+            if (booking.status !== 'cancelled' && booking.status !== 'completed') {
+                // Can only cancel if more than 12 hours before session start
+                if (hoursUntilSession > 12) {
+                    canActuallyCancelNow = true;
+                }
+                // If session has already passed, cannot cancel
+                else if (hoursUntilSession < 0) {
+                    const currentHour = now.getHours();
+                    const sessionEnd = sessionEndTimes[booking.session_time] || 24;
+                    bookingDate.setHours(0, 0, 0, 0);
+
+                    // Only mark as completed if session has ended
+                    hasSessionPassed = true;
+                    canActuallyCancelNow = false;
+                } else {
+                    // Within 12 hours of session but hasn't started - cannot cancel
+                    isWithinCancellationWindow = true;
+                    canActuallyCancelNow = false;
+                }
             }
 
             return `
-                            <tr class="${isCancelled ? 'cancelled-row' : ''}">
-                                <td class="session-class" data-label="Class">${booking.class_type}</td>
-                                <td class="session-date" data-label="Date">${month} ${day} (${dayName})</td>
-                                <td class="session-time" data-label="Time">${booking.time}</td>
-                                <td class="session-status status-${statusClass}" data-label="Status">
-                                    <i class="fas fa-${booking.status === 'Confirmed' ? 'check' : 'times'}-circle"></i> ${booking.status}
-                                </td>
-                                <td class="session-action" data-label="Action">${actionButton}</td>
-                            </tr>
-                        `;
-        }).join('')}
-                </tbody>
-            </table>
-        `;
+                <div class="booking-item ${booking.status === 'cancelled' ? 'cancelled' : ''}">
+                    <div class="booking-date-badge">
+                        <div class="booking-day">${new Date(booking.date).getDate()}</div>
+                        <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-class">${booking.class_type}</div>
+                        <div class="booking-info">
+                            <span><i class="fas fa-clock"></i> ${booking.session_time} (${booking.session_hours})</span>
+                            <span><i class="fas fa-user"></i> ${booking.trainer_name}</span>
+                            <span><i class="fas fa-calendar"></i> ${booking.day_of_week}</span>
+                        </div>
+                    </div>
+                    <div class="booking-actions">
+                        ${booking.status === 'cancelled' ? `
+                            <div class="booking-status-badge cancelled-badge">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Cancelled</span>
+                            </div>
+                        ` : canActuallyCancelNow ? `
+                            <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        ` : isWithinCancellationWindow ? `
+                            <div class="booking-status-badge warning-badge" title="Cannot cancel within 12 hours of session start">
+                                <i class="fas fa-lock"></i>
+                                <span>Cannot Cancel</span>
+                            </div>
+                        ` : `
+                            <div class="booking-status-badge completed-badge">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Completed</span>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 
-        sessionsList.innerHTML = tableHTML;
+    // ===================================
+    // BOOKING TABS
+    // ===================================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const tab = this.getAttribute('data-tab');
 
-        // Add event listeners to cancel buttons
-        document.querySelectorAll('.cancel-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const bookingId = this.getAttribute('data-booking-id');
-                cancelBooking(bookingId);
-            });
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // Update active content
+            document.querySelectorAll('.bookings-list').forEach(list => list.classList.remove('active'));
+            document.getElementById(tab + 'Bookings').classList.add('active');
         });
+    });
 
-        // Add event listeners to sort buttons
-        const sortByDateBtn = document.getElementById('sortByDate');
-        const sortByTimeBtn = document.getElementById('sortByTime');
-
-        if (sortByDateBtn) {
-            sortByDateBtn.addEventListener('click', function () {
-                dateSortOrder = dateSortOrder === 'asc' ? 'desc' : 'asc';
-                sortBookings('date');
-            });
+    // ===================================
+    // CANCEL BOOKING
+    // ===================================
+    window.cancelBooking = function (bookingId) {
+        if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+            return;
         }
 
-        if (sortByTimeBtn) {
-            sortByTimeBtn.addEventListener('click', function () {
-                timeSortOrder = timeSortOrder === 'asc' ? 'desc' : 'asc';
-                sortBookings('time');
+        fetch('api/cancel_booking.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `booking_id=${bookingId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Booking cancelled successfully', 'success');
+                    loadUserBookings();
+                    loadWeeklyBookings();
+                } else {
+                    showToast(data.message || 'Failed to cancel booking', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error cancelling booking:', error);
+                showToast('[CANCEL] An error occurred. Please try again.', 'error');
             });
-        }
-    }
+    };
 
-    // Sort bookings function
-    function sortBookings(sortBy) {
-        let sortedBookings = [...currentBookings];
+    // ===================================
+    // CALENDAR RENDERING
+    // ===================================
+    function renderCalendar() {
+        const calendarTitle = document.getElementById('calendarTitle');
+        const calendarDays = document.getElementById('calendarDays');
 
-        if (sortBy === 'date') {
-            sortedBookings.sort((a, b) => {
-                const dateA = new Date(a.datetime);
-                const dateB = new Date(b.datetime);
-                return dateSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-            });
-        } else if (sortBy === 'time') {
-            sortedBookings.sort((a, b) => {
-                const timeA = new Date(a.datetime);
-                const timeB = new Date(b.datetime);
-                // For time sorting, compare only the time portion
-                const timeOnlyA = timeA.getHours() * 60 + timeA.getMinutes();
-                const timeOnlyB = timeB.getHours() * 60 + timeB.getMinutes();
-                return timeSortOrder === 'asc' ? timeOnlyA - timeOnlyB : timeOnlyB - timeOnlyA;
-            });
-        }
-
-        updateBookingsList(sortedBookings);
-    }
-
-    // Update stats
-    function updateStats(bookings) {
-        const currentMonth = new Date().getMonth();
-        const sessionsThisMonth = bookings.filter(b => {
-            const bookingDate = new Date(b.datetime);
-            return bookingDate.getMonth() === currentMonth && b.status === 'Completed';
-        }).length;
-
-        document.getElementById('sessionsAttended').textContent = sessionsThisMonth;
-
-        // Find next upcoming session
-        const upcoming = bookings.find(b => new Date(b.datetime) > new Date() && b.status === 'Confirmed');
-        if (upcoming) {
-            const upcomingDate = new Date(upcoming.datetime);
-            document.getElementById('upcomingClass').textContent = upcoming.class_type;
-            document.getElementById('upcomingDate').textContent = upcomingDate.toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            document.getElementById('upcomingTrainer').textContent = upcoming.trainer_name;
-            document.getElementById('trainerSubtext').textContent = `Next class with ${upcoming.trainer_name}`;
-        }
-    }
-
-
-    // Update month navigation text in schedule header
-    function updateMonthNavText() {
         const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
             'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-        if (currentMonthDisplay) {
-            currentMonthDisplay.textContent = monthNames[currentDate.getMonth()];
-        }
 
-        // Update active state in dropdown
-        monthOptions.forEach(option => {
-            option.classList.remove('current');
-            if (parseInt(option.dataset.month) === currentDate.getMonth()) {
-                option.classList.add('current');
-            }
-        });
-    }
+        calendarTitle.textContent = monthNames[currentMonth];
 
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
 
-    // Render large calendar (monthly schedule)
-    function renderLargeCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const todayDate = today.getDate();
+        const todayMonth = today.getMonth();
+        const todayYear = today.getFullYear();
 
-        // Calculate max booking date (1 month from today)
-        const maxBookingDate = new Date();
-        maxBookingDate.setMonth(maxBookingDate.getMonth() + 1);
-        maxBookingDate.setHours(0, 0, 0, 0);
+        let html = '';
 
-        updateMonthNavText();
-        scheduleCalendar.innerHTML = '';
-
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-        // Track first day with sessions for debugging
-        let firstDayWithSessions = -1;
-        for (let day in sessionsData) {
-            if (sessionsData[day] && sessionsData[day].length > 0) {
-                firstDayWithSessions = parseInt(day);
-                break;
-            }
-        }
-
-        // Previous month days
+        // Previous month days (inactive)
         for (let i = firstDay - 1; i >= 0; i--) {
-            const day = document.createElement('div');
-            day.className = 'schedule-day inactive past-date';
-            const dayNum = document.createElement('div');
-            dayNum.className = 'day-number';
-            dayNum.textContent = daysInPrevMonth - i;
-            day.appendChild(dayNum);
-            scheduleCalendar.appendChild(day);
+            html += `<div class="schedule-day inactive">
+                <span class="day-number">${daysInPrevMonth - i}</span>
+            </div>`;
         }
 
         // Current month days
-        // Get allowed class types from filter buttons (user's membership)
-        const allFilterBtns = Array.from(document.querySelectorAll('.filter-btn'));
-        const allowedClassTypes = allFilterBtns.map(btn => btn.dataset.class);
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentYear, currentMonth, day);
+            const dateStr = formatDate(date);
+            const isPast = date < new Date(todayYear, todayMonth, todayDate);
+            const isToday = day === todayDate && currentMonth === todayMonth && currentYear === todayYear;
+            const isSelected = bookingState.date === dateStr;
 
-        for (let i = 1; i <= daysInMonth; i++) {
-            const day = document.createElement('div');
-            day.className = 'schedule-day';
+            // Can only book up to 30 days ahead
+            const maxDate = new Date();
+            maxDate.setDate(maxDate.getDate() + 30);
+            const isTooFar = date > maxDate;
 
-            const dayNum = document.createElement('div');
-            dayNum.className = 'day-number';
-            dayNum.textContent = i;
-            day.appendChild(dayNum);
+            let classes = ['schedule-day'];
+            if (isToday) classes.push('today');
+            if (isSelected) classes.push('selected');
+            if (isPast) classes.push('past-date');
+            if (isTooFar) classes.push('too-far-advance');
 
-            const currentDayDate = new Date(year, month, i);
-            currentDayDate.setHours(0, 0, 0, 0);
+            const clickable = !isPast && !isTooFar;
+            const onClick = clickable ? `onclick="selectDate('${dateStr}')"` : '';
 
-            // Check if this is today
-            const isToday = currentDayDate.getTime() === todayDateOnly.getTime();
-
-            // Check if date is in the past
-            const isPastDate = currentDayDate < todayDateOnly;
-
-            // Check if date is too far in advance (more than 1 month)
-            const isTooFarAdvance = currentDayDate > maxBookingDate;
-
-            // Check for sessions on this day
-            let daySessions = sessionsData[i];
-            let onlyAllowed = true;
-
-            // Don't show sessions for past dates
-            if (isPastDate) {
-                day.classList.add('inactive', 'past-date');
-                day.title = 'Past date - not available for booking';
-                scheduleCalendar.appendChild(day);
-                continue;
-            }
-
-            // Don't show sessions for dates too far in advance
-            if (isTooFarAdvance) {
-                day.classList.add('inactive', 'too-far-advance');
-                day.title = 'Bookings limited to 1 month in advance';
-                scheduleCalendar.appendChild(day);
-                continue;
-            }
-
-            if (daySessions && daySessions.length > 0) {
-                // Check if sessions are allowed based on user's membership
-                // If allowedClassTypes is empty (no membership), don't allow any
-                // If allowedClassTypes has values, check if AT LEAST ONE session matches
-                if (allowedClassTypes.length > 0) {
-                    // Use .some() instead of .every() - date is clickable if ANY session is allowed
-                    onlyAllowed = daySessions.some(session => allowedClassTypes.includes(session.class_slug));
-                } else {
-                    onlyAllowed = false; // No membership = no access
-                }
-
-                // Apply filters
-                let filteredSessions = [...daySessions];
-
-                // FIRST: Filter to only show sessions allowed by user's membership
-                if (allowedClassTypes.length > 0) {
-                    filteredSessions = filteredSessions.filter(session =>
-                        allowedClassTypes.includes(session.class_slug)
-                    );
-                }
-
-                if (availableOnlyFilter) {
-                    filteredSessions = filteredSessions.filter(session => session.slots > 0);
-                }
-
-                if (upcomingOnlyFilter && currentDayDate < today) {
-                    filteredSessions = [];
-                }
-
-                if (filteredSessions.length > 0) {
-                    // Count sessions with available slots vs full sessions
-                    // These counts now only include sessions in the user's membership plan
-                    const availableSessions = filteredSessions.filter(s => (s.slots || 0) > 0);
-                    const fullSessions = filteredSessions.filter(s => (s.slots || 0) === 0);
-                    const totalSessions = filteredSessions.length;
-                    const availableCount = availableSessions.length;
-
-                    // Debug logging for the first day with sessions
-                    if (i === firstDayWithSessions) {
-                        console.log(`Day ${i}: Total=${totalSessions}, Available=${availableCount}, Slots data:`,
-                            filteredSessions.map(s => `ID:${s.id} slots:${s.slots}`));
-                        firstDayWithSessions = -1; // Only log once
-                    }
-
-                    // Create session indicator
-                    const sessionIndicator = document.createElement('div');
-                    sessionIndicator.className = 'slot-indicator';
-
-                    if (availableCount === 0) {
-                        // All sessions are full
-                        sessionIndicator.textContent = 'FULL';
-                        sessionIndicator.classList.add('slot-full');
-                    } else if (availableCount === totalSessions) {
-                        // All sessions available
-                        sessionIndicator.textContent = `${totalSessions} ${totalSessions === 1 ? 'session' : 'sessions'}`;
-                        sessionIndicator.classList.add('slot-high');
-                    } else {
-                        // Some sessions available, some full
-                        sessionIndicator.textContent = `${availableCount}/${totalSessions} open`;
-
-                        const availabilityPercentage = (availableCount / totalSessions) * 100;
-                        if (availabilityPercentage > 50) {
-                            sessionIndicator.classList.add('slot-medium');
-                        } else {
-                            sessionIndicator.classList.add('slot-low');
-                        }
-                    }
-
-                    day.appendChild(sessionIndicator);
-
-                    day.addEventListener('click', () => showScheduleDetails(i, filteredSessions));
-                } else {
-                    daySessions = null; // No sessions after filtering
-                }
-            }
-
-            if (!onlyAllowed) {
-                day.classList.add('inactive');
-                day.title = 'Not available for your plan';
-            } else if (upcomingOnlyFilter && currentDayDate < today) {
-                day.classList.add('inactive');
-            } else if (!daySessions || daySessions.length === 0) {
-                // No visual change, just no click handler
-            }
-
-            // Add 'today' class if this is the current day
-            if (isToday) {
-                day.classList.add('today');
-            }
-
-            scheduleCalendar.appendChild(day);
+            html += `<div class="${classes.join(' ')}" data-date="${dateStr}" ${onClick}>
+                <span class="day-number">${day}</span>
+            </div>`;
         }
 
-        // Fill remaining cells (next month preview)
-        // Calculate how many total cells we need to fill complete rows
-        // We need to fill rows that are multiples of 7
-        const totalCells = scheduleCalendar.children.length;
-        const daysPerWeek = 7;
-        const rowsNeeded = Math.ceil(totalCells / daysPerWeek);
-        const totalCellsNeeded = rowsNeeded * daysPerWeek;
-        const remainingCells = totalCellsNeeded - totalCells;
-
-        for (let i = 1; i <= remainingCells; i++) {
-            const day = document.createElement('div');
-            day.className = 'schedule-day inactive';
-            const dayNum = document.createElement('div');
-            dayNum.className = 'day-number';
-            dayNum.textContent = i;
-            day.appendChild(dayNum);
-            scheduleCalendar.appendChild(day);
+        // Next month days (inactive)
+        const totalCells = firstDay + daysInMonth;
+        const remainingCells = 7 - (totalCells % 7);
+        if (remainingCells < 7) {
+            for (let day = 1; day <= remainingCells; day++) {
+                html += `<div class="schedule-day inactive">
+                    <span class="day-number">${day}</span>
+                </div>`;
+            }
         }
 
-        // Also render mobile list view
-        renderMobileList();
+        calendarDays.innerHTML = html;
     }
 
-    // Render mobile schedule list view
-    function renderMobileList() {
-        const mobileListContainer = document.getElementById('mobileScheduleList');
-        if (!mobileListContainer) return;
-
-        mobileListContainer.innerHTML = '';
-
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        // Get allowed class types from filter buttons (user's membership)
-        const allFilterBtns = Array.from(document.querySelectorAll('.filter-btn'));
-        const allowedClassTypes = allFilterBtns.map(btn => btn.dataset.class);
-
-        // Sort days with sessions
-        const daysWithSessions = [];
-        for (let i = 1; i <= daysInMonth; i++) {
-            const currentDayDate = new Date(year, month, i);
-            currentDayDate.setHours(0, 0, 0, 0);
-
-            // Only show future dates
-            if (currentDayDate < todayDateOnly) continue;
-
-            let daySessions = sessionsData[i];
-            if (!daySessions || daySessions.length === 0) continue;
-
-            // Check if sessions are allowed based on user's membership
-            if (allowedClassTypes.length > 0) {
-                daySessions = daySessions.filter(session => allowedClassTypes.includes(session.class_slug));
-            } else {
-                continue; // No membership = no access
-            }
-
-            if (daySessions.length === 0) continue;
-
-            daysWithSessions.push({ day: i, sessions: daySessions });
+    // Calendar navigation
+    document.getElementById('prevMonth').addEventListener('click', function () {
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
         }
-
-        if (daysWithSessions.length === 0) {
-            mobileListContainer.innerHTML = '<p style="color: var(--color-text-muted); text-align: center; padding: var(--spacing-4);">No sessions available this month.</p>';
-            return;
-        }
-
-        daysWithSessions.forEach(({ day, sessions }) => {
-            const date = new Date(year, month, day);
-            const dateStr = `${monthNames[month]} ${day}`;
-            const dayName = dayNames[date.getDay()];
-
-            const dayCard = document.createElement('div');
-            dayCard.className = 'mobile-list-day';
-            dayCard.innerHTML = `
-                <div class="mobile-list-day-header">
-                    <div class="mobile-list-day-title">${dayName}, ${dateStr}</div>
-                </div>
-                <div class="mobile-list-day-sessions"></div>
-            `;
-
-            const sessionsContainer = dayCard.querySelector('.mobile-list-day-sessions');
-
-            sessions.forEach(session => {
-                const isAvailable = (session.slots || 0) > 0;
-                const sessionCard = document.createElement('div');
-                sessionCard.className = 'mobile-list-session';
-                sessionCard.innerHTML = `
-                    <div class="mobile-list-session-header">
-                        <div class="mobile-list-session-time">${session.time}</div>
-                        <div class="session-status ${isAvailable ? 'available' : 'full'}">
-                            ${isAvailable ? '<i class="fas fa-check-circle"></i> Available' : '<i class="fas fa-times-circle"></i> Full'}
-                        </div>
-                    </div>
-                    <div class="mobile-list-session-info">
-                        <span class="mobile-list-session-type">${session.class}</span>
-                        <span class="mobile-list-session-trainer">${session.trainer}</span>
-                    </div>
-                `;
-
-                if (isAvailable) {
-                    const bookBtn = document.createElement('button');
-                    bookBtn.className = 'book-session-btn mobile-list-session-action';
-                    bookBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book Now';
-                    bookBtn.addEventListener('click', () => bookSession(session.id));
-                    sessionCard.appendChild(bookBtn);
-                }
-
-                sessionsContainer.appendChild(sessionCard);
-            });
-
-            mobileListContainer.appendChild(dayCard);
-        });
-    }
-
-    // Show schedule details
-    function showScheduleDetails(day, daySessions) {
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        const dateStr = `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${day}, ${date.getFullYear()}`;
-
-        document.getElementById('detailDate').textContent = dateStr;
-
-        // Get allowed class types from filter buttons (user's membership)
-        const allowedClassTypes = Array.from(document.querySelectorAll('.filter-btn')).map(btn => btn.dataset.class);
-
-        // Filter sessions to only show those included in user's membership plan
-        const allowedSessions = daySessions.filter(session =>
-            allowedClassTypes.includes(session.class_slug)
-        );
-
-        // Populate sessions list
-        const sessionsListModal = document.getElementById('sessionsListModal');
-        sessionsListModal.innerHTML = '';
-
-        // Check if there are any allowed sessions
-        if (allowedSessions.length === 0) {
-            sessionsListModal.innerHTML = '<p style="color: var(--color-text-muted); text-align: center; padding: var(--spacing-4);">No sessions available for your membership plan on this date.</p>';
-            scheduleDetails.style.display = 'flex';
-            return;
-        }
-
-        allowedSessions.forEach(session => {
-            const sessionCard = document.createElement('div');
-            sessionCard.className = 'session-card-modal';
-
-            const isAvailable = (session.slots || 0) > 0;
-
-            sessionCard.innerHTML = `
-                <div class="session-card-header">
-                    <div class="session-info">
-                        <div class="session-class-type">
-                            <i class="fas fa-dumbbell"></i> ${session.class}
-                        </div>
-                        <div class="session-trainer">
-                            <i class="fas fa-user"></i> ${session.trainer}
-                        </div>
-                        <div class="session-time">
-                            <i class="fas fa-clock"></i> ${session.time}
-                        </div>
-                    </div>
-                    <div class="session-status ${isAvailable ? 'available' : 'full'}">
-                        ${isAvailable ? '<i class="fas fa-check-circle"></i> Available' : '<i class="fas fa-times-circle"></i> Full'}
-                    </div>
-                </div>
-                ${isAvailable ? `
-                    <button class="book-session-btn" data-reservation-id="${session.id}">
-                        <i class="fas fa-calendar-check"></i> Book This Session
-                    </button>
-                ` : ''}
-            `;
-
-            sessionsListModal.appendChild(sessionCard);
-        });
-
-        // Add click handlers for book buttons
-        document.querySelectorAll('.book-session-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const reservationId = btn.getAttribute('data-reservation-id');
-
-                // Extract session details from the session card
-                const sessionCard = btn.closest('.session-card-modal');
-                const classType = sessionCard.querySelector('.session-class-type').textContent.trim();
-                const trainer = sessionCard.querySelector('.session-trainer').textContent.trim();
-                const time = sessionCard.querySelector('.session-time').textContent.trim();
-                const dateElement = document.getElementById('detailDate');
-                const date = dateElement ? dateElement.textContent : '';
-
-                const sessionDetails = {
-                    class: classType,
-                    trainer: trainer,
-                    date: date,
-                    time: time
-                };
-
-                bookSession(reservationId, sessionDetails);
-            });
-        });
-
-        scheduleDetails.style.display = 'flex';
-    }
-
-    // Close schedule details
-    function closeScheduleDetails() {
-        scheduleDetails.style.display = 'none';
-    }
-
-    // Close modal when clicking outside of it
-    scheduleDetails.addEventListener('click', function (e) {
-        if (e.target === scheduleDetails) {
-            closeScheduleDetails();
-        }
+        renderCalendar();
     });
 
-    // Close modal when pressing ESC key
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && scheduleDetails.style.display === 'flex') {
-            closeScheduleDetails();
+    document.getElementById('nextMonth').addEventListener('click', function () {
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
         }
+        renderCalendar();
     });
 
-    // Show booking confirmation modal
-    function showBookingConfirmation(sessionDetails) {
-        return new Promise((resolve) => {
-            const modal = document.getElementById('bookingConfirmModal');
-            const message = document.getElementById('bookingConfirmMessage');
-            const yesBtn = document.getElementById('bookingConfirmYes');
-            const noBtn = document.getElementById('bookingConfirmNo');
+    // Month dropdown navigation
+    const monthNavBtn = document.getElementById('monthNavBtn');
+    const monthDropdown = document.getElementById('monthDropdown');
 
-            // Set the confirmation message with session details
-            message.innerHTML = `
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <p style="font-size: 1.1rem; color: var(--color-text-light); margin-bottom: 20px;">
-                        Ready to book your training session?
-                    </p>
-                </div>
-                <div style="margin: 15px 0; padding: 20px; background: linear-gradient(135deg, rgba(213, 186, 43, 0.15) 0%, rgba(26, 74, 82, 0.3) 100%); border: 2px solid rgba(213, 186, 43, 0.3); border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);">
-                    <div style="display: grid; gap: 12px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <i class="fas fa-dumbbell" style="color: var(--color-text-dark); font-size: 16px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Class Type</div>
-                                <div style="font-size: 1.05rem; color: var(--color-accent); font-weight: 600;">${sessionDetails.class}</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <i class="fas fa-user-tie" style="color: var(--color-text-dark); font-size: 16px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Trainer</div>
-                                <div style="font-size: 1.05rem; color: var(--color-text-light); font-weight: 600;">${sessionDetails.trainer}</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <i class="fas fa-calendar-alt" style="color: var(--color-text-dark); font-size: 16px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Date</div>
-                                <div style="font-size: 1.05rem; color: var(--color-text-light); font-weight: 600;">${sessionDetails.date}</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 36px; height: 36px; background: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <i class="fas fa-clock" style="color: var(--color-text-dark); font-size: 16px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px;">Time</div>
-                                <div style="font-size: 1.05rem; color: var(--color-text-light); font-weight: 600;">${sessionDetails.time}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            modal.classList.add('active');
-
-            const handleYes = () => {
-                cleanup();
-                resolve(true);
-            };
-
-            const handleNo = () => {
-                cleanup();
-                resolve(false);
-            };
-
-            const cleanup = () => {
-                modal.classList.remove('active');
-                yesBtn.removeEventListener('click', handleYes);
-                noBtn.removeEventListener('click', handleNo);
-            };
-
-            yesBtn.addEventListener('click', handleYes);
-            noBtn.addEventListener('click', handleNo);
-        });
-    }
-
-    // Book session
-    async function bookSession(reservationId, sessionDetails = null) {
-        // If sessionDetails is provided, show confirmation modal
-        if (sessionDetails) {
-            const confirmed = await showBookingConfirmation(sessionDetails);
-            if (!confirmed) {
-                return; // User cancelled
-            }
-        }
-
-        try {
-            console.log('Attempting to book session:', reservationId);
-            const formData = new FormData();
-            formData.append('reservation_id', reservationId);
-
-            const response = await fetch('api/book_session.php', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log('Booking response:', data);
-
-            if (data.success) {
-                showToast('Training session booked successfully! See you at the gym!', 'success', 5000);
-                closeScheduleDetails();
-
-                // Delay to ensure database transaction is complete
-                console.log('Waiting for database commit...');
-                await new Promise(resolve => setTimeout(resolve, 800));
-
-                // Refresh both calendar and bookings list
-                console.log('Refreshing calendar and bookings after booking...');
-                console.log('Before refresh - Current sessionsData:', JSON.stringify(sessionsData));
-
-                // Fetch reservations first to update calendar
-                await fetchReservations();
-                // Then fetch user bookings
-                await fetchUserBookings();
-
-                console.log('After refresh - Updated sessionsData:', JSON.stringify(sessionsData));
-                console.log('Refresh complete after booking');
-
-                // Force a visual update
-                renderLargeCalendar();
-            } else {
-                showToast(data.message || 'Failed to book session', 'error', 6000);
-            }
-        } catch (error) {
-            console.error('Error booking session:', error);
-            showToast('Network error. Please check your connection and try again.', 'error');
-        }
-    }
-
-    // Cancel booking
-    async function cancelBooking(bookingId) {
-        const confirmed = await showConfirm('Are you sure you want to cancel this session? This action cannot be undone and your slot will be released.');
-
-        if (!confirmed) {
-            return;
-        }
-
-        try {
-            console.log('Attempting to cancel booking:', bookingId);
-            const formData = new FormData();
-            formData.append('booking_id', bookingId);
-
-            const response = await fetch('api/cancel_booking.php', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log('Cancellation response:', data);
-
-            if (data.success) {
-                showToast(data.message || 'Session cancelled successfully', 'success', 5000);
-
-                // Delay to ensure database transaction is complete
-                console.log('Waiting for database commit after cancellation...');
-                await new Promise(resolve => setTimeout(resolve, 800));
-
-                // Refresh bookings and reservations
-                console.log('Refreshing calendar and bookings after cancellation...');
-                console.log('Before refresh - Current sessionsData:', JSON.stringify(sessionsData));
-
-                // Fetch reservations first to update calendar
-                await fetchReservations();
-                // Then fetch user bookings
-                await fetchUserBookings();
-
-                console.log('After refresh - Updated sessionsData:', JSON.stringify(sessionsData));
-                console.log('Refresh complete after cancellation');
-
-                // Force a visual update
-                renderLargeCalendar();
-            } else {
-                showToast(data.message || 'Failed to cancel booking', 'error', 6000);
-            }
-        } catch (error) {
-            console.error('Error cancelling booking:', error);
-            showToast('Network error. Please check your connection and try again.', 'error');
-        }
-    }
-
-    // Class filter functionality
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', async function () {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
-            currentClassFilter = this.dataset.class;
-            console.log('Selected class:', currentClassFilter);
-
-            closeScheduleDetails();
-            await fetchTrainers(currentClassFilter);
-            fetchReservations();
-        });
-    });
-
-
-    // Coach select change
-    coachSelect.addEventListener('change', function () {
-        currentCoachFilter = this.value;
-        closeScheduleDetails();
-        fetchReservations();
-    });
-
-    // Month navigation buttons
-    const prevMonthBtn = document.getElementById('prevMonthBtn');
-    const nextMonthBtn = document.getElementById('nextMonthBtn');
-
-    if (prevMonthBtn) {
-        prevMonthBtn.addEventListener('click', function () {
-            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-            closeScheduleDetails();
-            fetchReservations();
-        });
-    }
-
-    if (nextMonthBtn) {
-        nextMonthBtn.addEventListener('click', function () {
-            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-            closeScheduleDetails();
-            fetchReservations();
-        });
-    }
-
-    // Toggle month dropdown
-    if (monthNavBtn) {
+    if (monthNavBtn && monthDropdown) {
         monthNavBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             monthDropdown.classList.toggle('active');
         });
-    }
 
-    // Handle month selection
-    monthOptions.forEach(option => {
-        option.addEventListener('click', function (e) {
-            e.stopPropagation();
-            const selectedMonth = parseInt(this.dataset.month);
-            currentDate = new Date(currentDate.getFullYear(), selectedMonth, 1);
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function () {
             monthDropdown.classList.remove('active');
-            fetchReservations();
         });
-    });
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function (e) {
-        if (monthDropdown && !monthNavBtn.contains(e.target)) {
-            monthDropdown.classList.remove('active');
-        }
-    });
-
-    // Close details button
-    closeDetailsBtn.addEventListener('click', closeScheduleDetails);
-
-    // Book session buttons are now dynamically created in showScheduleDetails()
-
-    // ==========================================
-    // BOOKED SESSIONS MONTH FILTER
-    // ==========================================
-
-    const bookedMonthDropdown = document.getElementById('bookedMonthDropdown');
-    const bookedMonthOptions = document.querySelectorAll('.booked-month-option');
-
-    // Update booked sessions month display
-    function updateBookedMonthDisplay() {
-        const displayElement = document.getElementById('bookedMonthText');
-        if (!displayElement) return;
-
-        if (bookedFilterMonth === null || bookedFilterYear === null) {
-            displayElement.textContent = 'All Upcoming';
-        } else {
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'];
-            displayElement.textContent = `${monthNames[bookedFilterMonth - 1]} ${bookedFilterYear}`;
-        }
-
-        // Update active state in dropdown
-        if (bookedMonthOptions) {
-            bookedMonthOptions.forEach(option => {
-                option.classList.remove('current');
-                const optionMonth = option.dataset.month;
-
-                if (optionMonth === 'all' && (bookedFilterMonth === null || bookedFilterYear === null)) {
-                    option.classList.add('current');
-                } else if (optionMonth !== 'all' && parseInt(optionMonth) === bookedFilterMonth) {
-                    option.classList.add('current');
-                }
-            });
-        }
-    }
-
-    // Navigate to previous month for booked sessions
-    const prevBookedMonthBtn = document.getElementById('prevBookedMonth');
-    if (prevBookedMonthBtn) {
-        prevBookedMonthBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-
-            // If currently showing "All Upcoming", start from current month
-            if (bookedFilterMonth === null || bookedFilterYear === null) {
-                const now = new Date();
-                bookedFilterMonth = now.getMonth() + 1;
-                bookedFilterYear = now.getFullYear();
-            }
-
-            // Go to previous month
-            bookedFilterMonth--;
-            if (bookedFilterMonth < 1) {
-                bookedFilterMonth = 12;
-                bookedFilterYear--;
-            }
-
-            fetchUserBookings();
-        });
-    }
-
-    // Navigate to next month for booked sessions
-    const nextBookedMonthBtn = document.getElementById('nextBookedMonth');
-    if (nextBookedMonthBtn) {
-        nextBookedMonthBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-
-            // If currently showing "All Upcoming", start from current month
-            if (bookedFilterMonth === null || bookedFilterYear === null) {
-                const now = new Date();
-                bookedFilterMonth = now.getMonth() + 1;
-                bookedFilterYear = now.getFullYear();
-            }
-
-            // Go to next month
-            bookedFilterMonth++;
-            if (bookedFilterMonth > 12) {
-                bookedFilterMonth = 1;
-                bookedFilterYear++;
-            }
-
-            fetchUserBookings();
-        });
-    }
-
-    // Toggle dropdown on month display click
-    const bookedMonthDisplay = document.getElementById('bookedMonthDisplay');
-    if (bookedMonthDisplay && bookedMonthDropdown) {
-        bookedMonthDisplay.addEventListener('click', function (e) {
-            e.stopPropagation();
-            bookedMonthDropdown.classList.toggle('active');
-        });
-    }
-
-    // Handle month selection from dropdown
-    if (bookedMonthOptions) {
-        bookedMonthOptions.forEach(option => {
+        // Month selection
+        document.querySelectorAll('.month-option').forEach(option => {
             option.addEventListener('click', function (e) {
                 e.stopPropagation();
-                const selectedMonth = this.dataset.month;
-
-                if (selectedMonth === 'all') {
-                    // Reset to "All Upcoming"
-                    bookedFilterMonth = null;
-                    bookedFilterYear = null;
-                } else {
-                    // Set to selected month and current year
-                    bookedFilterMonth = parseInt(selectedMonth);
-                    bookedFilterYear = new Date().getFullYear();
-                }
-
-                bookedMonthDropdown.classList.remove('active');
-                fetchUserBookings();
+                const selectedMonth = parseInt(this.getAttribute('data-month'));
+                currentMonth = selectedMonth;
+                renderCalendar();
+                monthDropdown.classList.remove('active');
             });
         });
     }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function (e) {
-        if (bookedMonthDropdown && bookedMonthDisplay && !bookedMonthDisplay.contains(e.target)) {
-            bookedMonthDropdown.classList.remove('active');
+    // ===================================
+    // STEP 1: DATE SELECTION
+    // ===================================
+    window.selectDate = function (dateStr) {
+        const dateElement = document.querySelector(`[data-date="${dateStr}"]`);
+
+        // Don't allow clicking on past dates or too far dates
+        if (dateElement && (dateElement.classList.contains('past-date') ||
+            dateElement.classList.contains('too-far-advance') ||
+            dateElement.classList.contains('inactive'))) {
+            return;
         }
-    });
 
-    // ==========================================
-    // END BOOKED SESSIONS MONTH FILTER
-    // ==========================================
+        bookingState.date = dateStr;
 
-    // Initialize
-    (async () => {
-        try {
-            const firstBtn = document.querySelector('.class-filters .filter-btn') || document.querySelector('.filter-btn');
+        // Check weekly limit for the selected week
+        const canBook = checkWeeklyLimitForDate(dateStr);
+        if (!canBook) {
+            showToast(`The week containing ${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} is full (${bookingState.weeklyLimit}/${bookingState.weeklyLimit} sessions). Please select a date from another week.`, 'warning', 5000);
+            // Still allow selection but show warning
+        }
 
-            if (firstBtn) {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                firstBtn.classList.add('active');
-                currentClassFilter = firstBtn.dataset.class || 'all';
-                await fetchTrainers(currentClassFilter);
+        // Update UI - Remove selected from all schedule-day elements
+        document.querySelectorAll('.schedule-day').forEach(day => day.classList.remove('selected'));
+        if (dateElement) {
+            dateElement.classList.add('selected');
+        }
 
+        // Update session availability based on selected date
+        if (typeof updateSessionAvailability === 'function') {
+            updateSessionAvailability();
+        }
+
+        // Check session capacity for the selected date
+        checkSessionCapacity();
+
+        // Enable next button in the active step (will be checked again on click)
+        const activeStep = document.querySelector('.wizard-step.active');
+        const btnNext = activeStep ? activeStep.querySelector('.btn-next') : null;
+        if (btnNext) {
+            btnNext.disabled = false;
+        }
+    };
+
+    // ===================================
+    // STEP 2: SESSION SELECTION
+    // ===================================
+
+    // Function to check if session time has passed for today
+    function isSessionPassed(sessionName) {
+        if (!bookingState.date) return false;
+
+        const selectedDate = new Date(bookingState.date);
+        const today = new Date();
+
+        // Only check for today's date
+        if (selectedDate.toDateString() !== today.toDateString()) {
+            return false;
+        }
+
+        const currentHour = today.getHours();
+
+        // Morning session ends at 11 AM
+        if (sessionName === 'Morning' && currentHour >= 11) {
+            return true;
+        }
+
+        // Afternoon session ends at 5 PM (17:00)
+        if (sessionName === 'Afternoon' && currentHour >= 17) {
+            return true;
+        }
+
+        // Evening session ends at 10 PM (22:00)
+        if (sessionName === 'Evening' && currentHour >= 22) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // Function to check session capacity
+    function checkSessionCapacity() {
+        if (!bookingState.date) return;
+
+        // Check capacity for all sessions
+        const sessions = ['Morning', 'Afternoon', 'Evening'];
+        sessions.forEach(session => {
+            fetch(`api/get_session_capacity.php?date=${bookingState.date}&session=${session}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const block = document.querySelector(`.session-block[data-session="${session}"]`);
+                        if (block && data.is_full) {
+                            block.classList.add('session-full');
+                            // Add full indicator if not already present
+                            if (!block.querySelector('.session-full-badge')) {
+                                const badge = document.createElement('span');
+                                badge.className = 'session-full-badge';
+                                badge.innerHTML = '<i class="fas fa-users"></i> FULL';
+                                block.querySelector('.session-header').appendChild(badge);
+                            }
+                        }
+                    }
+                })
+                .catch(error => console.error(`Error checking ${session} capacity:`, error));
+        });
+    }
+
+    // Function to update session blocks availability
+    function updateSessionAvailability() {
+        document.querySelectorAll('.session-block').forEach(block => {
+            const session = block.getAttribute('data-session');
+            const isPassed = isSessionPassed(session);
+
+            // Remove full badge when checking time-based availability
+            const existingBadge = block.querySelector('.session-full-badge');
+            if (existingBadge) existingBadge.remove();
+            block.classList.remove('session-full');
+
+            if (isPassed) {
+                block.classList.add('session-passed');
+                block.style.opacity = '0.5';
+                block.style.cursor = 'not-allowed';
             } else {
-                await fetchTrainers('all');
+                block.classList.remove('session-passed');
+                block.style.opacity = '';
+                block.style.cursor = '';
+            }
+        });
+    }
+
+    document.querySelectorAll('.session-block').forEach(block => {
+        block.addEventListener('click', function () {
+            const session = this.getAttribute('data-session');
+
+            // Check if selected week is full
+            if (bookingState.selectedWeekFull) {
+                const weekBounds = getWeekBoundaries(bookingState.date);
+                const weekStart = new Date(weekBounds.start + 'T00:00:00');
+                showToast(`This week (starting ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}) is full (${bookingState.weeklyLimit}/${bookingState.weeklyLimit} sessions). Please select a date from another week.`, 'warning', 5000);
+                return;
             }
 
-            await fetchUserBookings();
-        } catch (err) {
-            console.error('Initialization error:', err);
-            fetchTrainers('all');
-            fetchUserBookings();
-        }
-    })();
+            // Check if session time has passed
+            if (isSessionPassed(session)) {
+                showToast('This session time has already passed for the selected date', 'warning');
+                return;
+            }
 
+            bookingState.session = session;
+
+            document.querySelectorAll('.session-block').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+
+            // Enable Next button in the active step
+            const activeStep = document.querySelector('.wizard-step.active');
+            const btnNext = activeStep.querySelector('.btn-next');
+            if (btnNext) btnNext.disabled = false;
+        });
+    });
+
+    // ===================================
+    // STEP 3: CLASS TYPE SELECTION
+    // ===================================
+    document.querySelectorAll('.class-card').forEach(card => {
+        card.addEventListener('click', function () {
+            const classType = this.getAttribute('data-class');
+            bookingState.classType = classType;
+
+            document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+
+            // Enable Next button in the active step
+            const activeStep = document.querySelector('.wizard-step.active');
+            const btnNext = activeStep.querySelector('.btn-next');
+            if (btnNext) btnNext.disabled = false;
+        });
+    });
+
+    // ===================================
+    // STEP 4: LOAD TRAINERS
+    // ===================================
+    function loadTrainers() {
+        const { date, session, classType } = bookingState;
+        const trainersGrid = document.getElementById('trainersGrid');
+        const capacityInfo = document.getElementById('facilityCapacityInfo');
+
+        trainersGrid.innerHTML = '<p class="loading-text">Loading trainers...</p>';
+        capacityInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Checking availability...</span>';
+
+        fetch(`api/get_available_trainers.php?date=${date}&session=${session}&class=${encodeURIComponent(classType)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderTrainers(data.trainers);
+                    updateCapacityInfo(data);
+                } else {
+                    trainersGrid.innerHTML = `<p class="empty-message">${data.message}</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading trainers:', error);
+                trainersGrid.innerHTML = '<p class="empty-message">Failed to load trainers</p>';
+            });
+    }
+
+    function renderTrainers(trainers) {
+        const trainersGrid = document.getElementById('trainersGrid');
+
+        if (trainers.length === 0) {
+            trainersGrid.innerHTML = '<p class="empty-message">No trainers available for this session</p>';
+            return;
+        }
+
+        trainersGrid.innerHTML = trainers.map(trainer => {
+            // Escape HTML to prevent attribute breaking with quotes
+            const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
+            // Always use account icon for trainer avatars
+            const photoSrc = `../../images/account-icon.svg`;
+            return `
+            <div class="trainer-card ${trainer.status}"
+                 data-trainer-id="${trainer.id}"
+                 data-trainer-name="${escapedName}"
+                 data-trainer-status="${trainer.status}"
+                 onclick="selectTrainer(${trainer.id}, this.dataset.trainerName, this.dataset.trainerStatus)">
+                <span class="trainer-status-badge ${trainer.status}">${trainer.status}</span>
+                <img src="${photoSrc}"
+                     alt="${escapedName}"
+                     class="trainer-photo default-icon"
+                     onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
+                <h3 class="trainer-name">${trainer.name}</h3>
+                <p class="trainer-specialty">${trainer.specialization}</p>
+            </div>
+        `;
+        }).join('');
+    }
+
+    function updateCapacityInfo(data) {
+        const capacityInfo = document.getElementById('facilityCapacityInfo');
+        const used = data.facility_slots_used || 0;
+        const max = data.facility_slots_max || 2;
+        const available = data.available_count || 0;
+
+        // Update booking state with capacity info
+        bookingState.facilityFull = used >= max;
+        bookingState.hasAvailableTrainers = available > 0;
+
+        if (used >= max) {
+            capacityInfo.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Facility at capacity (${used}/${max} trainers booked). Select an already booked trainer to join their session.</span>
+            `;
+            capacityInfo.style.background = 'rgba(255, 152, 0, 0.1)';
+            capacityInfo.style.borderColor = '#ff9800';
+            capacityInfo.style.color = '#ff9800';
+        } else {
+            capacityInfo.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <span>${available} trainers available • Facility capacity: ${used}/${max}</span>
+            `;
+            capacityInfo.style.background = 'rgba(76, 175, 80, 0.1)';
+            capacityInfo.style.borderColor = '#4CAF50';
+            capacityInfo.style.color = '#4CAF50';
+        }
+
+        // Update wizard step buttons
+        updateWizardStep();
+    }
+
+    window.selectTrainer = function (trainerId, trainerName, status) {
+        if (status === 'unavailable') {
+            showToast('This trainer is not available for the selected session', 'warning');
+            return;
+        }
+
+        if (status === 'booked') {
+            showToast('This trainer is already booked for the selected session', 'warning');
+            return;
+        }
+
+        bookingState.trainerId = trainerId;
+        bookingState.trainerName = trainerName;
+
+        document.querySelectorAll('.trainer-card').forEach(card => card.classList.remove('selected'));
+        document.querySelector(`[data-trainer-id="${trainerId}"]`).classList.add('selected');
+
+        // Enable Next button in the active step
+        const activeStep = document.querySelector('.wizard-step.active');
+        const btnNext = activeStep ? activeStep.querySelector('.btn-next') : null;
+        if (btnNext) btnNext.disabled = false;
+    };
+
+    // ===================================
+    // STEP 5: UPDATE SUMMARY
+    // ===================================
+    function updateSummary() {
+        const { date, session, classType, trainerName } = bookingState;
+
+        const sessionHours = {
+            'Morning': '7:00 AM - 11:00 AM',
+            'Afternoon': '1:00 PM - 5:00 PM',
+            'Evening': '6:00 PM - 10:00 PM'
+        };
+
+        document.getElementById('summaryDate').textContent = new Date(date).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        document.getElementById('summarySession').textContent = `${session} (${sessionHours[session]})`;
+        document.getElementById('summaryClass').textContent = classType;
+        document.getElementById('summaryTrainer').textContent = trainerName;
+    }
+
+    // ===================================
+    // CONFIRM BOOKING
+    // ===================================
+    const confirmBtn = document.getElementById('btnConfirmBooking');
+    if (confirmBtn && !confirmBtn.hasAttribute('data-listener-attached')) {
+        confirmBtn.setAttribute('data-listener-attached', 'true');
+        confirmBtn.addEventListener('click', function handleBookingConfirm(e) {
+            e.preventDefault(); // Prevent any default behavior
+
+            const { trainerId, classType, date, session } = bookingState;
+            const button = this;
+
+            // Prevent double-clicking
+            if (button.disabled) {
+                return;
+            }
+
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
+
+            const formData = new URLSearchParams();
+            formData.append('trainer_id', trainerId);
+            formData.append('class_type', classType);
+            formData.append('booking_date', date);
+            formData.append('session_time', session);
+
+            fetch('api/book_session.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Booking response:', data); // Debug log
+                    if (data.success) {
+                        console.log('Booking successful, showing toast'); // Debug log
+                        showToast('Session booked successfully!', 'success');
+
+                        // Show updated weekly count for the booked week
+                        if (data.details && data.details.user_weekly_bookings !== undefined) {
+                            const bookedDate = new Date(bookingState.date + 'T00:00:00');
+                            const weekBounds = getWeekBoundaries(bookingState.date);
+                            const weekStart = new Date(weekBounds.start + 'T00:00:00');
+                            const weekEnd = new Date(weekBounds.end + 'T00:00:00');
+
+                            setTimeout(() => {
+                                showToast(
+                                    `You now have ${data.details.user_weekly_bookings}/12 bookings for the week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+                                    'info',
+                                    4000
+                                );
+                            }, 1000);
+                        }
+
+                        // Reset button state BEFORE resetting wizard
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+
+                        console.log('Reloading bookings data'); // Debug log
+                        // Reload data first
+                        loadWeeklyBookings();
+                        loadUserBookings();
+
+                        console.log('Attempting to reset wizard'); // Debug log
+                        // Reset wizard after a short delay to allow data to load
+                        setTimeout(() => {
+                            try {
+                                resetWizard();
+                                console.log('Wizard reset successful'); // Debug log
+                            } catch (err) {
+                                console.error('Error resetting wizard:', err);
+                                // Fallback: just reload the page
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            }
+                        }, 500);
+                    } else {
+                        console.log('Booking failed:', data.message); // Debug log
+                        showToast(data.message || 'Failed to book session', 'error');
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in booking process (catch block):', error);
+                    showToast('[BOOKING] An error occurred. Please try again.', 'error');
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                });
+        });
+    }
+
+    // ===================================
+    // WIZARD NAVIGATION
+    // ===================================
+    function setupEventListeners() {
+        // Add event listeners to all Next and Back buttons
+        document.querySelectorAll('.btn-next').forEach(btn => {
+            btn.addEventListener('click', nextStep);
+        });
+        document.querySelectorAll('.btn-back').forEach(btn => {
+            btn.addEventListener('click', prevStep);
+        });
+
+        // Add event listener for class filter
+        const classFilter = document.getElementById('classFilter');
+        if (classFilter) {
+            classFilter.addEventListener('change', applyBookingsFilter);
+        }
+    }
+
+    function nextStep() {
+        if (bookingState.currentStep < 5) {
+            bookingState.currentStep++;
+            updateWizardStep();
+
+            // Load trainers when entering step 4
+            if (bookingState.currentStep === 4) {
+                loadTrainers();
+            }
+
+            // Update summary when entering step 5
+            if (bookingState.currentStep === 5) {
+                updateSummary();
+            }
+        }
+    }
+
+    function prevStep() {
+        if (bookingState.currentStep > 1) {
+            bookingState.currentStep--;
+            updateWizardStep();
+        }
+    }
+
+    function updateWizardStep() {
+        const step = bookingState.currentStep;
+
+        // Update step visibility
+        document.querySelectorAll('.wizard-step').forEach((el, index) => {
+            el.classList.toggle('active', index + 1 === step);
+        });
+
+        // Update all navigation buttons in all steps
+        document.querySelectorAll('.btn-back').forEach(btn => {
+            btn.style.display = step > 1 ? 'flex' : 'none';
+        });
+
+        document.querySelectorAll('.btn-next').forEach(btn => {
+            btn.style.display = step < 5 ? 'flex' : 'none';
+            btn.disabled = !canProceedFromStep(step);
+        });
+
+        // Scroll to top of wizard
+        document.querySelector('.booking-wizard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function canProceedFromStep(step) {
+        // Check if selected week is full (only if date is selected)
+        if (bookingState.date && bookingState.selectedWeekFull) {
+            return false;
+        }
+
+        switch (step) {
+            case 1: return bookingState.date !== null;
+            case 2: return bookingState.session !== null;
+            case 3:
+                // Can proceed only if class is selected AND facility is not full
+                if (bookingState.classType === null) return false;
+                if (bookingState.facilityFull) return false;
+                return true;
+            case 4: return bookingState.trainerId !== null;
+            case 5: return true;
+            default: return false;
+        }
+    }
+
+    function resetWizard() {
+        bookingState.date = null;
+        bookingState.session = null;
+        bookingState.classType = null;
+        bookingState.trainerId = null;
+        bookingState.trainerName = null;
+        bookingState.currentStep = 1;
+
+        document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+        if (selectedDateDisplay) {
+            selectedDateDisplay.style.display = 'none';
+        }
+
+        updateWizardStep();
+        renderCalendar();
+    }
+
+    // ===================================
+    // UTILITY FUNCTIONS
+    // ===================================
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 });
