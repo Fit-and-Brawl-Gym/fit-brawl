@@ -35,9 +35,9 @@ if (!isset($currentPage)) {
 // Calculate membership link if not already set
 if (!isset($membershipLink)) {
     $membershipLink = 'membership.php';
+    $hasActiveMembership = false;
 
     if (isset($_SESSION['user_id'])) {
-        $hasActiveMembership = false;
         $hasAnyRequest = false;
         $gracePeriodDays = 3;
         $user_id = $_SESSION['user_id'];
@@ -117,6 +117,20 @@ if (!isset($membershipLink)) {
             $membershipLink = 'membership.php';
         }
     }
+} else {
+    // If membershipLink is already set, determine hasActiveMembership status
+    $hasActiveMembership = ($membershipLink === 'reservations.php');
+}
+
+// Determine membership icon and title based on status
+if (!isset($membershipIcon)) {
+    $membershipIcon = 'fa-id-card';
+    $membershipTitle = 'Membership';
+
+    if (isset($hasActiveMembership) && $hasActiveMembership) {
+        $membershipIcon = 'fa-calendar-alt';
+        $membershipTitle = 'Schedule';
+    }
 }
 
 // Determine avatar source for logged-in users
@@ -188,6 +202,7 @@ if (!isset($ogImage)) {
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/global.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/footer.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/header.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/member-nav.css">
     <?php if (isset($additionalCSS) && is_array($additionalCSS)): ?>
         <?php foreach ($additionalCSS as $cssFile): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
@@ -244,14 +259,38 @@ if (!isset($ogImage)) {
                     <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
-            <nav class="nav-bar">
+            <nav class="nav-bar member-nav">
                 <ul>
-                    <li><a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?>>Home</a></li>
-                    <li><a href="<?= htmlspecialchars($membershipLink) ?>" <?= $currentPage === 'membership' ? 'class="active"' : '' ?>>Membership</a></li>
-                    <li><a href="equipment.php" <?= $currentPage === 'equipment' ? 'class="active"' : '' ?>>Equipment</a></li>
-                    <li><a href="products.php" <?= $currentPage === 'products' ? 'class="active"' : '' ?>>Products</a></li>
-                    <li><a href="contact.php" <?= $currentPage === 'contact' ? 'class="active"' : '' ?>>Contact</a></li>
-                    <li><a href="feedback.php" <?= $currentPage === 'feedback' ? 'class="active"' : '' ?>>Feedback</a></li>
+                    <li>
+                        <a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
+                            <i class="fas fa-home"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= htmlspecialchars($membershipLink) ?>" <?= $currentPage === 'membership' ? 'class="active"' : '' ?> title="<?= htmlspecialchars($membershipTitle) ?>">
+                            <i class="fas <?= htmlspecialchars($membershipIcon) ?>"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="equipment.php" <?= $currentPage === 'equipment' ? 'class="active"' : '' ?> title="Equipment">
+                            <i class="fas fa-dumbbell"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="products.php" <?= $currentPage === 'products' ? 'class="active"' : '' ?> title="Products">
+                            <i class="fas fa-shopping-cart"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="contact.php" <?= $currentPage === 'contact' ? 'class="active"' : '' ?> title="Contact">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="feedback.php" <?= $currentPage === 'feedback' ? 'class="active"' : '' ?> title="Feedback">
+                            <i class="fas fa-comments"></i>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <?php if (isset($_SESSION['email'])): ?>

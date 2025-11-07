@@ -1,7 +1,3 @@
-// ===================================
-// BOOKING PAGE V2 - SESSION-BASED BOOKING
-// ===================================
-
 document.addEventListener('DOMContentLoaded', function () {
     // Booking state
     const bookingState = {
@@ -10,12 +6,27 @@ document.addEventListener('DOMContentLoaded', function () {
         classType: null,
         trainerId: null,
         trainerName: null,
-        currentStep: 1
+        currentStep: 1,
+        facilityFull: false,
+        hasAvailableTrainers: false,
+        weeklyLimit: 12,
+        currentWeekCount: 0,
+        currentWeekRemaining: 12,
+        selectedWeekCount: 0,
+        selectedWeekFull: false
     };
 
     // Calendar state
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
+
+    // Bookings data storage
+    let allBookingsData = {
+        upcoming: [],
+        past: [],
+        cancelled: [],
+        all: [] // Store all bookings for week calculations
+    };
 
     // Initialize
     init();
@@ -68,6 +79,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     const count = data.summary.weekly_count;
                     const remaining = data.summary.weekly_remaining;
+                    const limit = data.summary.weekly_limit || 12;
+
+                    // Store current week data
+                    bookingState.currentWeekCount = count;
+                    bookingState.currentWeekRemaining = remaining;
+                    bookingState.weeklyLimit = limit;
+
+                    // Store all bookings for per-week calculations
+                    allBookingsData.all = data.bookings || [];
 
                     const weeklyCountEl = document.getElementById('weeklyBookingsCount');
                     const weeklyTextEl = document.getElementById('weeklyProgressText');
@@ -76,13 +96,110 @@ document.addEventListener('DOMContentLoaded', function () {
                         weeklyCountEl.textContent = count;
                     }
                     if (weeklyTextEl) {
-                        weeklyTextEl.textContent = `${remaining} bookings remaining this week`;
+                        if (remaining === 0) {
+                            weeklyTextEl.textContent = `This week's limit reached (${limit} max)`;
+                            weeklyTextEl.style.color = '#ff9800';
+                        } else {
+                            weeklyTextEl.textContent = `${remaining} bookings remaining this week`;
+                            weeklyTextEl.style.color = '';
+                        }
                     }
                 }
             })
             .catch(error => {
                 console.error('Error loading weekly bookings:', error);
             });
+    }
+
+    // Helper function to get week boundaries (Sunday to Saturday)
+    function getWeekBoundaries(dateStr) {
+        const date = new Date(dateStr + 'T00:00:00');
+        const dayOfWeek = date.getDay(); // 0 (Sunday) to 6 (Saturday)
+
+        // Calculate Sunday of the week
+        const sunday = new Date(date);
+        sunday.setDate(date.getDate() - dayOfWeek);
+        sunday.setHours(0, 0, 0, 0);
+
+        // Calculate Saturday of the week
+        const saturday = new Date(sunday);
+        saturday.setDate(sunday.getDate() + 6);
+        saturday.setHours(0, 0, 0, 0);
+
+        // Format dates as YYYY-MM-DD without timezone conversion
+        const formatDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        return {
+            start: formatDate(sunday),
+            end: formatDate(saturday)
+        };
+    }
+
+    // Check how many bookings are in a specific week
+    function getBookingCountForWeek(dateStr) {
+        const weekBounds = getWeekBoundaries(dateStr);
+
+        const count = allBookingsData.all.filter(booking => {
+            // Only count confirmed and completed bookings
+            if (booking.status !== 'confirmed' && booking.status !== 'completed') {
+                return false;
+            }
+
+            return booking.date >= weekBounds.start && booking.date <= weekBounds.end;
+        }).length;
+
+        return count;
+    }
+
+    function checkWeeklyLimitForDate(dateStr) {
+        const count = getBookingCountForWeek(dateStr);
+        bookingState.selectedWeekCount = count;
+        bookingState.selectedWeekFull = count >= bookingState.weeklyLimit;
+
+        // Update warning display
+        updateWeeklyLimitWarning(dateStr);
+
+        return !bookingState.selectedWeekFull;
+    }
+
+    function updateWeeklyLimitWarning(dateStr) {
+        const wizardSection = document.querySelector('.booking-wizard-section');
+        if (!wizardSection) return;
+
+        const existingWarning = wizardSection.querySelector('.weekly-limit-warning');
+
+        if (bookingState.selectedWeekFull) {
+            const weekBounds = getWeekBoundaries(dateStr);
+            const weekStart = new Date(weekBounds.start + 'T00:00:00');
+            const weekEnd = new Date(weekBounds.end + 'T00:00:00');
+
+            if (!existingWarning) {
+                const warning = document.createElement('div');
+                warning.className = 'weekly-limit-warning';
+                warning.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>
+                        <h3>Weekly Booking Limit Reached</h3>
+                        <p>You've already booked ${bookingState.selectedWeekCount} sessions for the week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (maximum ${bookingState.weeklyLimit} per week). Please select a date from a different week.</p>
+                    </div>
+                `;
+                wizardSection.insertBefore(warning, wizardSection.firstChild);
+            } else {
+                // Update existing warning
+                existingWarning.querySelector('p').textContent =
+                    `You've already booked ${bookingState.selectedWeekCount} sessions for the week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (maximum ${bookingState.weeklyLimit} per week). Please select a date from a different week.`;
+            }
+        } else {
+            // Remove warning if week is not full
+            if (existingWarning) {
+                existingWarning.remove();
+            }
+        }
     }
 
     // ===================================
@@ -97,10 +214,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.log('Grouped bookings:', data.grouped); // Debug log
                     console.log('Summary:', data.summary); // Debug log
                     renderBookings(data.grouped);
-                    updateBookingCounts(data.summary);
+                    // Counts are updated in applyBookingsFilter(), called by renderBookings()
                 } else {
                     console.error('API returned error:', data.message);
                     document.getElementById('upcomingBookings').innerHTML =
+                        `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
+                    document.getElementById('pastBookings').innerHTML =
+                        `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
+                    document.getElementById('cancelledBookings').innerHTML =
                         `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
                 }
             })
@@ -108,14 +229,67 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error loading bookings:', error);
                 document.getElementById('upcomingBookings').innerHTML =
                     '<p class="empty-message">Failed to load bookings</p>';
+                document.getElementById('pastBookings').innerHTML =
+                    '<p class="empty-message">Failed to load bookings</p>';
+                document.getElementById('cancelledBookings').innerHTML =
+                    '<p class="empty-message">Failed to load bookings</p>';
             });
     }
 
     function renderBookings(grouped) {
         console.log('Rendering bookings - upcoming:', grouped.upcoming?.length, 'today:', grouped.today?.length, 'past:', grouped.past?.length); // Debug log
 
-        // Combine today and upcoming bookings for the "Upcoming" tab
-        const upcomingList = [...(grouped.today || []), ...(grouped.upcoming || [])];
+        // Combine all bookings from server groups
+        const allBookings = [...(grouped.today || []), ...(grouped.upcoming || []), ...(grouped.past || [])];
+
+        // Get current date and time
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        const sessionEndTimes = {
+            'Morning': 11,
+            'Afternoon': 17,
+            'Evening': 22
+        };
+
+        // Re-categorize bookings based on current time
+        const upcomingList = [];
+        const pastList = [];
+        const cancelledList = [];
+
+        allBookings.forEach(booking => {
+            // Separate cancelled bookings first
+            if (booking.status === 'cancelled') {
+                cancelledList.push(booking);
+                return;
+            }
+
+            const bookingDate = new Date(booking.date + 'T00:00:00');
+            bookingDate.setHours(0, 0, 0, 0);
+
+            // If booking date is in the future
+            if (bookingDate > today) {
+                upcomingList.push(booking);
+            }
+            // If booking date is today
+            else if (bookingDate.getTime() === today.getTime()) {
+                const currentHour = now.getHours();
+                const sessionEnd = sessionEndTimes[booking.session_time] || 24;
+
+                // If session hasn't ended yet, it's upcoming
+                if (currentHour < sessionEnd) {
+                    upcomingList.push(booking);
+                } else {
+                    // Session has ended, move to past
+                    pastList.push(booking);
+                }
+            }
+            // Booking date is in the past
+            else {
+                pastList.push(booking);
+            }
+        });
 
         // Sort upcoming by date ascending (earliest first), then by session time
         upcomingList.sort((a, b) => {
@@ -128,11 +302,165 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Sort past bookings by date descending (most recent first)
-        const pastList = [...(grouped.past || [])];
-        pastList.sort((a, b) => new Date(b.date) - new Date(a.date));
+        pastList.sort((a, b) => {
+            const dateCompare = new Date(b.date) - new Date(a.date);
+            if (dateCompare !== 0) return dateCompare;
 
-        renderBookingList('upcomingBookings', upcomingList);
-        renderBookingList('pastBookings', pastList);
+            // If same date, sort by session time (Evening, Afternoon, Morning - reverse)
+            const sessionOrder = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
+            return sessionOrder[a.session_time] - sessionOrder[b.session_time];
+        });
+
+        // Sort cancelled bookings by date descending (most recent first)
+        cancelledList.sort((a, b) => {
+            const dateCompare = new Date(b.date) - new Date(a.date);
+            if (dateCompare !== 0) return dateCompare;
+
+            const sessionOrder = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
+            return sessionOrder[a.session_time] - sessionOrder[b.session_time];
+        });
+
+        // Store the full data for filtering
+        allBookingsData.upcoming = upcomingList;
+        allBookingsData.past = pastList;
+        allBookingsData.cancelled = cancelledList;
+
+        // Update stat cards with next upcoming session
+        updateStatCards(upcomingList);
+
+        // Apply current filter
+        applyBookingsFilter();
+    }
+
+    function applyBookingsFilter() {
+        const filterValue = document.getElementById('classFilter')?.value || 'all';
+
+        // Filter upcoming bookings
+        let filteredUpcoming = allBookingsData.upcoming;
+        if (filterValue !== 'all') {
+            filteredUpcoming = allBookingsData.upcoming.filter(booking =>
+                booking.class_type === filterValue
+            );
+        }
+
+        // Filter past bookings
+        let filteredPast = allBookingsData.past;
+        if (filterValue !== 'all') {
+            filteredPast = allBookingsData.past.filter(booking =>
+                booking.class_type === filterValue
+            );
+        }
+
+        // Filter cancelled bookings
+        let filteredCancelled = allBookingsData.cancelled;
+        if (filterValue !== 'all') {
+            filteredCancelled = allBookingsData.cancelled.filter(booking =>
+                booking.class_type === filterValue
+            );
+        }
+
+        renderBookingList('upcomingBookings', filteredUpcoming);
+        renderBookingList('pastBookings', filteredPast);
+        renderBookingList('cancelledBookings', filteredCancelled);
+
+        // Update counts with filtered data
+        document.getElementById('upcomingCount').textContent = filteredUpcoming.length;
+        document.getElementById('pastCount').textContent = filteredPast.length;
+        document.getElementById('cancelledCount').textContent = filteredCancelled.length;
+    }
+
+    function updateStatCards(upcomingList) {
+        const upcomingClassEl = document.getElementById('upcomingClass');
+        const upcomingDateEl = document.getElementById('upcomingDate');
+        const upcomingTrainerEl = document.getElementById('upcomingTrainer');
+        const trainerSubtextEl = document.getElementById('trainerSubtext');
+
+        if (!upcomingList || upcomingList.length === 0) {
+            if (upcomingClassEl) upcomingClassEl.textContent = '-';
+            if (upcomingDateEl) upcomingDateEl.textContent = 'No upcoming sessions';
+            if (upcomingTrainerEl) upcomingTrainerEl.textContent = '-';
+            if (trainerSubtextEl) trainerSubtextEl.textContent = '-';
+            return;
+        }
+
+        // Get current date and time
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        // Find the first truly upcoming booking (not past)
+        let nextBooking = null;
+        for (const booking of upcomingList) {
+            const bookingDate = new Date(booking.date + 'T00:00:00');
+            bookingDate.setHours(0, 0, 0, 0);
+
+            // If booking is in the future, use it
+            if (bookingDate > today) {
+                nextBooking = booking;
+                break;
+            }
+
+            // If booking is today, check if session hasn't ended yet
+            if (bookingDate.getTime() === today.getTime()) {
+                const currentHour = now.getHours();
+                const sessionEnd = {
+                    'Morning': 11,
+                    'Afternoon': 17,
+                    'Evening': 22
+                };
+
+                if (currentHour < (sessionEnd[booking.session_time] || 24)) {
+                    nextBooking = booking;
+                    break;
+                }
+            }
+        }
+
+        // If no valid upcoming booking found
+        if (!nextBooking) {
+            if (upcomingClassEl) upcomingClassEl.textContent = '-';
+            if (upcomingDateEl) upcomingDateEl.textContent = 'No upcoming sessions';
+            if (upcomingTrainerEl) upcomingTrainerEl.textContent = '-';
+            if (trainerSubtextEl) trainerSubtextEl.textContent = '-';
+            return;
+        }
+
+        // Parse the date properly
+        const bookingDate = new Date(nextBooking.date + 'T00:00:00');
+        bookingDate.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const isToday = bookingDate.getTime() === today.getTime();
+        const isTomorrow = bookingDate.getTime() === tomorrow.getTime();
+
+        // Update class name
+        if (upcomingClassEl) {
+            upcomingClassEl.textContent = nextBooking.class_type;
+        }
+
+        // Update date info
+        if (upcomingDateEl) {
+            let dateText = '';
+            if (isToday) {
+                dateText = `Today, ${nextBooking.session_time}`;
+            } else if (isTomorrow) {
+                dateText = `Tomorrow, ${nextBooking.session_time}`;
+            } else {
+                dateText = `${bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${nextBooking.session_time}`;
+            }
+            upcomingDateEl.textContent = dateText;
+        }
+
+        // Update trainer info
+        if (upcomingTrainerEl) {
+            upcomingTrainerEl.textContent = nextBooking.trainer_name;
+        }
+
+        if (trainerSubtextEl) {
+            trainerSubtextEl.textContent = nextBooking.session_hours || nextBooking.session_time;
+        }
     }
 
     function renderBookingList(containerId, bookings) {
@@ -144,39 +472,98 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        container.innerHTML = bookings.map(booking => `
-            <div class="booking-item">
-                <div class="booking-date-badge">
-                    <div class="booking-day">${new Date(booking.date).getDate()}</div>
-                    <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
-                </div>
-                <div class="booking-details">
-                    <div class="booking-class">${booking.class_type}</div>
-                    <div class="booking-info">
-                        <span><i class="fas fa-clock"></i> ${booking.session_time} (${booking.session_hours})</span>
-                        <span><i class="fas fa-user"></i> ${booking.trainer_name}</span>
-                        <span><i class="fas fa-calendar"></i> ${booking.day_of_week}</span>
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        const sessionStartTimes = {
+            'Morning': 7,    // 7 AM
+            'Afternoon': 12, // 12 PM
+            'Evening': 17    // 5 PM
+        };
+
+        const sessionEndTimes = {
+            'Morning': 11,
+            'Afternoon': 17,
+            'Evening': 22
+        };
+
+        container.innerHTML = bookings.map(booking => {
+            // Determine if this booking can actually be cancelled based on current time and 12-hour policy
+            const bookingDate = new Date(booking.date + 'T00:00:00');
+            const sessionStartHour = sessionStartTimes[booking.session_time] || 7;
+
+            // Create datetime for session start
+            const sessionStartDateTime = new Date(booking.date + 'T00:00:00');
+            sessionStartDateTime.setHours(sessionStartHour, 0, 0, 0);
+
+            // Calculate hours until session starts
+            const hoursUntilSession = (sessionStartDateTime - now) / (1000 * 60 * 60);
+
+            let canActuallyCancelNow = false;
+            let isWithinCancellationWindow = false;
+            let hasSessionPassed = false;
+
+            if (booking.status !== 'cancelled' && booking.status !== 'completed') {
+                // Can only cancel if more than 12 hours before session start
+                if (hoursUntilSession > 12) {
+                    canActuallyCancelNow = true;
+                }
+                // If session has already passed, cannot cancel
+                else if (hoursUntilSession < 0) {
+                    const currentHour = now.getHours();
+                    const sessionEnd = sessionEndTimes[booking.session_time] || 24;
+                    bookingDate.setHours(0, 0, 0, 0);
+
+                    // Only mark as completed if session has ended
+                    hasSessionPassed = true;
+                    canActuallyCancelNow = false;
+                } else {
+                    // Within 12 hours of session but hasn't started - cannot cancel
+                    isWithinCancellationWindow = true;
+                    canActuallyCancelNow = false;
+                }
+            }
+
+            return `
+                <div class="booking-item ${booking.status === 'cancelled' ? 'cancelled' : ''}">
+                    <div class="booking-date-badge">
+                        <div class="booking-day">${new Date(booking.date).getDate()}</div>
+                        <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-class">${booking.class_type}</div>
+                        <div class="booking-info">
+                            <span><i class="fas fa-clock"></i> ${booking.session_time} (${booking.session_hours})</span>
+                            <span><i class="fas fa-user"></i> ${booking.trainer_name}</span>
+                            <span><i class="fas fa-calendar"></i> ${booking.day_of_week}</span>
+                        </div>
+                    </div>
+                    <div class="booking-actions">
+                        ${booking.status === 'cancelled' ? `
+                            <div class="booking-status-badge cancelled-badge">
+                                <i class="fas fa-times-circle"></i>
+                                <span>Cancelled</span>
+                            </div>
+                        ` : canActuallyCancelNow ? `
+                            <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        ` : isWithinCancellationWindow ? `
+                            <div class="booking-status-badge warning-badge" title="Cannot cancel within 12 hours of session start">
+                                <i class="fas fa-lock"></i>
+                                <span>Cannot Cancel</span>
+                            </div>
+                        ` : `
+                            <div class="booking-status-badge completed-badge">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Completed</span>
+                            </div>
+                        `}
                     </div>
                 </div>
-                <div class="booking-actions">
-                    ${booking.can_cancel ? `
-                        <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                    ` : `
-                        <button class="btn-cancel-booking" disabled title="Cannot cancel within 24 hours">
-                            <i class="fas fa-ban"></i> Cannot Cancel
-                        </button>
-                    `}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function updateBookingCounts(summary) {
-        const upcomingTotal = (summary.upcoming || 0) + (summary.today || 0);
-        document.getElementById('upcomingCount').textContent = upcomingTotal;
-        document.getElementById('pastCount').textContent = summary.past || 0;
+            `;
+        }).join('');
     }
 
     // ===================================
@@ -357,14 +744,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
         bookingState.date = dateStr;
 
+        // Check weekly limit for the selected week
+        const canBook = checkWeeklyLimitForDate(dateStr);
+        if (!canBook) {
+            showToast(`The week containing ${new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} is full (${bookingState.weeklyLimit}/${bookingState.weeklyLimit} sessions). Please select a date from another week.`, 'warning', 5000);
+            // Still allow selection but show warning
+        }
+
         // Update UI - Remove selected from all schedule-day elements
         document.querySelectorAll('.schedule-day').forEach(day => day.classList.remove('selected'));
         if (dateElement) {
             dateElement.classList.add('selected');
         }
 
-        // Enable next button
-        const btnNext = document.getElementById('btnNext');
+        // Update session availability based on selected date
+        if (typeof updateSessionAvailability === 'function') {
+            updateSessionAvailability();
+        }
+
+        // Check session capacity for the selected date
+        checkSessionCapacity();
+
+        // Enable next button in the active step (will be checked again on click)
+        const activeStep = document.querySelector('.wizard-step.active');
+        const btnNext = activeStep ? activeStep.querySelector('.btn-next') : null;
         if (btnNext) {
             btnNext.disabled = false;
         }
@@ -373,15 +776,117 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===================================
     // STEP 2: SESSION SELECTION
     // ===================================
+
+    // Function to check if session time has passed for today
+    function isSessionPassed(sessionName) {
+        if (!bookingState.date) return false;
+
+        const selectedDate = new Date(bookingState.date);
+        const today = new Date();
+
+        // Only check for today's date
+        if (selectedDate.toDateString() !== today.toDateString()) {
+            return false;
+        }
+
+        const currentHour = today.getHours();
+
+        // Morning session ends at 11 AM
+        if (sessionName === 'Morning' && currentHour >= 11) {
+            return true;
+        }
+
+        // Afternoon session ends at 5 PM (17:00)
+        if (sessionName === 'Afternoon' && currentHour >= 17) {
+            return true;
+        }
+
+        // Evening session ends at 10 PM (22:00)
+        if (sessionName === 'Evening' && currentHour >= 22) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // Function to check session capacity
+    function checkSessionCapacity() {
+        if (!bookingState.date) return;
+
+        // Check capacity for all sessions
+        const sessions = ['Morning', 'Afternoon', 'Evening'];
+        sessions.forEach(session => {
+            fetch(`api/get_session_capacity.php?date=${bookingState.date}&session=${session}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const block = document.querySelector(`.session-block[data-session="${session}"]`);
+                        if (block && data.is_full) {
+                            block.classList.add('session-full');
+                            // Add full indicator if not already present
+                            if (!block.querySelector('.session-full-badge')) {
+                                const badge = document.createElement('span');
+                                badge.className = 'session-full-badge';
+                                badge.innerHTML = '<i class="fas fa-users"></i> FULL';
+                                block.querySelector('.session-header').appendChild(badge);
+                            }
+                        }
+                    }
+                })
+                .catch(error => console.error(`Error checking ${session} capacity:`, error));
+        });
+    }
+
+    // Function to update session blocks availability
+    function updateSessionAvailability() {
+        document.querySelectorAll('.session-block').forEach(block => {
+            const session = block.getAttribute('data-session');
+            const isPassed = isSessionPassed(session);
+
+            // Remove full badge when checking time-based availability
+            const existingBadge = block.querySelector('.session-full-badge');
+            if (existingBadge) existingBadge.remove();
+            block.classList.remove('session-full');
+
+            if (isPassed) {
+                block.classList.add('session-passed');
+                block.style.opacity = '0.5';
+                block.style.cursor = 'not-allowed';
+            } else {
+                block.classList.remove('session-passed');
+                block.style.opacity = '';
+                block.style.cursor = '';
+            }
+        });
+    }
+
     document.querySelectorAll('.session-block').forEach(block => {
         block.addEventListener('click', function () {
             const session = this.getAttribute('data-session');
+
+            // Check if selected week is full
+            if (bookingState.selectedWeekFull) {
+                const weekBounds = getWeekBoundaries(bookingState.date);
+                const weekStart = new Date(weekBounds.start + 'T00:00:00');
+                showToast(`This week (starting ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}) is full (${bookingState.weeklyLimit}/${bookingState.weeklyLimit} sessions). Please select a date from another week.`, 'warning', 5000);
+                return;
+            }
+
+            // Check if session time has passed
+            if (isSessionPassed(session)) {
+                showToast('This session time has already passed for the selected date', 'warning');
+                return;
+            }
+
             bookingState.session = session;
 
             document.querySelectorAll('.session-block').forEach(b => b.classList.remove('selected'));
             this.classList.add('selected');
 
-            document.getElementById('btnNext').disabled = false;
+            // Enable Next button in the active step
+            const activeStep = document.querySelector('.wizard-step.active');
+            const btnNext = activeStep.querySelector('.btn-next');
+            if (btnNext) btnNext.disabled = false;
         });
     });
 
@@ -396,7 +901,10 @@ document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
             this.classList.add('selected');
 
-            document.getElementById('btnNext').disabled = false;
+            // Enable Next button in the active step
+            const activeStep = document.querySelector('.wizard-step.active');
+            const btnNext = activeStep.querySelector('.btn-next');
+            if (btnNext) btnNext.disabled = false;
         });
     });
 
@@ -449,7 +957,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="trainer-status-badge ${trainer.status}">${trainer.status}</span>
                 <img src="${photoSrc}"
                      alt="${escapedName}"
-                     class="trainer-photo">
+                     class="trainer-photo default-icon"
+                     onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
                 <h3 class="trainer-name">${trainer.name}</h3>
                 <p class="trainer-specialty">${trainer.specialization}</p>
             </div>
@@ -462,6 +971,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const used = data.facility_slots_used || 0;
         const max = data.facility_slots_max || 2;
         const available = data.available_count || 0;
+
+        // Update booking state with capacity info
+        bookingState.facilityFull = used >= max;
+        bookingState.hasAvailableTrainers = available > 0;
 
         if (used >= max) {
             capacityInfo.innerHTML = `
@@ -480,11 +993,19 @@ document.addEventListener('DOMContentLoaded', function () {
             capacityInfo.style.borderColor = '#4CAF50';
             capacityInfo.style.color = '#4CAF50';
         }
+
+        // Update wizard step buttons
+        updateWizardStep();
     }
 
     window.selectTrainer = function (trainerId, trainerName, status) {
         if (status === 'unavailable') {
             showToast('This trainer is not available for the selected session', 'warning');
+            return;
+        }
+
+        if (status === 'booked') {
+            showToast('This trainer is already booked for the selected session', 'warning');
             return;
         }
 
@@ -494,7 +1015,10 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.trainer-card').forEach(card => card.classList.remove('selected'));
         document.querySelector(`[data-trainer-id="${trainerId}"]`).classList.add('selected');
 
-        document.getElementById('btnNext').disabled = false;
+        // Enable Next button in the active step
+        const activeStep = document.querySelector('.wizard-step.active');
+        const btnNext = activeStep ? activeStep.querySelector('.btn-next') : null;
+        if (btnNext) btnNext.disabled = false;
     };
 
     // ===================================
@@ -563,10 +1087,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.log('Booking successful, showing toast'); // Debug log
                         showToast('Session booked successfully!', 'success');
 
-                        // Show updated weekly count
-                        if (data.details && data.details.user_weekly_bookings) {
+                        // Show updated weekly count for the booked week
+                        if (data.details && data.details.user_weekly_bookings !== undefined) {
+                            const bookedDate = new Date(bookingState.date + 'T00:00:00');
+                            const weekBounds = getWeekBoundaries(bookingState.date);
+                            const weekStart = new Date(weekBounds.start + 'T00:00:00');
+                            const weekEnd = new Date(weekBounds.end + 'T00:00:00');
+
                             setTimeout(() => {
-                                showToast(`You now have ${data.details.user_weekly_bookings}/12 bookings this week`, 'info');
+                                showToast(
+                                    `You now have ${data.details.user_weekly_bookings}/12 bookings for the week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+                                    'info',
+                                    4000
+                                );
                             }, 1000);
                         }
 
@@ -613,8 +1146,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // WIZARD NAVIGATION
     // ===================================
     function setupEventListeners() {
-        document.getElementById('btnNext').addEventListener('click', nextStep);
-        document.getElementById('btnBack').addEventListener('click', prevStep);
+        // Add event listeners to all Next and Back buttons
+        document.querySelectorAll('.btn-next').forEach(btn => {
+            btn.addEventListener('click', nextStep);
+        });
+        document.querySelectorAll('.btn-back').forEach(btn => {
+            btn.addEventListener('click', prevStep);
+        });
+
+        // Add event listener for class filter
+        const classFilter = document.getElementById('classFilter');
+        if (classFilter) {
+            classFilter.addEventListener('change', applyBookingsFilter);
+        }
     }
 
     function nextStep() {
@@ -649,25 +1193,34 @@ document.addEventListener('DOMContentLoaded', function () {
             el.classList.toggle('active', index + 1 === step);
         });
 
-        // Update navigation buttons
-        const btnBack = document.getElementById('btnBack');
-        const btnNext = document.getElementById('btnNext');
+        // Update all navigation buttons in all steps
+        document.querySelectorAll('.btn-back').forEach(btn => {
+            btn.style.display = step > 1 ? 'flex' : 'none';
+        });
 
-        btnBack.style.display = step > 1 ? 'flex' : 'none';
-        btnNext.style.display = step < 5 ? 'flex' : 'none';
-
-        // Disable next button by default (user must make selection)
-        btnNext.disabled = !canProceedFromStep(step);
+        document.querySelectorAll('.btn-next').forEach(btn => {
+            btn.style.display = step < 5 ? 'flex' : 'none';
+            btn.disabled = !canProceedFromStep(step);
+        });
 
         // Scroll to top of wizard
         document.querySelector('.booking-wizard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function canProceedFromStep(step) {
+        // Check if selected week is full (only if date is selected)
+        if (bookingState.date && bookingState.selectedWeekFull) {
+            return false;
+        }
+
         switch (step) {
             case 1: return bookingState.date !== null;
             case 2: return bookingState.session !== null;
-            case 3: return bookingState.classType !== null;
+            case 3:
+                // Can proceed only if class is selected AND facility is not full
+                if (bookingState.classType === null) return false;
+                if (bookingState.facilityFull) return false;
+                return true;
             case 4: return bookingState.trainerId !== null;
             case 5: return true;
             default: return false;

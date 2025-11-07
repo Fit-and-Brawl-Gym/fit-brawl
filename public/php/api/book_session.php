@@ -103,8 +103,25 @@ try {
         $log_details = "Booked {$class_type} session with {$trainer_name} on {$booking_date} ({$session_time}: {$session_hours})";
         ActivityLogger::log('session_booked', $username, $booking_id, $log_details);
 
-        // Calculate weekly bookings for response
-        $weekly_count = $validation['weekly_bookings'] + 1; // Add the current booking
+        // Calculate weekly bookings for the booked week (AFTER insertion)
+        $booking_timestamp = strtotime($booking_date);
+        $day_of_week = date('w', $booking_timestamp); // 0 (Sunday) to 6 (Saturday)
+        $week_start = date('Y-m-d', strtotime($booking_date . ' -' . $day_of_week . ' days'));
+        $week_end = date('Y-m-d', strtotime($week_start . ' +6 days'));
+
+        $count_stmt = $conn->prepare("
+            SELECT COUNT(*) as booking_count
+            FROM user_reservations 
+            WHERE user_id = ? 
+            AND booking_date BETWEEN ? AND ?
+            AND booking_status IN ('confirmed', 'completed')
+        ");
+        $count_stmt->bind_param("iss", $user_id, $week_start, $week_end);
+        $count_stmt->execute();
+        $count_result = $count_stmt->get_result();
+        $count_row = $count_result->fetch_assoc();
+        $weekly_count = (int) $count_row['booking_count'];
+        $count_stmt->close();
 
         echo json_encode([
             'success' => true,

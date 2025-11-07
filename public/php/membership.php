@@ -15,9 +15,38 @@ if (!SessionManager::isLoggedIn()) {
 // Check if user is logged in
 $isLoggedIn = isset($_SESSION['email']);
 
+// Check if user has active membership
+require_once __DIR__ . '/../../includes/db_connect.php';
+$hasActiveMembership = false;
+
+if ($isLoggedIn && isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $today = date('Y-m-d');
+
+    // Check user_memberships table
+    if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
+        $stmt = $conn->prepare("
+            SELECT id 
+            FROM user_memberships 
+            WHERE user_id = ? 
+            AND request_status = 'approved' 
+            AND membership_status = 'active' 
+            AND end_date >= ?
+            LIMIT 1
+        ");
+
+        if ($stmt) {
+            $stmt->bind_param("is", $user_id, $today);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $hasActiveMembership = ($result && $result->num_rows > 0);
+            $stmt->close();
+        }
+    }
+}
+
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
-    include __DIR__ . '/../../includes/db_connect.php';
 
     $sql = "SELECT id, plan_name, price, duration FROM memberships";
     $result = $conn->query($sql);
@@ -74,13 +103,27 @@ require_once __DIR__ . '/../../includes/header.php';
 
         <div class="plans-container" id="plansContainer">
             <div class="plans-viewport">
-                <!-- All plans in order -->
+                <!-- All plans in order - Resolution first, Gladiator in center -->
+                <div class="plan-card" data-plan="resolution-regular" data-category="non-member">
+                    <h3 class="plan-name">RESOLUTION</h3>
+                    <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
+                    <div class="plan-price">2,200 PHP <span>/MONTH</span></div>
+                    <div class="plan-savings">(Save 1,400 PHP)</div>
+                    <ul class="plan-features">
+                        <li>Gym Equipment Access with Face Recognition</li>
+                        <li>Shower Access</li>
+                        <li>Locker Access</li>
+                    </ul>
+                    <button class="select-btn">SELECT PLAN</button>
+                </div>
+
                 <div class="plan-card" data-plan="brawler" data-category="member">
                     <h3 class="plan-name">BRAWLER</h3>
                     <p class="plan-subtitle">MEMBERSHIP IN MUAY THAI</p>
-                    <div class="plan-price">1500 PHP <span>/MONTH</span></div>
+                    <div class="plan-price">11,500 PHP <span>/MONTH</span></div>
+                    <div class="plan-savings">(Save 3,500 PHP)</div>
                     <ul class="plan-features">
-                        <li>Muay Thai Training with Coach Thei</li>
+                        <li>Muay Thai Training with Professional Coaches</li>
                         <li>MMA Area Access</li>
                         <li>Free Orientation and Fitness Assessment</li>
                         <li>Shower Access</li>
@@ -94,11 +137,11 @@ require_once __DIR__ . '/../../includes/header.php';
                     <h3 class="plan-name">GLADIATOR</h3>
                     <p class="plan-subtitle">MEMBERSHIP IN BOXING AND MMA</p>
                     <div class="plan-price featured-price">
-                        <div class="price-main">3500 PHP <span>/MONTH</span></div>
+                        <div class="price-main">14,500 PHP <span>/MONTH</span></div>
                     </div>
                     <ul class="plan-features">
-                        <li>Boxing Training with Coach Rieze</li>
-                        <li>MMA Training with Coach Carlo</li>
+                        <li>Boxing Training with Professional Coaches</li>
+                        <li>MMA Training with Professional Coaches</li>
                         <li>Boxing and MMA Area Access</li>
                         <li>Gym Equipment Access</li>
                         <li>Jakuzzi Access</li>
@@ -111,9 +154,10 @@ require_once __DIR__ . '/../../includes/header.php';
                 <div class="plan-card" data-plan="champion" data-category="member">
                     <h3 class="plan-name">CHAMPION</h3>
                     <p class="plan-subtitle">MEMBERSHIP IN BOXING</p>
-                    <div class="plan-price">1500 PHP <span>/MONTH</span></div>
+                    <div class="plan-price">7,000 PHP <span>/MONTH</span></div>
+                    <div class="plan-savings">(Save 3,500 PHP)</div>
                     <ul class="plan-features">
-                        <li>Boxing Training with Coach Rieze</li>
+                        <li>Boxing Training with Professional Coaches</li>
                         <li>MMA Area Access</li>
                         <li>Free Orientation and Fitness Assessment</li>
                         <li>Shower Access</li>
@@ -125,23 +169,12 @@ require_once __DIR__ . '/../../includes/header.php';
                 <div class="plan-card" data-plan="clash" data-category="non-member">
                     <h3 class="plan-name">CLASH</h3>
                     <p class="plan-subtitle">MEMBERSHIP IN MMA</p>
-                    <div class="plan-price">1500 PHP <span>/MONTH</span></div>
+                    <div class="plan-price">13,500 PHP <span>/MONTH</span></div>
+                    <div class="plan-savings">(Save 4,500 PHP)</div>
                     <ul class="plan-features">
-                        <li>MMA Training with Coach Carlo</li>
+                        <li>MMA Training with Professional Coaches</li>
                         <li>MMA Area Access</li>
                         <li>Free Orientation and Fitness Assessment</li>
-                        <li>Shower Access</li>
-                        <li>Locker Access</li>
-                    </ul>
-                    <button class="select-btn">SELECT PLAN</button>
-                </div>
-
-                <div class="plan-card" data-plan="resolution-regular" data-category="non-member">
-                    <h3 class="plan-name">RESOLUTION</h3>
-                    <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
-                    <div class="plan-price">1000 PHP <span>/MONTH</span></div>
-                    <ul class="plan-features">
-                        <li>Gym Equipment Access with Face Recognition</li>
                         <li>Shower Access</li>
                         <li>Locker Access</li>
                     </ul>
@@ -155,62 +188,335 @@ require_once __DIR__ . '/../../includes/header.php';
         </button>
     </section>
 
+    <!-- Plan Comparison Section -->
+    <section class="comparison-section">
+        <div class="comparison-header">
+            <h2 class="comparison-title">NOT SURE WHICH PLAN?</h2>
+            <p class="comparison-subtitle">Compare all membership plans side by side</p>
+            <button class="comparison-toggle-btn" id="comparisonToggleBtn">
+                <i class="fas fa-table"></i>
+                <span class="toggle-text">Compare Plans</span>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </button>
+        </div>
+
+        <div class="comparison-table-container" id="comparisonTableContainer">
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th class="feature-column">Features</th>
+                            <th class="plan-column">
+                                <div class="plan-header">
+                                    <span class="plan-name-header">RESOLUTION</span>
+                                    <span class="plan-subtitle-header">Gym Access</span>
+                                    <span class="plan-price-header">2,200&nbsp;PHP<small>/month</small></span>
+                                    <span class="plan-savings-header">(Save 1,400)</span>
+                                </div>
+                            </th>
+                            <th class="plan-column">
+                                <div class="plan-header">
+                                    <span class="plan-name-header">BRAWLER</span>
+                                    <span class="plan-subtitle-header">Muay Thai</span>
+                                    <span class="plan-price-header">11,500&nbsp;PHP<small>/month</small></span>
+                                    <span class="plan-savings-header">(Save 3,500)</span>
+                                </div>
+                            </th>
+                            <th class="plan-column featured-column">
+                                <div class="plan-header">
+                                    <span class="popular-badge-table">⭐ POPULAR ⭐</span>
+                                    <span class="plan-name-header">GLADIATOR</span>
+                                    <span class="plan-subtitle-header">All-Access</span>
+                                    <span class="plan-price-header">14,500&nbsp;PHP<small>/month</small></span>
+                                </div>
+                            </th>
+                            <th class="plan-column">
+                                <div class="plan-header">
+                                    <span class="plan-name-header">CHAMPION</span>
+                                    <span class="plan-subtitle-header">Boxing</span>
+                                    <span class="plan-price-header">7,000&nbsp;PHP<small>/month</small></span>
+                                    <span class="plan-savings-header">(Save 3,500)</span>
+                                </div>
+                            </th>
+                            <th class="plan-column">
+                                <div class="plan-header">
+                                    <span class="plan-name-header">CLASH</span>
+                                    <span class="plan-subtitle-header">MMA</span>
+                                    <span class="plan-price-header">13,500&nbsp;PHP<small>/month</small></span>
+                                    <span class="plan-savings-header">(Save 4,500)</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Gym Access -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-dumbbell feature-icon"></i>
+                                Gym Equipment Access
+                            </td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                        </tr>
+
+                        <!-- Face Recognition -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-user-check feature-icon"></i>
+                                Face Recognition Access
+                            </td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                        </tr>
+
+                        <!-- Shower Access -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-shower feature-icon"></i>
+                                Shower Access
+                            </td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                        </tr>
+
+                        <!-- Locker Access -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-lock feature-icon"></i>
+                                Locker Access
+                            </td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                        </tr>
+
+                        <!-- MMA Area Access -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-ring feature-icon"></i>
+                                MMA Area Access
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                        </tr>
+
+                        <!-- Boxing Training -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-hand-rock feature-icon"></i>
+                                Boxing Training
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                        </tr>
+
+                        <!-- Muay Thai Training -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-fist-raised feature-icon"></i>
+                                Muay Thai Training
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                        </tr>
+
+                        <!-- MMA Training -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-shield-alt feature-icon"></i>
+                                MMA Training
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                        </tr>
+
+                        <!-- BJJ Training -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-hands feature-icon"></i>
+                                Brazilian Jiu-Jitsu
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                        </tr>
+
+                        <!-- Wrestling Training -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-running feature-icon"></i>
+                                Wrestling Training
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                        </tr>
+
+                        <!-- Professional Coaches -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-user-tie feature-icon"></i>
+                                Professional Coaches
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                        </tr>
+
+                        <!-- Orientation & Assessment -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-clipboard-check feature-icon"></i>
+                                Orientation & Assessment
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                        </tr>
+
+                        <!-- Nutrition Consultation -->
+                        <tr>
+                            <td class="feature-name">
+                                <i class="fas fa-apple-alt feature-icon"></i>
+                                Nutrition Consultation
+                            </td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value included"><i class="fas fa-check"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                            <td class="feature-value not-included"><i class="fas fa-times"></i></td>
+                        </tr>
+
+                        <!-- Select Button Row -->
+                        <tr class="cta-row">
+                            <td class="feature-name"></td>
+                            <td class="feature-value">
+                                <button class="comparison-select-btn" data-plan="resolution-regular"
+                                    data-category="non-member">
+                                    SELECT PLAN
+                                </button>
+                            </td>
+                            <td class="feature-value">
+                                <button class="comparison-select-btn" data-plan="brawler" data-category="member">
+                                    SELECT PLAN
+                                </button>
+                            </td>
+                            <td class="feature-value">
+                                <button class="comparison-select-btn featured-btn" data-plan="gladiator"
+                                    data-category="member">
+                                    SELECT PLAN
+                                </button>
+                            </td>
+                            <td class="feature-value">
+                                <button class="comparison-select-btn" data-plan="champion" data-category="member">
+                                    SELECT PLAN
+                                </button>
+                            </td>
+                            <td class="feature-value">
+                                <button class="comparison-select-btn" data-plan="clash" data-category="non-member">
+                                    SELECT PLAN
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
     <!-- Pricing Tables -->
     <section class="pricing-section">
         <div class="pricing-header" id="pricingHeader">
-            <h2 class="pricing-title">MEMBER ADDITIONAL SERVICES</h2>
+            <h2 class="pricing-title">TRAIN FOR A DAY</h2>
+            <p class="pricing-subtitle">Single Day Passes</p>
         </div>
 
         <!-- Members Services -->
-        <div class="services-grid-container active" id="memberTable">
+        <div class="services-grid-container active" id="memberTable"
+            data-has-membership="<?php echo $hasActiveMembership ? 'true' : 'false'; ?>">
+            <?php if ($hasActiveMembership): ?>
+                <div
+                    style="background: rgba(255, 206, 0, 0.1); border: 2px solid rgba(255, 206, 0, 0.3); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center;">
+                    <i class="fas fa-info-circle"
+                        style="color: var(--color-accent); font-size: 32px; margin-bottom: 16px;"></i>
+                    <h3
+                        style="color: var(--color-accent); font-family: var(--font-family-display); font-size: 24px; margin-bottom: 12px; text-transform: uppercase;">
+                        You Already Have an Active Membership</h3>
+                    <p style="color: rgba(255, 255, 255, 0.9); font-size: 18px; line-height: 1.6;">Single day passes are
+                        only available for non-members. As an active member, you already have access to the facilities
+                        included in your membership plan.</p>
+                </div>
+            <?php endif; ?>
+
             <div class="services-grid">
-                <div class="service-card" data-price="90 PHP" data-service="Day Pass: Gym Access"
-                    data-benefits="Full-day access to all gym facilities and equipment, including the weight room, cardio machines, and functional training areas. Perfect for a one-off workout or for travelers.">
-                    <div class="service-price">90 PHP</div>
-                    <div class="service-name">Day Pass: Gym Access</div>
-                    <div class="service-benefits">Full-day access to all gym facilities and equipment, including the
-                        weight room, cardio machines, and functional training areas. Perfect for a one-off workout or
-                        for travelers.</div>
-                    <button class="service-select-btn">SELECT SERVICE</button>
-                </div>
-
-                <div class="service-card" data-price="70 PHP" data-service="Day Pass: Student Access"
-                    data-benefits="Discounted full-day access to all gym facilities (weight room, cardio, etc.). Must present a valid student ID upon entry.">
-                    <div class="service-price">70 PHP</div>
-                    <div class="service-name">Day Pass: Student Access</div>
-                    <div class="service-benefits">Discounted full-day access to all gym facilities (weight room, cardio,
-                        etc.). Must present a valid student ID upon entry.</div>
-                    <button class="service-select-btn">SELECT SERVICE</button>
-                </div>
-
-                <div class="service-card" data-price="350 PHP" data-service="Training: Boxing"
+                <div class="service-card <?php echo $hasActiveMembership ? 'disabled' : ''; ?>" data-price="350 PHP"
+                    data-service="Training: Boxing"
                     data-benefits="Full-day access to boxing area. Focused on footwork, defense, and power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight strategies.">
                     <div class="service-price">350 PHP</div>
                     <div class="service-name">Training: Boxing</div>
                     <div class="service-benefits">Full-day access to boxing area. Focused on footwork, defense, and
                         power punching technique. Ideal for rapid skill improvement, pad work, and personalized fight
                         strategies.</div>
-                    <button class="service-select-btn">SELECT SERVICE</button>
+                    <button class="service-select-btn" <?php echo $hasActiveMembership ? 'disabled' : ''; ?>>
+                        <?php echo $hasActiveMembership ? 'DISABLED' : 'SELECT SERVICE'; ?>
+                    </button>
                 </div>
 
-                <div class="service-card" data-price="400 PHP" data-service="Training: Muay Thai"
+                <div class="service-card <?php echo $hasActiveMembership ? 'disabled' : ''; ?>" data-price="400 PHP"
+                    data-service="Training: Muay Thai"
                     data-benefits="Full-day access to mma area. Includes in-depth training on clinch work, teeps, and powerful low kicks. Perfect for mastering traditional techniques and conditioning.">
                     <div class="service-price">400 PHP</div>
                     <div class="service-name">Training: Muay Thai</div>
                     <div class="service-benefits">Full-day access to mma area. Includes in-depth training on clinch
                         work, teeps, and powerful low kicks. Perfect for mastering traditional techniques and
                         conditioning.</div>
-                    <button class="service-select-btn">SELECT SERVICE</button>
+                    <button class="service-select-btn" <?php echo $hasActiveMembership ? 'disabled' : ''; ?>>
+                        <?php echo $hasActiveMembership ? 'DISABLED' : 'SELECT SERVICE'; ?>
+                    </button>
                 </div>
 
-                <div class="service-card" data-price="500 PHP" data-service="Training: MMA"
+                <div class="service-card <?php echo $hasActiveMembership ? 'disabled' : ''; ?>" data-price="500 PHP"
+                    data-service="Training: MMA"
                     data-benefits="A 75-minute comprehensive session that integrates striking (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat experience. Ideal for competitive fighters or those wanting an intense, varied workout.">
                     <div class="service-price">500 PHP</div>
                     <div class="service-name">Training: MMA</div>
                     <div class="service-benefits">A 75-minute comprehensive session that integrates striking
                         (boxing/Muay Thai), wrestling, and Brazilian Jiu-Jitsu (BJJ) for a well-rounded combat
                         experience. Ideal for competitive fighters or those wanting an intense, varied workout.</div>
-                    <button class="service-select-btn">SELECT SERVICE</button>
+                    <button class="service-select-btn" <?php echo $hasActiveMembership ? 'disabled' : ''; ?>>
+                        <?php echo $hasActiveMembership ? 'DISABLED' : 'SELECT SERVICE'; ?>
+                    </button>
                 </div>
             </div>
         </div>
