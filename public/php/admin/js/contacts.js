@@ -310,13 +310,34 @@ function openReplyModal(contactId, email, name) {
 
 // Close reply modal
 function closeReplyModal() {
-    document.getElementById('replyModal').classList.remove('active');
-    document.getElementById('replyForm').reset();
+    const modal = document.getElementById('replyModal');
+    const form = document.getElementById('replyForm');
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    modal.classList.remove('active');
+    form.reset();
+    
+    // Reset submit button state
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Reply';
+        submitButton.style.cursor = 'pointer';
+        submitButton.style.opacity = '1';
+    }
 }
 
 // Handle reply form submission
 async function handleReplySubmit(e) {
     e.preventDefault();
+
+    // Get the submit button
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    const originalButtonHtml = submitButton.innerHTML;
+    
+    // Prevent multiple submissions
+    if (submitButton.disabled) {
+        return;
+    }
 
     const contactId = document.getElementById('replyContactId').value;
     const to = document.getElementById('replyTo').value;
@@ -329,20 +350,59 @@ async function handleReplySubmit(e) {
     const originalMessage = contact ? contact.message : '';
 
     try {
-        const response = await fetch('api/send_reply.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contact_id: contactId,
-                to,
-                subject,
-                message,
-                original_message: originalMessage,
-                send_copy: sendCopy
-            })
-        });
+        // Disable button and show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+        submitButton.style.cursor = 'not-allowed';
+        submitButton.style.opacity = '0.6';
 
-        const data = await response.json();
+        // Add timeout to fetch request (30 seconds for email sending)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        let response;
+        try {
+            response = await fetch('api/send_reply.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contact_id: contactId,
+                    to,
+                    subject,
+                    message,
+                    original_message: originalMessage,
+                    send_copy: sendCopy
+                }),
+                signal: controller.signal
+            });
+        } catch (fetchError) {
+            clearTimeout(timeoutId);
+            if (fetchError.name === 'AbortError') {
+                throw new Error('Request timed out. The email might still be sending. Please check your sent emails.');
+            }
+            throw new Error('Network error: Unable to connect to server. Please check your connection and try again.');
+        }
+        
+        clearTimeout(timeoutId);
+
+        // Check if response is OK
+        if (!response.ok) {
+            throw new Error(`Server error (${response.status}): ${response.statusText}`);
+        }
+
+        // Get the response text first to debug JSON parsing issues
+        const text = await response.text();
+        console.log('Reply response:', text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            console.error('Raw response:', text);
+            throw new Error('Invalid server response. Please check the browser console for details.');
+        }
+
         if (!data.success) {
             throw new Error(data.message || 'Failed to send reply');
         }
@@ -354,8 +414,14 @@ async function handleReplySubmit(e) {
         await markAsRead(parseInt(contactId));
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error sending reply:', error);
         showToast('Failed to send reply: ' + error.message, 'error');
+        
+        // Re-enable button on error
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonHtml;
+        submitButton.style.cursor = 'pointer';
+        submitButton.style.opacity = '1';
     }
 }
 

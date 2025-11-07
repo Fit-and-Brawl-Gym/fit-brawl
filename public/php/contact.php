@@ -101,47 +101,75 @@ if ($hasActiveMembership) {
 // Initialize session manager
 SessionManager::initialize();
 
+// Check if user is logged in and get their info
+$isLoggedIn = isset($_SESSION['user_id']);
+$userFullName = '';
+$userEmail = '';
+
+if ($isLoggedIn) {
+    $userFullName = $_SESSION['name'] ?? '';
+    $userEmail = $_SESSION['email'] ?? '';
+}
+
 $status = "";
+$statusType = "";
+$fname = "";
+$lname = "";
+$email = "";
+$phoneNum = "";
+$message = "";
 $fnameErr = $lnameErr = $emailErr = $phoneErr = $messageErr = "";
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $user_id = $_SESSION['user_id'] ?? null;
-    $fname = test_input($_POST['first-name'] ?? '');
-    $lname = test_input($_POST['last-name'] ?? '');
-    $email = test_input($_POST['email'] ?? '');
+
+    // If logged in, use session data for name and email
+    if ($isLoggedIn) {
+        $fullName = $userFullName;
+        // Split the username into first and last name (simple approach)
+        $nameParts = explode(' ', $fullName, 2);
+        $fname = $nameParts[0] ?? '';
+        $lname = $nameParts[1] ?? '';
+        $email = $userEmail;
+    } else {
+        // For non-logged in users, get from form
+        $fname = test_input($_POST['first-name'] ?? '');
+        $lname = test_input($_POST['last-name'] ?? '');
+        $email = test_input($_POST['email'] ?? '');
+    }
+
     $phoneNum = test_input($_POST['phone'] ?? '');
     $message = test_input($_POST['message'] ?? '');
 
-    if (empty($fname)) {
-        $fnameErr = "First name is required";
-    } else {
-        if (!preg_match("/^[a-zA-Z-' ]*$/", $fname)) {
-            $nameErr = "Only letters and white space allowed";
+    // Validation
+    if (!$isLoggedIn) {
+        if (empty($fname)) {
+            $fnameErr = "First name is required";
+        } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $fname)) {
+            $fnameErr = "Only letters and white space allowed";
         }
-    }
-    if (empty($lname)) {
-        $lnameErr = "Last name is required";
-    } else {
-        if (!preg_match("/^[a-zA-Z-' ]*$/", $lname)) {
-            $nameErr = "Only letters and white space allowed";
+
+        if (empty($lname)) {
+            $lnameErr = "Last name is required";
+        } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $lname)) {
+            $lnameErr = "Only letters and white space allowed";
         }
-    }
-    if (empty($email)) {
-        $emailErr = "Email is required";
-    } else {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+        if (empty($email)) {
+            $emailErr = "Email is required";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $emailErr = "Invalid email format";
         }
     }
+
     if (empty($phoneNum)) {
         $phoneErr = "Phone number is required";
-    } else {
-        if (!preg_match("/^[0-9]{10,15}$/", $phoneNum)) {
-            $phoneErr = "Invalid phone number format";
-        }
+    } elseif (!preg_match("/^[0-9]{10,15}$/", $phoneNum)) {
+        $phoneErr = "Invalid phone number format";
     }
+
     if (empty($message)) {
         $messageErr = "Message is required";
-
     }
 
     if (empty($fnameErr) && empty($lnameErr) && empty($emailErr) && empty($phoneErr) && empty($messageErr)) {
@@ -151,12 +179,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->bind_param("sssss", $fname, $lname, $email, $phoneNum, $message);
 
         if ($stmt->execute()) {
-            $status = "Your message has been sent successfully.";
-
-            $fname = $lname = $email = $phoneNum = $message = '';
+            $status = "Your message has been sent successfully! We'll get back to you soon.";
+            $statusType = "success";
+            $phoneNum = $message = '';
+            if (!$isLoggedIn) {
+                $fname = $lname = $email = '';
+            }
         } else {
-            $status = "Database error: " . $stmt->error;
+            $status = "Something went wrong. Please try again later.";
+            $statusType = "error";
         }
+        $stmt->close();
+    } else {
+        $statusType = "error";
     }
 }
 
@@ -178,74 +213,165 @@ function test_input($data)
 // Set variables for header
 $pageTitle = "Fit and Brawl - Contact";
 $currentPage = "contact";
-$additionalCSS = [PUBLIC_PATH . "/css/pages/contact.css", PUBLIC_PATH . "/css/components/form.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/contact.css"];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 <!--Main-->
-<main>
-    <div class="bg"></div>
-    <div class="glowing-bg"></div>
-    <div class="contact-container">
-        <div class="contact-section">
-            <div class="contact-header">
-                <h1>Contact Us</h1>
+<main class="contact-page">
+    <div class="page-header-section">
+        <div class="page-header-content">
+            <div class="page-header-text">
+                <h1 class="page-title">Get In <span class="highlight">Touch</span></h1>
+                <p class="page-subtitle">Have questions or feedback? We'd love to hear from you. <br> Send us a message
+                    and we'll respond as soon as possible.</p>
             </div>
-            <form method="post" class="contact-form" id="contactForm">
-                <div class="contact-details">
-                    <?php if (!empty($status)): ?>
-                        <div class="success"><?= htmlspecialchars($status) ?></div>
-                    <?php endif; ?>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="first-name">First Name</label>
-                            <input type="text" id="first-name" name="first-name" placeholder="Excel"
-                                value="<?= htmlspecialchars($fname ?? '') ?>">
-                            <?php if (!empty($fnameErr)): ?>
-                                <div class="status"><?= htmlspecialchars($fnameErr) ?></div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="form-group">
-                            <label for="last-name">Last Name</label>
-                            <input type="text" id="last-name" name="last-name" placeholder="Bondoc"
-                                value="<?= htmlspecialchars($lname ?? '') ?>">
-                            <?php if (!empty($lnameErr)): ?>
-                                <div class="status"><?= htmlspecialchars($lnameErr) ?></div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="excelpogi@gmail.com"
-                                value="<?= htmlspecialchars($email ?? '') ?>">
-                            <?php if (!empty($emailErr)): ?>
-                                <div class="status"><?= htmlspecialchars($emailErr) ?></div>
-                            <?php endif; ?>
-                        </div>
+        </div>
+    </div>
 
-                        <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" placeholder="09123456789"
-                                value="<?= htmlspecialchars($phoneNum ?? '') ?>">
-                            <?php if (!empty($phoneErr)): ?>
-                                <div class="status"><?= htmlspecialchars($phoneErr) ?></div>
-                            <?php endif; ?>
-                        </div>
+    <div class="contact-container">
+        <div class="contact-content">
+            <!-- Contact Info Cards -->
+            <div class="contact-info-section">
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-map-marker-alt"></i>
                     </div>
-                    <div class="form-group">
-                        <textarea id="message" name="message" placeholder="Leave us a message..."
-                            value="<?= htmlspecialchars($message ?? '') ?>"></textarea>
-                        <?php if (!empty($messageErr)): ?>
-                            <div class="status"><?= htmlspecialchars($messageErr) ?></div>
-                        <?php endif; ?>
-                    </div>
-                    <div class="submit-button">
-                        <button type="submit">Submit</button>
+                    <div class="info-content">
+                        <h3>Visit Us</h3>
+                        <p>1832 Oroquieta Rd, Santa Cruz, Manila<br>1008 Metro Manila<br><strong>Mon-Sun:</strong> 7AM -
+                            12NN</p>
                     </div>
                 </div>
-            </form>
+
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Call Us</h3>
+                        <p>+63 912 345 6789</p>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3>Email Us</h3>
+                        <p>fitxbrawl.gym@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-form-section">
+                <div class="form-header">
+                    <h2>Send Us a Message</h2>
+                    <?php if ($isLoggedIn): ?>
+                        <p class="welcome-text">Welcome back, <strong><?= htmlspecialchars($userFullName) ?></strong>!</p>
+                    <?php else: ?>
+                        <p>Fill out the form below and we'll get back to you shortly.</p>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!empty($status)): ?>
+                    <div class="alert alert-<?= $statusType ?>">
+                        <i class="fas fa-<?= $statusType === 'success' ? 'check-circle' : 'exclamation-circle' ?>"></i>
+                        <?= htmlspecialchars($status) ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="post" class="contact-form" id="contactForm">
+                    <?php if (!$isLoggedIn): ?>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first-name">
+                                    <i class="fas fa-user"></i>
+                                    First Name <span class="required">*</span>
+                                </label>
+                                <input type="text" id="first-name" name="first-name" placeholder="Enter your first name"
+                                    value="<?= htmlspecialchars($fname) ?>" class="<?= !empty($fnameErr) ? 'error' : '' ?>">
+                                <?php if (!empty($fnameErr)): ?>
+                                    <span class="error-message"><?= htmlspecialchars($fnameErr) ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="last-name">
+                                    <i class="fas fa-user"></i>
+                                    Last Name <span class="required">*</span>
+                                </label>
+                                <input type="text" id="last-name" name="last-name" placeholder="Enter your last name"
+                                    value="<?= htmlspecialchars($lname) ?>" class="<?= !empty($lnameErr) ? 'error' : '' ?>">
+                                <?php if (!empty($lnameErr)): ?>
+                                    <span class="error-message"><?= htmlspecialchars($lnameErr) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">
+                                    <i class="fas fa-envelope"></i>
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <input type="email" id="email" name="email" placeholder="your.email@example.com"
+                                    value="<?= htmlspecialchars($email) ?>" class="<?= !empty($emailErr) ? 'error' : '' ?>">
+                                <?php if (!empty($emailErr)): ?>
+                                    <span class="error-message"><?= htmlspecialchars($emailErr) ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">
+                                    <i class="fas fa-phone"></i>
+                                    Phone Number <span class="required">*</span>
+                                </label>
+                                <input type="tel" id="phone" name="phone" placeholder="09123456789"
+                                    value="<?= htmlspecialchars($phoneNum) ?>"
+                                    class="<?= !empty($phoneErr) ? 'error' : '' ?>">
+                                <?php if (!empty($phoneErr)): ?>
+                                    <span class="error-message"><?= htmlspecialchars($phoneErr) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="form-group">
+                            <label for="phone">
+                                <i class="fas fa-phone"></i>
+                                Phone Number <span class="required">*</span>
+                            </label>
+                            <input type="tel" id="phone" name="phone" placeholder="09123456789"
+                                value="<?= htmlspecialchars($phoneNum) ?>" class="<?= !empty($phoneErr) ? 'error' : '' ?>">
+                            <?php if (!empty($phoneErr)): ?>
+                                <span class="error-message"><?= htmlspecialchars($phoneErr) ?></span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="form-group">
+                        <label for="message">
+                            <i class="fas fa-comment-dots"></i>
+                            Your Message <span class="required">*</span>
+                        </label>
+                        <textarea id="message" name="message" rows="6" placeholder="Tell us what's on your mind..."
+                            class="<?= !empty($messageErr) ? 'error' : '' ?>"><?= htmlspecialchars($message) ?></textarea>
+                        <?php if (!empty($messageErr)): ?>
+                            <span class="error-message"><?= htmlspecialchars($messageErr) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </main>
