@@ -114,7 +114,7 @@ $log_result = $stmt->get_result();
             <div class="trainer-profile-section">
                 <div class="profile-card">
                     <div class="profile-header">
-                        <img src="<?= !empty($trainer['photo']) ? '../../../uploads/trainers/' . htmlspecialchars($trainer['photo']) : '../../../images/default-trainer.png' ?>"
+                        <img src="../../../images/account-icon.svg"
                             alt="<?= htmlspecialchars($trainer['name']) ?>" class="profile-avatar">
                         <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $trainer['status'])) ?>">
                             <?= htmlspecialchars($trainer['status']) ?>

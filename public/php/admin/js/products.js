@@ -34,9 +34,8 @@ function editProduct(product) {
         const preview = document.getElementById('imagePreview');
         const fileName = imageFile.split('/').pop();
 
-
-        const imagePath = `/fit-brawl/uploads/products/${fileName}`;
-
+        // Use environment-aware path
+        const imagePath = `${window.UPLOADS_PATH}/products/${fileName}`;
 
         preview.style.backgroundImage = `url('${imagePath}')`;
         preview.style.backgroundSize = 'cover';
