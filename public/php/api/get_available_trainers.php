@@ -65,7 +65,7 @@ try {
 
     // Query to get all trainers with matching specialization
     $query = "
-        SELECT 
+        SELECT
             t.id,
             t.name,
             t.specialization,

@@ -45,8 +45,8 @@ class BookingValidator
         $day_of_week = date('l', strtotime($booking_date));
 
         $stmt = $this->conn->prepare("
-            SELECT is_day_off 
-            FROM trainer_day_offs 
+            SELECT is_day_off
+            FROM trainer_day_offs
             WHERE trainer_id = ? AND day_of_week = ? AND is_day_off = 1
         ");
         $stmt->bind_param("is", $trainer_id, $day_of_week);
@@ -68,10 +68,10 @@ class BookingValidator
     public function validateAdminBlock($trainer_id, $booking_date, $session_time)
     {
         $stmt = $this->conn->prepare("
-            SELECT reason 
-            FROM trainer_availability_blocks 
-            WHERE trainer_id = ? 
-            AND date = ? 
+            SELECT reason
+            FROM trainer_availability_blocks
+            WHERE trainer_id = ?
+            AND date = ?
             AND (session_time = ? OR session_time = 'All Day')
             AND block_status = 'blocked'
         ");
@@ -96,11 +96,11 @@ class BookingValidator
     public function validateTrainerAvailability($trainer_id, $booking_date, $session_time)
     {
         $stmt = $this->conn->prepare("
-            SELECT id 
-            FROM user_reservations 
-            WHERE trainer_id = ? 
-            AND booking_date = ? 
-            AND session_time = ? 
+            SELECT id
+            FROM user_reservations
+            WHERE trainer_id = ?
+            AND booking_date = ?
+            AND session_time = ?
             AND booking_status = 'confirmed'
         ");
         $stmt->bind_param("iss", $trainer_id, $booking_date, $session_time);
@@ -123,10 +123,10 @@ class BookingValidator
     {
         $query = "
             SELECT COUNT(DISTINCT trainer_id) as trainer_count
-            FROM user_reservations 
-            WHERE class_type = ? 
-            AND booking_date = ? 
-            AND session_time = ? 
+            FROM user_reservations
+            WHERE class_type = ?
+            AND booking_date = ?
+            AND session_time = ?
             AND booking_status = 'confirmed'
         ";
 
@@ -174,8 +174,8 @@ class BookingValidator
 
         $stmt = $this->conn->prepare("
             SELECT COUNT(*) as booking_count
-            FROM user_reservations 
-            WHERE user_id = ? 
+            FROM user_reservations
+            WHERE user_id = ?
             AND booking_date BETWEEN ? AND ?
             AND booking_status IN ('confirmed', 'completed')
         ");
@@ -214,11 +214,11 @@ class BookingValidator
     public function validateUserDoubleBooking($user_id, $booking_date, $session_time)
     {
         $stmt = $this->conn->prepare("
-            SELECT class_type, trainer_id 
-            FROM user_reservations 
-            WHERE user_id = ? 
-            AND booking_date = ? 
-            AND session_time = ? 
+            SELECT class_type, trainer_id
+            FROM user_reservations
+            WHERE user_id = ?
+            AND booking_date = ?
+            AND session_time = ?
             AND booking_status = 'confirmed'
         ");
         $stmt->bind_param("iss", $user_id, $booking_date, $session_time);
@@ -249,10 +249,10 @@ class BookingValidator
     public function validateMembership($user_id)
     {
         $stmt = $this->conn->prepare("
-            SELECT id 
-            FROM user_memberships 
-            WHERE user_id = ? 
-            AND membership_status = 'active' 
+            SELECT id
+            FROM user_memberships
+            WHERE user_id = ?
+            AND membership_status = 'active'
             AND end_date >= CURDATE()
         ");
         $stmt->bind_param("i", $user_id);
@@ -293,8 +293,8 @@ class BookingValidator
     public function validateCancellation($booking_id, $user_id)
     {
         $stmt = $this->conn->prepare("
-            SELECT booking_date, session_time, booking_status 
-            FROM user_reservations 
+            SELECT booking_date, session_time, booking_status
+            FROM user_reservations
             WHERE id = ? AND user_id = ?
         ");
         $stmt->bind_param("ii", $booking_id, $user_id);

@@ -109,7 +109,7 @@ $date_to = $_GET['date_to'] ?? date('Y-m-d', strtotime('+30 days'));
 
 // Build query
 $query = "
-    SELECT tab.id, tab.trainer_id, tab.date, tab.session_time, tab.reason, 
+    SELECT tab.id, tab.trainer_id, tab.date, tab.session_time, tab.reason,
            tab.block_status, tab.created_at,
            t.name as trainer_name, t.specialization,
            u.username as blocked_by_name
