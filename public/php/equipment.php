@@ -168,63 +168,69 @@ require_once __DIR__ . '/../../includes/header.php';
 
     <!--Main-->
     <main>
-        <div class="bg"></div>
-
-        <!-- Equipment Gallery -->
+        <!-- Equipment Heading - Full Width -->
         <div class="panel-header">
             <h2>Equipment Availability</h2>
         </div>
 
-        <!-- Filter instruction -->
-        <div style="text-align: center; margin-bottom: var(--spacing-3);">
-            <p style="color: var(--color-text-light); font-size: var(--font-size-sm); opacity: 0.9;">
-                <strong style="color: var(--color-accent);">Click</strong> a category below to filter equipment
-            </p>
-        </div>
+        <!-- Equipment Wrapper - Contains Sidebar and Grid -->
+        <div class="equipment-wrapper">
+            <!-- Left Sidebar - Filters -->
+            <aside class="filter-sidebar">
+                <h3>Filters</h3>
 
-        <!-- category chips (filters) -->
-        <div class="categories-row" id="category-filters">
-            <div class="category-chip" data-category="cardio">
-                <img src="../../images/cardio-icon.svg" alt="Cardio">
-                <p>Cardio</p>
-            </div>
-            <div class="category-chip" data-category="flexibility">
-                <img src="../../images/flexibility-icon.svg" alt="Flexibility">
-                <p>Flexibility</p>
-            </div>
-            <div class="category-chip" data-category="core">
-                <img src="../../images/core-icon.svg" alt="Core">
-                <p>Core</p>
-            </div>
-            <div class="category-chip" data-category="strength">
-                <img src="../../images/strength-icon.svg" alt="Strength Training">
-                <p>Strength Training</p>
-            </div>
-            <div class="category-chip" data-category="functional">
-                <img src="../../images/functional-icon.svg" alt="Functional Training">
-                <p>Functional Training</p>
+                <!-- Search Section -->
+                <div class="filter-section search-section">
+                    <label for="equipmentSearch">Search</label>
+                    <input type="search" id="equipmentSearch" placeholder="Search Equipment...">
+                </div>
+
+                <!-- Status Filter -->
+                <div class="filter-section">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="all">All Equipment</option>
+                        <option value="available">Available</option>
+                        <option value="maintenance">Maintenance</option>
+                    </select>
+                </div>
+
+                <!-- Categories -->
+                <div class="filter-section">
+                    <label>Categories</label>
+                    <div class="categories-list" id="category-filters">
+                        <div class="category-chip" data-category="cardio">
+                            <img src="../../images/cardio-icon.svg" alt="Cardio">
+                            <p>Cardio</p>
+                        </div>
+                        <div class="category-chip" data-category="flexibility">
+                            <img src="../../images/flexibility-icon.svg" alt="Flexibility">
+                            <p>Flexibility</p>
+                        </div>
+                        <div class="category-chip" data-category="core">
+                            <img src="../../images/core-icon.svg" alt="Core">
+                            <p>Core</p>
+                        </div>
+                        <div class="category-chip" data-category="strength">
+                            <img src="../../images/strength-icon.svg" alt="Strength Training">
+                            <p>Strength Training</p>
+                        </div>
+                        <div class="category-chip" data-category="functional">
+                            <img src="../../images/functional-icon.svg" alt="Functional Training">
+                            <p>Functional Training</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="equipment-content">
+                <!-- equipment list -->
+                <div id="equipment-container">
+                    <!-- JS will render equipment cards here -->
+                </div>
             </div>
         </div>
-
-        <!-- controls: search + status filter -->
-        <div class="controls">
-            <div class="search">
-                <input type="search" id="equipmentSearch" placeholder="Search Equipment...">
-            </div>
-            <div class="filter">
-                <select id="statusFilter">
-                    <option value="all">Filter by Status</option>
-                    <option value="available">Available</option>
-                    <option value="maintenance">Maintenance</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- equipment list -->
-        <div id="equipment-container">
-            <!-- JS will render equipment cards here -->
-        </div>
-
     </main>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
