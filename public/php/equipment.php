@@ -233,4 +233,9 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </main>
 
+    <!-- Back to Top Button -->
+    <button class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

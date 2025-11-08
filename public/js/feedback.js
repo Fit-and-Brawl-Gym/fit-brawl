@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (backToTopBtn) {
         // Show/hide button based on scroll position
-        window.addEventListener('scroll', function () {
+        window.addEventListener('scroll', function() {
             if (window.pageYOffset > 300) {
                 backToTopBtn.classList.add('visible');
             } else {
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Scroll to top when clicked
-        backToTopBtn.addEventListener('click', function () {
+        backToTopBtn.addEventListener('click', function() {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'

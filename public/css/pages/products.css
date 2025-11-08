@@ -472,6 +472,48 @@ select#statusFilter option {
     border: 2px dashed rgba(213, 186, 43, 0.3);
 }
 
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: var(--spacing-8);
+    right: var(--spacing-8);
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--color-accent) 0%, #c9ab24 100%);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+    font-size: var(--font-size-xl);
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(213, 186, 43, 0.4);
+    transition: all 0.3s ease;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(20px) scale(0.8);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.back-to-top:hover {
+    background: linear-gradient(135deg, #c9ab24 0%, var(--color-accent) 100%);
+    transform: translateY(-4px) scale(1);
+    box-shadow: 0 12px 32px rgba(213, 186, 43, 0.6);
+}
+
+.back-to-top:active {
+    transform: translateY(-2px) scale(1);
+}
+
 /* Responsive Design */
 @media (max-width: 992px) {
     .products-hero .title {

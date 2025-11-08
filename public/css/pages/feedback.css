@@ -528,16 +528,19 @@ main {
     font-size: var(--font-size-xl);
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(213, 186, 43, 0.4);
-    transition: var(--transition-base);
+    transition: all 0.3s ease;
+    z-index: 1;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(20px);
+    pointer-events: none;
+    transform: translateY(20px) scale(0.8);
 }
 
 .back-to-top.visible {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
 }
 
 .back-to-top:hover {

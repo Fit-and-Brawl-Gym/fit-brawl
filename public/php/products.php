@@ -232,6 +232,11 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </main>
 
+    <!-- Back to Top Button -->
+    <button class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
     <script src="<?= PUBLIC_PATH ?>/js/products.js?=v1"></script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
