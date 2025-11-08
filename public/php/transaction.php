@@ -80,8 +80,9 @@ $plans = [
     'brawler' => [
         'name' => 'BRAWLER PLAN',
         'monthly' => 11500,
-        'yearly' => 138000,
-        'has_discount' => false,
+        'quarterly' => 32775, // 3 months with 5% off: (11500 * 3) * 0.95
+        'has_discount' => true,
+        'discount_percent' => 5,
         'benefits' => [
             'Muay Thai Training with Professional Coaches',
             'MMA Area Access',
@@ -93,8 +94,9 @@ $plans = [
     'gladiator' => [
         'name' => 'GLADIATOR PLAN',
         'monthly' => 14500,
-        'yearly' => 174000,
+        'quarterly' => 36540, // 3 months with 16% off: (14500 * 3) * 0.84
         'has_discount' => true,
+        'discount_percent' => 16,
         'benefits' => [
             'Boxing Training with Professional Coaches',
             'MMA Training with Professional Coaches',
@@ -108,8 +110,9 @@ $plans = [
     'champion' => [
         'name' => 'CHAMPION PLAN',
         'monthly' => 7000,
-        'yearly' => 84000,
-        'has_discount' => false,
+        'quarterly' => 19950, // 3 months with 5% off: (7000 * 3) * 0.95
+        'has_discount' => true,
+        'discount_percent' => 5,
         'benefits' => [
             'Boxing Training with Professional Coaches',
             'MMA Area Access',
@@ -121,8 +124,9 @@ $plans = [
     'clash' => [
         'name' => 'CLASH PLAN',
         'monthly' => 13500,
-        'yearly' => 162000,
-        'has_discount' => false,
+        'quarterly' => 38475, // 3 months with 5% off: (13500 * 3) * 0.95
+        'has_discount' => true,
+        'discount_percent' => 5,
         'benefits' => [
             'MMA Training with Professional Coaches',
             'MMA Area Access',
@@ -134,8 +138,9 @@ $plans = [
     'resolution-regular' => [
         'name' => 'RESOLUTION PLAN',
         'monthly' => 2200,
-        'yearly' => 26400,
-        'has_discount' => false,
+        'quarterly' => 6270, // 3 months with 5% off: (2200 * 3) * 0.95
+        'has_discount' => true,
+        'discount_percent' => 5,
         'benefits' => [
             'Gym Equipment Access with Face Recognition',
             'Shower Access',
@@ -145,12 +150,12 @@ $plans = [
 ];
 
 $selectedPlan = $plans[$plan];
-$price = $billing === 'yearly' ? $selectedPlan['yearly'] : $selectedPlan['monthly'];
+$price = $billing === 'quarterly' ? $selectedPlan['quarterly'] : $selectedPlan['monthly'];
 $monthlyPrice = $selectedPlan['monthly'];
-$yearlyPrice = $selectedPlan['yearly'];
+$quarterlyPrice = $selectedPlan['quarterly'];
 
 // Calculate next payment date
-$nextPayment = $billing === 'yearly' ? date('F d, Y', strtotime('+1 year')) : date('F d, Y', strtotime('+1 month'));
+$nextPayment = $billing === 'quarterly' ? date('F d, Y', strtotime('+3 months')) : date('F d, Y', strtotime('+1 month'));
 
 // Helper function to format plan name with styled parentheses
 function formatPlanName($planName)
@@ -178,7 +183,7 @@ $additionalJS = ['../js/transaction.js'];
 ?>
 <script>
     const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
-    const yearlyPrice = <?php echo json_encode($yearlyPrice); ?>;
+    const quarterlyPrice = <?php echo json_encode($quarterlyPrice); ?>;
 </script>
 <?php
 // Include header
@@ -197,7 +202,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <div class="transaction-left">
                         <div class="form-group">
                             <label for="name">Name</label>
-                            <input type="text" id="name" name="name" placeholder="Excel Bondoc" required>
+                            <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
                         </div>
 
                         <div class="form-group">
@@ -350,7 +355,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="form-group">
                             <label for="address">Permanent Address</label>
                             <input type="text" id="address" name="address"
-                                placeholder="123 Mabini Street, Barangay Maligaya, Quezon City" required>
+                                placeholder="123 Rizal Street, Barangay San Isidro, Quezon City" required>
                         </div>
 
                         <div class="payment-qr-section">
@@ -378,20 +383,21 @@ require_once __DIR__ . '/../../includes/header.php';
                             </label>
 
                             <label class="billing-option">
-                                <input type="radio" name="billing" value="yearly" <?php echo $billing === 'yearly' ? 'checked' : ''; ?> data-billing="yearly">
+                                <input type="radio" name="billing" value="quarterly" <?php echo $billing === 'quarterly' ? 'checked' : ''; ?> data-billing="quarterly">
                                 <?php if ($selectedPlan['has_discount']): ?>
-                                    <span class="discount-badge">16% OFF</span>
+                                    <span class="discount-badge"><?php echo $selectedPlan['discount_percent']; ?>%
+                                        OFF</span>
                                 <?php endif; ?>
                                 <div class="billing-label">
                                     <div class="radio-custom"></div>
                                     <div class="billing-info">
-                                        <div class="billing-title">Pay yearly</div>
+                                        <div class="billing-title">Pay quarterly</div>
                                         <div class="billing-price">
-                                            <?php if ($billing === 'yearly' && $selectedPlan['has_discount']): ?>
+                                            <?php if ($billing === 'quarterly' && $selectedPlan['has_discount']): ?>
                                                 <span
-                                                    class="original-price"><?php echo number_format($monthlyPrice * 12); ?>PHP</span>
+                                                    class="original-price"><?php echo number_format($monthlyPrice * 3); ?>PHP</span>
                                             <?php endif; ?>
-                                            <?php echo number_format($yearlyPrice); ?>PHP/year
+                                            <?php echo number_format($quarterlyPrice); ?>PHP/quarter
                                         </div>
                                     </div>
                                 </div>
@@ -405,7 +411,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <div class="plan-price">
                                     <span class="price-amount"><?php echo $price; ?></span>
                                     <span
-                                        class="price-period">/<?php echo $billing === 'yearly' ? 'YEAR' : 'MONTH'; ?></span>
+                                        class="price-period">/<?php echo $billing === 'quarterly' ? 'QUARTER' : 'MONTH'; ?></span>
                                 </div>
                             </div>
 
@@ -440,8 +446,10 @@ require_once __DIR__ . '/../../includes/header.php';
                 </div>
 
                 <p class="terms-notice">
-                    By confirming your membership, you allow this website to charge your qcash for this payment and
-                    future payments in accordance with its terms. You can always cancel your membership.
+                    By confirming your membership, you acknowledge that this is a one-time payment for the selected plan
+                    duration. Your membership will remain active until the end of the paid period and will not
+                    automatically renew. To continue enjoying our services after expiration, you will need to purchase a
+                    new membership plan.
                 </p>
             </form>
         </div>
@@ -491,7 +499,5 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <script src="/public/js/transaction.js?=v2"></script>
 </body>
-
-
 
 </html>

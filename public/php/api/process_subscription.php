@@ -1,8 +1,20 @@
 <?php
+// Start output buffering to catch any unwanted output
+ob_start();
+
 session_start();
 
 require_once '../../../includes/db_connect.php';
-require_once '../../../includes/file_upload_security.php';
+
+// Check if file_upload_security exists, if not, skip it
+$uploadSecurityExists = file_exists('../../../includes/file_upload_security.php');
+if ($uploadSecurityExists) {
+    require_once '../../../includes/file_upload_security.php';
+}
+
+// Clear any output that might have been generated
+ob_end_clean();
+
 header('Content-Type: application/json');
 
 // Check login
@@ -36,18 +48,51 @@ if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK)
 }
 
 $uploadDir = __DIR__ . '/../../../uploads/receipts/';
-$uploadHandler = SecureFileUpload::receiptUpload($uploadDir, 10);
 
-$result = $uploadHandler->uploadFile($_FILES['receipt']);
-
-if (!$result['success']) {
-    echo json_encode(['success' => false, 'message' => $result['message']]);
-    exit;
+// Create directory if it doesn't exist
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0755, true);
 }
 
-$filename = 'receipt_' . $user_id . '_' . time() . '.' . pathinfo($result['filename'], PATHINFO_EXTENSION);
-$uploadPath = $uploadDir . $filename;
-rename($result['path'], $uploadPath);
+// Handle file upload with or without SecureFileUpload class
+// Check if finfo_open function exists (required by SecureFileUpload)
+if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists('finfo_open')) {
+    $uploadHandler = SecureFileUpload::receiptUpload($uploadDir, 10);
+    $result = $uploadHandler->uploadFile($_FILES['receipt']);
+
+    if (!$result['success']) {
+        echo json_encode(['success' => false, 'message' => $result['message']]);
+        exit;
+    }
+
+    $filename = 'receipt_' . $user_id . '_' . time() . '.' . pathinfo($result['filename'], PATHINFO_EXTENSION);
+    $uploadPath = $uploadDir . $filename;
+    rename($result['path'], $uploadPath);
+} else {
+    // Simple file upload without security class
+    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    $fileType = $_FILES['receipt']['type'];
+    $fileSize = $_FILES['receipt']['size'];
+
+    if (!in_array($fileType, $allowedTypes)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, and PDF are allowed.']);
+        exit;
+    }
+
+    if ($fileSize > 10 * 1024 * 1024) {
+        echo json_encode(['success' => false, 'message' => 'File size must be less than 10MB']);
+        exit;
+    }
+
+    $extension = pathinfo($_FILES['receipt']['name'], PATHINFO_EXTENSION);
+    $filename = 'receipt_' . $user_id . '_' . time() . '.' . $extension;
+    $uploadPath = $uploadDir . $filename;
+
+    if (!move_uploaded_file($_FILES['receipt']['tmp_name'], $uploadPath)) {
+        echo json_encode(['success' => false, 'message' => 'Failed to upload file']);
+        exit;
+    }
+}
 
 // Plan mapping
 $planMapping = [
@@ -84,7 +129,6 @@ if (!$membership) {
     }
 }
 
-
 $check_existing = $conn->prepare("
     SELECT * FROM user_memberships
     WHERE user_id = ?
@@ -95,87 +139,162 @@ $check_existing->bind_param("i", $user_id);
 $check_existing->execute();
 $existing = $check_existing->get_result()->fetch_assoc();
 
-
 if ($existing && $existing['request_status'] === 'pending') {
     echo json_encode(['success' => false, 'message' => 'Upgrade or membership request already pending approval.']);
     exit;
 }
 
-
+// Calculate dates based on billing type
 $start_date = date('Y-m-d');
-$end_date = ($billing === 'yearly') ? date('Y-m-d', strtotime('+1 year')) : date('Y-m-d', strtotime('+1 month'));
-$duration = ($billing === 'yearly') ? 365 : 30;
+if ($billing === 'quarterly') {
+    $end_date = date('Y-m-d', strtotime('+3 months'));
+    $duration = 90;
+} else {
+    // Default to monthly
+    $end_date = date('Y-m-d', strtotime('+1 month'));
+    $duration = 30;
+}
 
+// Define source table and ID (set to NULL if not applicable)
+$source_table = null;
+$source_id = null;
 
 if ($existing && $existing['membership_status'] === 'active') {
-    $update_query = "
-    UPDATE user_memberships
-    SET
-        plan_id = ?,
-        name = ?,
-        country = ?,
-        permanent_address = ?,
-        plan_name = ?,
-        qr_proof = ?,
-        start_date = ?,
-        end_date = ?,
-        billing_type = ?,
-        membership_status = 'active',
-        request_status = 'pending',
-        duration = ?,
-        source_table = ?,
-        source_id = ?
-    WHERE user_id = ? AND id = ?
-";
+    // Check if the table has source_table and source_id columns
+    $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'source_table'");
+    $has_source_columns = $columns_check->num_rows > 0;
 
-$stmt = $conn->prepare($update_query);
-$stmt->bind_param(
-    "issssssssisiis",
-    $plan_id,
-    $name,
-    $country,
-    $address,
-    $membership['plan_name'],
-    $filename,
-    $start_date,
-    $end_date,
-    $billing,
-    $duration,
-    $source_table,
-    $source_id,
-    $user_id,
-    $existing['id']
-);
+    if ($has_source_columns) {
+        $update_query = "
+        UPDATE user_memberships
+        SET
+            plan_id = ?,
+            name = ?,
+            country = ?,
+            permanent_address = ?,
+            plan_name = ?,
+            qr_proof = ?,
+            start_date = ?,
+            end_date = ?,
+            billing_type = ?,
+            membership_status = 'active',
+            request_status = 'pending',
+            duration = ?,
+            source_table = ?,
+            source_id = ?
+        WHERE user_id = ? AND id = ?
+        ";
+
+        $stmt = $conn->prepare($update_query);
+        $stmt->bind_param(
+            "issssssssissii",
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $duration,
+            $source_table,
+            $source_id,
+            $user_id,
+            $existing['id']
+        );
+    } else {
+        $update_query = "
+        UPDATE user_memberships
+        SET
+            plan_id = ?,
+            name = ?,
+            country = ?,
+            permanent_address = ?,
+            plan_name = ?,
+            qr_proof = ?,
+            start_date = ?,
+            end_date = ?,
+            billing_type = ?,
+            membership_status = 'active',
+            request_status = 'pending',
+            duration = ?
+        WHERE user_id = ? AND id = ?
+        ";
+
+        $stmt = $conn->prepare($update_query);
+        $stmt->bind_param(
+            "issssssssiis",
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $duration,
+            $user_id,
+            $existing['id']
+        );
+    }
 
     $action = 'upgrade';
 } else {
+    // Check if the table has source_table and source_id columns
+    $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'source_table'");
+    $has_source_columns = $columns_check->num_rows > 0;
 
-// Insert into user_memberships
-$insert_query = "
-    INSERT INTO user_memberships
-    (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)
-";
+    if ($has_source_columns) {
+        // Insert into user_memberships with source columns
+        $insert_query = "
+        INSERT INTO user_memberships
+        (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)
+        ";
 
-$stmt = $conn->prepare($insert_query);
-$stmt->bind_param(
-    "iissssssssisi",
-    $user_id,
-    $plan_id,
-    $name,
-    $country,
-    $address,
-    $membership['plan_name'],
-    $filename,
-    $start_date,
-    $end_date,
-    $billing,
-    $duration,
-    $source_table,
-    $source_id
-);
+        $stmt = $conn->prepare($insert_query);
+        $stmt->bind_param(
+            "iissssssssisi",
+            $user_id,
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $duration,
+            $source_table,
+            $source_id
+        );
+    } else {
+        // Insert into user_memberships without source columns
+        $insert_query = "
+        INSERT INTO user_memberships
+        (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?)
+        ";
 
-
+        $stmt = $conn->prepare($insert_query);
+        $stmt->bind_param(
+            "iissssssssi",
+            $user_id,
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $duration
+        );
+    }
 
     $action = 'new';
 }
