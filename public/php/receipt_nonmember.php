@@ -34,7 +34,7 @@ $currentPage = "receipt_non_member";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Receipt - FitXBrawl</title>
-    <link rel="stylesheet" href="/public/css/global.css">
+    <link rel="stylesheet" href="../css/global.css">
     <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -120,10 +120,9 @@ $currentPage = "receipt_non_member";
             margin-bottom: var(--spacing-4);
             box-sizing: border-box;
             /* Force exact color rendering for all browsers */
+            -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-
         }
 
         .receipt-header {

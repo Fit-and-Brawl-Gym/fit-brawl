@@ -1,6 +1,8 @@
 {
     "require": {
-        "phpmailer/phpmailer": "^6.11"
+        "phpmailer/phpmailer": "^6.11",
+        "tecnickcom/tcpdf": "^6.7",
+        "chillerlan/php-qrcode": "^5.0"
     },
     "config": {
         "platform": {
