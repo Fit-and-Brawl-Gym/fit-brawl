@@ -181,11 +181,12 @@ require_once __DIR__ . '/../../includes/header.php';
                     <button class="select-btn">SELECT PLAN</button>
                 </div>
             </div>
+        </div>
 
-            <button class="carousel-btn next" id="nextBtn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </section>
+        <button class="carousel-btn next" id="nextBtn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </section>
 
     <!-- Plan Comparison Section -->
     <section class="comparison-section">
@@ -518,6 +519,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     </button>
                 </div>
             </div>
+        </div>
 
         <!-- Contact Button -->
         <div class="contact-cta">

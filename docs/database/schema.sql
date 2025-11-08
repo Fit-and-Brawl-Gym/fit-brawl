@@ -173,7 +173,7 @@ CREATE TABLE user_memberships (
     request_status ENUM('pending','approved','rejected') DEFAULT 'pending',
     start_date DATE DEFAULT NULL,
     end_date DATE DEFAULT NULL,
-    billing_type ENUM('monthly','yearly') DEFAULT 'monthly',
+    billing_type ENUM('monthly','quarterly') DEFAULT 'monthly',
     membership_status ENUM('active','expired','cancelled') DEFAULT NULL,
     source_table ENUM('user_memberships','subscriptions') DEFAULT NULL,
     source_id INT DEFAULT NULL,

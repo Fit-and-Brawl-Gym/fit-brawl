@@ -15,14 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedFile = null;
 
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
     function updatePlanPrice() {
         const billing = document.querySelector('input[name="billing"]:checked')?.value || 'monthly';
         const priceAmount = document.querySelector('.plan-card-transaction .plan-price .price-amount');
         const pricePeriod = document.querySelector('.plan-card-transaction .plan-price .price-period');
         if (!priceAmount || !pricePeriod) return;
 
-        priceAmount.textContent = billing === 'yearly' ? yearlyPrice : monthlyPrice;
-        pricePeriod.textContent = billing === 'yearly' ? '/YEAR' : '/MONTH';
+        const price = billing === 'quarterly' ? quarterlyPrice : monthlyPrice;
+        priceAmount.textContent = formatNumber(price);
+        pricePeriod.textContent = billing === 'quarterly' ? '/QUARTER' : '/MONTH';
     }
 
 
@@ -109,40 +114,76 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     submitReceiptBtn.addEventListener('click', () => {
+        console.log('Submit button clicked');
+
         const urlParams = new URLSearchParams(window.location.search);
         let basePlan = urlParams.get('plan') || 'gladiator';
 
         console.log('Submitting plan:', basePlan);
+        console.log('Selected file:', selectedFile);
 
         const formData = new FormData(subscriptionForm);
         formData.append('plan', basePlan);
         formData.append('billing', urlParams.get('billing') || 'monthly');
 
-        if (selectedFile) formData.append('receipt', selectedFile);
+        if (selectedFile) {
+            formData.append('receipt', selectedFile);
+        } else {
+            console.error('No file selected');
+            alert('Please upload a receipt');
+            return;
+        }
+
+        // Log form data
+        console.log('Form data contents:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
 
         submitReceiptBtn.disabled = true;
+        submitReceiptBtn.textContent = 'SUBMITTING...';
+
+        console.log('Making fetch request to: api/process_subscription.php');
 
         fetch('api/process_subscription.php', {
             method: 'POST',
             body: formData
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const msg = document.createElement('div');
-                msg.className = 'success-message';
-                msg.textContent = 'Subscription submitted! Redirecting...';
-                document.body.appendChild(msg);
-                setTimeout(() => window.location.href = 'membership-status.php', 2000);
-            } else {
-                alert('Error: ' + data.message);
+            .then(res => {
+                console.log('Response received:', res);
+                console.log('Response status:', res.status);
+                return res.text();
+            })
+            .then(text => {
+                console.log('Response text:', text);
+                try {
+                    const data = JSON.parse(text);
+                    console.log('Parsed JSON:', data);
+
+                    if (data.success) {
+                        const msg = document.createElement('div');
+                        msg.className = 'success-message';
+                        msg.textContent = 'Subscription submitted! Redirecting...';
+                        document.body.appendChild(msg);
+                        setTimeout(() => window.location.href = 'membership-status.php', 2000);
+                    } else {
+                        alert('Error: ' + data.message);
+                        submitReceiptBtn.disabled = false;
+                        submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
+                    }
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    console.error('Response was:', text);
+                    alert('Server error: Invalid response format');
+                    submitReceiptBtn.disabled = false;
+                    submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
+                }
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+                alert('An error occurred. Please try again.');
                 submitReceiptBtn.disabled = false;
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('An error occurred. Please try again.');
-            submitReceiptBtn.disabled = false;
-        });
+                submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
+            });
     });
 });
