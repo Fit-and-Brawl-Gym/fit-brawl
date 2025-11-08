@@ -511,9 +511,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const isToday = booking.date === todayStr;
             
             const isOngoing = isToday && booking.status !== 'cancelled' && (
-                (booking.session_time === 'Morning' && currentHour >= 7 && currentHour <= 11) ||
-                (booking.session_time === 'Afternoon' && currentHour >= 13 && currentHour <= 17) ||
-                (booking.session_time === 'Evening' && currentHour >= 18 && currentHour <= 22)
+                (booking.session_time === 'Morning' && currentHour >= 7 && currentHour < 11) ||
+                (booking.session_time === 'Afternoon' && currentHour >= 13 && currentHour < 17) ||
+                (booking.session_time === 'Evening' && currentHour >= 18 && currentHour < 22)
+            );
+            
+            // Check if session has ended for today
+            const hasSessionEnded = isToday && (
+                (booking.session_time === 'Morning' && currentHour >= 11) ||
+                (booking.session_time === 'Afternoon' && currentHour >= 17) ||
+                (booking.session_time === 'Evening' && currentHour >= 22)
             );
 
             if (booking.status === 'cancelled') {
@@ -524,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 canActuallyCancelNow = false;
                 isWithinCancellationWindow = false;
                 hasSessionPassed = false;
-            } else if (booking.status === 'completed') {
+            } else if (booking.status === 'completed' || hasSessionEnded) {
                 canActuallyCancelNow = false;
                 hasSessionPassed = true;
             } else {
