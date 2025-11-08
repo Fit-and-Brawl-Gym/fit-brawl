@@ -11,49 +11,76 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileList = mobileNav ? mobileNav.querySelector('.terms-dropdown-list') : null;
     const mobileOptions = mobileNav ? mobileNav.querySelectorAll('.terms-dropdown-list button') : [];
 
+    // Debug: Check if elements are found
+    console.log('Terms Modal Debug:', {
+        termsLink: !!termsLink,
+        modalOverlay: !!modalOverlay,
+        closeBtn: !!closeBtn,
+        declineBtn: !!declineBtn,
+        acceptBtn: !!acceptBtn
+    });
+
     // Open modal
     if (termsLink) {
         termsLink.addEventListener('click', function(e) {
             e.preventDefault();
-            modalOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            e.stopPropagation();
+            console.log('Terms link clicked');
+            if (modalOverlay) {
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                console.log('Modal opened');
+            }
         });
     }
 
     // Close modal function
     function closeModal() {
-        modalOverlay.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        if (modalOverlay) {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            console.log('Modal closed');
+        }
     }
 
     // Close modal on close button
     if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeModal();
+        });
     }
 
     // Close modal on decline button
     if (declineBtn) {
-        declineBtn.addEventListener('click', closeModal);
+        declineBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeModal();
+        });
     }
 
     // Close modal on accept button
     if (acceptBtn) {
-        acceptBtn.addEventListener('click', function() {
+        acceptBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             // Check the terms and conditions checkbox
             const termsCheckbox = document.getElementById('terms-checkbox');
             if (termsCheckbox) {
                 termsCheckbox.checked = true;
+                console.log('Terms accepted, checkbox checked');
             }
             closeModal();
         });
     }
 
     // Close modal on overlay click
-    modalOverlay.addEventListener('click', function(e) {
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
-    });
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+    }
 
     // Smooth scroll to section on desktop sidebar click
     sidebarLinks.forEach(link => {

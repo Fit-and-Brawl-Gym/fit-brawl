@@ -178,7 +178,8 @@ $additionalCSS = [
 ];
 $additionalJS = [
     '../js/hamburger.js',
-    '../js/password-validation.js'
+    '../js/password-validation.js',
+    '../js/signup-error-handler.js'
 ];
 
 // Include header
@@ -202,15 +203,28 @@ require_once __DIR__ . '/../../includes/header.php';
                     <h2>Create an account</h2>
                 </div>
 
-                <form action="sign-up.php" method="post" class="signup-form">
+                <form action="sign-up.php" method="post" class="signup-form" id="signupForm">
+                    <!-- Error/Success Messages - Displayed prominently at the top -->
+                    <div id="messageContainer" class="message-container">
+                        <?php if (isset($_SESSION['register_error'])): ?>
+                        <div class="error-message-box" id="errorMessageBox">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div class="message-text"><?= $_SESSION['register_error']; ?></div>
+                        </div>
+                        <?php unset($_SESSION['register_error']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['success_message'])): ?>
+                        <div class="success-message-box" id="successMessageBox">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="message-text"><?= $_SESSION['success_message']; ?></div>
+                        </div>
+                        <?php unset($_SESSION['success_message']); ?>
+                        <?php endif; ?>
+                    </div>
+
                     <h3>ARE YOU READY TO BECOME THE BETTER VERSION OF YOURSELF?</h3>
 
-                    <?= showError($_SESSION['register_error'] ?? ''); ?>
-                    <?php unset($_SESSION['register_error']); ?>
-                    <?php if (isset($_SESSION['success_message'])): ?>
-                    <p class="success-message"><?= $_SESSION['success_message']; ?></p>
-                    <?php unset($_SESSION['success_message']); ?>
-                    <?php endif; ?>
                     <div class="input-group">
                         <i class="fas fa-user"></i>
                         <input type="text" name="name" placeholder="Name" required>
@@ -273,9 +287,9 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <div class="form-options">
                         <label class="checkbox-container">
-                            <input type="checkbox" id="terms-checkbox" required>
+                            <input type="checkbox" id="terms-checkbox" name="terms" required>
                             <span class="checkmark"></span>
-                            Agree to&nbsp;<a href="#" class="terms-link">Terms and Conditions</a>
+                            Agree to&nbsp;<a href="#" class="terms-link" id="terms-link">Terms and Conditions</a>
                         </label>
                     </div>
 
@@ -417,6 +431,6 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </div>
 
-    <script src="/public/js/terms-modal.js"></script>
+    <script src="../js/terms-modal.js"></script>
 </body>
 </html>
