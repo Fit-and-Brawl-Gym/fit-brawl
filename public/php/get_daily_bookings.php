@@ -19,7 +19,8 @@ if (!$trainer_id || !$date) {
 }
 
 // Function to categorize time into morning, afternoon, or evening
-function getTimeCategory($time) {
+function getTimeCategory($time)
+{
     $hour = intval(date('H', strtotime($time)));
 
     if ($hour >= 6 && $hour < 12) {

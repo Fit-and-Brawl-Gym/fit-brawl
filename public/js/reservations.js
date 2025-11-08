@@ -509,13 +509,13 @@ document.addEventListener('DOMContentLoaded', function () {
             // Check if session is ongoing
             const todayStr = now.toISOString().split('T')[0];
             const isToday = booking.date === todayStr;
-            
+
             const isOngoing = isToday && booking.status !== 'cancelled' && (
                 (booking.session_time === 'Morning' && currentHour >= 7 && currentHour < 11) ||
                 (booking.session_time === 'Afternoon' && currentHour >= 13 && currentHour < 17) ||
                 (booking.session_time === 'Evening' && currentHour >= 18 && currentHour < 22)
             );
-            
+
             // Check if session has ended for today
             const hasSessionEnded = isToday && (
                 (booking.session_time === 'Morning' && currentHour >= 11) ||
@@ -561,42 +561,42 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                     <div class="booking-actions">
                         ${(() => {
-                            if (isOngoing) {
-                                return `
+                    if (isOngoing) {
+                        return `
                             <div class="booking-status-badge ongoing-badge">
                                 <i class="fas fa-play-circle"></i>
                                 <span>Ongoing Session</span>
                             </div>
                         `;
-                            } else if (booking.status === 'cancelled') {
-                                return `
+                    } else if (booking.status === 'cancelled') {
+                        return `
                             <div class="booking-status-badge cancelled-badge">
                                 <i class="fas fa-times-circle"></i>
                                 <span>Cancelled</span>
                             </div>
                         `;
-                            } else if (canActuallyCancelNow) {
-                                return `
+                    } else if (canActuallyCancelNow) {
+                        return `
                             <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
                         `;
-                            } else if (isWithinCancellationWindow) {
-                                return `
+                    } else if (isWithinCancellationWindow) {
+                        return `
                             <div class="booking-status-badge warning-badge" title="Cannot cancel within 12 hours of session start">
                                 <i class="fas fa-lock"></i>
                                 <span>Cannot Cancel</span>
                             </div>
                         `;
-                            } else {
-                                return `
+                    } else {
+                        return `
                             <div class="booking-status-badge completed-badge">
                                 <i class="fas fa-check-circle"></i>
                                 <span>Completed</span>
                             </div>
                         `;
-                            }
-                        })()}
+                    }
+                })()}
                     </div>
                 </div>
             `;
@@ -653,43 +653,43 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===================================
     // CALENDAR RENDERING
     // ===================================
-    
+
     // Function to check if all sessions are unavailable for a date
     function areAllSessionsUnavailable(dateStr) {
         const date = new Date(dateStr);
         const today = new Date();
-        
+
         // Only check for today's date
         if (date.toDateString() !== today.toDateString()) {
             return false;
         }
-        
+
         const currentHour = today.getHours();
         const currentMinute = today.getMinutes();
         const currentTotalMinutes = currentHour * 60 + currentMinute;
-        
+
         // Session end times in minutes
         const sessionEndTimes = {
             'Morning': 11 * 60,      // 11:00 AM = 660 minutes
             'Afternoon': 17 * 60,    // 5:00 PM = 1020 minutes
             'Evening': 22 * 60       // 10:00 PM = 1320 minutes
         };
-        
+
         // Check if all sessions have less than 30 minutes remaining
         let allUnavailable = true;
         for (const session in sessionEndTimes) {
             const endMinutes = sessionEndTimes[session];
             const minutesRemaining = endMinutes - currentTotalMinutes;
-            
+
             if (minutesRemaining >= 30) {
                 allUnavailable = false;
                 break;
             }
         }
-        
+
         return allUnavailable;
     }
-    
+
     function renderCalendar() {
         const calendarTitle = document.getElementById('calendarTitle');
         const calendarDays = document.getElementById('calendarDays');
@@ -729,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const maxDate = new Date();
             maxDate.setDate(maxDate.getDate() + 30);
             const isTooFar = date > maxDate;
-            
+
             // Check if all sessions are unavailable for this date
             const allSessionsUnavailable = areAllSessionsUnavailable(dateStr);
 
@@ -968,7 +968,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Check if session time has passed
             if (isSessionPassed(session)) {
-                const message = bookingState.sessionRestriction === 'passed' 
+                const message = bookingState.sessionRestriction === 'passed'
                     ? 'This session time has already concluded for the selected date. Please choose a future session.'
                     : 'This session is closing soon. Bookings require at least 30 minutes before the session ends.';
                 showToast(message, 'warning', 5000);

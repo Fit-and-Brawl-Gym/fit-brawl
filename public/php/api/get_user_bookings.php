@@ -72,8 +72,10 @@ try {
 
         // Determine session status
         $session_status = $row['session_status'];
-        if ($row['booking_date'] === date('Y-m-d') && $row['session_time'] === 'Evening' && 
-            intval(date('H')) >= 18 && intval(date('H')) <= 22) {
+        if (
+            $row['booking_date'] === date('Y-m-d') && $row['session_time'] === 'Evening' &&
+            intval(date('H')) >= 18 && intval(date('H')) <= 22
+        ) {
             $session_status = 'ongoing';
         }
 
@@ -129,7 +131,7 @@ try {
     // Debug info
     $debug = [
         'current_time' => date('H:i:s'),
-        'current_hour' => (int)date('H'),
+        'current_hour' => (int) date('H'),
         'server_time' => date('Y-m-d H:i:s'),
         'today_bookings' => array_values(array_filter($bookings, fn($b) => $b['booking_period'] === 'today'))
     ];

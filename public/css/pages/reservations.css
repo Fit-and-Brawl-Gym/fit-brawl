@@ -3115,9 +3115,11 @@ body::before {
     0% {
         box-shadow: 0 0 0 0 rgba(0, 176, 255, 0.4);
     }
+
     70% {
         box-shadow: 0 0 0 10px rgba(0, 176, 255, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(0, 176, 255, 0);
     }
