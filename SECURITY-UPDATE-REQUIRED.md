@@ -1,7 +1,7 @@
 # 🔒 CRITICAL SECURITY UPDATE REQUIRED
 
 ## What Happened?
-The `.env` file containing sensitive credentials (database passwords, email credentials) was accidentally committed to the git repository. We have removed it from the entire git history to prevent security breaches.
+The `.env` file containing sensitive credentials (database passwords, email credentials) was accidentally committed to the git repository. Additionally, the `vendor/` directory and `uploads/` files (user avatars, receipts, etc.) were also tracked in git when they shouldn't have been. We have removed all of these from the git repository to prevent security breaches and reduce repository size.
 
 ## What You MUST Do NOW
 
@@ -18,7 +18,11 @@ The `.env` file containing sensitive credentials (database passwords, email cred
    cp .env.example .env
    ```
 5. **Fill in the real credentials** in your new `.env` file (ask a team member for the credentials)
-6. **Restore any local changes** you backed up in step 1
+6. **Install PHP dependencies:**
+   ```bash
+   composer install
+   ```
+7. **Restore any local changes** you backed up in step 1
 
 ### Option 2: Reset Existing Repository (Advanced)
 If you have important local branches or work-in-progress:
@@ -39,6 +43,46 @@ If you have important local branches or work-in-progress:
    git rebase main
    ```
 5. **Verify `.env` is in your local directory** and contains the correct credentials
+6. **Install PHP dependencies:**
+   ```bash
+   composer install
+   ```
+
+## What Changed?
+
+### Files Removed from Git:
+- ✅ `.env` - Environment variables (now properly ignored)
+- ✅ `vendor/` - PHP dependencies (291 files removed, ~25,000 lines)
+- ✅ `uploads/avatars/*` - User profile pictures
+- ✅ `uploads/equipment/*` - Equipment images
+- ✅ `uploads/products/*` - Product images
+- ✅ `uploads/receipts/*` - User receipt uploads
+- ✅ `uploads/trainers/*` - Trainer profile pictures
+
+### Files KEPT in Git:
+- ✅ `.env.example` - Template for environment variables
+- ✅ `docs/database/*.sql` - Database schema and seed files (needed by team)
+- ✅ `.gitkeep` files in upload directories (preserves folder structure)
+- ✅ All source code and application files
+
+## After Pulling Changes
+
+### Required Setup:
+1. **Regenerate vendor dependencies:**
+   ```bash
+   composer install
+   ```
+   This will download all PHP dependencies listed in `composer.json`
+
+2. **Your uploads/ folders:**
+   - Existing uploaded files on your local machine are safe and will not be deleted
+   - New uploads will work normally
+   - Git will ignore all future uploads (as intended)
+
+3. **Your .env file:**
+   - Will NOT be deleted from your local machine
+   - Will remain ignored by git
+   - Keep it safe and never commit it!
 
 ## Force Push Already Done
 The cleaned repository history has been force-pushed to GitHub. The `.env` file no longer exists in any commit history.
@@ -64,5 +108,5 @@ Since the `.env` file was exposed in the repository history, **all credentials s
 If you encounter any issues, contact the team lead immediately.
 
 ---
-**Date:** November 8, 2025  
+**Date:** November 8, 2025
 **Action Required By:** ALL TEAM MEMBERS IMMEDIATELY
