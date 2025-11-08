@@ -8,6 +8,67 @@ document.addEventListener('DOMContentLoaded', function () {
     let feedbackData = [];
     let searchTimeout = null;
 
+    // Toast notification function
+    function showToast(message, type = 'info', duration = 3000) {
+        // Remove any existing toasts
+        const existingToast = document.querySelector('.toast-notification');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
+        // Icon mapping
+        const icons = {
+            info: 'fa-info-circle',
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+            <i class="fas ${icons[type]} toast-icon"></i>
+            <div class="toast-content">
+                <p class="toast-message">${message}</p>
+            </div>
+            <button class="toast-close" aria-label="Close notification">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        // Add to body
+        document.body.appendChild(toast);
+
+        // Show toast with animation
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+
+        // Close button handler
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => {
+            hideToast(toast);
+        });
+
+        // Auto hide after duration
+        if (duration > 0) {
+            setTimeout(() => {
+                hideToast(toast);
+            }, duration);
+        }
+    }
+
+    function hideToast(toast) {
+        toast.classList.add('hide');
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 300);
+    }
+
     // Load feedback on page load
     loadFeedback();
 
@@ -181,8 +242,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     // Update UI
                     updateVoteUI(feedbackId, data);
+                    showToast('Your vote has been recorded!', 'success', 2000);
                 } else {
-                    alert(data.message || 'Failed to record vote');
+                    // Show error as toast notification
+                    showToast(data.message || 'Failed to record vote', 'warning', 3000);
                 }
 
                 // Re-enable buttons
@@ -190,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Error voting:', error);
-                alert('An error occurred. Please try again.');
+                showToast('An error occurred. Please try again.', 'error', 3000);
                 allButtons.forEach(btn => btn.disabled = false);
             });
     }
@@ -340,12 +403,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Validate message
             if (!data.message || data.message.trim().length === 0) {
-                alert('Please enter your feedback message.');
+                showToast('Please enter your feedback message.', 'warning', 3000);
                 return;
             }
 
             if (data.message.length > 1000) {
-                alert('Message exceeds maximum length of 1000 characters.');
+                showToast('Message exceeds maximum length of 1000 characters.', 'warning', 3000);
                 return;
             }
 
@@ -380,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(error => {
                     console.error('Error submitting feedback:', error);
-                    alert(error.message || 'An error occurred while submitting your feedback. Please try again.');
+                    showToast(error.message || 'An error occurred while submitting your feedback. Please try again.', 'error', 3000);
                 })
                 .finally(() => {
                     // Re-enable submit button

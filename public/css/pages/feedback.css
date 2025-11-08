@@ -562,6 +562,7 @@ main {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     z-index: var(--z-modal);
     justify-content: center;
@@ -801,6 +802,7 @@ main {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.85);
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     z-index: calc(var(--z-modal) + 1);
     justify-content: center;
@@ -1432,5 +1434,106 @@ main {
 
     .empty-state p {
         font-size: var(--font-size-sm);
+    }
+}
+
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 47, 63, 0.95);
+    color: var(--color-white);
+    padding: var(--spacing-4) var(--spacing-6);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 206, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    min-width: 280px;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    transform: translateX(450px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-notification.hide {
+    transform: translateX(450px);
+    opacity: 0;
+}
+
+.toast-notification .toast-icon {
+    font-size: var(--font-size-2xl);
+    flex-shrink: 0;
+}
+
+.toast-notification.info .toast-icon {
+    color: var(--color-accent);
+}
+
+.toast-notification.success .toast-icon {
+    color: #4ade80;
+}
+
+.toast-notification.error .toast-icon {
+    color: #ff6b6b;
+}
+
+.toast-notification.warning .toast-icon {
+    color: #fbbf24;
+}
+
+.toast-notification .toast-content {
+    flex: 1;
+}
+
+.toast-notification .toast-message {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    margin: 0;
+}
+
+.toast-notification .toast-close {
+    background: none;
+    border: none;
+    color: var(--color-white);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: 0;
+    margin-left: var(--spacing-2);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.toast-notification .toast-close:hover {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .toast-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+        padding: var(--spacing-3) var(--spacing-4);
+    }
+
+    .toast-notification .toast-icon {
+        font-size: var(--font-size-xl);
+    }
+
+    .toast-notification .toast-message {
+        font-size: var(--font-size-xs);
     }
 }
