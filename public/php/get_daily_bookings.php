@@ -40,7 +40,15 @@ $query = "
         r.end_time,
         u.name as member_name,
         u.email as member_email,
-        ct.class_name as class_type
+        ct.class_name as class_type,
+        CASE 
+            WHEN r.reservation_date = CURDATE() 
+            AND TIME(NOW()) BETWEEN r.start_time AND r.end_time 
+            THEN 'ongoing'
+            WHEN r.reservation_date < CURDATE() OR (r.reservation_date = CURDATE() AND TIME(NOW()) > r.end_time)
+            THEN 'completed'
+            ELSE r.booking_status 
+        END as session_status
     FROM reservations r
     JOIN users u ON r.user_id = u.id
     LEFT JOIN class_types ct ON r.class_type_id = ct.id

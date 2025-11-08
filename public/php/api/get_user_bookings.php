@@ -37,7 +37,12 @@ try {
                 WHEN ur.booking_date < CURDATE() THEN 'past'
                 WHEN ur.booking_date = CURDATE() THEN 'today'
                 ELSE 'upcoming'
-            END AS booking_period
+            END AS booking_period,
+            CASE 
+                WHEN ur.booking_date = CURDATE() AND ur.session_time = 'Evening' 
+                AND HOUR(NOW()) BETWEEN 18 AND 22 THEN 'ongoing'
+                ELSE ur.booking_status 
+            END AS session_status
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
         WHERE ur.user_id = ?
@@ -65,6 +70,13 @@ try {
             $can_cancel = $hours_until_session >= 24;
         }
 
+        // Determine session status
+        $session_status = $row['session_status'];
+        if ($row['booking_date'] === date('Y-m-d') && $row['session_time'] === 'Evening' && 
+            intval(date('H')) >= 18 && intval(date('H')) <= 22) {
+            $session_status = 'ongoing';
+        }
+
         $bookings[] = [
             'id' => $row['booking_id'],
             'trainer_id' => $row['trainer_id'],
@@ -76,11 +88,12 @@ try {
             'day_of_week' => date('l', strtotime($row['booking_date'])),
             'session_time' => $row['session_time'],
             'session_hours' => $row['session_hours'],
-            'status' => $row['booking_status'],
+            'status' => $session_status,
+            'session_status' => $session_status,
             'booked_at' => $row['booked_at'],
             'cancelled_at' => $row['cancelled_at'],
             'booking_period' => $row['booking_period'],
-            'can_cancel' => $can_cancel
+            'can_cancel' => $session_status !== 'ongoing' && $can_cancel
         ];
     }
     $stmt->close();
@@ -113,6 +126,14 @@ try {
         'past' => array_filter($bookings, fn($b) => $b['booking_period'] === 'past' || $b['status'] === 'cancelled')
     ];
 
+    // Debug info
+    $debug = [
+        'current_time' => date('H:i:s'),
+        'current_hour' => (int)date('H'),
+        'server_time' => date('Y-m-d H:i:s'),
+        'today_bookings' => array_values(array_filter($bookings, fn($b) => $b['booking_period'] === 'today'))
+    ];
+
     echo json_encode([
         'success' => true,
         'bookings' => array_values($bookings),
@@ -129,7 +150,8 @@ try {
             'weekly_count' => $weekly_count,
             'weekly_limit' => 12,
             'weekly_remaining' => max(0, 12 - $weekly_count)
-        ]
+        ],
+        'debug' => $debug
     ]);
 
 } catch (Exception $e) {

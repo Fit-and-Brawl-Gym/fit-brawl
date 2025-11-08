@@ -472,7 +472,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Time-related variables
         const now = new Date();
+        const currentHour = now.getHours();
         const today = new Date(now);
         today.setHours(0, 0, 0, 0);
 
@@ -504,22 +506,33 @@ document.addEventListener('DOMContentLoaded', function () {
             let isWithinCancellationWindow = false;
             let hasSessionPassed = false;
 
-            if (booking.status !== 'cancelled' && booking.status !== 'completed') {
+            // Check if session is ongoing
+            const todayStr = now.toISOString().split('T')[0];
+            const isToday = booking.date === todayStr;
+            
+            const isOngoing = isToday && booking.status !== 'cancelled' && (
+                (booking.session_time === 'Morning' && currentHour >= 7 && currentHour <= 11) ||
+                (booking.session_time === 'Afternoon' && currentHour >= 13 && currentHour <= 17) ||
+                (booking.session_time === 'Evening' && currentHour >= 18 && currentHour <= 22)
+            );
+
+            if (booking.status === 'cancelled') {
+                canActuallyCancelNow = false;
+                isWithinCancellationWindow = false;
+                hasSessionPassed = false;
+            } else if (isOngoing) {
+                canActuallyCancelNow = false;
+                isWithinCancellationWindow = false;
+                hasSessionPassed = false;
+            } else if (booking.status === 'completed') {
+                canActuallyCancelNow = false;
+                hasSessionPassed = true;
+            } else {
                 // Can only cancel if more than 12 hours before session start
                 if (hoursUntilSession > 12) {
                     canActuallyCancelNow = true;
-                }
-                // If session has already passed, cannot cancel
-                else if (hoursUntilSession < 0) {
-                    const currentHour = now.getHours();
-                    const sessionEnd = sessionEndTimes[booking.session_time] || 24;
-                    bookingDate.setHours(0, 0, 0, 0);
-
-                    // Only mark as completed if session has ended
-                    hasSessionPassed = true;
-                    canActuallyCancelNow = false;
                 } else {
-                    // Within 12 hours of session but hasn't started - cannot cancel
+                    // Within 12 hours of session - cannot cancel
                     isWithinCancellationWindow = true;
                     canActuallyCancelNow = false;
                 }
@@ -540,26 +553,43 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     </div>
                     <div class="booking-actions">
-                        ${booking.status === 'cancelled' ? `
+                        ${(() => {
+                            if (isOngoing) {
+                                return `
+                            <div class="booking-status-badge ongoing-badge">
+                                <i class="fas fa-play-circle"></i>
+                                <span>Ongoing Session</span>
+                            </div>
+                        `;
+                            } else if (booking.status === 'cancelled') {
+                                return `
                             <div class="booking-status-badge cancelled-badge">
                                 <i class="fas fa-times-circle"></i>
                                 <span>Cancelled</span>
                             </div>
-                        ` : canActuallyCancelNow ? `
+                        `;
+                            } else if (canActuallyCancelNow) {
+                                return `
                             <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
-                        ` : isWithinCancellationWindow ? `
+                        `;
+                            } else if (isWithinCancellationWindow) {
+                                return `
                             <div class="booking-status-badge warning-badge" title="Cannot cancel within 12 hours of session start">
                                 <i class="fas fa-lock"></i>
                                 <span>Cannot Cancel</span>
                             </div>
-                        ` : `
+                        `;
+                            } else {
+                                return `
                             <div class="booking-status-badge completed-badge">
                                 <i class="fas fa-check-circle"></i>
                                 <span>Completed</span>
                             </div>
-                        `}
+                        `;
+                            }
+                        })()}
                     </div>
                 </div>
             `;
