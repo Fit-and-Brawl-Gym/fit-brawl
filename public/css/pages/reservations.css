@@ -921,7 +921,7 @@ body::before {
     min-height: 35px;
 }
 
-.schedule-day:hover:not(.inactive):not(.past-date):not(.too-far-advance) {
+.schedule-day:hover:not(.inactive):not(.past-date):not(.too-far-advance):not(.all-sessions-unavailable) {
     border-color: var(--color-accent);
     background: rgba(45, 107, 117, 0.5);
     transform: translateY(-2px);
@@ -953,6 +953,17 @@ body::before {
 
 .schedule-day.too-far-advance .day-number {
     color: var(--color-text-muted);
+}
+
+.schedule-day.all-sessions-unavailable {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba(150, 100, 100, 0.15);
+}
+
+.schedule-day.all-sessions-unavailable .day-number {
+    color: var(--color-text-muted);
+    text-decoration: line-through;
 }
 
 .day-number {
@@ -1101,7 +1112,7 @@ body::before {
 }
 
 /* Hover effect for available slots */
-.schedule-day:not(.inactive):not(.past-date):not(.too-far-advance):hover .slot-indicator {
+.schedule-day:not(.inactive):not(.past-date):not(.too-far-advance):not(.all-sessions-unavailable):hover .slot-indicator {
     transform: scale(1.05);
     box-shadow: 0 2px 8px rgba(213, 186, 43, 0.3);
 }

@@ -54,6 +54,33 @@ try {
         exit;
     }
 
+    // Check if session is too close to ending (within 30 minutes)
+    $session_end_times = [
+        'Morning' => '11:00:00',
+        'Afternoon' => '17:00:00',
+        'Evening' => '22:00:00'
+    ];
+    
+    $today = date('Y-m-d');
+    $now = date('H:i:s');
+    
+    // If booking for today, check if there's at least 30 minutes left
+    if ($date === $today) {
+        $session_end = $session_end_times[$session_time];
+        $end_time = strtotime($date . ' ' . $session_end);
+        $current_time = strtotime($date . ' ' . $now);
+        $minutes_remaining = ($end_time - $current_time) / 60;
+        
+        if ($minutes_remaining < 30) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Cannot book this session. Less than 30 minutes remaining before session ends.',
+                'time_cutoff' => true
+            ]);
+            exit;
+        }
+    }
+
     // Get facility capacity info
     $facility_check = $validator->validateFacilityCapacity($class_type, $date, $session_time);
     $facility_slots_used = $facility_check['count'];

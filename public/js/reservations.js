@@ -643,8 +643,46 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // ===================================
+    // ===================================
     // CALENDAR RENDERING
     // ===================================
+    
+    // Function to check if all sessions are unavailable for a date
+    function areAllSessionsUnavailable(dateStr) {
+        const date = new Date(dateStr);
+        const today = new Date();
+        
+        // Only check for today's date
+        if (date.toDateString() !== today.toDateString()) {
+            return false;
+        }
+        
+        const currentHour = today.getHours();
+        const currentMinute = today.getMinutes();
+        const currentTotalMinutes = currentHour * 60 + currentMinute;
+        
+        // Session end times in minutes
+        const sessionEndTimes = {
+            'Morning': 11 * 60,      // 11:00 AM = 660 minutes
+            'Afternoon': 17 * 60,    // 5:00 PM = 1020 minutes
+            'Evening': 22 * 60       // 10:00 PM = 1320 minutes
+        };
+        
+        // Check if all sessions have less than 30 minutes remaining
+        let allUnavailable = true;
+        for (const session in sessionEndTimes) {
+            const endMinutes = sessionEndTimes[session];
+            const minutesRemaining = endMinutes - currentTotalMinutes;
+            
+            if (minutesRemaining >= 30) {
+                allUnavailable = false;
+                break;
+            }
+        }
+        
+        return allUnavailable;
+    }
+    
     function renderCalendar() {
         const calendarTitle = document.getElementById('calendarTitle');
         const calendarDays = document.getElementById('calendarDays');
@@ -684,14 +722,18 @@ document.addEventListener('DOMContentLoaded', function () {
             const maxDate = new Date();
             maxDate.setDate(maxDate.getDate() + 30);
             const isTooFar = date > maxDate;
+            
+            // Check if all sessions are unavailable for this date
+            const allSessionsUnavailable = areAllSessionsUnavailable(dateStr);
 
             let classes = ['schedule-day'];
             if (isToday) classes.push('today');
             if (isSelected) classes.push('selected');
             if (isPast) classes.push('past-date');
             if (isTooFar) classes.push('too-far-advance');
+            if (allSessionsUnavailable) classes.push('all-sessions-unavailable');
 
-            const clickable = !isPast && !isTooFar;
+            const clickable = !isPast && !isTooFar && !allSessionsUnavailable;
             const onClick = clickable ? `onclick="selectDate('${dateStr}')"` : '';
 
             html += `<div class="${classes.join(' ')}" data-date="${dateStr}" ${onClick}>
@@ -820,23 +862,38 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const currentHour = today.getHours();
+        const currentMinute = today.getMinutes();
 
-        // Morning session ends at 11 AM
-        if (sessionName === 'Morning' && currentHour >= 11) {
-            return true;
+        // Session end times
+        const sessionEndTimes = {
+            'Morning': 11,      // 11:00 AM
+            'Afternoon': 17,    // 5:00 PM
+            'Evening': 22       // 10:00 PM
+        };
+
+        const endHour = sessionEndTimes[sessionName];
+        if (!endHour) return false;
+
+        // Calculate minutes remaining until session ends
+        const currentTotalMinutes = currentHour * 60 + currentMinute;
+        const endTotalMinutes = endHour * 60;
+        const minutesRemaining = endTotalMinutes - currentTotalMinutes;
+
+        // Store whether session has completely passed or just within 30 min
+        const hasPassed = minutesRemaining <= 0;
+        const isTooClose = minutesRemaining < 30 && minutesRemaining > 0;
+
+        // Store the type of restriction for better messaging
+        if (hasPassed) {
+            bookingState.sessionRestriction = 'passed';
+        } else if (isTooClose) {
+            bookingState.sessionRestriction = 'too_close';
+        } else {
+            bookingState.sessionRestriction = null;
         }
 
-        // Afternoon session ends at 5 PM (17:00)
-        if (sessionName === 'Afternoon' && currentHour >= 17) {
-            return true;
-        }
-
-        // Evening session ends at 10 PM (22:00)
-        if (sessionName === 'Evening' && currentHour >= 22) {
-            return true;
-        }
-
-        return false;
+        // Block if less than 30 minutes remaining or session has passed
+        return minutesRemaining < 30;
     }
 
     // Function to check session capacity
@@ -904,7 +961,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Check if session time has passed
             if (isSessionPassed(session)) {
-                showToast('This session time has already passed for the selected date', 'warning');
+                const message = bookingState.sessionRestriction === 'passed' 
+                    ? 'This session time has already concluded for the selected date. Please choose a future session.'
+                    : 'This session is closing soon. Bookings require at least 30 minutes before the session ends.';
+                showToast(message, 'warning', 5000);
                 return;
             }
 
