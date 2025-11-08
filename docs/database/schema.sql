@@ -323,15 +323,15 @@ CREATE TABLE contact (
     email VARCHAR(100) NOT NULL,
     phone_number VARCHAR(20),
     message TEXT NOT NULL,
-    status ENUM('unread', 'read') DEFAULT 'unread',
+    status ENUM('unread','read') DEFAULT 'unread',
     archived TINYINT(1) DEFAULT 0,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
-    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_contact_status (status),
+    INDEX idx_contact_archived (archived),
+    INDEX idx_contact_deleted (deleted_at)
+) ENGINE=InnoDB;
 
-    INDEX idx_contact_status ON contact(status);
-    INDEX idx_contact_archived ON contact(archived);
-    INDEX idx_contact_deleted ON contact(deleted_at);
-);
 
 -- =====================
 -- TRAINING SESSIONS TABLE
