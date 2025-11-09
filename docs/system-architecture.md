@@ -43,10 +43,6 @@ graph TB
         end
 
         subgraph "API Layer"
-            REST_API[REST APIs<br/>- User APIs<br/>- Booking APIs<br/>- Admin APIs]
-            AJAX_Handlers[AJAX Handlers<br/>- Real-time Updates<br/>- Form Submissions]
-        end
-    end
 
     subgraph "Data Layer"
         MySQL[(MySQL Database<br/>- Users<br/>- Memberships<br/>- Reservations<br/>- Trainers<br/>- Equipment<br/>- Products<br/>- Feedback<br/>- Activity Logs)]
@@ -159,13 +155,6 @@ graph LR
 
     Admin --> Mod1
     Admin --> Mod2
-    Admin --> Mod3
-    Admin --> Mod4
-
-    Mod1 --> T1
-    Mod2 --> T2
-    Mod3 --> T3
-    Mod3 --> T4
     Mod4 --> T5
     Mod4 --> T6
     Mod4 --> T7
@@ -257,11 +246,6 @@ sequenceDiagram
     alt All Validations Pass
         BookingSystem->>Database: Create Reservation
         BookingSystem->>EmailService: Send Confirmation
-        BookingSystem-->>Member: Booking Confirmed
-    else Validation Failed
-        BookingSystem-->>Member: Error Message
-    end
-```
 
 ---
 
@@ -274,10 +258,6 @@ sequenceDiagram
     participant FileUpload
     participant Security
     participant FileStorage
-    participant Database
-
-    User->>Frontend: Upload File (Avatar/Receipt)
-    Frontend->>FileUpload: Process Upload
     FileUpload->>Security: Validate File
     Security->>Security: Check File Type
     Security->>Security: Check File Size
