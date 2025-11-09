@@ -168,3 +168,47 @@ function sendContactReply($email, $subject, $replyMessage, $originalMessage = ''
     }
 }
 
+function sendTrainerBookingNotification($trainer_email, $trainer_name, $member_name, $date, $session_time, $class_type) {
+    try {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = getenv('EMAIL_HOST');
+        $mail->SMTPAuth = true;
+        $mail->Username = getenv('EMAIL_USER');
+        $mail->Password = getenv('EMAIL_PASS');
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = getenv('EMAIL_PORT');
+
+        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+        $mail->addAddress($trainer_email, $trainer_name);
+
+        $formatted_date = date('l, F j, Y', strtotime($date));
+        $session_hours = [
+            'Morning' => '7:00 AM - 11:00 AM',
+            'Afternoon' => '1:00 PM - 5:00 PM',
+            'Evening' => '6:00 PM - 10:00 PM'
+        ];
+        $display_time = $session_hours[$session_time] ?? $session_time;
+
+        $mail->isHTML(true);
+        $mail->Subject = 'New Training Session Booking';
+        $mail->Body = "
+            <div style='font-family: Arial, sans-serif; padding: 20px;'>
+                <h2>New Session Booking</h2>
+                <p>Hello {$trainer_name},</p>
+                <p>You have a new training session booking:</p>
+                <div style='background: #f5f5f5; padding: 15px; border-radius: 5px;'>
+                    <p><strong>Client:</strong> {$member_name}</p>
+                    <p><strong>Date:</strong> {$formatted_date}</p>
+                    <p><strong>Time:</strong> {$display_time}</p>
+                    <p><strong>Class Type:</strong> {$class_type}</p>
+                </div>
+                <p>Log in to your trainer dashboard for more details.</p>
+            </div>";
+        return $mail->send();
+        applyEmailTemplate($mail, $html);
+    } catch (Exception $e) {
+        error_log("Failed to send trainer notification email: " . $e->getMessage());
+        return false;
+    }
+}

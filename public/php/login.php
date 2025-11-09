@@ -20,7 +20,7 @@ if (SessionManager::isLoggedIn()) {
         header("Location: admin/admin.php");
         exit;
     } elseif ($role === 'trainer') {
-        header("Location: trainer/index.php");
+        header("Location: trainer/schedule.php");
         exit;
     } else {
         header("Location: loggedin-index.php");
@@ -85,7 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     if ($user['role'] === 'admin') {
                         header("Location: admin/admin.php");
                     } elseif ($user['role'] === 'trainer') {
-                        header("Location: trainer/index.php");
+                        header("Location: trainer/schedule.php");
                     } else {
                         header("Location: loggedin-index.php");
                     }
