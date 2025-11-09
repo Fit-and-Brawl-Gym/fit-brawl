@@ -92,8 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $day_stmt->bind_param("isi", $trainer_id, $day, $is_day_off);
                         $day_stmt->execute();
                     }
-
-                    // Generate username from name (e.g., "John Doe" -> "john.doe")
+                     // Generate username from name (e.g., "John Doe" -> "john.doe")
                     $username_base = strtolower(str_replace(' ', '.', trim($name)));
                     $username_base = preg_replace('/[^a-z0-9._]/', '', $username_base); // Remove special chars
 
@@ -127,12 +126,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $avatar = 'default-avatar.png';
                     }
 
-                    // Create user account
+                    // Create user account with email as username
                     $user_query = "INSERT INTO users (username, email, password, role, avatar, is_verified)
-                                   VALUES (?, ?, ?, 'trainer', ?, 1)";
+                                VALUES (?, ?, ?, 'trainer', ?, 1)";
                     $stmt = $conn->prepare($user_query);
                     $stmt->bind_param("ssss", $generated_username, $email, $hashed_password, $avatar);
-
                     if (!$stmt->execute()) {
                         throw new Exception('Failed to create user account.');
                     }
@@ -149,13 +147,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ActivityLogger::log('trainer_created', $name, $trainer_id, "New trainer '$name' (#$trainer_id) added with specialization: $specialization. Day-offs: $day_offs_str");
 
                     // Send email with credentials
-                    $email_sent = sendTrainerCredentialsEmail($email, $name, $generated_username, $generated_password);
+                    $email_sent = sendTrainerCredentialsEmail($email, $name, $email, $generated_password);
+
 
                     // Commit transaction
                     $conn->commit();
 
                     // Store credentials in session for display
-                    $_SESSION['new_trainer_username'] = $generated_username;
+                    $_SESSION['new_trainer_username'] = $email;
                     $_SESSION['new_trainer_password'] = $generated_password;
                     $_SESSION['new_trainer_name'] = $name;
                     $_SESSION['email_sent'] = $email_sent;

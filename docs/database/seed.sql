@@ -137,7 +137,7 @@ INSERT INTO equipment (name, category, status, description, image_path) VALUES
 ('Ab Wheel Roller', 'Core', 'Available', 'Core strengthening wheel', '../uploads/equipment/ab-wheel-roller.jpg'),
 ('Medicine Ball 10kg', 'Core', 'Available', 'Weighted ball for core exercises', '../uploads/equipment/medicine-ball-10kg.jpg'),
 ('Stability Ball 65cm', 'Core', 'Available', 'Swiss ball for balance training', '../uploads/equipment/stability-ball-65cm.jpg'),
-('Captain\'s Chair', 'Core', 'Out of Order', 'Leg raise station - needs repair', '../uploads/equipment/captains-chair.jpg'),
+('Captains Chair', 'Core', 'Out of Order', 'Leg raise station - needs repair', '../uploads/equipment/captains-chair.jpg'),
 ('Plank Station', 'Core', 'Available', 'Dedicated plank workout area', '../uploads/equipment/plank-station.jpg'),
 
 -- Strength Training Equipment

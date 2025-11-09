@@ -77,7 +77,6 @@ function sendTrainerCredentialsEmail($email, $name, $username, $password)
             . "<p>Your trainer account has been created successfully. Here are your login credentials:</p>"
             . "<div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;'>"
             . "<p style='margin: 5px 0;'><strong>Email:</strong> " . htmlspecialchars($email) . "</p>"
-            . "<p style='margin: 5px 0;'><strong>Username:</strong> " . htmlspecialchars($username) . "</p>"
             . "<p style='margin: 5px 0;'><strong>Temporary Password:</strong> " . htmlspecialchars($password) . "</p>"
             . "</div>"
             . "<p><strong style='color: #d5ba2b;'>Important:</strong> Please change your password after your first login for security purposes.</p>"
