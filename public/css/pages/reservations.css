@@ -388,8 +388,11 @@ body::before {
 
 .reservations-container {
     max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
     padding: 0 var(--spacing-6) var(--spacing-8) var(--spacing-6);
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 
@@ -878,10 +881,12 @@ body::before {
 .schedule-calendar-wrapper {
     width: 100%;
     margin-bottom: var(--spacing-3);
+    box-sizing: border-box;
 }
 
 .schedule-calendar {
     width: 100%;
+    box-sizing: border-box;
 }
 
 .calendar-weekdays {
@@ -889,6 +894,8 @@ body::before {
     grid-template-columns: repeat(7, 1fr);
     gap: 3px;
     margin-bottom: var(--spacing-1);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .weekday {
@@ -897,12 +904,15 @@ body::before {
     font-weight: var(--font-weight-semibold);
     color: var(--color-accent);
     padding: 2px;
+    box-sizing: border-box;
 }
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .schedule-day {
@@ -919,6 +929,8 @@ body::before {
     transition: var(--transition-base);
     position: relative;
     min-height: 35px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .schedule-day:hover:not(.inactive):not(.past-date):not(.too-far-advance):not(.all-sessions-unavailable) {
@@ -2257,52 +2269,56 @@ body::before {
 .step-header {
     display: flex;
     align-items: center;
-    gap: var(--spacing-2);
+    gap: var(--spacing-3);
     margin-bottom: var(--spacing-3);
     padding-bottom: var(--spacing-2);
     border-bottom: 2px solid rgba(213, 186, 43, 0.3);
+    flex-direction: column;
 }
 
 .step-number {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     background: linear-gradient(135deg, var(--color-accent) 0%, rgba(213, 186, 43, 0.8) 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-bg-dark);
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(213, 186, 43, 0.4);
+    align-self: flex-start;
 }
 
 .step-info {
-    flex: 1;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: var(--spacing-3);
+    flex-direction: row;
+    width: 100%;
 }
 
 .step-text {
     flex: 1;
+    text-align: left;
 }
 
 .step-title {
     font-family: var(--font-family-display);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-accent);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: var(--spacing-1);
+    margin-bottom: var(--spacing-2);
     line-height: 1.2;
 }
 
 .step-subtitle {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-lg);
     color: var(--color-text-muted);
     line-height: 1.4;
 }
@@ -2323,6 +2339,7 @@ body::before {
     width: 100%;
     max-width: 100%;
     overflow: visible;
+    box-sizing: border-box;
 }
 
 .wizard-step .schedule-header {
@@ -2332,6 +2349,8 @@ body::before {
     margin-bottom: var(--spacing-1);
     padding-bottom: var(--spacing-1);
     border-bottom: 1px solid rgba(213, 186, 43, 0.2);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .wizard-step h2 {
@@ -2723,12 +2742,13 @@ body::before {
     transform: translateY(0);
 }
 
-/* Wizard Navigation - Inside Step Header */
+/* Wizard Navigation - Positioned on the right */
 .wizard-navigation {
     display: flex;
     gap: var(--spacing-2);
     align-items: center;
     flex-shrink: 0;
+    justify-content: flex-end;
 }
 
 .btn-wizard {
@@ -2766,7 +2786,6 @@ body::before {
     background: linear-gradient(135deg, var(--color-accent) 0%, rgba(213, 186, 43, 0.8) 100%);
     border-color: var(--color-accent);
     color: var(--color-bg-dark);
-    margin-left: var(--spacing-2);
 }
 
 .btn-next:hover:not(:disabled) {
@@ -2784,6 +2803,8 @@ body::before {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     margin: 0 auto;
     max-width: 1000px;
+    width: 100%;
+    box-sizing: border-box;
     position: relative;
 }
 
@@ -2794,6 +2815,8 @@ body::before {
     margin-bottom: var(--spacing-4);
     padding-bottom: var(--spacing-3);
     border-bottom: 2px solid rgba(213, 186, 43, 0.3);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .section-title {
@@ -2814,11 +2837,16 @@ body::before {
     align-items: center;
     gap: var(--spacing-6);
     flex-wrap: wrap;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .bookings-tabs {
     display: flex;
     gap: var(--spacing-2);
+    flex-wrap: wrap;
+    box-sizing: border-box;
 }
 
 .tab-btn {
@@ -2833,6 +2861,7 @@ body::before {
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    box-sizing: border-box;
 }
 
 .tab-btn:hover {
@@ -2878,6 +2907,7 @@ body::before {
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    box-sizing: border-box;
 }
 
 .filter-label {
@@ -2888,6 +2918,7 @@ body::before {
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-muted);
     white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .filter-label i {
@@ -2905,9 +2936,10 @@ body::before {
     cursor: pointer;
     transition: all 0.3s ease;
     min-width: 180px;
-    appearance: none;
+    box-sizing: border-box;
     -webkit-appearance: none;
     -moz-appearance: none;
+    appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgb(255, 206, 0)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right var(--spacing-2) center;
@@ -3268,6 +3300,9 @@ body::before {
         flex-direction: column;
         gap: var(--spacing-3);
         align-items: flex-start;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .booking-item {
@@ -3282,36 +3317,87 @@ body::before {
 
     .step-header {
         flex-direction: column;
-        text-align: center;
+        align-items: center;
+        padding-bottom: var(--spacing-2);
+        gap: var(--spacing-3);
     }
 
     .step-number {
-        margin: 0 auto;
+        margin: 0;
+        flex-shrink: 0;
+        align-self: center;
+    }
+
+    .step-info {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        gap: var(--spacing-3);
+    }
+
+    .step-text {
+        text-align: center;
+        width: 100%;
+    }
+
+    .wizard-navigation {
+        width: 100%;
+        justify-content: center;
     }
 
     .bookings-controls {
         flex-direction: column;
         align-items: stretch;
         gap: var(--spacing-3);
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .bookings-tabs {
         width: 100%;
+        max-width: 100%;
         justify-content: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+        box-sizing: border-box;
+    }
+
+    .tab-btn {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.85rem;
+        flex: 1 1 auto;
+        min-width: 0;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+
+    .tab-count {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
     }
 
     .bookings-filter {
         width: 100%;
+        max-width: 100%;
         flex-direction: column;
         align-items: stretch;
+        gap: var(--spacing-2);
+        box-sizing: border-box;
     }
 
     .filter-label {
         justify-content: center;
+        font-size: 0.8rem;
     }
 
     .class-filter-dropdown {
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        font-size: 0.85rem;
+        padding: var(--spacing-2) var(--spacing-3);
     }
 }
 
@@ -3337,5 +3423,178 @@ body::before {
 
     .wizard-step .monthly-schedule {
         padding: var(--spacing-2);
+    }
+
+    /* Extra small screen - more compact tabs */
+    .tab-btn {
+        padding: var(--spacing-1) var(--spacing-2);
+        font-size: 0.75rem;
+        gap: var(--spacing-1);
+    }
+
+    .tab-count {
+        padding: 0.15rem 0.4rem;
+        font-size: 0.65rem;
+    }
+
+    .bookings-tabs {
+        gap: var(--spacing-1);
+    }
+
+    .filter-label {
+        font-size: 0.75rem;
+    }
+
+    .class-filter-dropdown {
+        font-size: 0.8rem;
+        padding: var(--spacing-2);
+    }
+
+    .section-title {
+        font-size: var(--font-size-base);
+    }
+
+    /* Mobile step header layout */
+    .step-header {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-2);
+        padding-bottom: var(--spacing-2);
+        margin-bottom: var(--spacing-2);
+    }
+
+    .step-number {
+        margin: 0;
+        width: 40px;
+        height: 40px;
+        font-size: var(--font-size-lg);
+        flex-shrink: 0;
+        align-self: center;
+    }
+
+    .step-info {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-2);
+        width: 100%;
+    }
+
+    .step-text {
+        width: 100%;
+        text-align: center;
+    }
+
+    .step-title {
+        font-size: var(--font-size-2xl);
+    }
+
+    .step-subtitle {
+        font-size: var(--font-size-base);
+    }
+
+    .wizard-navigation {
+        width: 100%;
+        margin-top: 0;
+        justify-content: center;
+    }
+
+    .btn-wizard {
+        flex: 1;
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.85rem;
+        min-width: 0;
+    }
+}
+
+/* Extra Small Mobile - 320-360px screens */
+@media (max-width: 360px) {
+    .reservations-container {
+        padding: 0 var(--spacing-2);
+    }
+
+    .schedule-calendar-wrapper {
+        width: 100%;
+        margin-bottom: var(--spacing-2);
+    }
+
+    .calendar-weekdays,
+    .calendar-days {
+        gap: 1px;
+    }
+
+    .schedule-day {
+        min-height: 36px;
+        padding: 1px;
+        border-radius: 2px;
+        border-width: 1px;
+    }
+
+    .day-number {
+        font-size: 0.65rem;
+    }
+
+    .weekday {
+        font-size: 0.5rem;
+        padding: 1px;
+    }
+
+    .wizard-step .monthly-schedule {
+        padding: var(--spacing-1);
+    }
+
+    .monthly-schedule,
+    .booked-sessions {
+        padding: var(--spacing-2);
+    }
+
+    .step-title {
+        font-size: var(--font-size-xl);
+        letter-spacing: 0.3px;
+    }
+
+    .step-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .step-header {
+        padding-bottom: var(--spacing-1);
+        margin-bottom: var(--spacing-2);
+        gap: var(--spacing-2);
+    }
+
+    .step-info {
+        gap: var(--spacing-2);
+        flex-direction: column;
+    }
+
+    .step-text {
+        text-align: center;
+    }
+
+    .step-number {
+        width: 36px;
+        height: 36px;
+        font-size: var(--font-size-base);
+        align-self: center;
+    }
+
+    .wizard-navigation {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-wizard {
+        padding: var(--spacing-2);
+        font-size: 0.8rem;
+    }
+
+    .tab-btn {
+        padding: var(--spacing-1);
+        font-size: 0.7rem;
+    }
+
+    .slot-indicator {
+        font-size: 0.55rem;
+        padding: 2px 4px;
     }
 }
