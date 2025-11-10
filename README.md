@@ -1761,3 +1761,4 @@ function createTrainerCard(trainer) {
 **Contributors**: Fit and Brawl Development Team
 
 [Back to Top ⬆](#fitxbrawl-gym-scheduling-management-website)
+# Auto-deployment test
