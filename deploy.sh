@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Configuration - EDIT THESE
 SSH_HOST="54.227.103.23"  # Your server IP or domain
-SSH_USER="ubuntu"          # SSH username
+SSH_USER="ec2-user"        # SSH username
 PROJECT_PATH="/var/www/html"
 
 echo -e "${BLUE}→ Testing SSH connection...${NC}"
