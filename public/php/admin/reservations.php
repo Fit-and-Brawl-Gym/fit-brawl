@@ -396,8 +396,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     <script>
         window.bookingsData = <?php echo json_encode($bookings); ?>;
     </script>
-    <script src="js/sidebar.js"></script>
-    <script src="js/reservations.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/reservations.js"></script>
 </body>
 
 </html>

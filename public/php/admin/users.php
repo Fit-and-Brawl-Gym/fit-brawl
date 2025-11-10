@@ -82,8 +82,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         </div>
     </div>
 
-    <script src="js/sidebar.js"></script>
-    <script src="js/users.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/users.js"></script>
 </body>
 
 </html>

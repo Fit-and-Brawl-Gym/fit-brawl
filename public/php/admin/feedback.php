@@ -84,8 +84,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         </div>
     </main>
 
-    <script src="js/sidebar.js"></script>
-    <script src="js/feedback.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/feedback.js"></script>
 </body>
 
 </html>

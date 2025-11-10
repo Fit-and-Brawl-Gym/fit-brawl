@@ -521,8 +521,8 @@ $stats = $conn->query($stats_query)->fetch_assoc();
         <span id="toastMessage">Schedule updated successfully!</span>
     </div>
 
-    <script src="js/sidebar.js"></script>
-    <script src="js/trainer_schedules.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/trainer_schedules.js"></script>
 </body>
 
 </html>

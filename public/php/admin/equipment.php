@@ -222,8 +222,8 @@ unset($it);
     </div>
   </div>
 
-  <script src="js/sidebar.js"></script>
-  <script src="js/equipment.js?=v1"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/equipment.js?=v1"></script>
 </body>
 
 </html>

@@ -578,7 +578,7 @@ if (!$stats) {
         </div>
     <?php endif; ?>
 
-    <script src="js/trainers.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/trainers.js"></script>
     <script>
         function copyToClipboard(elementId) {
             const input = document.getElementById(elementId);
@@ -601,7 +601,7 @@ if (!$stats) {
             document.getElementById('credentialsModal').classList.remove('active');
         }
     </script>
-    <script src="js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 
 </html>

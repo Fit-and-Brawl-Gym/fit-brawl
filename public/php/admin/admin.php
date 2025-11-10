@@ -245,7 +245,7 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
   }
   ?>
 
-  <script src="js/sidebar.js"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 
 </html>

@@ -403,8 +403,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         </div>
     </div>
 
-    <script src="js/sidebar.js"></script>
-    <script src="js/trainer-schedules.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/trainer-schedules.js"></script>
 </body>
 
 </html>

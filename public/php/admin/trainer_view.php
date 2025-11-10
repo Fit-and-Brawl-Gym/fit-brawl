@@ -269,7 +269,7 @@ $log_result = $stmt->get_result();
             </div>
         </div>
     </main>
-    <script src="js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 
 </html>

@@ -109,8 +109,8 @@ require_once '../../../includes/config.php';
     // Pass PHP environment paths to JavaScript
     window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
   </script>
-  <script src="js/sidebar.js"></script>
-  <script src="js/subscriptions.js"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/subscriptions.js"></script>
 </body>
 
 </html>

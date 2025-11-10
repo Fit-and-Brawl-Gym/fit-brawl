@@ -27,7 +27,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     <? include_once('admin_sidebar.php'); ?>
 
 </body>
-<script src="js/sidebar.js"></script>
+<script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 <? include_once('admin_footer.php'); ?>
 
 </html>
