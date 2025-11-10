@@ -28,14 +28,14 @@
 
 .hero-content {
     flex: 1;
-    max-width: 750px;
+    max-width: 100%;
     color: var(--color-white);
     position: relative;
 }
 
 .hero-line {
     width: 100%;
-    max-width: 700px;
+    max-width: 720px;
     height: 4px;
     background: var(--color-accent);
     margin-bottom: var(--spacing-8);
@@ -57,33 +57,29 @@
 
 .hero-underline {
     width: 100%;
-    max-width: 700px;
+    max-width: 720px;
     height: 4px;
     background: var(--color-accent);
 }
 
 .login-modal {
-    flex: 0 0 500px;
+    flex: 0 0 400px;
     background: rgba(255, 255, 255, 0.95);
     border-radius: var(--radius-2xl);
     padding: var(--spacing-8);
-    box-shadow: var(--shadow-2xl);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    position: relative;
 }
 
 .modal-header h2 {
     background: var(--color-primary);
     color: var(--color-white);
     text-align: center;
-    padding: var(--spacing-5);
+    padding: var(--spacing-4);
     margin: calc(var(--spacing-8) * -1) calc(var(--spacing-8) * -1) var(--spacing-8);
     border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-semibold);
     font-family: var(--font-family-display);
-    text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .login-form h3 {
@@ -125,7 +121,7 @@
     width: 100%;
     padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 50px;
     border: 2px solid #ddd;
-    border-radius: var(--radius-3xl);
+    border-radius: var(--radius-2xl);
     font-size: var(--font-size-base);
     background: var(--color-text-light);
     transition: var(--transition-base);
@@ -171,13 +167,12 @@
     color: var(--color-text-dark);
     border: none;
     padding: var(--spacing-3);
-    border-radius: var(--radius-3xl);
+    border-radius: var(--radius-2xl);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     cursor: pointer;
     transition: var(--transition-base);
     margin-bottom: var(--spacing-6);
-    text-transform: uppercase;
 }
 
 .login-btn:hover {
@@ -206,7 +201,7 @@
     .login-hero {
         flex-direction: column;
         text-align: center;
-        padding: 2rem;
+        padding: var(--spacing-10);
     }
 
     .hero-line {
@@ -232,10 +227,13 @@
         flex: none;
         width: 100%;
         min-width: 0;
-        max-width: 500px;
     }
 
     .modal-header h2 {
+        font-size: var(--font-size-5xl);
+    }
+
+    .login-form h3 {
         font-size: var(--font-size-xl);
     }
 
@@ -257,20 +255,37 @@
 
 @media (max-width: 600px) {
     .hero-title {
-        font-size: var(--font-size-5xl);
+        font-size: var(--font-size-6xl);
     }
 
     .login-hero {
-        padding: var(--spacing-10) var(--spacing-8);
+        padding: var(--spacing-8);
     }
 }
 
 @media (max-width: 480px) {
     .login-hero {
-        padding: var(--spacing-8);
+        padding: var(--spacing-6);
     }
 
     .hero-title {
         font-size: var(--font-size-4xl);
+    }
+
+    .modal-header h2 {
+        font-size: var(--font-size-4xl);
+    }
+
+    .login-form h3 {
+        font-size: var(--font-size-lg);
+    }
+
+    .input-group input {
+        padding: 10px 12px 10px 40px;
+        font-size: var(--font-size-sm);
+    }
+
+    .checkbox-container {
+        font-size: var(--font-size-xs);
     }
 }

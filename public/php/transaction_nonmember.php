@@ -208,6 +208,60 @@ require_once '../../includes/header.php';
 <script>
     // Initialize Flatpickr date picker after DOM and scripts load
     document.addEventListener('DOMContentLoaded', function() {
+        // Phone number formatting
+        const phoneInput = document.getElementById('phone');
+        
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                
+                // If user starts typing with 0 or 9, automatically add +63
+                if (value.length > 0) {
+                    if (value.startsWith('0')) {
+                        // Remove leading 0 and add +63
+                        value = '63' + value.substring(1);
+                    } else if (value.startsWith('9')) {
+                        // Add +63 before the 9
+                        value = '63' + value;
+                    }
+                    
+                    // Format: +63 XXX XXX XXXX
+                    let formatted = '+63';
+                    if (value.length > 2) {
+                        // Remove the 63 prefix for formatting
+                        const number = value.substring(2);
+                        if (number.length > 0) {
+                            formatted += ' ' + number.substring(0, 3);
+                        }
+                        if (number.length > 3) {
+                            formatted += ' ' + number.substring(3, 6);
+                        }
+                        if (number.length > 6) {
+                            formatted += ' ' + number.substring(6, 10);
+                        }
+                    }
+                    
+                    e.target.value = formatted;
+                } else {
+                    e.target.value = '';
+                }
+            });
+
+            // Prevent user from deleting +63 prefix
+            phoneInput.addEventListener('keydown', function(e) {
+                const cursorPosition = e.target.selectionStart;
+                const value = e.target.value;
+                
+                // If backspace or delete is pressed and cursor is at position 0-3 (within +63)
+                if ((e.key === 'Backspace' || e.key === 'Delete') && cursorPosition <= 3) {
+                    e.preventDefault();
+                }
+            });
+
+            // Set initial placeholder
+            phoneInput.placeholder = '+63 912 345 6789';
+        }
+
         if (typeof flatpickr !== 'undefined') {
             const classType = '<?php echo $classType; ?>';
 

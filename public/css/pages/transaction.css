@@ -1,6 +1,6 @@
 body {
     background-image: url('../../../images/homepage-boxer.webp');
-    background-size: cover;
+    background-size: 2.5;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -17,9 +17,9 @@ body::before {
     right: 0;
     bottom: 0;
     background: linear-gradient(to right,
-            rgba(0, 47, 63, 0.95) 0%,
-            rgba(0, 47, 63, 0.85) 50%,
-            rgba(0, 47, 63, 0.7) 100%);
+            rgba(0, 47, 63, 0.50) 0%,
+            rgba(0, 47, 63, 0.40) 50%,
+            rgba(0, 47, 63, 0.30) 100%);
     z-index: 0;
     pointer-events: none;
 }
