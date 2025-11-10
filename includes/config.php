@@ -29,9 +29,9 @@ if ($configuredBase !== '/') {
 define('BASE_PATH', $configuredBase);         // e.g. "/fit-brawl/" or "/"
 
 // Public assets (CSS/JS) are served from document root in production
-// For production (DocumentRoot = /public): PUBLIC_PATH = /
+// For production (DocumentRoot = /public): PUBLIC_PATH = '' (empty, since DocumentRoot is already /public)
 // For localhost (no DocumentRoot): PUBLIC_PATH = /fit-brawl/public
-define('PUBLIC_PATH',  $appEnv === 'production' ? BASE_PATH : (rtrim(BASE_PATH, '/') . '/public'));
+define('PUBLIC_PATH',  $appEnv === 'production' ? '' : (rtrim(BASE_PATH, '/') . '/public'));
 
 // Images and uploads are at repo root level (one level up from public)
 // For production: /images, /uploads (Apache serves from repo root via Alias or symlink)
