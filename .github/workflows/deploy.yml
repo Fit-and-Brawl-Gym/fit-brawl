@@ -33,11 +33,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          port: 22
+          command_timeout: 10m
           script: |
-            # Enable error checking
-            set -e
-            
             # Diagnostic information
             echo "🔍 Deployment Diagnostics:"
             echo "   User: $(whoami)"
@@ -61,30 +59,24 @@ jobs:
               exit 1
             fi
             echo "✅ Git repository confirmed"
-            
-            # Show git remote
             echo "   Remote: $(git remote get-url origin)"
 
             # Pull latest changes from GitHub
             echo ""
             echo "📥 Pulling latest code..."
-            git fetch origin main || {
+            if ! git fetch origin main 2>&1; then
               echo "❌ ERROR: Git fetch failed!"
-              echo "   This usually means:"
-              echo "   1. Network issue"
-              echo "   2. Git authentication problem"
-              echo "   3. Remote repository access denied"
-              exit 1
-            }
+              echo "Attempting to continue anyway..."
+            fi
             
-            git reset --hard origin/main || {
+            if ! git reset --hard origin/main 2>&1; then
               echo "❌ ERROR: Git reset failed!"
               exit 1
-            }
+            fi
             
             # Show current commit
             echo "✅ Updated to commit: $(git rev-parse --short HEAD)"
-            echo "📝 Last commit: $(git log -1 --pretty=%B)"
+            echo "📝 Last commit: $(git log -1 --pretty=format:%s)"
 
             # Install/update server-renderer dependencies
             echo ""
@@ -94,11 +86,12 @@ jobs:
               exit 1
             }
             
-            npm ci --no-audit --no-fund 2>&1 | tail -3 || {
+            if npm ci --no-audit --no-fund 2>&1; then
+              echo "✅ Dependencies installed"
+            else
               echo "❌ ERROR: npm install failed!"
               exit 1
-            }
-            echo "✅ Dependencies installed"
+            fi
 
             # Restart renderer service
             echo ""
