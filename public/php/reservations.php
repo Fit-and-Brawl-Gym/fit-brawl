@@ -28,28 +28,34 @@ if (isset($_SESSION['avatar'])) {
 // Fetch user's active membership
 $activeMembership = null;
 $membershipClassTypes = [];
+$gracePeriodDays = 3;
 
 if ($user_id) {
     $membership_query = "SELECT um.*, m.plan_name, m.class_type
                         FROM user_memberships um
                         JOIN memberships m ON um.plan_id = m.id
-                        WHERE um.user_id = ? AND um.membership_status = 'active' AND um.end_date >= CURDATE()
+                        WHERE um.user_id = ? 
+                        AND um.membership_status = 'active' 
+                        AND DATE_ADD(um.end_date, INTERVAL ? DAY) >= CURDATE()
                         ORDER BY um.end_date DESC
                         LIMIT 1";
     $stmt = $conn->prepare($membership_query);
-    $stmt->bind_param("i", $user_id);
+    $stmt->bind_param("ii", $user_id, $gracePeriodDays);
     $stmt->execute();
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
         $activeMembership = $row;
         // Parse class types from membership
-        $classTypes = preg_split('/\s*(?:,|and)\s*/i', $row['class_type']);
-        $membershipClassTypes = array_filter(array_map('trim', $classTypes));
+        if (!empty($row['class_type'])) {
+            $classTypes = preg_split('/\s*(?:,|and)\s*/i', $row['class_type']);
+            $membershipClassTypes = array_filter(array_map('trim', $classTypes));
+        }
     }
+    $stmt->close();
 }
 
 $pageTitle = "Scheduling - Fit and Brawl";
-$currentPage = "membership";
+$currentPage = "reservations";
 $additionalCSS = ['../css/pages/reservations.css?v=2.0.' . time()];
 $additionalJS = ['../js/reservations.js?v=' . time() . mt_rand()];
 
@@ -62,6 +68,32 @@ require_once __DIR__ . '/../../includes/header.php';
     <div id="toastContainer" class="toast-container"></div>
 
     <?php if ($activeMembership): ?>
+        <?php
+        // Check if membership is expiring soon (within 7 days including grace period)
+        $endDate = new DateTime($activeMembership['end_date']);
+        $today = new DateTime();
+        $today->setTime(0, 0, 0); // Reset to midnight for accurate day counting
+        $endDate->setTime(0, 0, 0);
+
+        $gracePeriodDays = 3;
+        $endDateWithGrace = clone $endDate;
+        $endDateWithGrace->modify("+{$gracePeriodDays} days");
+
+        // Days until actual expiration (can be negative if expired)
+        $daysUntilExpiration = $today->diff($endDate)->days;
+        if ($today > $endDate) {
+            $daysUntilExpiration = -$daysUntilExpiration;
+        }
+
+        // Days until grace period ends (can be negative)
+        $daysUntilGraceEnd = $today->diff($endDateWithGrace)->days;
+        if ($today > $endDateWithGrace) {
+            $daysUntilGraceEnd = -$daysUntilGraceEnd;
+        }
+
+        $showExpirationWarning = $daysUntilGraceEnd <= 7 && $daysUntilGraceEnd > 0;
+        ?>
+
         <!-- Page Header -->
         <div class="page-header-section">
             <div class="page-header-content">
@@ -69,13 +101,58 @@ require_once __DIR__ . '/../../includes/header.php';
                     <h1 class="page-title">Book Your Training Session</h1>
                     <p class="page-subtitle">Reserve your spot with our expert trainers</p>
                 </div>
-                <div class="membership-status-bar">
-                    <div class="status-badge">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Membership <strong>Active</strong> until
-                            <?= date('M d, Y', strtotime($activeMembership['end_date'])) ?>
-                            (<?= htmlspecialchars($activeMembership['plan_name']) ?> Plan)</span>
+                <div
+                    class="membership-status-bar <?= $showExpirationWarning ? ($daysUntilExpiration < 0 ? 'critical' : 'warning') : '' ?>">
+                    <div class="status-badge <?= $daysUntilExpiration < 0 ? 'expired' : '' ?>">
+                        <?php if ($daysUntilExpiration < 0): ?>
+                            <i class="fas fa-times-circle"></i>
+                        <?php elseif ($showExpirationWarning): ?>
+                            <i class="fas fa-exclamation-triangle"></i>
+                        <?php else: ?>
+                            <i class="fas fa-check-circle"></i>
+                        <?php endif; ?>
+
+                        <div class="status-content">
+                            <?php if ($daysUntilExpiration < 0): ?>
+                                <!-- Expired - Grace Period -->
+                                <span class="status-title">Membership Expired</span>
+                                <span class="status-details">
+                                    Expired on <strong><?= date('M d, Y', strtotime($activeMembership['end_date'])) ?></strong>
+                                    (<?= abs($daysUntilExpiration) ?> day<?= abs($daysUntilExpiration) != 1 ? 's' : '' ?> ago) •
+                                    Book until <strong><?= $endDateWithGrace->format('M d, Y') ?></strong>
+                                    (<?= $daysUntilGraceEnd ?> day<?= $daysUntilGraceEnd != 1 ? 's' : '' ?> left)
+                                </span>
+                            <?php elseif ($showExpirationWarning): ?>
+                                <!-- Expiring Soon -->
+                                <span class="status-title">Membership Expiring Soon</span>
+                                <span class="status-details">
+                                    <?php if ($daysUntilExpiration == 0): ?>
+                                        Expires <strong>Today</strong>
+                                        (<?= date('M d, Y', strtotime($activeMembership['end_date'])) ?>) •
+                                    <?php else: ?>
+                                        Expires on <strong><?= date('M d, Y', strtotime($activeMembership['end_date'])) ?></strong>
+                                        (<?= $daysUntilExpiration ?> day<?= $daysUntilExpiration != 1 ? 's' : '' ?> left) •
+                                    <?php endif; ?>
+                                    Book until <strong><?= $endDateWithGrace->format('M d, Y') ?></strong> •
+                                    Visit gym to renew or wait for expiration date to renew online.
+                                </span>
+                            <?php else: ?>
+                                <!-- Active - No Warning -->
+                                <span class="status-title">
+                                    Membership Active until <?= date('M d, Y', strtotime($activeMembership['end_date'])) ?>
+                                    (<?= htmlspecialchars($activeMembership['plan_name']) ?> Plan)
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </div>
+
+                    <?php if ($daysUntilExpiration < 0): ?>
+                        <!-- Renew Button for Expired Memberships in Grace Period -->
+                        <a href="membership.php" class="renew-btn">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Renew Membership</span>
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -481,6 +558,24 @@ require_once __DIR__ . '/../../includes/header.php';
         <?php endif; ?>
     </div>
 </main>
+
+<script>
+    // Pass membership expiration data to JavaScript
+    <?php if ($activeMembership): ?>
+        window.membershipEndDate = '<?= $activeMembership['end_date'] ?>';
+        window.membershipGracePeriodDays = 3;
+        window.membershipPlanName = '<?= htmlspecialchars($activeMembership['plan_name']) ?>';
+
+        // Calculate max booking date (end_date + grace period)
+        const endDate = new Date('<?= $activeMembership['end_date'] ?>');
+        const maxBookingDate = new Date(endDate);
+        maxBookingDate.setDate(maxBookingDate.getDate() + 3);
+        window.maxBookingDate = maxBookingDate.toISOString().split('T')[0];
+    <?php else: ?>
+        window.membershipEndDate = null;
+        window.maxBookingDate = null;
+    <?php endif; ?>
+</script>
 
 <?php require_once '../../includes/footer.php'; ?>
 </body>

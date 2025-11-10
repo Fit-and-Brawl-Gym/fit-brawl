@@ -42,9 +42,9 @@ body::before {
    =================================== */
 
 .page-header-section {
-    background: linear-gradient(135deg, rgba(255, 206, 0, 0.08) 0%, rgba(0, 47, 63, 0.7) 100%);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, rgba(10, 35, 45, 0.75) 0%, rgba(0, 25, 35, 0.85) 100%);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
     padding: var(--spacing-8) var(--spacing-6);
     border-bottom: 2px solid rgba(255, 206, 0, 0.2);
     position: relative;
@@ -90,35 +90,102 @@ body::before {
     border-radius: 8px;
 }
 
+/* Warning state - expiring soon */
+.membership-status-bar.warning {
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.35);
+}
+
+/* Critical state - expired */
+.membership-status-bar.critical {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
 .membership-status-bar .status-badge {
     display: flex;
     align-items: center;
-    gap: var(--spacing-2);
+    gap: var(--spacing-3);
     font-size: var(--font-size-base);
     color: var(--color-white);
+    flex: 1;
 }
 
 .membership-status-bar .status-badge i {
     color: var(--color-success);
-    font-size: var(--font-size-lg);
+    font-size: 1.25rem;
+    flex-shrink: 0;
 }
 
-.membership-status-bar .upgrade-btn {
-    padding: var(--spacing-2) var(--spacing-4);
-    background: linear-gradient(135deg, var(--color-accent) 0%, rgba(255, 206, 0, 0.8) 100%);
-    color: var(--color-bg-dark);
+/* Warning icon color */
+.membership-status-bar.warning .status-badge i {
+    color: #ffc107;
+}
+
+/* Expired membership state */
+.membership-status-bar .status-badge.expired i,
+.membership-status-bar.critical .status-badge i {
+    color: #ef4444;
+}
+
+.membership-status-bar .status-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.membership-status-bar .status-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    color: var(--color-white);
+}
+
+.membership-status-bar.warning .status-title {
+    color: #ffc107;
+}
+
+.membership-status-bar.critical .status-title {
+    color: #ef4444;
+}
+
+.membership-status-bar .status-details {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.5;
+}
+
+.membership-status-bar .status-details strong {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+}
+
+/* Renew Membership Button */
+.membership-status-bar .renew-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3) var(--spacing-5);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: var(--color-white);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: all var(--transition-base);
     white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
-.membership-status-bar .upgrade-btn:hover {
+.membership-status-bar .renew-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 206, 0, 0.3);
-    background: var(--color-accent);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.membership-status-bar .renew-btn i {
+    font-size: 1rem;
 }
 
 /* Toast Notification System */
@@ -921,7 +988,7 @@ body::before {
     min-height: 35px;
 }
 
-.schedule-day:hover:not(.inactive):not(.past-date):not(.too-far-advance):not(.all-sessions-unavailable) {
+.schedule-day:hover:not(.inactive):not(.past-date):not(.too-far-advance):not(.all-sessions-unavailable):not(.past-membership-expiration) {
     border-color: var(--color-accent);
     background: rgba(45, 107, 117, 0.5);
     transform: translateY(-2px);
@@ -953,6 +1020,19 @@ body::before {
 
 .schedule-day.too-far-advance .day-number {
     color: var(--color-text-muted);
+}
+
+/* Past membership expiration styling */
+.schedule-day.past-membership-expiration {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: rgba(255, 100, 100, 0.15);
+    border: 1px solid rgba(255, 50, 50, 0.2);
+}
+
+.schedule-day.past-membership-expiration .day-number {
+    color: #ff6b6b;
+    text-decoration: line-through;
 }
 
 .schedule-day.all-sessions-unavailable {
@@ -1112,7 +1192,7 @@ body::before {
 }
 
 /* Hover effect for available slots */
-.schedule-day:not(.inactive):not(.past-date):not(.too-far-advance):not(.all-sessions-unavailable):hover .slot-indicator {
+.schedule-day:not(.inactive):not(.past-date):not(.too-far-advance):not(.all-sessions-unavailable):not(.past-membership-expiration):hover .slot-indicator {
     transform: scale(1.05);
     box-shadow: 0 2px 8px rgba(213, 186, 43, 0.3);
 }
@@ -2661,7 +2741,7 @@ body::before {
     background: rgba(26, 74, 82, 0.6);
     border: 2px solid var(--color-accent);
     border-radius: var(--radius-base);
-    padding: var(--spacing-2);
+    padding: var(--spacing-5);
     margin-bottom: var(--spacing-2);
 }
 
@@ -3088,10 +3168,10 @@ body::before {
 }
 
 .warning-badge {
-    background: rgba(255, 152, 0, 0.2);
-    border: 2px solid #ff9800;
+    background: rgba(255, 152, 0, 0.15);
+    border: 2px solid rgba(255, 152, 0, 0.4);
     color: #ffb74d;
-    cursor: help;
+    cursor: default;
 }
 
 .warning-badge i {

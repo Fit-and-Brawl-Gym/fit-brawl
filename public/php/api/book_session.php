@@ -55,6 +55,47 @@ try {
     $validator = new BookingValidator($conn);
     ActivityLogger::init($conn);
 
+    // Check if booking date is within membership expiration + grace period
+    $grace_period_days = 3;
+    $membership_check = $conn->prepare("
+        SELECT end_date, plan_name
+        FROM user_memberships
+        WHERE user_id = ?
+        AND request_status = 'approved'
+        AND membership_status = 'active'
+        ORDER BY end_date DESC
+        LIMIT 1
+    ");
+    $membership_check->bind_param("i", $user_id);
+    $membership_check->execute();
+    $membership_result = $membership_check->get_result();
+
+    if ($membership_result && $membership_result->num_rows > 0) {
+        $membership_data = $membership_result->fetch_assoc();
+        $end_date = $membership_data['end_date'];
+        $plan_name = $membership_data['plan_name'];
+
+        // Calculate max booking date (end_date + grace period)
+        $end_date_obj = new DateTime($end_date);
+        $max_booking_date = clone $end_date_obj;
+        $max_booking_date->modify("+{$grace_period_days} days");
+
+        $booking_date_obj = new DateTime($booking_date);
+
+        if ($booking_date_obj > $max_booking_date) {
+            $membership_check->close();
+            echo json_encode([
+                'success' => false,
+                'message' => "Cannot book beyond your membership expiration. Your {$plan_name} plan expires on " .
+                    $end_date_obj->format('F d, Y') . " (booking allowed until " .
+                    $max_booking_date->format('F d, Y') . " with grace period). Please visit the gym to renew or upgrade your membership.",
+                'failed_check' => 'membership_expiration'
+            ]);
+            exit;
+        }
+    }
+    $membership_check->close();
+
     // Run all validations
     $validation = $validator->validateBooking($user_id, $trainer_id, $class_type, $booking_date, $session_time);
 

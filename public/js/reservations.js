@@ -534,12 +534,16 @@ document.addEventListener('DOMContentLoaded', function () {
             } else if (booking.status === 'completed' || hasSessionEnded) {
                 canActuallyCancelNow = false;
                 hasSessionPassed = true;
+            } else if (hoursUntilSession < 0) {
+                // Session is in the past - mark as completed
+                canActuallyCancelNow = false;
+                hasSessionPassed = true;
             } else {
                 // Can only cancel if more than 12 hours before session start
                 if (hoursUntilSession > 12) {
                     canActuallyCancelNow = true;
                 } else {
-                    // Within 12 hours of session - cannot cancel
+                    // Within 12 hours of session - cannot cancel (but not past yet)
                     isWithinCancellationWindow = true;
                     canActuallyCancelNow = false;
                 }
@@ -730,6 +734,13 @@ document.addEventListener('DOMContentLoaded', function () {
             maxDate.setDate(maxDate.getDate() + 30);
             const isTooFar = date > maxDate;
 
+            // Check if date is past membership expiration + grace period
+            let isPastMembershipExpiration = false;
+            if (window.maxBookingDate) {
+                const maxBookingDateObj = new Date(window.maxBookingDate);
+                isPastMembershipExpiration = date > maxBookingDateObj;
+            }
+
             // Check if all sessions are unavailable for this date
             const allSessionsUnavailable = areAllSessionsUnavailable(dateStr);
 
@@ -738,9 +749,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if (isSelected) classes.push('selected');
             if (isPast) classes.push('past-date');
             if (isTooFar) classes.push('too-far-advance');
+            if (isPastMembershipExpiration) classes.push('past-membership-expiration');
             if (allSessionsUnavailable) classes.push('all-sessions-unavailable');
 
-            const clickable = !isPast && !isTooFar && !allSessionsUnavailable;
+            const clickable = !isPast && !isTooFar && !allSessionsUnavailable && !isPastMembershipExpiration;
             const onClick = clickable ? `onclick="selectDate('${dateStr}')"` : '';
 
             html += `<div class="${classes.join(' ')}" data-date="${dateStr}" ${onClick}>
@@ -813,6 +825,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===================================
     window.selectDate = function (dateStr) {
         const dateElement = document.querySelector(`[data-date="${dateStr}"]`);
+
+        // Check if date is past membership expiration
+        if (dateElement && dateElement.classList.contains('past-membership-expiration')) {
+            const membershipEndDateFormatted = new Date(window.membershipEndDate).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            const gracePeriodEnd = new Date(window.maxBookingDate).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            showToast(
+                `Cannot book beyond your membership expiration. Your ${window.membershipPlanName} plan expires on ${membershipEndDateFormatted} (booking allowed until ${gracePeriodEnd} with grace period). Please visit the gym to renew or upgrade.`,
+                'warning',
+                6000
+            );
+            return;
+        }
 
         // Don't allow clicking on past dates or too far dates
         if (dateElement && (dateElement.classList.contains('past-date') ||
@@ -1238,7 +1270,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         });
     }
-    
+
     // ===================================
     // WIZARD NAVIGATION
     // ===================================
