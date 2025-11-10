@@ -5,7 +5,7 @@ services:
     build: .
     container_name: fitbrawl_web
     ports:
-      - "8080:80"
+      - "80:80"
     env_file:
       - .env
     environment:
