@@ -6,7 +6,7 @@ footer {
     position: relative;
     overflow: hidden;
     font-family: var(--font-family-primary);
-    z-index: 1; /* ensure footer sits below content with higher z-index */
+    /* No z-index - let it stay in normal document flow */
 }
 
 footer::before {
@@ -16,7 +16,6 @@ footer::before {
     left: 0;
     right: 0;
     bottom: 0;
-    /* background-image: url(../../images/footer-bg.jpg); */ /* Commented out - file does not exist */
     background-size: cover;
     background-position: center;
     opacity: 0.1;
@@ -28,7 +27,8 @@ footer::before {
     align-items: flex-start;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: var(--spacing-8); /* Increased from 35px */
+    gap: var(--spacing-8);
+    /* Increased from 35px */
     position: relative;
     z-index: 2;
 }
@@ -117,6 +117,6 @@ footer .copyright {
 
 @media (max-width: 600px) {
     .footer-logo-title {
-      margin-left: -10px;
+        margin-left: -10px;
     }
 }

@@ -578,6 +578,94 @@ require_once __DIR__ . '/../../includes/header.php';
 </script>
 
 <?php require_once '../../includes/footer.php'; ?>
+
+<!-- Booking Details Modal (placed after footer for proper z-index stacking) -->
+<div class="booking-modal" id="bookingModal">
+    <div class="booking-modal-overlay" onclick="closeBookingModal()"></div>
+    <div class="booking-modal-content">
+        <button class="booking-modal-close" onclick="closeBookingModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="booking-modal-header">
+            <h2 class="booking-modal-title">Booking Details</h2>
+            <div class="booking-modal-status" id="modalStatus"></div>
+        </div>
+
+        <div class="booking-modal-body">
+            <div class="booking-detail-section">
+                <h3><i class="fas fa-calendar-alt"></i> Session Information</h3>
+                <div class="booking-detail-grid">
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Date</span>
+                        <span class="detail-value" id="modalDate">-</span>
+                    </div>
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Day</span>
+                        <span class="detail-value" id="modalDay">-</span>
+                    </div>
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Time Slot</span>
+                        <span class="detail-value" id="modalTimeSlot">-</span>
+                    </div>
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value" id="modalDuration">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booking-detail-section">
+                <h3><i class="fas fa-dumbbell"></i> Training Details</h3>
+                <div class="booking-detail-grid">
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Class Type</span>
+                        <span class="detail-value" id="modalClassType">-</span>
+                    </div>
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Trainer</span>
+                        <span class="detail-value" id="modalTrainer">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booking-detail-section">
+                <h3><i class="fas fa-info-circle"></i> Booking Info</h3>
+                <div class="booking-detail-grid">
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Booking ID</span>
+                        <span class="detail-value" id="modalBookingId">-</span>
+                    </div>
+                    <div class="booking-detail-item">
+                        <span class="detail-label">Booked On</span>
+                        <span class="detail-value" id="modalBookedOn">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booking-modal-qr" id="modalQRSection" style="display: none;">
+                <h3><i class="fas fa-qrcode"></i> Check-in QR Code</h3>
+                <div class="qr-code-container" id="modalQRCode">
+                    <!-- QR code will be generated here -->
+                </div>
+                <p class="qr-instruction">Show this QR code to your trainer for session confirmation</p>
+            </div>
+        </div>
+
+        <div class="booking-modal-footer">
+            <button class="btn-modal-action btn-share" onclick="shareBooking()">
+                <i class="fas fa-share-alt"></i> Share
+            </button>
+            <button class="btn-modal-action btn-cancel-modal" id="btnCancelModal" onclick="cancelBookingFromModal()" style="display: none;">
+                <i class="fas fa-times-circle"></i> Cancel Booking
+            </button>
+            <button class="btn-modal-action btn-close-modal" onclick="closeBookingModal()">
+                <i class="fas fa-check"></i> Close
+            </button>
+        </div>
+    </div>
+</div>
+
 </body>
 
 </html>

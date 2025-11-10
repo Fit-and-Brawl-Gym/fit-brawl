@@ -324,6 +324,7 @@ document.addEventListener('DOMContentLoaded', function () {
         allBookingsData.upcoming = upcomingList;
         allBookingsData.past = pastList;
         allBookingsData.cancelled = cancelledList;
+        allBookingsData.all = [...upcomingList, ...pastList, ...cancelledList]; // Store all bookings for modal lookup
 
         // Update stat cards with next upcoming session
         updateStatCards(upcomingList);
@@ -523,6 +524,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 (booking.session_time === 'Evening' && currentHour >= 22)
             );
 
+            // Check if booking date is in the past (before today)
+            const isPastDate = bookingDate < today;
+
             if (booking.status === 'cancelled') {
                 canActuallyCancelNow = false;
                 isWithinCancellationWindow = false;
@@ -531,11 +535,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 canActuallyCancelNow = false;
                 isWithinCancellationWindow = false;
                 hasSessionPassed = false;
-            } else if (booking.status === 'completed' || hasSessionEnded) {
-                canActuallyCancelNow = false;
-                hasSessionPassed = true;
-            } else if (hoursUntilSession < 0) {
-                // Session is in the past - mark as completed
+            } else if (booking.status === 'completed' || hasSessionEnded || isPastDate) {
+                // Session is completed, has ended today, or date is in the past
                 canActuallyCancelNow = false;
                 hasSessionPassed = true;
             } else {
@@ -550,7 +551,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             return `
-                <div class="booking-item ${booking.status === 'cancelled' ? 'cancelled' : ''}">
+                <div class="booking-item ${booking.status === 'cancelled' ? 'cancelled' : ''}" 
+                     data-booking-id="${booking.id}"
+                     onclick="openBookingModal(${booking.id})" 
+                     style="cursor: pointer;">
                     <div class="booking-date-badge">
                         <div class="booking-day">${new Date(booking.date).getDate()}</div>
                         <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
@@ -563,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <span><i class="fas fa-calendar"></i> ${booking.day_of_week}</span>
                         </div>
                     </div>
-                    <div class="booking-actions">
+                    <div class="booking-actions" onclick="event.stopPropagation();">
                         ${(() => {
                     if (isOngoing) {
                         return `
@@ -1383,5 +1387,179 @@ document.addEventListener('DOMContentLoaded', function () {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    // ===================================
+    // BOOKING MODAL FUNCTIONS
+    // ===================================
+    let currentModalBooking = null;
+
+    window.openBookingModal = function(bookingId) {
+        console.log('Opening modal for booking:', bookingId); // Debug log
+        console.log('All bookings:', allBookingsData.all); // Debug log
+        
+        // Find the booking data
+        const booking = allBookingsData.all.find(b => b.id === bookingId);
+        if (!booking) {
+            console.error('Booking not found:', bookingId);
+            showToast('Booking not found', 'error');
+            return;
+        }
+
+        console.log('Found booking:', booking); // Debug log
+        currentModalBooking = booking;
+        
+        // Populate modal
+        document.getElementById('modalBookingId').textContent = `#${booking.id}`;
+        document.getElementById('modalDate').textContent = new Date(booking.date).toLocaleDateString('en-US', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        });
+        document.getElementById('modalDay').textContent = booking.day_of_week;
+        document.getElementById('modalTimeSlot').textContent = booking.session_time;
+        document.getElementById('modalDuration').textContent = booking.session_hours;
+        document.getElementById('modalClassType').textContent = booking.class_type;
+        document.getElementById('modalTrainer').textContent = booking.trainer_name;
+        
+        // Handle created_at - it might not exist or be in different format
+        const bookedOnElement = document.getElementById('modalBookedOn');
+        if (booking.created_at) {
+            try {
+                const createdDate = new Date(booking.created_at);
+                if (!isNaN(createdDate.getTime())) {
+                    bookedOnElement.textContent = createdDate.toLocaleString('en-US', {
+                        year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+                } else {
+                    bookedOnElement.textContent = 'N/A';
+                }
+            } catch (e) {
+                bookedOnElement.textContent = 'N/A';
+            }
+        } else {
+            bookedOnElement.textContent = 'N/A';
+        }
+
+        // Set status badge
+        const statusElement = document.getElementById('modalStatus');
+        const now = new Date();
+        const sessionDate = new Date(booking.date);
+        const sessionStartHour = booking.session_time === 'Morning' ? 7 : booking.session_time === 'Afternoon' ? 13 : 18;
+        const sessionStartDateTime = new Date(sessionDate);
+        sessionStartDateTime.setHours(sessionStartHour, 0, 0, 0);
+        const hoursUntilSession = (sessionStartDateTime - now) / (1000 * 60 * 60);
+
+        let statusClass = '';
+        let statusText = '';
+        let canCancel = false;
+
+        const isToday = sessionDate.toDateString() === now.toDateString();
+        const currentHour = now.getHours();
+        const isOngoing = isToday && booking.status !== 'cancelled' && (
+            (booking.session_time === 'Morning' && currentHour >= 7 && currentHour < 11) ||
+            (booking.session_time === 'Afternoon' && currentHour >= 13 && currentHour < 17) ||
+            (booking.session_time === 'Evening' && currentHour >= 18 && currentHour < 22)
+        );
+
+        if (booking.status === 'cancelled') {
+            statusClass = 'cancelled-badge';
+            statusText = 'Cancelled';
+        } else if (isOngoing) {
+            statusClass = 'ongoing-badge';
+            statusText = 'Ongoing Session';
+        } else if (hoursUntilSession < 0) {
+            statusClass = 'completed-badge';
+            statusText = 'Completed';
+        } else if (hoursUntilSession > 12) {
+            statusClass = 'confirmed-badge';
+            statusText = 'Confirmed';
+            canCancel = true;
+        } else {
+            statusClass = 'warning-badge';
+            statusText = 'Cannot Cancel';
+        }
+
+        statusElement.className = `booking-modal-status ${statusClass}`;
+        statusElement.innerHTML = `<i class="fas fa-${booking.status === 'cancelled' ? 'times-circle' : isOngoing ? 'play-circle' : hoursUntilSession < 0 ? 'check-circle' : hoursUntilSession > 12 ? 'check-circle' : 'lock'}"></i> ${statusText}`;
+
+        // Show/hide cancel button
+        document.getElementById('btnCancelModal').style.display = canCancel ? 'inline-flex' : 'none';
+
+        // Show/hide QR code for upcoming sessions
+        const qrSection = document.getElementById('modalQRSection');
+        if (booking.status !== 'cancelled' && hoursUntilSession >= 0 && hoursUntilSession <= 24) {
+            qrSection.style.display = 'block';
+            generateQRCode(booking);
+        } else {
+            qrSection.style.display = 'none';
+        }
+
+        // Show modal
+        const modal = document.getElementById('bookingModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        document.body.style.paddingRight = '0px'; // Prevent layout shift
+    };
+
+    window.closeBookingModal = function() {
+        const modal = document.getElementById('bookingModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        currentModalBooking = null;
+    };
+
+    window.cancelBookingFromModal = function() {
+        if (!currentModalBooking) return;
+        
+        if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+            cancelBooking(currentModalBooking.id);
+            closeBookingModal();
+        }
+    };
+
+    window.shareBooking = function() {
+        if (!currentModalBooking) return;
+
+        const bookingText = `Training Session Booking\n\n` +
+            `Class: ${currentModalBooking.class_type}\n` +
+            `Date: ${new Date(currentModalBooking.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n` +
+            `Time: ${currentModalBooking.session_time} (${currentModalBooking.session_hours})\n` +
+            `Trainer: ${currentModalBooking.trainer_name}\n` +
+            `Booking ID: #${currentModalBooking.id}`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Training Session Booking',
+                text: bookingText
+            }).catch(err => console.log('Error sharing:', err));
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(bookingText).then(() => {
+                showToast('Booking details copied to clipboard!', 'success');
+            }).catch(err => {
+                showToast('Failed to copy booking details', 'error');
+            });
+        }
+    };
+
+    function generateQRCode(booking) {
+        const qrContainer = document.getElementById('modalQRCode');
+        const qrData = JSON.stringify({
+            id: booking.id,
+            user_id: booking.user_id,
+            class: booking.class_type,
+            date: booking.date,
+            session: booking.session_time,
+            trainer: booking.trainer_name
+        });
+
+        // Simple QR code representation (you can integrate a QR library like qrcode.js)
+        qrContainer.innerHTML = `
+            <div class="qr-placeholder">
+                <i class="fas fa-qrcode"></i>
+                <p>Booking #${booking.id}</p>
+                <small>${booking.class_type} - ${booking.session_time}</small>
+            </div>
+        `;
     }
 });
