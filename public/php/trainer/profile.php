@@ -52,6 +52,7 @@ if (isset($_SESSION['email'])) {
             $password_changed = (bool) $row['password_changed'];
         }
         $stmt->close();
+        
     }
 
     // Calculate next payout (example: 1st of next month)
@@ -102,8 +103,7 @@ require_once '../../../includes/trainer_header.php';
                 class="profile-avatar <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
         </div>
         <div class="profile-info">
-            <!-- Show account icon instead of trainer name -->
-            <img src="<?= IMAGES_PATH ?>/account-icon.svg" alt="Trainer" class="trainer-name-icon">
+            <h2 class="profile-username"><?= htmlspecialchars($trainer_name ?: $user['username']) ?></h2>
             <p class="profile-email"><?= htmlspecialchars($user['email']) ?></p>
             <p class="profile-role"> Trainer</p>
             <div class="profile-actions">

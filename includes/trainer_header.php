@@ -84,7 +84,6 @@ if (class_exists('SessionManager')) {
             <button class="hamburger-menu" aria-label="Toggle menu">
                 <span></span>
                 <span></span>
-                <span></span>
             </button>
             <div class="title">
                 <a href="index.php">
@@ -96,11 +95,7 @@ if (class_exists('SessionManager')) {
             </div>
             <nav class="nav-bar trainer-nav">
                 <ul>
-                    <li>
-                        <a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
-                            <i class="fas fa-home"></i>
-                        </a>
-                    </li>
+
                     <li>
                         <a href="schedule.php" <?= $currentPage === 'schedule' ? 'class="active"' : '' ?> title="Schedule">
                             <i class="fas fa-calendar-alt"></i>

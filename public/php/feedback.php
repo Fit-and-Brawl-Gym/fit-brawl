@@ -421,7 +421,10 @@ require_once '../../includes/header.php';
         <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
     </div>
 </footer>
-
+<script>
+    const IMAGES_PATH = "<?= IMAGES_PATH ?>";
+    const UPLOADS_PATH = "<?= UPLOADS_PATH ?>";
+</script>
 <script src="<?= PUBLIC_PATH ?>/js/feedback.js"></script>
 </body>
 

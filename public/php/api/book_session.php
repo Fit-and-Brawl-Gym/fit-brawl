@@ -3,50 +3,54 @@ session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
 require_once '../../../includes/activity_logger.php';
-
+require_once '../../../includes/mail_config.php'; // make sure this defines sendTrainerBookingNotification()
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not logged in']);
-    exit;
-}
-
-// Validate request method
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
-}
-
-$user_id = $_SESSION['user_id'];
-$trainer_id = isset($_POST['trainer_id']) ? intval($_POST['trainer_id']) : 0;
-$class_type = $_POST['class_type'] ?? '';
-$booking_date = $_POST['booking_date'] ?? '';
-$session_time = $_POST['session_time'] ?? '';
-
-// Validate required fields
-if (!$trainer_id || empty($class_type) || empty($booking_date) || empty($session_time)) {
-    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
-    exit;
-}
-
-// Validate enums
-$valid_sessions = ['Morning', 'Afternoon', 'Evening'];
-$valid_classes = ['Boxing', 'Muay Thai', 'MMA', 'Gym'];
-
-if (!in_array($session_time, $valid_sessions)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid session time']);
-    exit;
-}
-
-if (!in_array($class_type, $valid_classes)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid class type']);
-    exit;
-}
+// --- DEV: enable during development only ---
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
 try {
+    // Check if user is logged in
+    if (!isset($_SESSION['user_id'])) {
+        echo json_encode(['success' => false, 'message' => 'Not logged in']);
+        exit;
+    }
+
+    // Validate request method
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        exit;
+    }
+
+    $user_id = $_SESSION['user_id'];
+    $trainer_id = isset($_POST['trainer_id']) ? intval($_POST['trainer_id']) : 0;
+    $class_type = $_POST['class_type'] ?? '';
+    $booking_date = $_POST['booking_date'] ?? '';
+    $session_time = $_POST['session_time'] ?? '';
+
+    // Validate required fields
+    if (!$trainer_id || empty($class_type) || empty($booking_date) || empty($session_time)) {
+        echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+        exit;
+    }
+
+    // Validate enums
+    $valid_sessions = ['Morning', 'Afternoon', 'Evening'];
+    $valid_classes = ['Boxing', 'Muay Thai', 'MMA', 'Gym'];
+
+    if (!in_array($session_time, $valid_sessions)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid session time']);
+        exit;
+    }
+
+    if (!in_array($class_type, $valid_classes)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid class type']);
+        exit;
+    }
+
     // Initialize validator and activity logger
     $validator = new BookingValidator($conn);
     ActivityLogger::init($conn);
@@ -63,14 +67,38 @@ try {
         exit;
     }
 
-    // Get trainer info for response
-    $trainer_stmt = $conn->prepare("SELECT name FROM trainers WHERE id = ?");
+    // Get trainer info for response & email (name + email)
+    $trainer_stmt = $conn->prepare("SELECT name, email FROM trainers WHERE id = ?");
+    if ($trainer_stmt === false) {
+        throw new Exception('Failed to prepare trainer query');
+    }
     $trainer_stmt->bind_param("i", $trainer_id);
     $trainer_stmt->execute();
     $trainer_result = $trainer_stmt->get_result();
-    $trainer = $trainer_result->fetch_assoc();
-    $trainer_name = $trainer['name'];
+    $trainer_data = $trainer_result ? $trainer_result->fetch_assoc() : null;
     $trainer_stmt->close();
+
+    if (!$trainer_data) {
+        echo json_encode(['success' => false, 'message' => 'Trainer not found']);
+        exit;
+    }
+    $trainer_name = $trainer_data['name'] ?? 'Unknown';
+
+    // Get member (user) info for email
+    $member_stmt = $conn->prepare("SELECT username, email FROM users WHERE id = ?");
+    if ($member_stmt === false) {
+        throw new Exception('Failed to prepare member query');
+    }
+    $member_stmt->bind_param("i", $user_id);
+    $member_stmt->execute();
+    $member_result = $member_stmt->get_result();
+    $member_data = $member_result ? $member_result->fetch_assoc() : null;
+    $member_stmt->close();
+
+    if (!$member_data) {
+        echo json_encode(['success' => false, 'message' => 'Member not found']);
+        exit;
+    }
 
     // Start transaction
     $conn->begin_transaction();
@@ -82,16 +110,21 @@ try {
             (user_id, trainer_id, session_time, class_type, booking_date, booking_status)
             VALUES (?, ?, ?, ?, ?, 'confirmed')
         ");
+        if ($insert_stmt === false) {
+            throw new Exception('Failed to prepare insert statement');
+        }
         $insert_stmt->bind_param("iisss", $user_id, $trainer_id, $session_time, $class_type, $booking_date);
 
         if (!$insert_stmt->execute()) {
-            throw new Exception('Failed to create booking');
+            $err = $insert_stmt->error ?: 'unknown';
+            $insert_stmt->close();
+            throw new Exception('Failed to create booking: ' . $err);
         }
 
         $booking_id = $conn->insert_id;
         $insert_stmt->close();
 
-        // Commit transaction
+        // Commit transaction (booking is now saved)
         $conn->commit();
 
         // Get session hours for display
@@ -116,13 +149,41 @@ try {
             AND booking_date BETWEEN ? AND ?
             AND booking_status IN ('confirmed', 'completed')
         ");
+        if ($count_stmt === false) {
+            throw new Exception('Failed to prepare count query');
+        }
         $count_stmt->bind_param("iss", $user_id, $week_start, $week_end);
         $count_stmt->execute();
         $count_result = $count_stmt->get_result();
-        $count_row = $count_result->fetch_assoc();
+        $count_row = $count_result ? $count_result->fetch_assoc() : ['booking_count' => 0];
         $weekly_count = (int) $count_row['booking_count'];
         $count_stmt->close();
 
+        // Attempt to send email notification to trainer (after commit)
+        try {
+            if (function_exists('sendTrainerBookingNotification')) {
+                $email_sent = sendTrainerBookingNotification(
+                    $trainer_data['email'],
+                    $trainer_data['name'],
+                    $member_data['username'],
+                    $booking_date,
+                    $session_time,
+                    $class_type
+                );
+
+                if (!$email_sent) {
+                    error_log("Failed to send booking notification to trainer: {$trainer_data['email']}");
+                }
+            } else {
+                // Mail function not defined in mail_config.php
+                error_log('sendTrainerBookingNotification() not defined. Check mail_config.php');
+            }
+        } catch (Exception $mailEx) {
+            // Make sure mail failures don't break the main flow
+            error_log('Mail sending error: ' . $mailEx->getMessage());
+        }
+
+        // Respond success (booking done)
         echo json_encode([
             'success' => true,
             'booking_id' => $booking_id,
@@ -138,21 +199,28 @@ try {
                 'facility_trainers' => $validation['facility_count'] + 1
             ]
         ]);
+        exit;
 
     } catch (Exception $e) {
-        $conn->rollback();
+        // Rollback and bubble up to outer catch
+        if ($conn) {
+            $conn->rollback();
+        }
         throw $e;
     }
 
 } catch (Exception $e) {
-    error_log("Booking error for user $user_id: " . $e->getMessage());
+    // Log the actual error for debugging
+    $user_id_log = $_SESSION['user_id'] ?? 'unknown';
+    error_log("Booking error for user $user_id_log: " . $e->getMessage());
+
     echo json_encode([
         'success' => false,
         'message' => 'An error occurred while processing your booking. Please try again.'
     ]);
+    exit;
 } finally {
-    if (isset($conn)) {
+    if (isset($conn) && $conn) {
         $conn->close();
     }
 }
-?>

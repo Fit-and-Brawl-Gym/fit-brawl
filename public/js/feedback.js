@@ -128,19 +128,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const cardClass = index % 2 === 0 ? 'left' : 'right';
             let avatar, isDefaultIcon = false;
 
-            if (!item.avatar || item.avatar === '' || item.avatar.includes('account-icon.svg') || item.avatar.includes('profile-icon.svg')) {
-                avatar = item.avatar && item.avatar.includes('account-icon.svg')
-                    ? item.avatar
-                    : '../../images/account-icon.svg';
+           if (!item.avatar || item.avatar === '' || item.avatar.includes('account-icon.svg') || item.avatar.includes('profile-icon.svg')) {
+                avatar = `${IMAGES_PATH}/account-icon.svg`;
                 isDefaultIcon = true;
-            } else if (item.avatar.startsWith('../') || item.avatar.startsWith('../../')) {
-                avatar = item.avatar;
-                isDefaultIcon = item.avatar.includes('account-icon.svg') || item.avatar.includes('profile-icon.svg');
             } else {
-                avatar = `../../uploads/avatars/${item.avatar}`;
+                avatar = `${UPLOADS_PATH}/avatars/${item.avatar}`;
                 isDefaultIcon = false;
             }
-
+     
             const defaultIconClass = isDefaultIcon ? 'default-icon' : '';
 
             // Format date
@@ -186,7 +181,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="feedback-card">
                     <div class="bubble">
                         <div class="bubble-header">
-                            <img src="${avatar}" alt="${item.username}" class="${defaultIconClass}" onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
+                        
+                            <img src="${avatar}" alt="${item.username}" class="${defaultIconClass}"
+     onerror="this.onerror=null; this.src='${IMAGES_PATH}/account-icon.svg'; this.classList.add('default-icon');">
+
                             <div>
                                 <h3>${item.username}</h3>
                                 <span class="feedback-date">${formattedDate}</span>
@@ -227,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const allButtons = container.querySelectorAll(`[data-feedback-id="${feedbackId}"]`);
         allButtons.forEach(btn => btn.disabled = true);
 
-        fetch('api/feedback_vote.php', {
+        fetch(`${PUBLIC_PATH}/php/api/feedback_vote.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

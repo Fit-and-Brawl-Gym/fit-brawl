@@ -1238,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         });
     }
-
+    
     // ===================================
     // WIZARD NAVIGATION
     // ===================================
