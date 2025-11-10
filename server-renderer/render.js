@@ -52,6 +52,8 @@ async function main() {
       '--disable-web-security',
       '--disable-features=IsolateOrigins,site-per-process',
       '--font-render-hinting=medium',
+      '--disable-blink-features=AutomationControlled', // Avoid detection
+      '--disable-extensions', // No extensions that could block
     ],
     defaultViewport: {
       width: mmToPx(210), // A4 width as baseline
@@ -62,20 +64,11 @@ async function main() {
 
   try {
     const page = await browser.newPage();
+    
+    // Disable request blocking/interception that could cause ERR_BLOCKED_BY_CLIENT
+    await page.setRequestInterception(false);
+    
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome Headless Safari/537.36');
-
-    // Enable request interception to block ads/trackers that might cause ERR_BLOCKED_BY_CLIENT
-    await page.setRequestInterception(true);
-    page.on('request', (request) => {
-      const resourceType = request.resourceType();
-      // Allow documents, stylesheets, images, fonts, and scripts
-      if (['document', 'stylesheet', 'image', 'font', 'script', 'xhr', 'fetch'].includes(resourceType)) {
-        request.continue();
-      } else {
-        // Block other resource types (media, websocket, manifest, etc.)
-        request.abort();
-      }
-    });
 
     // Navigate and wait until network settles
     await page.goto(url, { waitUntil: 'networkidle2', timeout });
@@ -86,7 +79,9 @@ async function main() {
 
     // Give fonts and layout a moment
     await page.evaluate(() => document.fonts && document.fonts.ready ? document.fonts.ready : null).catch(() => {});
-    await delay(200);
+    
+    // Wait extra time for QR code to render (external library may be slow)
+    await delay(800);
 
     if (format === 'pdf') {
       await page.emulateMediaType('print');

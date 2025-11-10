@@ -5,9 +5,7 @@
  */
 class SecureFileUpload {
     private $allowedMimeTypes;
-    private $allowedExtensions;
-    private $maxFileSize;
-    private $uploadDir;
+
 
     /**
      * Constructor
@@ -119,3 +117,6 @@ class SecureFileUpload {
         );
     }
 }
+
+?>
+

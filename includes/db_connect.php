@@ -23,3 +23,4 @@ $conn->set_charset("utf8mb4");
 
 // Optional: Set timezone to UTC for consistency
 $conn->query("SET time_zone = '+00:00'");
+?>
