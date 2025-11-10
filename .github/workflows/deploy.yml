@@ -104,31 +104,14 @@ jobs:
               sudo systemctl restart fit-brawl-renderer
               echo "✅ Renderer service restarted (systemd)"
             else
-              # Create a restart script
-              cat > /tmp/restart-renderer.sh << 'RESTART_SCRIPT'
-            #!/bin/bash
-            pkill -f "node.*server.js" 2>/dev/null || true
-            sleep 2
-            cd /home/ec2-user/fit-brawl/server-renderer
-            nohup node server.js > /tmp/renderer.log 2>&1 < /dev/null &
-            RESTART_SCRIPT
-              
-              chmod +x /tmp/restart-renderer.sh
-              
-              # Run the script detached using at command or systemd-run if available
-              if command -v systemd-run >/dev/null 2>&1; then
-                systemd-run --scope --user /tmp/restart-renderer.sh >/dev/null 2>&1 || /tmp/restart-renderer.sh >/dev/null 2>&1 &
+              # Use 'at' command to schedule restart after SSH disconnects
+              if command -v at >/dev/null 2>&1; then
+                echo "pkill -f 'node.*server.js'; sleep 2; cd /home/ec2-user/fit-brawl/server-renderer && nohup node server.js > /tmp/renderer.log 2>&1 &" | at now + 1 minute 2>/dev/null
+                echo "✅ Renderer restart scheduled (will execute in 1 minute)"
               else
-                setsid /tmp/restart-renderer.sh >/dev/null 2>&1 < /dev/null &
-              fi
-              
-              sleep 2
-              
-              # Verify it started
-              if pgrep -f "node.*server.js" > /dev/null; then
-                echo "✅ Renderer service restarted successfully"
-              else
-                echo "⚠️  Warning: Could not verify renderer restart"
+                # Fallback: Simple background restart without waiting
+                (pkill -f "node.*server.js"; sleep 3; cd /home/ec2-user/fit-brawl/server-renderer && nohup node server.js > /tmp/renderer.log 2>&1 &) &
+                echo "✅ Renderer restart initiated in background"
               fi
             fi
 
