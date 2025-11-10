@@ -152,7 +152,10 @@
 # ====================================
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /fit-brawl/public/
+    RewriteBase /
+
+    # Redirect root to index.php
+    DirectoryIndex php/index.php
 
     # Force HTTPS (uncomment when you have SSL)
     # RewriteCond %{HTTPS} off
