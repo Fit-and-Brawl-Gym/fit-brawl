@@ -10,6 +10,9 @@ jobs:
   deploy:
     name: Deploy to AWS/Server
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://54.227.103.23
 
     steps:
       - name: Checkout code

@@ -26,7 +26,7 @@ echo -e "${BLUE}📋 Configuration:${NC}"
 echo "   SSH Host: $SSH_HOST"
 echo "   SSH User: $SSH_USER"
 echo "   GitHub Repo: $GITHUB_REPO"
-echo "   Project Path: $PROJECT_PATH"
+echo "   Project Path: $PROJECT_PATH" 
 echo ""
 
 # Step 1: Check SSH connection
