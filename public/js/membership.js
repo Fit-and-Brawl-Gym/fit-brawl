@@ -25,24 +25,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Check if we're on a smaller/taller screen (portrait mobile)
     function isStackedView() {
-        return window.innerWidth <= 768 && window.innerHeight >= 600;
+        return window.innerWidth <= 767;
     }
 
     // Update card positions for overlapping carousel effect
     function updateCarousel() {
         // Skip carousel logic if in stacked view
         if (isStackedView()) {
-            // Reset all cards to default positioning for stacked view
+            plansViewport.classList.add('is-stacked');
             planCards.forEach((card) => {
                 card.removeAttribute('data-position');
-                card.style.position = 'relative';
-                card.style.transform = 'none';
-                card.style.opacity = '1';
             });
             prevBtn.style.display = 'none';
             nextBtn.style.display = 'none';
             return;
         }
+
+        plansViewport.classList.remove('is-stacked');
+        planCards.forEach((card) => {
+            card.style.removeProperty('position');
+            card.style.removeProperty('left');
+            card.style.removeProperty('top');
+            card.style.removeProperty('transform');
+            card.style.removeProperty('opacity');
+            card.style.removeProperty('margin');
+            card.style.removeProperty('z-index');
+        });
 
         // Show carousel buttons
         prevBtn.style.display = 'flex';
@@ -352,59 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // COMPARISON TABLE FUNCTIONALITY
     // ===================================
     function initComparisonTable() {
-        const toggleBtn = document.getElementById('comparisonToggleBtn');
-        const tableContainer = document.getElementById('comparisonTableContainer');
-
-        if (!toggleBtn || !tableContainer) {
-            console.log('Comparison table elements not found');
-            return;
-        }
-
-        const toggleText = toggleBtn.querySelector('.toggle-text');
-        const toggleIcon = toggleBtn.querySelector('.toggle-icon');
-
-        // Toggle table visibility
-        toggleBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const isActive = tableContainer.classList.contains('active');
-            console.log('Click! isActive:', isActive);
-
-            if (isActive) {
-                // Close table
-                console.log('Removing active class...');
-                tableContainer.classList.remove('active');
-                toggleBtn.classList.remove('active');
-                if (toggleText) toggleText.textContent = 'Compare Plans';
-                console.log('Active removed, classes now:', tableContainer.className);
-            } else {
-                // Open table
-                console.log('Adding active class...');
-                tableContainer.classList.add('active');
-                toggleBtn.classList.add('active');
-                if (toggleText) toggleText.textContent = 'Hide Comparison';
-                console.log('Active added, classes now:', tableContainer.className);
-
-                // Debug computed styles
-                const computedStyle = window.getComputedStyle(tableContainer);
-                console.log('Computed display:', computedStyle.display);
-                console.log('Computed background:', computedStyle.background);
-                console.log('Computed padding:', computedStyle.padding);
-                console.log('Computed visibility:', computedStyle.visibility);
-                console.log('Element position:', tableContainer.getBoundingClientRect());
-
-                // Smooth scroll to table
-                setTimeout(() => {
-                    tableContainer.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'nearest'
-                    });
-                }, 300);
-            }
-        });
-
-        // Add click handlers to comparison select buttons
+        // Simple initialization - just add click handlers to select buttons
         const comparisonSelectBtns = document.querySelectorAll('.comparison-select-btn');
 
         comparisonSelectBtns.forEach(button => {
@@ -419,6 +375,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         });
+
+        console.log('Comparison table initialized - always visible mode');
 
         console.log('Comparison table initialized successfully');
     }

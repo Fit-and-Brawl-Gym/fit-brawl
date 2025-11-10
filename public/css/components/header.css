@@ -285,14 +285,11 @@
     }
 
     .wrapper {
-        padding: var(--spacing-3) var(--spacing-5);
-        flex-wrap: wrap;
-        justify-content: flex-start;
-    }
-
-    .wrapper {
         display: flex;
         align-items: center;
+        padding: var(--spacing-3) var(--spacing-3);
+        flex-wrap: wrap;
+        justify-content: flex-start;
     }
 
     .wrapper .title {
@@ -387,7 +384,7 @@
 
 @media (max-width: 480px) {
     .wrapper {
-        padding: var(--spacing-3) var(--spacing-4);
+        padding: var(--spacing-3) var(--spacing-3);
     }
 
     .wrapper .title .logo-title {
