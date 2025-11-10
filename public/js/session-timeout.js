@@ -74,7 +74,7 @@ class SessionTimer {
 
     async extendSession() {
         try {
-            const publicPath = window.PUBLIC_PATH || '/fit-brawl/public';
+            const publicPath = window.PUBLIC_PATH || '';
             const url = `${publicPath}/php/extend_session.php`;
             console.log('Extending session with URL:', url);
             

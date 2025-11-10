@@ -64,6 +64,19 @@ async function main() {
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome Headless Safari/537.36');
 
+    // Enable request interception to block ads/trackers that might cause ERR_BLOCKED_BY_CLIENT
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      const resourceType = request.resourceType();
+      // Allow documents, stylesheets, images, fonts, and scripts
+      if (['document', 'stylesheet', 'image', 'font', 'script', 'xhr', 'fetch'].includes(resourceType)) {
+        request.continue();
+      } else {
+        // Block other resource types (media, websocket, manifest, etc.)
+        request.abort();
+      }
+    });
+
     // Navigate and wait until network settles
     await page.goto(url, { waitUntil: 'networkidle2', timeout });
 
