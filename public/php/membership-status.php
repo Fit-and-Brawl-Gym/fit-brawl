@@ -56,14 +56,14 @@ require_once '../../includes/header.php';
 
             <?php if ($status === 'pending'): ?>
                 <div class="status-message pending">
-                    <h2><?= $isUpgrade ? 'Upgrade Request Submitted' : 'Payment Submitted' ?></h2>
+                    <h2>Payment Submitted</h2>
                     <p>
-                        Thank you for submitting your <?= $isUpgrade ? 'upgrade' : 'payment' ?> for the
+                        Thank you for submitting your payment for the
                         <strong><?= $planName ?></strong> plan.
                     </p>
                     <p>
                         Your request is currently <strong>pending admin approval</strong>.
-                        Please wait for confirmation before using your <?= $isUpgrade ? 'upgraded' : 'new' ?> plan.
+                        Please wait for confirmation before using your new plan.
                     </p>
                     <p class="date-info">
                         <i class="fa-regular fa-calendar"></i>
@@ -73,12 +73,12 @@ require_once '../../includes/header.php';
 
             <?php elseif ($status === 'rejected'): ?>
                 <div class="status-message rejected">
-                    <h2><?= $isUpgrade ? 'Upgrade Request Rejected' : 'Payment Rejected' ?></h2>
+                    <h2>Payment Rejected</h2>
                     <p>
-                        Your <?= $isUpgrade ? 'upgrade request' : 'payment' ?> for the
+                        Your payment for the
                         <strong><?= $planName ?></strong> plan was <strong>rejected</strong>.
                     </p>
-                    <p>Please contact support or submit a new <?= $isUpgrade ? 'upgrade request' : 'payment' ?>.</p>
+                    <p>Please contact support or submit a new payment.</p>
                     <p class="date-info">
                         <i class="fa-regular fa-calendar"></i>
                         Submitted on <?= $formattedDate ?>
@@ -87,12 +87,12 @@ require_once '../../includes/header.php';
 
             <?php elseif ($status === 'approved'): ?>
                 <div class="status-message approved">
-                    <h2><?= $isUpgrade ? 'Upgrade Approved!' : 'Membership Approved!' ?></h2>
+                    <h2>Membership Approved!</h2>
                     <p>
-                        Your <?= $isUpgrade ? 'upgrade request' : 'membership payment' ?> for the
+                        Your membership payment for the
                         <strong><?= $planName ?></strong> plan has been approved.
                     </p>
-                    <p>Enjoy your <?= $isUpgrade ? 'new plan benefits' : 'membership privileges' ?>!</p>
+                    <p>Enjoy your membership privileges!</p>
                     <p class="date-info">
                         <i class="fa-regular fa-calendar"></i>
                         Approved on <?= date('F d, Y', strtotime($membershipRequest['date_approved'] ?? 'now')) ?>
@@ -105,7 +105,7 @@ require_once '../../includes/header.php';
                 <h2>No Pending Requests</h2>
                 <p>
                     You currently have no active or pending membership requests.
-                    <a href="membership.php">Select a plan</a> to become a member or upgrade your plan.
+                    <a href="membership.php">Select a plan</a> to become a member.
                 </p>
             </div>
         <?php endif; ?>
@@ -115,7 +115,7 @@ require_once '../../includes/header.php';
                 <i class="fa-solid fa-house"></i> Return to Home
             </a>
             <a href="membership.php" class="btn-secondary">
-                <?= $membershipRequest ? 'Change Plan' : 'View Plans' ?>
+                View Plans
             </a>
         </div>
     </main>
