@@ -102,11 +102,16 @@ jobs:
               echo "✅ Renderer service restarted (systemd)"
             else
               # If no systemd service, restart manually
-              echo "   Killing existing renderer processes..."
-              pkill -f "node.*server.js" || true
+              echo "   Stopping existing renderer processes..."
+              pkill -f "node.*server.js" >/dev/null 2>&1 || true
+              sleep 1
               cd server-renderer
-              nohup node server.js > /tmp/renderer.log 2>&1 &
-              echo "✅ Renderer restarted in background (PID: $!)"
+              # Start in background, redirect all output to log
+              nohup node server.js > /tmp/renderer.log 2>&1 < /dev/null &
+              RENDERER_PID=$!
+              # Detach the process completely
+              disown $RENDERER_PID >/dev/null 2>&1 || true
+              echo "✅ Renderer service started (PID: $RENDERER_PID)"
               cd ..
             fi
 
