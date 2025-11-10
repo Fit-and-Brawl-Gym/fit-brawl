@@ -1,0 +1,68 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to AWS/Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'server-renderer/package-lock.json'
+
+      - name: Install server-renderer dependencies
+        run: |
+          cd server-renderer
+          npm ci --no-audit --no-fund
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            # Navigate to project directory
+            cd /var/www/html || exit 1
+
+            # Pull latest changes
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Install/update server-renderer dependencies
+            cd server-renderer
+            npm ci --no-audit --no-fund
+
+            # Restart renderer service if using systemd
+            if systemctl is-active --quiet fit-brawl-renderer; then
+              sudo systemctl restart fit-brawl-renderer
+            fi
+
+            # Set proper permissions
+            cd ..
+            sudo chown -R www-data:www-data uploads/
+            sudo chmod -R 755 uploads/
+
+            echo "✅ Deployment completed successfully!"
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "🚀 Deployment succeeded!"
+          else
+            echo "❌ Deployment failed!"
+          fi

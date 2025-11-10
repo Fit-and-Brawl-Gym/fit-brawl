@@ -86,17 +86,6 @@ INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
 (6, 10);
 
 
--- =====================
--- SEED DATA FOR USER MEMBERSHIPS
--- Sample active memberships for testing
--- =====================
-INSERT INTO user_memberships (
-    user_id, name, country, permanent_address, plan_id, plan_name,
-    start_date, end_date, billing_type, membership_status, request_status, date_approved
-) VALUES
-(2, 'John Member', 'Philippines', '123 Sample Street, City', 2, 'Brawler', '2025-09-01', '2025-12-01', 'monthly', 'active', 'approved', '2025-09-01'),
-(3, 'Jane Member', 'Philippines', '456 Example Avenue, City', 1, 'Gladiator', '2025-09-15', '2025-12-15', 'monthly', 'active', 'approved', '2025-09-15');
-
 -- =====================================================
 -- SEED DATA FOR RESERVATIONS
 -- =====================================================
@@ -183,15 +172,3 @@ INSERT INTO products (name, category, stock, status, image_path) VALUES
 -- SEED DATA FOR FEEDBACK
 -- Sample user feedback and reviews
 -- =====================
-INSERT INTO feedback (user_id, username, email, avatar, message, is_visible) VALUES
-(2, 'member_john', 'john.member@example.com', 'default-avatar.png', 'Great gym with excellent trainers! Highly recommend the Boxing classes.', 1),
-(3, 'member_jane', 'jane.member@example.com', 'default-avatar.png', 'Love the new equipment and the Muay Thai sessions are intense!', 1),
-(4, 'trainer_mike', 'mike.trainer@fitxbrawl.com', 'default-avatar.png', 'Proud to be part of this amazing fitness community!', 1);
-
--- =============================================
--- END OF SEED DATA
--- =============================================
--- Note: This seed file creates sample data for development/testing
--- All passwords are hashed using bcrypt
--- Default password for all test users: "password123"
--- =============================================

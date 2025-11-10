@@ -16,11 +16,13 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
         $equipment = [];
         while ($row = $result->fetch_assoc()) {
-            $imageBase = '/fit-brawl/uploads/equipment/';
-            $placeholder = '/fit-brawl/images/placeholder-equipment.jpg';
+            require_once __DIR__ . '/../../includes/config.php';
+            $imageBase = rtrim(UPLOADS_PATH, '/') . '/equipment/';
+            // Use an existing image as placeholder to avoid 404
+            $placeholder = IMAGES_PATH . '/boxing-gloves.png';
 
             $row['image_path'] = !empty($row['image_path'])
-                ? (strpos($row['image_path'], '/fit-brawl/') === false
+                ? (strpos($row['image_path'], rtrim(BASE_PATH, '/') . '/') === false
                     ? $imageBase . basename($row['image_path'])
                     : $row['image_path'])
                 : $placeholder;

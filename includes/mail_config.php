@@ -80,7 +80,7 @@ function sendTrainerCredentialsEmail($email, $name, $username, $password)
             . "<p style='margin: 5px 0;'><strong>Temporary Password:</strong> " . htmlspecialchars($password) . "</p>"
             . "</div>"
             . "<p><strong style='color: #d5ba2b;'>Important:</strong> Please change your password after your first login for security purposes.</p>"
-            . "<p>You can login at: <a href='" . getenv('APP_URL') . "/public/php/login.php'>FitXBrawl Login</a></p>"
+            . "<p>You can login at: <a href='" . getenv('APP_URL') . "/php/login.php'>FitXBrawl Login</a></p>"
             . "<p>If you have any questions, please contact the administrator.</p>";
 
         applyEmailTemplate($mail, $html);

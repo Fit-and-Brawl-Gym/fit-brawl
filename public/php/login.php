@@ -38,12 +38,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!isset($conn) || !$conn) {
         $error = "Database connection error. Please try again later.";
     } else {
-        // Fetch user
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        // Fetch user by email OR username
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
         if (!$stmt) {
             $error = "Database error. Please try again later.";
         } else {
-            $stmt->bind_param("s", $email);
+            $stmt->bind_param("ss", $email, $email);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -143,7 +143,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 <?php endif; ?>
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" name="email" placeholder="Email"
+                    <input type="text" name="email" placeholder="Username or Email"
                         value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
                 </div>
 
