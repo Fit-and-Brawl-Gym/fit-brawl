@@ -35,31 +35,81 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
+            # Enable error checking
+            set -e
+            
+            # Diagnostic information
+            echo "🔍 Deployment Diagnostics:"
+            echo "   User: $(whoami)"
+            echo "   Home: $HOME"
+            echo "   Current directory: $(pwd)"
+            
             # Navigate to project directory
-            cd /home/ec2-user/fit-brawl || exit 1
+            echo ""
+            echo "📂 Navigating to project directory..."
+            cd /home/ec2-user/fit-brawl || {
+              echo "❌ ERROR: Cannot access /home/ec2-user/fit-brawl"
+              exit 1
+            }
+            echo "✅ Current directory: $(pwd)"
+            
+            # Check if it's a git repository
+            echo ""
+            echo "🔍 Checking git repository..."
+            if [ ! -d .git ]; then
+              echo "❌ ERROR: Not a git repository!"
+              exit 1
+            fi
+            echo "✅ Git repository confirmed"
+            
+            # Show git remote
+            echo "   Remote: $(git remote get-url origin)"
 
             # Pull latest changes from GitHub
+            echo ""
             echo "📥 Pulling latest code..."
-            git fetch origin main
-            git reset --hard origin/main
+            git fetch origin main || {
+              echo "❌ ERROR: Git fetch failed!"
+              echo "   This usually means:"
+              echo "   1. Network issue"
+              echo "   2. Git authentication problem"
+              echo "   3. Remote repository access denied"
+              exit 1
+            }
+            
+            git reset --hard origin/main || {
+              echo "❌ ERROR: Git reset failed!"
+              exit 1
+            }
             
             # Show current commit
             echo "✅ Updated to commit: $(git rev-parse --short HEAD)"
             echo "📝 Last commit: $(git log -1 --pretty=%B)"
 
             # Install/update server-renderer dependencies
+            echo ""
             echo "📦 Installing renderer dependencies..."
-            cd server-renderer
-            npm ci --no-audit --no-fund 2>&1 | tail -3
+            cd server-renderer || {
+              echo "❌ ERROR: Cannot access server-renderer directory"
+              exit 1
+            }
+            
+            npm ci --no-audit --no-fund 2>&1 | tail -3 || {
+              echo "❌ ERROR: npm install failed!"
+              exit 1
+            }
+            echo "✅ Dependencies installed"
 
             # Restart renderer service
+            echo ""
             echo "🔄 Restarting renderer service..."
             cd ..
             if systemctl is-active --quiet fit-brawl-renderer 2>/dev/null; then
               sudo systemctl restart fit-brawl-renderer
-              echo "✅ Renderer service restarted"
+              echo "✅ Renderer service restarted (systemd)"
             else
               # If no systemd service, restart manually
+              echo "   Killing existing renderer processes..."
               pkill -f "node.*server.js" || true
               cd server-renderer
               nohup node server.js > /tmp/renderer.log 2>&1 &
@@ -68,19 +118,23 @@ jobs:
             fi
 
             # Set proper permissions for uploads
+            echo ""
             echo "🔒 Setting permissions..."
-            sudo chown -R apache:apache uploads/ 2>/dev/null || sudo chown -R ec2-user:ec2-user uploads/
-            sudo chmod -R 755 uploads/
-
-            # Run database migrations if any
-            if [ -d "docs/database/migrations" ]; then
-              echo "🗄️ Checking for database migrations..."
-              # Add migration logic here if needed
+            if [ -d "uploads" ]; then
+              sudo chown -R apache:apache uploads/ 2>/dev/null || sudo chown -R ec2-user:ec2-user uploads/
+              sudo chmod -R 755 uploads/
+              echo "✅ Permissions updated"
+            else
+              echo "⚠️  Warning: uploads directory not found"
             fi
 
+            # Final status
             echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "✅ Deployment completed successfully!"
-            echo "🌐 Website updated at: http://54.227.103.23"
+            echo "🌐 Website: http://54.227.103.23"
+            echo "📦 Commit: $(git rev-parse --short HEAD)"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
 
       - name: Notify deployment status
