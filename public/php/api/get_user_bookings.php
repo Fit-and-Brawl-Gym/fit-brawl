@@ -26,7 +26,7 @@ try {
             ur.class_type,
             ur.booking_date,
             ur.booking_status,
-            DATE_FORMAT(ur.booked_at, '%Y-%m-%d %H:%i:%s') AS booked_at,
+            ur.booked_at,
             ur.cancelled_at,
             CASE
                 WHEN ur.session_time = 'Morning' THEN '7-11 AM'
@@ -93,7 +93,6 @@ try {
             'status' => $session_status,
             'session_status' => $session_status,
             'booked_at' => $row['booked_at'],
-            'created_at' => $row['booked_at'],
             'cancelled_at' => $row['cancelled_at'],
             'booking_period' => $row['booking_period'],
             'can_cancel' => $session_status !== 'ongoing' && $can_cancel
