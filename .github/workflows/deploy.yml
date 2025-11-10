@@ -106,12 +106,12 @@ jobs:
             else
               # Create a restart script
               cat > /tmp/restart-renderer.sh << 'RESTART_SCRIPT'
-#!/bin/bash
-pkill -f "node.*server.js" 2>/dev/null || true
-sleep 2
-cd /home/ec2-user/fit-brawl/server-renderer
-nohup node server.js > /tmp/renderer.log 2>&1 < /dev/null &
-RESTART_SCRIPT
+            #!/bin/bash
+            pkill -f "node.*server.js" 2>/dev/null || true
+            sleep 2
+            cd /home/ec2-user/fit-brawl/server-renderer
+            nohup node server.js > /tmp/renderer.log 2>&1 < /dev/null &
+            RESTART_SCRIPT
               
               chmod +x /tmp/restart-renderer.sh
               
