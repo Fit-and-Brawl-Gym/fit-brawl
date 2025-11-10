@@ -101,18 +101,25 @@ jobs:
               sudo systemctl restart fit-brawl-renderer
               echo "✅ Renderer service restarted (systemd)"
             else
-              # If no systemd service, restart manually
-              echo "   Restarting renderer process..."
-              # Use a detached subshell to restart service
-              (
-                pkill -f "node.*server.js" 2>/dev/null || true
-                sleep 2
-                cd /home/ec2-user/fit-brawl/server-renderer
-                nohup node server.js > /tmp/renderer.log 2>&1 < /dev/null &
-              ) >/dev/null 2>&1 &
+              # Create a restart script
+              cat > /tmp/restart-renderer.sh << 'RESTART_SCRIPT'
+#!/bin/bash
+pkill -f "node.*server.js" 2>/dev/null || true
+sleep 2
+cd /home/ec2-user/fit-brawl/server-renderer
+nohup node server.js > /tmp/renderer.log 2>&1 < /dev/null &
+RESTART_SCRIPT
               
-              # Give it a moment to start
-              sleep 1
+              chmod +x /tmp/restart-renderer.sh
+              
+              # Run the script detached using at command or systemd-run if available
+              if command -v systemd-run >/dev/null 2>&1; then
+                systemd-run --scope --user /tmp/restart-renderer.sh >/dev/null 2>&1 || /tmp/restart-renderer.sh >/dev/null 2>&1 &
+              else
+                setsid /tmp/restart-renderer.sh >/dev/null 2>&1 < /dev/null &
+              fi
+              
+              sleep 2
               
               # Verify it started
               if pgrep -f "node.*server.js" > /dev/null; then
