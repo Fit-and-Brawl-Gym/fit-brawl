@@ -130,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => console.error('Error fetching bookings:', error));
     }
+    
 
     function showBookings(year, month, day) {
         const date = new Date(year, month, day);
