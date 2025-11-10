@@ -28,13 +28,16 @@ if ($configuredBase !== '/') {
 
 define('BASE_PATH', $configuredBase);         // e.g. "/fit-brawl/" or "/"
 
-// Public assets (CSS/JS) live under repo/public even when served from repo root.
-// URLs reference "/public/..." under the BASE_PATH.
-define('PUBLIC_PATH',  rtrim(BASE_PATH, '/') . '/public');      // e.g. "/fit-brawl/public" or "/public"
+// Public assets (CSS/JS) are served from document root in production
+// For production (DocumentRoot = /public): PUBLIC_PATH = /
+// For localhost (no DocumentRoot): PUBLIC_PATH = /fit-brawl/public
+define('PUBLIC_PATH',  $appEnv === 'production' ? BASE_PATH : (rtrim(BASE_PATH, '/') . '/public'));
 
-// Images and uploads are served directly from repo/images and repo/uploads
-define('IMAGES_PATH',  rtrim(BASE_PATH, '/') . '/images');      // e.g. "/fit-brawl/images" or "/images"
-define('UPLOADS_PATH', rtrim(BASE_PATH, '/') . '/uploads');     // e.g. "/fit-brawl/uploads" or "/uploads"
+// Images and uploads are at repo root level (one level up from public)
+// For production: /images, /uploads (Apache serves from repo root via Alias or symlink)
+// For localhost: /fit-brawl/images, /fit-brawl/uploads
+define('IMAGES_PATH',  rtrim(BASE_PATH, '/') . '/images');
+define('UPLOADS_PATH', rtrim(BASE_PATH, '/') . '/uploads');
 
 // Expose a simple ENVIRONMENT flag
 define('ENVIRONMENT', $appEnv);
