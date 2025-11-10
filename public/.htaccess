@@ -157,6 +157,20 @@
     # Redirect root to index.php
     DirectoryIndex php/index.php
 
+    # Allow direct access to existing files and directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Allow access to php files in php/ directory
+    RewriteCond %{REQUEST_URI} !^/php/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.+)\.php$ /php/$1.php [L]
+
+    # Allow access to css, js, images, uploads directories
+    RewriteCond %{REQUEST_URI} ^/(css|js|images|uploads)/
+    RewriteRule ^ - [L]
+
     # Force HTTPS (uncomment when you have SSL)
     # RewriteCond %{HTTPS} off
     # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
