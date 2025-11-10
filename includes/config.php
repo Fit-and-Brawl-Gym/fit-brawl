@@ -10,8 +10,23 @@ require_once __DIR__ . '/env_loader.php';
 // Try project-root .env
 loadEnv(__DIR__ . '/../.env');
 
-// Determine environment (default: production)
-$appEnv = getenv('APP_ENV') ?: 'production';
+// Determine environment automatically based on server characteristics
+// Priority: 1) APP_ENV from .env, 2) Auto-detect from SERVER_NAME
+$appEnv = getenv('APP_ENV');
+
+if (!$appEnv) {
+    // Auto-detect environment
+    $serverName = $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';
+    
+    // If it's localhost, 127.0.0.1, or contains 'local', it's development
+    if (in_array($serverName, ['localhost', '127.0.0.1', '::1']) || 
+        strpos($serverName, 'local') !== false ||
+        strpos($serverName, '.local') !== false) {
+        $appEnv = 'development';
+    } else {
+        $appEnv = 'production';
+    }
+}
 
 // Determine BASE_PATH (URL prefix where the repo root is served)
 // Examples:
