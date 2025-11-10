@@ -641,8 +641,8 @@ define('UPLOADS_PATH', BASE_PATH . '/uploads');
   - If `currentHour >= sessionEndHour` → "Completed" badge
   - Example: Evening session (6-10 PM) shows "Completed" at 10:00 PM+
 - **Cancellation Window**:
-  - Users can cancel up to 24 hours before session
-  - Within 24 hours → "Cannot Cancel" badge (red)
+  - Users can cancel up to 12 hours before session
+  - Within 12 hours → "Cannot Cancel" badge (red)
   - After session ends → "Completed" (cannot cancel)
 
 **Weekly Limit Logic** (`reservations.js` lines 100-150):
@@ -676,7 +676,7 @@ function getBookingCountForWeek(dateStr) {
 
 1. **Select Membership Plan** (`membership.php`)
    - Display available plans from `memberships` table
-   - Plans: Monthly, Quarterly, Yearly (each with different class types)
+   - Plans: Monthly or Quarterly (each with different class types)
    - Class types: Boxing, Muay Thai, MMA, Gym, All Access
    - Price calculation: Frontend displays total cost
    - User clicks "Purchase" → Opens modal with terms & conditions
