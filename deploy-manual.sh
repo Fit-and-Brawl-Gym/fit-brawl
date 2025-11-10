@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 SSH_KEY="/c/Users/Mikell Razon/Downloads/Mikell.pem"
 SSH_USER="ec2-user"
 SSH_HOST="54.227.103.23"
-PROJECT_PATH="/var/www/html"
+PROJECT_PATH="/home/ec2-user/fit-brawl"
 
 echo -e "${BLUE}→ Testing SSH connection...${NC}"
 if ! ssh -i "$SSH_KEY" -o ConnectTimeout=5 "${SSH_USER}@${SSH_HOST}" "echo 'SSH OK'" 2>/dev/null; then
@@ -27,7 +27,7 @@ echo -e "${GREEN}✓ SSH connection OK${NC}"
 
 echo -e "${BLUE}→ Pulling latest code from GitHub...${NC}"
 ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" << 'ENDSSH'
-cd /var/www/html
+cd /home/ec2-user/fit-brawl
 git fetch origin main
 git reset --hard origin/main
 echo "✓ Code updated"
@@ -36,7 +36,7 @@ echo -e "${GREEN}✓ Code pulled${NC}"
 
 echo -e "${BLUE}→ Installing/updating server-renderer dependencies...${NC}"
 ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" << 'ENDSSH'
-cd /var/www/html/server-renderer
+cd /home/ec2-user/fit-brawl/server-renderer
 npm ci --no-audit --no-fund 2>&1 | tail -5
 echo "✓ Dependencies installed"
 ENDSSH
@@ -52,7 +52,7 @@ else
     # If no systemd service, kill any running node processes and restart manually
     echo "No systemd service found, checking for running renderer..."
     pkill -f "node.*server.js" || true
-    cd /var/www/html/server-renderer
+    cd /home/ec2-user/fit-brawl/server-renderer
     nohup node server.js > /tmp/renderer.log 2>&1 &
     echo "✓ Renderer started in background (PID: $!)"
 fi
@@ -61,8 +61,8 @@ echo -e "${GREEN}✓ Renderer service restarted${NC}"
 
 echo -e "${BLUE}→ Setting permissions...${NC}"
 ssh -i "$SSH_KEY" "${SSH_USER}@${SSH_HOST}" << 'ENDSSH'
-cd /var/www/html
-sudo chown -R apache:apache uploads/ 2>/dev/null || sudo chown -R www-data:www-data uploads/
+cd /home/ec2-user/fit-brawl
+sudo chown -R apache:apache uploads/ 2>/dev/null || sudo chown -R ec2-user:ec2-user uploads/
 sudo chmod -R 755 uploads/
 echo "✓ Permissions set"
 ENDSSH
