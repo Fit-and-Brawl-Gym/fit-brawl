@@ -4,6 +4,7 @@
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.1+-blue.svg)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Deployment Status](https://github.com/Fit-and-Brawl-Gym/fit-brawl/actions/workflows/deploy.yml/badge.svg)](https://github.com/Fit-and-Brawl-Gym/fit-brawl/actions/workflows/deploy.yml)
 [![Status](https://img.shields.io/badge/status-Active-success.svg)]()
 
 ---
