@@ -48,7 +48,7 @@ ssh -i "C:\Users\Mikell Razon\Downloads\Mikell.pem" ec2-user@54.227.103.23
 cd /home/ec2-user/fit-brawl
 
 # Update git remote with your token (REPLACE YOUR_TOKEN_HERE)
-git remote set-url origin https://YOUR_TOKEN_HERE@github.com/Fit-and-Brawl-Gym/fit-brawl.git
+git remote set-url origin https://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@github.com/Fit-and-Brawl-Gym/fit-brawl.git
 
 # Test it works
 git fetch origin main
