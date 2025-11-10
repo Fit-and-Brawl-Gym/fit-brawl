@@ -2268,7 +2268,7 @@ body::before {
 
 /* Wrapper for wizard */
 .booking-wizard-section {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto var(--spacing-6) auto;
     position: relative;
 }
@@ -2742,12 +2742,14 @@ body::before {
     font-weight: var(--font-weight-bold);
     color: var(--color-text-light);
     margin-bottom: var(--spacing-1);
+    text-align: center;
 }
 
 .trainer-specialty {
     font-size: var(--font-size-base);
     color: var(--color-accent);
     font-weight: var(--font-weight-semibold);
+    text-align: center;
 }
 
 /* Booking Summary */
@@ -2882,7 +2884,7 @@ body::before {
     padding: var(--spacing-4);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     margin: 0 auto;
-    max-width: 1000px;
+    max-width: 1100px;
     width: 100%;
     box-sizing: border-box;
     position: relative;
@@ -2890,8 +2892,8 @@ body::before {
 
 .section-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: var(--spacing-4);
     margin-bottom: var(--spacing-4);
     padding-bottom: var(--spacing-3);
     border-bottom: 2px solid rgba(213, 186, 43, 0.3);
@@ -2906,6 +2908,7 @@ body::before {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-light);
+    white-space: nowrap;
 }
 
 .section-title i {
@@ -2915,6 +2918,7 @@ body::before {
 .bookings-controls {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--spacing-6);
     flex-wrap: wrap;
     width: 100%;
@@ -2927,6 +2931,7 @@ body::before {
     gap: var(--spacing-2);
     flex-wrap: wrap;
     box-sizing: border-box;
+    margin-left: auto;
 }
 
 .tab-btn {
