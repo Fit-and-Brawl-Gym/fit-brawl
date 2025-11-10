@@ -520,7 +520,7 @@ if (!$stats) {
                         <h4 style="margin-top: 0; color: var(--admin-color-primary);">Login Credentials:</h4>
                         <div style="margin: 15px 0;">
                             <label
-                                style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">Username:</label>
+                                style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">Email:</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="text" id="usernameDisplay"
                                     value="<?= htmlspecialchars($new_trainer_username) ?>" readonly

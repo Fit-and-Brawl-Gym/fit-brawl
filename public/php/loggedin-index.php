@@ -392,9 +392,6 @@ $sessionHours = [
                                     <span class="detail-value highlight"><?= $daysRemaining ?> days</span>
                                 </div>
                             </div>
-                            <a href="membership.php" class="upgrade-link">
-                                <i class="fas fa-arrow-up"></i> Upgrade Plan
-                            </a>
                         </div>
                     <?php elseif ($hasAnyRequest): ?>
                         <div class="membership-pending">

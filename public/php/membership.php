@@ -18,6 +18,7 @@ $isLoggedIn = isset($_SESSION['email']);
 // Check if user has active membership
 require_once __DIR__ . '/../../includes/db_connect.php';
 $hasActiveMembership = false;
+$activeMembershipDetails = null;
 
 if ($isLoggedIn && isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -26,7 +27,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     // Check user_memberships table
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT id 
+            SELECT id, plan_name, end_date 
             FROM user_memberships 
             WHERE user_id = ? 
             AND request_status = 'approved' 
@@ -39,7 +40,10 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
             $stmt->bind_param("is", $user_id, $today);
             $stmt->execute();
             $result = $stmt->get_result();
-            $hasActiveMembership = ($result && $result->num_rows > 0);
+            if ($result && $result->num_rows > 0) {
+                $hasActiveMembership = true;
+                $activeMembershipDetails = $result->fetch_assoc();
+            }
             $stmt->close();
         }
     }
@@ -88,6 +92,36 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
         <?php unset($_SESSION['plan_error']); ?>
     <?php endif; ?>
+
+    <?php if ($hasActiveMembership): ?>
+        <!-- Active Membership Notice -->
+        <div class="active-membership-notice" style="max-width: 800px; margin: 40px auto; padding: 30px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: 2px solid #FFD700; border-radius: 15px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 20px;">🏋️</div>
+            <h2 style="color: #FFD700; font-size: 28px; margin-bottom: 15px;">Active Membership</h2>
+            <p style="color: #fff; font-size: 18px; margin-bottom: 10px;">
+                You currently have an active <strong style="color: #FFD700;"><?= htmlspecialchars($activeMembershipDetails['plan_name']) ?></strong> plan.
+            </p>
+            <p style="color: #fff; font-size: 16px; margin-bottom: 10px;">
+                Valid until: <strong style="color: #FFD700;"><?= date('F d, Y', strtotime($activeMembershipDetails['end_date'])) ?></strong>
+            </p>
+            <div style="background: rgba(255, 215, 0, 0.1); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <p style="color: #FFD700; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                    <i class="fas fa-info-circle"></i> Want to Change or Upgrade Your Plan?
+                </p>
+                <p style="color: #fff; font-size: 16px;">
+                    Please visit our gym in person to change or upgrade your membership plan. Our staff will be happy to assist you!
+                </p>
+            </div>
+            <div style="margin-top: 25px;">
+                <a href="loggedin-index.php" style="display: inline-block; padding: 12px 30px; background: #FFD700; color: #000; text-decoration: none; border-radius: 8px; font-weight: bold; margin-right: 10px; transition: transform 0.3s;">
+                    <i class="fas fa-home"></i> Go to Dashboard
+                </a>
+                <a href="reservations.php" style="display: inline-block; padding: 12px 30px; background: transparent; color: #FFD700; text-decoration: none; border: 2px solid #FFD700; border-radius: 8px; font-weight: bold; transition: transform 0.3s;">
+                    <i class="fas fa-calendar-check"></i> Book a Session
+                </a>
+            </div>
+        </div>
+    <?php else: ?>
 
     <!-- Hero Section -->
     <section class="membership-hero">
@@ -573,6 +607,8 @@ require_once __DIR__ . '/../../includes/header.php';
             </div>
         </div>
     </div>
+
+    <?php endif; // End of hasActiveMembership check ?>
 </main>
 
 <script>

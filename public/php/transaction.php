@@ -11,10 +11,8 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
-// Get user's current active plan
+// Check if user already has an active membership - if so, redirect them
 $user_id = $_SESSION['user_id'] ?? null;
-$currentPlan = null;
-$currentPlanKey = null;
 $hasActiveMembership = false;
 
 if ($user_id) {
@@ -43,37 +41,22 @@ if ($user_id) {
 
             if ($expiryWithGrace >= $today) {
                 $hasActiveMembership = true;
-                $currentPlan = $row['plan_name'];
-
-                // Map plan name to plan key (database stores short names like "Gladiator", "Brawler")
-                $planMapping = [
-                    'Gladiator' => 'gladiator',
-                    'Brawler' => 'brawler',
-                    'Champion' => 'champion',
-                    'Clash' => 'clash',
-                    'Resolution Regular' => 'resolution-regular',
-                    'Resolution Student' => 'resolution-student'
-                ];
-
-                $currentPlanKey = $planMapping[$currentPlan] ?? null;
             }
         }
         $stmt->close();
     }
 }
 
-// Get plan details from URL parameters or session
-$plan = isset($_GET['plan']) ? $_GET['plan'] : 'gladiator';
-$billing = isset($_GET['billing']) ? $_GET['billing'] : 'monthly';
-
-// Check if user is trying to select the same plan they currently have
-if ($hasActiveMembership && $currentPlanKey && $plan === $currentPlanKey) {
-    // Redirect to membership page with error message
-    $planDisplayName = $currentPlan . ' Plan';
-    $_SESSION['plan_error'] = "You already have an active " . $planDisplayName . ". Please choose a different plan to upgrade.";
+// If user has active membership, redirect to membership page with message
+if ($hasActiveMembership) {
+    $_SESSION['plan_error'] = "You already have an active membership. To change or upgrade your plan, please visit the gym in person.";
     header('Location: membership.php');
     exit;
 }
+
+// Get plan details from URL parameters or session
+$plan = isset($_GET['plan']) ? $_GET['plan'] : 'gladiator';
+$billing = isset($_GET['billing']) ? $_GET['billing'] : 'monthly';
 
 // Plan configurations
 $plans = [

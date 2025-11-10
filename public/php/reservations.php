@@ -76,7 +76,6 @@ require_once __DIR__ . '/../../includes/header.php';
                             <?= date('M d, Y', strtotime($activeMembership['end_date'])) ?>
                             (<?= htmlspecialchars($activeMembership['plan_name']) ?> Plan)</span>
                     </div>
-                    <a href="membership.php" class="upgrade-btn">Upgrade Plan</a>
                 </div>
             </div>
         </div>

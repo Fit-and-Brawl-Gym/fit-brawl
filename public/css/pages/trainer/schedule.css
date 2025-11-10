@@ -56,7 +56,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    max-width: 700px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -99,8 +99,8 @@
 }
 
 .upcoming-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: var(--spacing-3);
 }
 
@@ -471,6 +471,223 @@
     padding: var(--spacing-3);
     font-style: italic;
 }
+/* My Bookings Section Styles */
+
+.my-bookings-section {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-5);
+    border: 1px solid rgba(213, 186, 43, 0.2);
+    max-width: 1000px;
+    margin: var(--spacing-5) auto;
+    box-sizing: border-box;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Wrap on smaller screens */
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.section-title {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-2xl);
+    color: var(--color-accent);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin: 0;
+}
+
+.bookings-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    flex-wrap: wrap; /* Wrap if screen is too narrow */
+}
+
+.bookings-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    background: rgba(0, 0, 0, 0.05);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-base);
+    border: 1px solid rgba(213, 186, 43, 0.2);
+}
+
+.filter-label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-light);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.class-filter-dropdown {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(213, 186, 43, 0.2);
+    color: var(--color-text-muted);
+    padding: 2px 6px;
+    border-radius: var(--radius-base);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+.class-filter-dropdown option {
+    background: rgba(0, 0, 0, 0.9);
+    color: var(--color-text-light);
+}
+.class-filter-dropdown:hover,
+.class-filter-dropdown:focus {
+    border-color: var(--color-accent);
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+}
+
+.bookings-tabs {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(213, 186, 43, 0.2);
+    color: var(--color-text-light);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: var(--transition-base);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.tab-btn.active {
+    background: rgba(213, 186, 43, 0.2);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.tab-count {
+    font-weight: var(--font-weight-bold);
+    margin-left: 4px;
+}
+.bookings-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-4);
+}
+
+.bookings-list {
+    display: none;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.bookings-list.active {
+    display: flex;
+}
+
+.booking-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-base);
+    padding: var(--spacing-3);
+    transition: var(--transition-base);
+    border-left: 5px solid transparent; /* default */
+}
+
+/* Upcoming Bookings */
+.bookings-list.upcoming .booking-card {
+    border-left-color: #34d399; /* green */
+    background: rgba(52, 211, 153, 0.05); /* light green tint */
+}
+
+/* Past Bookings */
+.bookings-list.past .booking-card {
+    border-left-color: #3b82f6; /* blue */
+    background: rgba(59, 130, 246, 0.05); /* light blue tint */
+}
+
+/* Cancelled Bookings */
+.bookings-list.cancelled .booking-card {
+    border-left-color: #f87171; /* red */
+    background: rgba(248, 113, 113, 0.05); /* light red tint */
+}
+
+/* Optional: add colored labels at the top of the card */
+.booking-card::before {
+    content: attr(data-status);
+    display: block;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-light);
+    margin-bottom: 4px;
+}
+
+.bookings-list.upcoming .booking-card::before { content: "Upcoming"; color: #34d399; }
+.bookings-list.past .booking-card::before { content: "Past"; color: #3b82f6; }
+.bookings-list.cancelled .booking-card::before { content: "Cancelled"; color: #f87171; }
+
+.booking-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+}
+.booking-section-title {
+    font-size: 1rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-2);
+    text-align: left;
+}
+.booking-row {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-1);
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+}
+
+.booking-row i {
+    color: var(--color-accent);
+    width: 16px;
+    text-align: center;
+}
+
+.booking-label {
+    font-weight: var(--font-weight-semibold);
+    min-width: 100px;
+}
+
+.booking-value {
+    flex: 1;
+}
+
+.no-bookings {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-style: italic;
+    padding: var(--spacing-4);
+}
+
+.no-bookings i {
+    font-size: var(--font-size-2xl);
+    display: block;
+    margin-bottom: var(--spacing-2);
+    opacity: 0.5;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -491,7 +708,23 @@
         flex-direction: column;
         text-align: center;
     }
+  .section-header {
+        align-items: flex-start;
+    }
 
+    .tab-btn {
+        padding: var(--spacing-1) var(--spacing-3);
+        font-size: 0.85rem;
+    }
+
+    .booking-row {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .booking-label {
+        min-width: unset;
+    }
     /* Upcoming Section */
     .upcoming-section {
         padding: var(--spacing-3);
@@ -573,7 +806,22 @@
     .schedule-container {
         padding: 0 var(--spacing-2);
     }
+.my-bookings-section {
+        padding: var(--spacing-3);
+    }
 
+    .section-title {
+        font-size: var(--font-size-xl);
+    }
+
+    .tab-btn {
+        font-size: 0.8rem;
+        padding: var(--spacing-1) var(--spacing-2);
+    }
+
+    .booking-row {
+        font-size: 0.85rem;
+    }
     .page-header {
         margin-bottom: var(--spacing-3);
     }

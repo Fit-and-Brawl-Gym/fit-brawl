@@ -41,3 +41,4 @@ desktop.ini
 *.sql
 *.sqlite
 *.db
+composer-setup.php
