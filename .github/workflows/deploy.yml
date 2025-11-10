@@ -31,32 +31,57 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ec2-user
+          username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             # Navigate to project directory
-            cd /var/www/html || exit 1
+            cd /home/ec2-user/fit-brawl || exit 1
 
-            # Pull latest changes
+            # Pull latest changes from GitHub
+            echo "📥 Pulling latest code..."
             git fetch origin main
             git reset --hard origin/main
+            
+            # Show current commit
+            echo "✅ Updated to commit: $(git rev-parse --short HEAD)"
+            echo "📝 Last commit: $(git log -1 --pretty=%B)"
 
             # Install/update server-renderer dependencies
+            echo "📦 Installing renderer dependencies..."
             cd server-renderer
-            npm ci --no-audit --no-fund
+            npm ci --no-audit --no-fund 2>&1 | tail -3
 
-            # Restart renderer service if using systemd
-            if systemctl is-active --quiet fit-brawl-renderer; then
+            # Restart renderer service
+            echo "🔄 Restarting renderer service..."
+            cd ..
+            if systemctl is-active --quiet fit-brawl-renderer 2>/dev/null; then
               sudo systemctl restart fit-brawl-renderer
+              echo "✅ Renderer service restarted"
+            else
+              # If no systemd service, restart manually
+              pkill -f "node.*server.js" || true
+              cd server-renderer
+              nohup node server.js > /tmp/renderer.log 2>&1 &
+              echo "✅ Renderer restarted in background (PID: $!)"
+              cd ..
             fi
 
-            # Set proper permissions
-            cd ..
-            sudo chown -R www-data:www-data uploads/
+            # Set proper permissions for uploads
+            echo "🔒 Setting permissions..."
+            sudo chown -R apache:apache uploads/ 2>/dev/null || sudo chown -R ec2-user:ec2-user uploads/
             sudo chmod -R 755 uploads/
 
+            # Run database migrations if any
+            if [ -d "docs/database/migrations" ]; then
+              echo "🗄️ Checking for database migrations..."
+              # Add migration logic here if needed
+            fi
+
+            echo ""
             echo "✅ Deployment completed successfully!"
+            echo "🌐 Website updated at: http://54.227.103.23"
+            echo ""
 
       - name: Notify deployment status
         if: always()
