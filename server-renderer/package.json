@@ -8,6 +8,7 @@
     "render": "node render.js"
   },
   "dependencies": {
-    "puppeteer": "^24.27.0"
+    "puppeteer": "^24.27.0",
+    "express": "^4.19.2"
   }
 }
