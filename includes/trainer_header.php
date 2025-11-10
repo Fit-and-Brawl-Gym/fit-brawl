@@ -47,16 +47,16 @@ if (class_exists('SessionManager')) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?></title>
-    <link rel="stylesheet" href="../../css/global.css">
-    <link rel="stylesheet" href="../../css/components/footer.css">
-    <link rel="stylesheet" href="../../css/components/header.css">
-    <link rel="stylesheet" href="../../css/components/trainer-nav.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/global.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/footer.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/header.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/trainer-nav.css">
     <?php if (isset($additionalCSS) && is_array($additionalCSS)): ?>
         <?php foreach ($additionalCSS as $cssFile): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
-    <link rel="shortcut icon" href="../../../images/favicon-trainers.png" type="image/x-icon">
+    <link rel="shortcut icon" href="<?= PUBLIC_PATH ?>/images/favicon-trainers.png" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -65,11 +65,11 @@ if (class_exists('SessionManager')) {
         // Make PUBLIC_PATH available to JavaScript
         window.PUBLIC_PATH = <?= json_encode(PUBLIC_PATH) ?>;
     </script>
-    <script src="../../js/header-dropdown.js"></script>
-    <script src="../../js/hamburger-menu.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/header-dropdown.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/hamburger-menu.js"></script>
     <?php if ($isLoggedIn): ?>
-    <link rel="stylesheet" href="../../css/components/session-warning.css">
-    <script src="../../js/session-timeout.js"></script>
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/session-warning.css">
+    <script src="<?= PUBLIC_PATH ?>/js/session-timeout.js"></script>
     <?php endif; ?>
     <?php if (isset($additionalJS) && is_array($additionalJS)): ?>
         <?php foreach ($additionalJS as $jsFile): ?>
