@@ -113,7 +113,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     if ($insertQuery->execute()) {
         // Use environment variable for APP_URL (works in both local and production)
         $appUrl = getenv('APP_URL') ?: 'http://localhost/fit-brawl';
-        $verificationLink = $appUrl . "/public/php/verify-email.php?token=" . $verificationToken;
+        $verificationLink = $appUrl . "/php/verify-email.php?token=" . $verificationToken;
 
         $mail = new PHPMailer(true);
         try {
