@@ -26,9 +26,23 @@ Complete these 4 steps to enable automatic deployment.
 
 Open your terminal and run these commands:
 
+**Choose your terminal:**
+
+### Option A: Git Bash / WSL / Linux
+
 ```bash
 # SSH into server
 ssh -i "/c/Users/Mikell Razon/Downloads/Mikell.pem" ec2-user@54.227.103.23
+
+# Navigate to project
+cd /home/ec2-user/fit-brawl
+```
+
+### Option B: PowerShell (Windows)
+
+```powershell
+# SSH into server
+ssh -i "C:\Users\Mikell Razon\Downloads\Mikell.pem" ec2-user@54.227.103.23
 
 # Navigate to project
 cd /home/ec2-user/fit-brawl
@@ -81,9 +95,14 @@ exit
 
 **Get SSH Private Key:**
 
-In your terminal:
+**Git Bash / WSL:**
 ```bash
 cat "/c/Users/Mikell Razon/Downloads/Mikell.pem"
+```
+
+**PowerShell:**
+```powershell
+Get-Content "C:\Users\Mikell Razon\Downloads\Mikell.pem"
 ```
 
 **Copy ALL the output** including:
@@ -125,8 +144,14 @@ git push origin main
 
 3. **Verify deployment worked:**
 
+**Git Bash:**
 ```bash
 ssh -i "/c/Users/Mikell Razon/Downloads/Mikell.pem" ec2-user@54.227.103.23 "cd /home/ec2-user/fit-brawl && git log -1 --oneline"
+```
+
+**PowerShell:**
+```powershell
+ssh -i "C:\Users\Mikell Razon\Downloads\Mikell.pem" ec2-user@54.227.103.23 "cd /home/ec2-user/fit-brawl; git log -1 --oneline"
 ```
 
 Should show your latest commit!
@@ -166,9 +191,17 @@ After completing all steps:
 
 **Problem:** Git token not configured or wrong.
 
-**Fix:**
+**Fix (Git Bash):**
 ```bash
 ssh -i "/c/Users/Mikell Razon/Downloads/Mikell.pem" ec2-user@54.227.103.23
+cd /home/ec2-user/fit-brawl
+git remote set-url origin https://YOUR_NEW_TOKEN@github.com/Fit-and-Brawl-Gym/fit-brawl.git
+git fetch origin main
+```
+
+**Fix (PowerShell):**
+```powershell
+ssh -i "C:\Users\Mikell Razon\Downloads\Mikell.pem" ec2-user@54.227.103.23
 cd /home/ec2-user/fit-brawl
 git remote set-url origin https://YOUR_NEW_TOKEN@github.com/Fit-and-Brawl-Gym/fit-brawl.git
 git fetch origin main
@@ -179,7 +212,9 @@ git fetch origin main
 **Problem:** SSH_PRIVATE_KEY not set or incorrect.
 
 **Fix:**
-1. Run: `cat "/c/Users/Mikell Razon/Downloads/Mikell.pem"`
+1. Get PEM file content:
+   - **Git Bash:** `cat "/c/Users/Mikell Razon/Downloads/Mikell.pem"`
+   - **PowerShell:** `Get-Content "C:\Users\Mikell Razon\Downloads\Mikell.pem"`
 2. Copy ENTIRE output
 3. Update `SSH_PRIVATE_KEY` secret in GitHub
 
