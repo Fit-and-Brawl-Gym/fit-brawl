@@ -4,6 +4,7 @@
 // ===========================================
 
 include_once('../../../includes/init.php');
+require_once('../../../includes/config.php');
 require_once('../../../includes/activity_logger.php');
 
 // Initialize activity logger

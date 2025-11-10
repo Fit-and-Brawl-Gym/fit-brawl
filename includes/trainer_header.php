@@ -11,6 +11,9 @@
  * - $additionalJS: (optional) Array of additional JS files to include
  */
 
+// Load config for path constants
+require_once __DIR__ . '/config.php';
+
 // Set default values if not provided
 if (!isset($pageTitle)) {
     $pageTitle = "Fit and Brawl - Trainer";
