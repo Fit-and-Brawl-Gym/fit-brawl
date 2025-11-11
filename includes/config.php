@@ -57,6 +57,9 @@ define('UPLOADS_PATH', rtrim(BASE_PATH, '/') . '/uploads');
 // Expose a simple ENVIRONMENT flag
 define('ENVIRONMENT', $appEnv);
 
+// Set timezone to Philippine Time (UTC+8)
+date_default_timezone_set('Asia/Manila');
+
 // Helper to build URL paths
 function getPath($path) {
     return rtrim(BASE_PATH, '/') . '/' . ltrim($path, '/');
