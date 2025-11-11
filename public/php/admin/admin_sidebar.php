@@ -15,7 +15,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <aside class="sidebar" id="adminSidebar">
     <div class="sidebar-header">
-        <img src="<?= PUBLIC_PATH ?>/images/header-title.svg" alt="FitXBrawl" class="logo-title"
+        <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FitXBrawl" class="logo-title"
             style="width: 220px !important; height: auto !important; max-width: 220px !important;">
         <button class="sidebar-close" id="sidebarClose" aria-label="Close Menu">
             <i class="fas fa-times"></i>
