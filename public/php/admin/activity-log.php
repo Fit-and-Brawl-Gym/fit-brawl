@@ -142,7 +142,12 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
                                 <td><?= htmlspecialchars($activity['target_user'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($activity['details']) ?></td>
                                 <td style="color: #666; font-size: 13px;">
-                                    <?= date('M d, Y h:i A', strtotime($activity['timestamp'])) ?>
+                                    <?php
+                                    // Convert UTC timestamp to Philippine Time by adding 8 hours
+                                    $utcTime = strtotime($activity['timestamp']);
+                                    $phtTime = $utcTime + (8 * 3600); // Add 8 hours in seconds
+                                    echo date('M d, Y h:i A', $phtTime);
+                                    ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

@@ -202,7 +202,8 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
     if (!$timestamp)
       return 'N/A';
 
-    $time = strtotime($timestamp);
+    // Convert UTC timestamp to Philippine Time by adding 8 hours
+    $time = strtotime($timestamp) + (8 * 3600);
     $now = time();
     $diff = $now - $time;
 

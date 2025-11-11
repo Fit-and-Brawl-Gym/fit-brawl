@@ -17,9 +17,9 @@ $appEnv = getenv('APP_ENV');
 if (!$appEnv) {
     // Auto-detect environment
     $serverName = $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';
-    
+
     // If it's localhost, 127.0.0.1, or contains 'local', it's development
-    if (in_array($serverName, ['localhost', '127.0.0.1', '::1']) || 
+    if (in_array($serverName, ['localhost', '127.0.0.1', '::1']) ||
         strpos($serverName, 'local') !== false ||
         strpos($serverName, '.local') !== false) {
         $appEnv = 'development';
