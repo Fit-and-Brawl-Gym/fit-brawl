@@ -117,6 +117,3 @@ class SecureFileUpload {
         );
     }
 }
-
-?>
-

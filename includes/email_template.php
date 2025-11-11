@@ -170,5 +170,3 @@ function applyEmailTemplate(PHPMailer $mail, string $innerHtml, array $opts = []
     $alt .= "\n\n" . $opts['footerAddress'] . "\n" . $opts['footerEmail'];
     $mail->AltBody = $alt;
 }
-
-?>
