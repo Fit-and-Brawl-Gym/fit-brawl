@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../includes/config.php';  // Add config for BASE_PATH
 require_once __DIR__ . '/../../includes/db_connect.php';
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
@@ -111,9 +112,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $insertQuery->bind_param("sssss", $name, $email, $password, $role, $verificationToken);
 
     if ($insertQuery->execute()) {
-        // Use environment variable for APP_URL (works in both local and production)
-        $appUrl = getenv('APP_URL') ?: 'http://localhost/fit-brawl';
-        $verificationLink = $appUrl . "/php/verify-email.php?token=" . $verificationToken;
+        // Build verification URL based on environment
+        // For localhost: http://localhost/fit-brawl/public/php/verify-email.php
+        // For production: https://domain.com/php/verify-email.php
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        $baseUrl = $protocol . '://' . $host . rtrim(BASE_PATH, '/');
+        $verificationLink = $baseUrl . '/public/php/verify-email.php?token=' . $verificationToken;
 
         $mail = new PHPMailer(true);
         try {
@@ -239,14 +244,14 @@ require_once __DIR__ . '/../../includes/header.php';
                         <i class="fas fa-key"></i>
                         <input type="password" id="passwordInput" name="password" placeholder="Password" required>
                         <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
-                    </div>
-
-                    <!-- Password Requirements Modal -->
-                    <div class="password-requirements-modal" id="passwordRequirementsModal">
-                        <div class="password-requirements-header">
-                            <h4>Password Requirements</h4>
-                        </div>
-                        <div class="password-requirements-list">
+                        
+                        <!-- Password Requirements Modal -->
+                        <div class="password-requirements-modal" id="passwordRequirementsModal">
+                            <div class="password-requirements-header">
+                                <h4>Password Requirements</h4>
+                                <button type="button" class="mobile-close-btn" id="closePwdRequirements" aria-label="Close">×</button>
+                            </div>
+                            <div class="password-requirements-list">
                             <div class="requirement-item" id="req-length">
                                 <span class="requirement-icon">✗</span>
                                 <span class="requirement-text">At least 8 characters</span>
@@ -274,6 +279,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             </div>
                             <span class="strength-text" id="strengthText">Strength: Weak</span>
                         </div>
+                    </div>
                     </div>
 
                     <div class="input-group password-input-group">

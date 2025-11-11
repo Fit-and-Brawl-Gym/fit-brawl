@@ -219,6 +219,14 @@
                 toggleConfirmPassword.classList.toggle('fa-eye-slash');
             });
         }
+
+        // Mobile close button for password requirements
+        const closePwdRequirementsBtn = document.getElementById('closePwdRequirements');
+        if (closePwdRequirementsBtn && passwordRequirementsModal) {
+            closePwdRequirementsBtn.addEventListener('click', () => {
+                passwordRequirementsModal.classList.remove('show');
+            });
+        }
     };
 
     // Run immediately if DOM is ready, otherwise wait
