@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once '../../../includes/db_connect.php';
+require_once '../../../includes/init.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {

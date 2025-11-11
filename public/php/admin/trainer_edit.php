@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once '../../../includes/db_connect.php';
+require_once '../../../includes/init.php';
 require_once '../../../includes/file_upload_security.php';
 require_once '../../../includes/activity_logger.php';
 
