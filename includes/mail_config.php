@@ -217,3 +217,48 @@ function sendTrainerBookingNotification($trainer_email, $trainer_name, $member_n
         return false;
     }
 }
+
+function sendMemberBookingCancellationNotification($member_email, $member_name, $trainer_name, $date, $session_time, $class_type, $reason = '') {
+    try {
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = getenv('EMAIL_HOST');
+        $mail->SMTPAuth = true;
+        $mail->Username = getenv('EMAIL_USER');
+        $mail->Password = getenv('EMAIL_PASS');
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = getenv('EMAIL_PORT');
+
+        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+        $mail->addAddress($member_email, $member_name);
+
+        $formatted_date = date('l, F j, Y', strtotime($date));
+        $session_hours = [
+            'Morning' => '7:00 AM - 11:00 AM',
+            'Afternoon' => '1:00 PM - 5:00 PM',
+            'Evening' => '6:00 PM - 10:00 PM'
+        ];
+        $display_time = $session_hours[$session_time] ?? $session_time;
+
+        $mail->isHTML(true);
+        $mail->Subject = "Training Session Cancelled with {$trainer_name}";
+
+        $html = "
+            <h2>Training Session Update</h2>
+            <p>Hello {$member_name},</p>
+            <p>We regret to inform you that your upcoming training session with <strong>{$trainer_name}</strong> on <strong>{$formatted_date}</strong> ({$display_time}, {$class_type}) has been cancelled.</p>";
+
+        if ($reason) {
+            $html .= "<p><strong>Reason:</strong> {$reason}</p>";
+        }
+
+        $html .= "<p>We apologize for the inconvenience. You may reschedule your session once a new availability is posted.</p>";
+
+        applyEmailTemplate($mail, $html);
+
+        return $mail->send();
+    } catch (Exception $e) {
+        error_log("Failed to send member cancellation email to {$member_email}: " . $e->getMessage());
+        return false;
+    }
+}
