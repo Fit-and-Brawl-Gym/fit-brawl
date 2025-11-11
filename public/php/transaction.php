@@ -480,7 +480,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
-<script src="/public/js/transaction.js?=v2"></script>
+<script src="<?= PUBLIC_PATH ?>/js/transaction.js?=v2"></script>
 </body>
 
 </html>
