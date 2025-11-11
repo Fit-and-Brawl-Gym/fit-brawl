@@ -444,24 +444,27 @@
     .password-requirements-modal {
         position: fixed !important;
         left: 50% !important;
-        top: 80px !important;
-        bottom: auto !important;
+        bottom: 20px !important;  /* Changed from top to bottom */
+        top: auto !important;     /* Remove top positioning */
         transform: translateX(-50%) !important;
         max-width: calc(100% - 40px);
         min-width: 280px;
         background: linear-gradient(135deg, #002f3f 0%, #1a4552 100%);
         border: 2px solid var(--color-accent);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(213, 186, 43, 0.2);
+        max-height: 60vh;         /* Limit height */
+        overflow-y: auto;         /* Allow scrolling if needed */
+        z-index: 9999 !important; /* Ensure it's on top */
     }
 
     .password-requirements-modal.show {
-        animation: slideInDown 0.3s ease !important;
+        animation: slideInUp 0.3s ease !important;
         transform: translateX(-50%) translateY(0) !important;
     }
 
-    @keyframes slideInDown {
+    @keyframes slideInUp {
         from {
-            transform: translateX(-50%) translateY(-20px);
+            transform: translateX(-50%) translateY(100px);
             opacity: 0;
         }
         to {
@@ -592,6 +595,7 @@
     padding-bottom: var(--spacing-3);
     border-bottom: 2px solid var(--color-accent);
     text-align: center;
+    position: relative;
 }
 
 .password-requirements-header h4 {
@@ -602,6 +606,41 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-family: var(--font-family-display);
+}
+
+/* Mobile close button - hidden on desktop */
+.mobile-close-btn {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--color-accent);
+    color: var(--color-dark);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-close-btn:hover {
+    background: #ffdb4d;
+    transform: scale(1.1);
+}
+
+.mobile-close-btn:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    .mobile-close-btn {
+        display: block;
+    }
 }
 
 .password-requirements-list {
