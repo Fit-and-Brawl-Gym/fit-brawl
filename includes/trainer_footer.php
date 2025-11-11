@@ -2,7 +2,7 @@
     <footer>
         <div class="container footer-flex">
             <div class="footer-logo-block">
-                <img src="<?= IMAGES_PATH ?>/footer-title.webp" alt="FITXBRAWL" class="footer-logo-title">
+                <img src="<?= IMAGES_PATH ?>/footer-title.svg" alt="FITXBRAWL" class="footer-logo-title">
             </div>
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
