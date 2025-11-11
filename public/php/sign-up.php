@@ -244,14 +244,15 @@ require_once __DIR__ . '/../../includes/header.php';
                         <i class="fas fa-key"></i>
                         <input type="password" id="passwordInput" name="password" placeholder="Password" required>
                         <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
-                        
-                        <!-- Password Requirements Modal -->
-                        <div class="password-requirements-modal" id="passwordRequirementsModal">
-                            <div class="password-requirements-header">
-                                <h4>Password Requirements</h4>
-                                <button type="button" class="mobile-close-btn" id="closePwdRequirements" aria-label="Close">×</button>
-                            </div>
-                            <div class="password-requirements-list">
+                    </div>
+
+                    <!-- Password Requirements Modal -->
+                    <div class="password-requirements-modal" id="passwordRequirementsModal">
+                        <div class="password-requirements-header">
+                            <h4>Password Requirements</h4>
+                            <button type="button" class="mobile-close-btn" id="closePwdRequirements" aria-label="Close">×</button>
+                        </div>
+                        <div class="password-requirements-list">
                             <div class="requirement-item" id="req-length">
                                 <span class="requirement-icon">✗</span>
                                 <span class="requirement-text">At least 8 characters</span>
