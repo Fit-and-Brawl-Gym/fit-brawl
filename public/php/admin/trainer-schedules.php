@@ -1,6 +1,19 @@
 <?php
-include_once('../../../includes/init.php');
+// Core initialization first
+session_start();
+require_once('../../../includes/init.php');
 require_once('../../../includes/activity_logger.php');
+// Load environment variables (if needed for SMTP)
+include_once __DIR__ . '/../../../includes/env_loader.php';
+loadEnv(__DIR__ . '/../../.env');
+// Mail config and templates
+require_once('../../../includes/mail_config.php');
+require_once __DIR__ . ('/../../../includes/email_template.php');
+// Composer autoloader (PHPMailer and other packages)
+require_once __DIR__ . '/../../../vendor/autoload.php';
+// PHPMailer namespace
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 // Check if user is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -14,69 +27,179 @@ ActivityLogger::init($conn);
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
     header('Content-Type: application/json');
-
     $action = $_POST['action'] ?? null;
 
-    if ($action === 'add_block') {
-        $trainer_id = intval($_POST['trainer_id'] ?? 0);
-        $date = $_POST['date'] ?? '';
-        $session_time = $_POST['session_time'] ?? 'All Day';
-        $reason = trim($_POST['reason'] ?? '');
+  if ($action === 'add_block') {
+    $trainer_id = intval($_POST['trainer_id'] ?? 0);
+    $date = $_POST['date'] ?? '';
+    $session_time = $_POST['session_time'] ?? 'All Day';
+    $reason = trim($_POST['reason'] ?? '');
 
-        if ($trainer_id && $date) {
-            // Check if block already exists
-            $check_stmt = $conn->prepare("SELECT id FROM trainer_availability_blocks WHERE trainer_id = ? AND date = ? AND session_time = ? AND block_status = 'blocked'");
-            $check_stmt->bind_param('iss', $trainer_id, $date, $session_time);
-            $check_stmt->execute();
+    if ($trainer_id && $date) {
+        // Check if block already exists
+        $check_stmt = $conn->prepare("SELECT id FROM trainer_availability_blocks WHERE trainer_id = ? AND date = ? AND session_time = ? AND block_status = 'blocked'");
+        $check_stmt->bind_param('iss', $trainer_id, $date, $session_time);
+        $check_stmt->execute();
 
-            if ($check_stmt->get_result()->num_rows > 0) {
-                echo json_encode(['success' => false, 'message' => 'Block already exists for this trainer, date, and session']);
-                exit;
-            }
-
-            $stmt = $conn->prepare("INSERT INTO trainer_availability_blocks (trainer_id, date, session_time, reason, blocked_by, block_status) VALUES (?, ?, ?, ?, ?, 'blocked')");
-            $stmt->bind_param('isssi', $trainer_id, $date, $session_time, $reason, $_SESSION['user_id']);
-            $success = $stmt->execute();
-
-            if ($success) {
-                // Log activity
-                $trainer_query = $conn->prepare("SELECT name FROM trainers WHERE id = ?");
-                $trainer_query->bind_param('i', $trainer_id);
-                $trainer_query->execute();
-                $trainer_name = $trainer_query->get_result()->fetch_assoc()['name'];
-
-                $log_msg = "Blocked schedule for $trainer_name on $date ($session_time)" . ($reason ? " - Reason: $reason" : "");
-                ActivityLogger::log('schedule_blocked', $trainer_name, $trainer_id, $log_msg);
-            }
-
-            echo json_encode(['success' => $success]);
+        if ($check_stmt->get_result()->num_rows > 0) {
+            echo json_encode(['success' => false, 'message' => 'Block already exists for this trainer, date, and session']);
             exit;
         }
+
+        // Insert new block
+        $stmt = $conn->prepare("INSERT INTO trainer_availability_blocks (trainer_id, date, session_time, reason, blocked_by, block_status) VALUES (?, ?, ?, ?, ?, 'blocked')");
+        $stmt->bind_param('isssi', $trainer_id, $date, $session_time, $reason, $_SESSION['user_id']);
+        $success = $stmt->execute();
+
+        if ($success) {
+            // Get trainer name
+            $trainer_query = $conn->prepare("SELECT name FROM trainers WHERE id = ?");
+            $trainer_query->bind_param('i', $trainer_id);
+            $trainer_query->execute();
+            $trainer_name = $trainer_query->get_result()->fetch_assoc()['name'];
+
+            // Log the block
+            $log_msg = "Blocked schedule for $trainer_name on $date ($session_time)" . ($reason ? " - Reason: $reason" : "");
+            ActivityLogger::log('schedule_blocked', $trainer_name, $trainer_id, $log_msg);
+
+            // ===============================
+            // Cancel reservations and notify members
+            // ===============================
+            if ($session_time === 'All Day') {
+                $cancel_stmt = $conn->prepare("
+                    UPDATE user_reservations 
+                    SET booking_status = 'cancelled', cancelled_at = NOW()
+                    WHERE trainer_id = ? AND booking_date = ? AND booking_status = 'confirmed'
+                ");
+                $cancel_stmt->bind_param('is', $trainer_id, $date);
+            } else {
+                $cancel_stmt = $conn->prepare("
+                    UPDATE user_reservations 
+                    SET booking_status = 'cancelled', cancelled_at = NOW()
+                    WHERE trainer_id = ? AND booking_date = ? AND session_time = ? AND booking_status = 'confirmed'
+                ");
+                $cancel_stmt->bind_param('iss', $trainer_id, $date, $session_time);
+            }
+
+            if ($cancel_stmt->execute()) {
+                $cancelled_count = $cancel_stmt->affected_rows;
+
+                // Fetch cancelled reservations to notify members
+                if ($session_time === 'All Day') {
+                    $membersStmt = $conn->prepare("
+                        SELECT ur.id, u.email, u.username, ur.class_type
+                        FROM user_reservations ur
+                        JOIN users u ON ur.user_id = u.id
+                        WHERE ur.trainer_id = ? AND ur.booking_date = ? AND ur.booking_status = 'cancelled' AND ur.cancelled_at IS NOT NULL
+                    ");
+                    $membersStmt->bind_param('is', $trainer_id, $date);
+                } else {
+                    $membersStmt = $conn->prepare("
+                        SELECT ur.id, u.email, u.username, ur.class_type
+                        FROM user_reservations ur
+                        JOIN users u ON ur.user_id = u.id
+                        WHERE ur.trainer_id = ? AND ur.booking_date = ? AND ur.session_time = ? AND ur.booking_status = 'cancelled' AND ur.cancelled_at IS NOT NULL
+                    ");
+                    $membersStmt->bind_param('iss', $trainer_id, $date, $session_time);
+                }
+
+                $membersStmt->execute();
+                $membersResult = $membersStmt->get_result();
+
+                try {
+                    while ($member = $membersResult->fetch_assoc()) {
+                        sendMemberBookingCancellationNotification(
+                            $member['email'],
+                            $member['username'],
+                            $trainer_name,
+                            $date,
+                            $session_time,
+                            $member['class_type'],
+                            $reason ?: 'Trainer unavailability'
+                        );
+                    }
+                } catch (Exception $e) {
+                    error_log("Error sending cancellation emails: " . $e->getMessage());
+                }
+
+                // Log the cancelled reservations
+                if ($cancelled_count > 0) {
+                    ActivityLogger::log(
+                        'reservations_cancelled',
+                        $trainer_name,
+                        $trainer_id,
+                        "Cancelled $cancelled_count reservation(s) due to schedule block on $date ($session_time)" . ($reason ? " - Reason: $reason" : "")
+                    );
+                }
+            }
+        }
+
+        echo json_encode(['success' => $success]);
+        exit;
     }
+}
+
 
     if ($action === 'delete_block') {
-        $block_id = intval($_POST['block_id'] ?? 0);
+    $block_id = intval($_POST['block_id'] ?? 0);
 
-        if ($block_id) {
-            // Get block info for logging
-            $info_query = $conn->prepare("SELECT tab.*, t.name as trainer_name FROM trainer_availability_blocks tab JOIN trainers t ON tab.trainer_id = t.id WHERE tab.id = ?");
-            $info_query->bind_param('i', $block_id);
-            $info_query->execute();
-            $block_info = $info_query->get_result()->fetch_assoc();
+    if ($block_id) {
+        // Get block info for logging
+        $info_query = $conn->prepare("
+            SELECT tab.*, t.name as trainer_name 
+            FROM trainer_availability_blocks tab 
+            JOIN trainers t ON tab.trainer_id = t.id 
+            WHERE tab.id = ?
+        ");
+        $info_query->bind_param('i', $block_id);
+        $info_query->execute();
+        $block_info = $info_query->get_result()->fetch_assoc();
 
-            $stmt = $conn->prepare("DELETE FROM trainer_availability_blocks WHERE id = ?");
-            $stmt->bind_param('i', $block_id);
-            $success = $stmt->execute();
+        $stmt = $conn->prepare("DELETE FROM trainer_availability_blocks WHERE id = ?");
+        $stmt->bind_param('i', $block_id);
+        $success = $stmt->execute();
 
-            if ($success && $block_info) {
-                $log_msg = "Unblocked schedule for {$block_info['trainer_name']} on {$block_info['date']} ({$block_info['session_time']})";
-                ActivityLogger::log('schedule_unblocked', $block_info['trainer_name'], $block_info['trainer_id'], $log_msg);
+        if ($success && $block_info) {
+            $log_msg = "Unblocked schedule for {$block_info['trainer_name']} on {$block_info['date']} ({$block_info['session_time']})";
+            ActivityLogger::log('schedule_unblocked', $block_info['trainer_name'], $block_info['trainer_id'], $log_msg);
+
+            // ===============================
+            // Restore cancelled reservations
+            // ===============================
+            if ($block_info['session_time'] === 'All Day') {
+                // Restore all sessions for that day
+                $restore_stmt = $conn->prepare("
+                    UPDATE user_reservations 
+                    SET booking_status = 'confirmed', cancelled_at = NULL 
+                    WHERE trainer_id = ? AND booking_date = ? AND booking_status = 'cancelled'
+                ");
+                $restore_stmt->bind_param('is', $block_info['trainer_id'], $block_info['date']);
+            } else {
+                // Restore only the specific session
+                $restore_stmt = $conn->prepare("
+                    UPDATE user_reservations 
+                    SET booking_status = 'confirmed', cancelled_at = NULL 
+                    WHERE trainer_id = ? AND booking_date = ? AND session_time = ? AND booking_status = 'cancelled'
+                ");
+                $restore_stmt->bind_param('iss', $block_info['trainer_id'], $block_info['date'], $block_info['session_time']);
             }
+            $restore_stmt->execute();
+            $restored_count = $restore_stmt->affected_rows;
 
-            echo json_encode(['success' => $success]);
-            exit;
+            if ($restored_count > 0) {
+                ActivityLogger::log(
+                    'reservations_restored',
+                    $block_info['trainer_name'],
+                    $block_info['trainer_id'],
+                    "Restored $restored_count reservation(s) after unblocking schedule on {$block_info['date']} ({$block_info['session_time']})"
+                );
+            }
         }
+
+        echo json_encode(['success' => $success]);
+        exit;
     }
+}
 
     if ($action === 'bulk_delete') {
         $ids = $_POST['ids'] ?? [];
@@ -358,7 +481,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
-            <form id="addBlockForm">
+            <form id="addBlockForm" method="POST">
                 <div class="form-group">
                     <label for="trainer">Trainer *</label>
                     <select id="trainer" name="trainer_id" required>
