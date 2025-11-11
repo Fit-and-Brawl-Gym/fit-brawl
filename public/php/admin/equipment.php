@@ -73,23 +73,120 @@ unset($it);
         <option value="Strength Training">Strength Training</option>
         <option value="Functional Training">Functional Training</option>
       </select>
+      <select id="statusFilter" class="filter-dropdown">
+        <option value="all">All Status</option>
+        <option value="Available">Available</option>
+        <option value="Maintenance">Maintenance</option>
+        <option value="Out of Order">Out of Order</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="table" title="Table View">
+          <i class="fa-solid fa-table"></i>
+        </button>
+        <button class="view-btn" data-view="card" title="Card View">
+          <i class="fa-solid fa-grip"></i>
+        </button>
+      </div>
       <button class="btn-primary" onclick="openSidePanel()">
         <i class="fa-solid fa-plus"></i> Add New Equipment
       </button>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" data-category="all">All</button>
-      <button class="tab" data-category="Cardio">🏃 Cardio</button>
-      <button class="tab" data-category="Flexibility">🧘 Flexibility</button>
-      <button class="tab" data-category="Core">💪 Core</button>
-      <button class="tab" data-category="Strength Training">🏋️ Strength Training</button>
-      <button class="tab" data-category="Functional Training">🦾 Functional Training</button>
+    <!-- Table View -->
+    <div class="equipment-table-view active" id="tableView">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="80">Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($equipment)): ?>
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
+                  <i class="fa-solid fa-dumbbell" style="font-size: 48px; margin-bottom: 12px; display: block;"></i>
+                  No Equipment Found
+                </td>
+              </tr>
+            <?php else: ?>
+              <?php foreach ($equipment as $item): ?>
+                <tr data-category="<?= htmlspecialchars($item['category']) ?>" data-status="<?= htmlspecialchars($item['status']) ?>" data-id="<?= $item['id'] ?>">
+                  <td>
+                    <?php
+                    $rawImage = isset($item['image_path']) ? trim($item['image_path']) : '';
+                    $imgSrc = '';
+                    if ($rawImage !== '') {
+                      $isExternal = preg_match('#^https?://#i', $rawImage) || strpos($rawImage, 'data:') === 0;
+                      $startsWithDotDot = substr($rawImage, 0, 3) === '../';
+                      $containsUploads = strpos($rawImage, 'uploads/') !== false;
+                      $isBareFile = (strpos($rawImage, '/') === false && !$isExternal);
+
+                      if ($isExternal) {
+                        $imgSrc = $rawImage;
+                      } elseif ($startsWithDotDot) {
+                        $imgSrc = $rawImage;
+                      } elseif ($containsUploads) {
+                        $inner = preg_replace('#^uploads/#','',$rawImage);
+                        $imgSrc = rtrim(UPLOADS_PATH,'/').'/'.ltrim($inner,'/');
+                      } elseif ($isBareFile) {
+                        $imgSrc = rtrim(UPLOADS_PATH,'/').'/equipment/'.$rawImage;
+                      } else {
+                        $imgSrc = $rawImage;
+                      }
+
+                      // Fallback slug
+                      $fs = $_SERVER['DOCUMENT_ROOT'].$imgSrc;
+                      if (!file_exists($fs)) {
+                        $slug = strtolower(preg_replace('#[^a-z0-9]+#i','-',$item['name']));
+                        foreach (['jpg','jpeg','png','webp'] as $ext) {
+                          $candidate = rtrim(UPLOADS_PATH,'/').'/equipment/'.$slug.'.'.$ext;
+                          if (file_exists($_SERVER['DOCUMENT_ROOT'].$candidate)) { $imgSrc = $candidate; break; }
+                        }
+                      }
+                    }
+                    ?>
+                    <?php if ($imgSrc): ?>
+                      <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="equipment-thumb"
+                           onerror="this.outerHTML='\x3cdiv class=\'equipment-thumb no-image\'\x3e\x3ci class=\'fa-solid fa-image\'\x3e\x3c/i\x3e\x3c/div\x3e'">
+                    <?php else: ?>
+                      <div class="equipment-thumb no-image"><i class="fa-solid fa-image"></i></div>
+                    <?php endif; ?>
+                  </td>
+                  <td><strong><?= htmlspecialchars($item['name']) ?></strong></td>
+                  <td><?= htmlspecialchars($item['category']) ?></td>
+                  <td>
+                    <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $item['status'])) ?>">
+                      <?= htmlspecialchars($item['status']) ?>
+                    </span>
+                  </td>
+                  <td><?= htmlspecialchars($item['description'] ?: 'N/A') ?></td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-secondary btn-small" onclick='editEquipment(<?= json_encode($item) ?>)' title="Edit">
+                        <i class="fa-solid fa-pen"></i> Edit
+                      </button>
+                      <button class="btn-danger btn-small" onclick="deleteEquipment(<?= $item['id'] ?>, '<?= addslashes($item['name']) ?>')" title="Delete">
+                        <i class="fa-solid fa-trash"></i> Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Equipment Grid -->
-    <div id="equipmentGrid" class="equipment-grid">
+    <!-- Cards View -->
+    <div class="equipment-cards-view" id="cardsView">
+      <div id="equipmentGrid" class="equipment-grid">
       <?php if (empty($equipment)): ?>
         <div class="empty-state">
           <i class="fa-solid fa-dumbbell"></i>
@@ -99,20 +196,49 @@ unset($it);
         </div>
       <?php else: ?>
         <?php foreach ($equipment as $item): ?>
-          <div class="equipment-card" data-category="<?= htmlspecialchars($item['category']) ?>"
+          <div class="equipment-card" data-category="<?= htmlspecialchars($item['category']) ?>" data-status="<?= htmlspecialchars($item['status']) ?>"
             data-id="<?= $item['id'] ?>">
             <div class="card-header">
-              <div class="equipment-icon">
+              <div class="equipment-image-wrapper">
                 <?php
-                $icons = [
-                  'Cardio' => '🏃',
-                  'Flexibility' => '🧘',
-                  'Core' => '💪',
-                  'Strength Training' => '🏋️',
-                  'Functional Training' => '🦾'
-                ];
-                echo $icons[$item['category']] ?? '🔧';
+                $rawImage = isset($item['image_path']) ? trim($item['image_path']) : '';
+                $resolved = '';
+                if ($rawImage !== '') {
+                  $isExternal = preg_match('#^https?://#i', $rawImage) || strpos($rawImage, 'data:') === 0;
+                  $startsWithDotDot = substr($rawImage, 0, 3) === '../';
+                  $containsUploads = strpos($rawImage, 'uploads/') !== false;
+                  $isBareFile = (strpos($rawImage, '/') === false && !$isExternal);
+
+                  if ($isExternal) {
+                    $resolved = $rawImage;
+                  } elseif ($startsWithDotDot) {
+                    $resolved = $rawImage;
+                  } elseif ($containsUploads) {
+                    $inner = preg_replace('#^uploads/#','',$rawImage);
+                    $resolved = rtrim(UPLOADS_PATH,'/').'/'.ltrim($inner,'/');
+                  } elseif ($isBareFile) {
+                    $resolved = rtrim(UPLOADS_PATH,'/').'/equipment/'.$rawImage;
+                  } else {
+                    $resolved = $rawImage;
+                  }
+
+                  // Fallback by slug + common extensions if file missing
+                  $fs = $_SERVER['DOCUMENT_ROOT'].$resolved;
+                  if (!file_exists($fs)) {
+                    $slug = strtolower(preg_replace('#[^a-z0-9]+#i','-',$item['name']));
+                    foreach (['jpg','jpeg','png','webp'] as $ext) {
+                      $candidate = rtrim(UPLOADS_PATH,'/').'/equipment/'.$slug.'.'.$ext;
+                      if (file_exists($_SERVER['DOCUMENT_ROOT'].$candidate)) { $resolved = $candidate; break; }
+                    }
+                  }
+                }
                 ?>
+                <?php if ($resolved): ?>
+                  <img src="<?= htmlspecialchars($resolved) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="equipment-thumb"
+                       onerror="this.outerHTML='\x3cdiv class=\'equipment-thumb no-image\'\x3e\x3ci class=\'fa-solid fa-image\'\x3e\x3c/i\x3e\x3c/div\x3e'">
+                <?php else: ?>
+                  <div class="equipment-thumb no-image"><i class="fa-solid fa-image"></i></div>
+                <?php endif; ?>
               </div>
               <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $item['status'])) ?>">
                 <?= htmlspecialchars($item['status']) ?>
@@ -134,6 +260,7 @@ unset($it);
           </div>
         <?php endforeach; ?>
       <?php endif; ?>
+    </div>
     </div>
   </main>
 

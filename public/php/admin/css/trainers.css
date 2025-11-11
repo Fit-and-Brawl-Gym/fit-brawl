@@ -79,12 +79,13 @@
     border: 1px solid var(--admin-input-border);
     border-radius: var(--admin-input-radius);
     overflow: hidden;
+    background: var(--admin-bg-light);
 }
 
 .view-btn {
     padding: 10px 16px;
     border: none;
-    background: var(--admin-bg-white);
+    background: transparent;
     cursor: pointer;
     font-size: var(--admin-stat-icon-font-size-sm);
     color: var(--admin-text-muted);
@@ -96,13 +97,14 @@
 }
 
 .view-btn:hover {
-    background: var(--admin-bg-main);
-    color: var(--admin-bg-dark);
+    background: var(--admin-bg-white);
+    color: var(--admin-text-dark);
 }
 
 .view-btn.active {
-    background: #1a1d2e;
+    background: var(--admin-primary);
     color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* Table View */

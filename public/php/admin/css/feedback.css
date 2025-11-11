@@ -352,3 +352,124 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================== */
+/* VIEW TOGGLE                 */
+/* =========================== */
+
+.toolbar-actions {
+    display: flex;
+    gap: var(--admin-gap-md);
+    align-items: center;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--admin-input-border);
+    border-radius: var(--admin-input-radius);
+    overflow: hidden;
+    background: var(--admin-bg-light);
+}
+
+.view-btn {
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--admin-btn-secondary-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+}
+
+.view-btn:hover {
+    background: var(--admin-bg-white);
+    color: var(--admin-text-dark);
+}
+
+.view-btn.active {
+    background: var(--admin-btn-primary-bg);
+    color: var(--admin-btn-primary-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.view-btn + .view-btn {
+    border-left: 1px solid var(--admin-input-border);
+}
+
+/* =========================== */
+/* VIEW CONTAINERS             */
+/* =========================== */
+
+.feedback-table-view {
+    display: none;
+    background: var(--admin-bg-white);
+    border-radius: var(--admin-card-radius);
+    box-shadow: var(--admin-shadow-card);
+    margin-top: var(--admin-gap-lg);
+    overflow: hidden;
+}
+
+.feedback-table-view.active {
+    display: block;
+}
+
+.feedback-cards-view {
+    display: none;
+}
+
+.feedback-cards-view.active {
+    display: block;
+}
+
+.table-message {
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-rating {
+    color: #ffa500;
+    font-size: 18px;
+}
+
+/* Consistent table styling (borrowed from trainers) */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: #f7f8fa;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #222;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.data-table tbody tr:hover {
+    background: #f7f8fa;
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--admin-gap-xs);
+}
+
+.action-buttons .btn-small {
+    padding: 6px 12px;
+    font-size: var(--admin-font-size-sm);
+}

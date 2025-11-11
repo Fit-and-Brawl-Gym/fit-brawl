@@ -106,6 +106,14 @@ unset($p);
                 <option value="Low Stock">Low Stock</option>
                 <option value="Out of Stock">Out of Stock</option>
             </select>
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="table" title="Table View">
+                    <i class="fa-solid fa-table"></i>
+                </button>
+                <button class="view-btn" data-view="card" title="Card View">
+                    <i class="fa-solid fa-grip"></i>
+                </button>
+            </div>
             <button class="btn-primary" onclick="openSidePanel()">
                 <i class="fa-solid fa-plus"></i> Add New Product
             </button>
@@ -114,8 +122,9 @@ unset($p);
             </button>
         </div>
 
-        <!-- Products Table -->
-        <div class="table-container">
+        <!-- Table View -->
+        <div class="products-table-view active" id="tableView">
+            <div class="table-container">
             <?php if (empty($products)): ?>
                 <div class="empty-state">
                     <i class="fa-solid fa-box"></i>
@@ -147,13 +156,49 @@ unset($p);
                                         onchange="updateBulkDelete()">
                                 </td>
                                 <td>
-                                    <?php if (!empty($product['image_path'])): ?>
-                                        <img src="/fit-brawl/uploads/products/<?= htmlspecialchars($product['image_path']) ?>"
-                                            alt="<?= htmlspecialchars($product['name']) ?>" class="product-thumb">
+                                    <?php
+                                    // PHP 7 compatible helpers
+                                    $raw = isset($product['image_path']) ? trim($product['image_path']) : '';
+                                    $imgSrc = '';
+                                    if ($raw !== '') {
+                                        $isExternal = preg_match('#^https?://#i', $raw) || strpos($raw, 'data:') === 0;
+                                        $startsWithDotDot = substr($raw, 0, 3) === '../';
+                                        $containsUploads = strpos($raw, 'uploads/') !== false;
+                                        $isBareFile = (strpos($raw, '/') === false && !$isExternal);
+
+                                        if ($isExternal) {
+                                            $imgSrc = $raw;
+                                        } elseif ($startsWithDotDot) {
+                                            $imgSrc = $raw; // already relative upwards
+                                        } elseif ($containsUploads) {
+                                            $inner = preg_replace('#^uploads/#', '', $raw);
+                                            $imgSrc = rtrim(UPLOADS_PATH, '/') . '/' . ltrim($inner, '/');
+                                        } elseif ($isBareFile) {
+                                            $imgSrc = rtrim(UPLOADS_PATH, '/') . '/products/' . $raw;
+                                        } else {
+                                            $imgSrc = $raw; // fallback untouched
+                                        }
+
+                                        // If file still not found, attempt common extensions with product name slug
+                                        if (!empty($imgSrc)) {
+                                            $fsPath = $_SERVER['DOCUMENT_ROOT'] . $imgSrc;
+                                            if (!file_exists($fsPath)) {
+                                                $slug = strtolower(preg_replace('#[^a-z0-9]+#i', '-', $product['name']));
+                                                $extensions = ['jpg','jpeg','png','webp'];
+                                                foreach ($extensions as $ext) {
+                                                    $candidate = rtrim(UPLOADS_PATH, '/') . '/products/' . $slug . '.' . $ext;
+                                                    $fsCandidate = $_SERVER['DOCUMENT_ROOT'] . $candidate;
+                                                    if (file_exists($fsCandidate)) { $imgSrc = $candidate; break; }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    ?>
+                                    <?php if ($imgSrc): ?>
+                                        <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($product['name']) ?>" class="product-thumb"
+                                             onerror="this.outerHTML='\x3cdiv class=\'product-thumb no-image\'\x3e\x3ci class=\'fa-solid fa-image\'\x3e\x3c/i\x3e\x3c/div\x3e'">
                                     <?php else: ?>
-                                        <div class="product-thumb no-image">
-                                            <i class="fa-solid fa-image"></i>
-                                        </div>
+                                        <div class="product-thumb no-image"><i class="fa-solid fa-image"></i></div>
                                     <?php endif; ?>
                                 </td>
 
@@ -171,21 +216,105 @@ unset($p);
                                     </span>
                                 </td>
                                 <td class="actions">
-                                    <button class="btn-icon btn-edit" onclick='editProduct(<?= json_encode($product) ?>)'
-                                        title="Edit">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </button>
-                                    <button class="btn-icon btn-delete"
-                                        onclick="deleteProduct(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>')"
-                                        title="Delete">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    <div class="action-buttons">
+                                        <button class="btn-secondary btn-small" onclick='editProduct(<?= json_encode($product) ?>)'
+                                            title="Edit">
+                                            <i class="fa-solid fa-pen"></i> Edit
+                                        </button>
+                                        <button class="btn-danger btn-small"
+                                            onclick="deleteProduct(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>')"
+                                            title="Delete">
+                                            <i class="fa-solid fa-trash"></i> Delete
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php endif; ?>
+        </div>
+        </div>
+
+        <!-- Cards View -->
+        <div class="products-cards-view" id="cardsView">
+            <div class="cards-grid">
+                <?php if (empty($products)): ?>
+                    <div class="empty-state">
+                        <i class="fa-solid fa-box"></i>
+                        <h3>No Products Found</h3>
+                        <p>Start by adding your first product</p>
+                        <button class="btn-primary" onclick="openSidePanel()">Add Product</button>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($products as $product): ?>
+                        <div class="product-card" data-category="<?= htmlspecialchars($product['category']) ?>"
+                            data-status="<?= htmlspecialchars($product['status']) ?>" data-id="<?= $product['id'] ?>">
+                            <div class="card-image">
+                                <?php
+                                $raw = isset($product['image_path']) ? trim($product['image_path']) : '';
+                                $imagePath = '';
+                                if ($raw !== '') {
+                                    $isExternal = preg_match('#^https?://#i', $raw) || strpos($raw, 'data:') === 0;
+                                    $startsWithDotDot = substr($raw, 0, 3) === '../';
+                                    $containsUploads = strpos($raw, 'uploads/') !== false;
+                                    $isBareFile = (strpos($raw, '/') === false && !$isExternal);
+
+                                    if ($isExternal) {
+                                        $imagePath = $raw;
+                                    } elseif ($startsWithDotDot) {
+                                        $imagePath = $raw;
+                                    } elseif ($containsUploads) {
+                                        $inner = preg_replace('#^uploads/#', '', $raw);
+                                        $imagePath = rtrim(UPLOADS_PATH, '/') . '/' . ltrim($inner, '/');
+                                    } elseif ($isBareFile) {
+                                        $imagePath = rtrim(UPLOADS_PATH, '/') . '/products/' . $raw;
+                                    } else {
+                                        $imagePath = $raw;
+                                    }
+
+                                    if (!empty($imagePath)) {
+                                        $fsPath = $_SERVER['DOCUMENT_ROOT'] . $imagePath;
+                                        if (!file_exists($fsPath)) {
+                                            $slug = strtolower(preg_replace('#[^a-z0-9]+#i', '-', $product['name']));
+                                            $extensions = ['jpg','jpeg','png','webp'];
+                                            foreach ($extensions as $ext) {
+                                                $candidate = rtrim(UPLOADS_PATH, '/') . '/products/' . $slug . '.' . $ext;
+                                                $fsCandidate = $_SERVER['DOCUMENT_ROOT'] . $candidate;
+                                                if (file_exists($fsCandidate)) { $imagePath = $candidate; break; }
+                                            }
+                                        }
+                                    }
+                                }
+                                ?>
+                                <?php if (!empty($imagePath)): ?>
+                                    <img src="<?= htmlspecialchars($imagePath) ?>" alt="<?= htmlspecialchars($product['name']) ?>" onerror="this.parentElement.innerHTML='<div class=\'no-image\'><i class=\'fa-solid fa-image\'></i></div>'">
+                                <?php else: ?>
+                                    <div class="no-image"><i class="fa-solid fa-image"></i></div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="card-content">
+                                <h3 class="product-name"><?= htmlspecialchars($product['name']) ?></h3>
+                                <p class="product-category"><?= htmlspecialchars($product['category']) ?></p>
+                                <div class="product-info">
+                                    <span class="stock-badge">Stock: <?= htmlspecialchars($product['stock']) ?></span>
+                                    <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $product['status'])) ?>">
+                                        <?= htmlspecialchars($product['status']) ?>
+                                    </span>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn-secondary btn-small" onclick='editProduct(<?= json_encode($product) ?>)'>
+                                        <i class="fa-solid fa-pen"></i> Edit
+                                    </button>
+                                    <button class="btn-danger btn-small" onclick="deleteProduct(<?= $product['id'] ?>, '<?= addslashes($product['name']) ?>')">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </main>
 

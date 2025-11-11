@@ -64,16 +64,48 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 </div>
             </div>
 
-            <select id="dateFilter" class="date-filter">
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-            </select>
+            <div class="toolbar-actions">
+                <select id="dateFilter" class="date-filter">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year">This Year</option>
+                </select>
+
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="table" title="Table View">
+                        <i class="fa-solid fa-table"></i>
+                    </button>
+                    <button class="view-btn" data-view="card" title="Card View">
+                        <i class="fa-solid fa-grip"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Feedback Grid -->
+        <!-- Table View -->
+    <div class="feedback-table-view active" id="tableView">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Message</th>
+                        <th>Rating</th>
+                        <th>Date</th>
+                        <th>Visibility</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="feedbackTableBody">
+                    <!-- Table rows will be loaded here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cards View -->
+    <div class="feedback-cards-view" id="cardsView">
+        <!-- Feedback Grid (Card View) -->
         <div id="feedbackGrid" class="feedback-grid">
             <!-- Feedback cards will be loaded here by JavaScript -->
             <div class="empty-state">
@@ -81,6 +113,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 <h3>No Feedback Yet</h3>
                 <p>Member feedback will appear here</p>
             </div>
+        </div>
         </div>
     </main>
 
