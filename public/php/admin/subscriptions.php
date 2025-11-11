@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once '../../../includes/init.php';
 
 // Require admin role
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
   header("Location: ../login.php");
   exit();
 }
-
-// Load environment config for paths
-require_once '../../../includes/config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

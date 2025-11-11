@@ -1,7 +1,5 @@
 <?php
-session_start();
 include_once('../../../includes/init.php');
-require_once('../../../includes/config.php');
 require_once('../../../includes/activity_logger.php');
 
 // Check if user is admin
