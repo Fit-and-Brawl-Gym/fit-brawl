@@ -156,27 +156,28 @@ unset($it);
         <div class="form-group">
           <label>Equipment Image</label>
           <div class="image-upload-container">
-            <div id="imagePreview" class="image-preview">
+            <div id="imagePreview" class="image-preview" onclick="document.getElementById('equipmentImage').click()">
               <i class="fa-solid fa-image"></i>
-              <p>Click to upload image</p>
+              <p>Click to upload or drag image here</p>
             </div>
-            <input type="file" id="equipmentImage" name="image" accept="image/*" style="display:none;"
+            <input type="file" id="equipmentImage" name="image" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;"
               onchange="previewImage(event)">
             <button type="button" class="btn-secondary btn-small"
               onclick="document.getElementById('equipmentImage').click()">
               <i class="fa-solid fa-upload"></i> Choose Image
             </button>
+            <p class="file-info">Accepted formats: JPG, PNG, WEBP • Max size: 5MB</p>
           </div>
         </div>
         <div class="form-group">
           <label for="equipmentName">Equipment Name *</label>
-          <input type="text" id="equipmentName" name="name" required placeholder="e.g., Treadmill Pro X500">
+          <input type="text" id="equipmentName" name="name" required placeholder="e.g., Treadmill Pro X500, Dumbbell Set 5-50kg">
         </div>
 
         <div class="form-group">
           <label for="equipmentCategory">Category *</label>
           <select id="equipmentCategory" name="category" required>
-            <option value="">Select category</option>
+            <option value="">-- Select Category --</option>
             <option value="Cardio">Cardio</option>
             <option value="Flexibility">Flexibility</option>
             <option value="Core">Core</option>
@@ -188,16 +189,16 @@ unset($it);
         <div class="form-group">
           <label for="equipmentStatus">Status *</label>
           <select id="equipmentStatus" name="status" required>
-            <option value="Available">Available</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Out of Order">Out of Order</option>
+            <option value="Available">✅ Available</option>
+            <option value="Maintenance">🔧 Maintenance</option>
+            <option value="Out of Order">❌ Out of Order</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="equipmentDescription">Description</label>
+          <label for="equipmentDescription">Description (Optional)</label>
           <textarea id="equipmentDescription" name="description" rows="4"
-            placeholder="Optional description..."></textarea>
+            placeholder="Add details about the equipment, features, usage instructions, or maintenance notes..."></textarea>
         </div>
 
         <div class="side-panel-footer">

@@ -128,12 +128,29 @@ function previewImage(event) {
     const preview = document.getElementById('imagePreview');
 
     if (file) {
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Invalid file type. Please upload JPG, PNG, or WEBP image.');
+            event.target.value = '';
+            resetImagePreview();
+            return;
+        }
+
+        // Validate file size (5MB max)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+            alert('File size exceeds 5MB. Please choose a smaller image.');
+            event.target.value = '';
+            resetImagePreview();
+            return;
+        }
+
+        // Show preview
         const reader = new FileReader();
         reader.onload = function (e) {
-            preview.style.backgroundImage = `url('${e.target.result}')`;
-            preview.style.backgroundSize = 'cover';
-            preview.style.backgroundPosition = 'center';
-            preview.innerHTML = '';
+            preview.innerHTML = `<img src="${e.target.result}" alt="Equipment preview">`;
+            preview.classList.add('has-image');
         };
         reader.readAsDataURL(file);
     } else {
@@ -143,8 +160,8 @@ function previewImage(event) {
 
 function resetImagePreview() {
     const preview = document.getElementById('imagePreview');
-    preview.style.backgroundImage = 'none';
-    preview.innerHTML = '<i class="fa-solid fa-image"></i><p>Click to upload image</p>';
+    preview.classList.remove('has-image');
+    preview.innerHTML = '<i class="fa-solid fa-image"></i><p>Click to upload or drag image here</p>';
 }
 
 // ================================
