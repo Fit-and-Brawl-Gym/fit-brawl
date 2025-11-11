@@ -69,7 +69,7 @@ unset($p);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products Management - Fit & Brawl Gym</title>
-    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
+    <link rel="icon" type="image/png" href="<?= PUBLIC_PATH ?>/images/favicon-admin.png">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/products.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
