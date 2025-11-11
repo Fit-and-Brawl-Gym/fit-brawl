@@ -25,11 +25,11 @@ if (!isset($currentPage)) {
 
 // Determine avatar source for logged-in trainers
 if (!isset($avatarSrc)) {
-    $avatarSrc = '../../../images/account-icon.svg';
+    $avatarSrc = IMAGES_PATH . '/account-icon.svg';
     $hasCustomAvatar = false;
     if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
         $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-        $avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../../images/account-icon.svg";
+        $avatarSrc = $hasCustomAvatar ? UPLOADS_PATH . "/avatars/" . htmlspecialchars($_SESSION['avatar']) : IMAGES_PATH . '/account-icon.svg';
     }
 } else {
     // If avatarSrc is already set, determine if it's custom
@@ -90,10 +90,10 @@ if (class_exists('SessionManager')) {
             </button>
             <div class="title">
                 <a href="index.php">
-                    <img src="../../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                    <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
                 <a href="index.php">
-                    <img src="../../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
+                    <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
             <nav class="nav-bar trainer-nav">
@@ -123,7 +123,7 @@ if (class_exists('SessionManager')) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="../login.php" class="account-link">
-                    <img src="../../../images/account-icon-white.svg" alt="Account" class="account-icon default-icon">
+                    <img src="<?= IMAGES_PATH ?>/account-icon-white.svg" alt="Account" class="account-icon default-icon">
                 </a>
             <?php endif; ?>
         </div>
