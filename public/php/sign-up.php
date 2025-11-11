@@ -117,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         // For production: https://domain.com/php/verify-email.php (DocumentRoot is /public)
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'];
-        
+
         // On production, PUBLIC_PATH is empty (DocumentRoot is already /public)
         // On localhost, PUBLIC_PATH is /fit-brawl/public
         if (ENVIRONMENT === 'production') {
@@ -252,7 +252,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <i class="fas fa-key"></i>
                         <input type="password" id="passwordInput" name="password" placeholder="Password" required>
                         <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
-                        
+
                         <!-- Password Requirements Modal -->
                         <div class="password-requirements-modal" id="passwordRequirementsModal">
                             <div class="password-requirements-header">

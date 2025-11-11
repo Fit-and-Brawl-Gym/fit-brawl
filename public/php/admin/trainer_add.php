@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Get day-offs from form
     $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
-    
+
     // Validate required fields
     if (empty($name) || empty($email) || empty($phone) || empty($specialization)) {
         $error = 'Please fill in all required fields.';
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                     $day_off_insert = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off) VALUES (?, ?, ?)";
                     $day_stmt = $conn->prepare($day_off_insert);
-                    
+
                     foreach ($days as $day) {
                         $is_day_off = in_array($day, $day_offs) ? 1 : 0;
                         $day_stmt->bind_param("isi", $trainer_id, $day, $is_day_off);
@@ -283,17 +283,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p class="section-description">Select exactly 2 days off per week for this trainer</p>
 
                     <div class="days-grid">
-                        <?php 
+                        <?php
                         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                         $selected_days = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
-                        foreach ($days as $day): 
+                        foreach ($days as $day):
                             $is_checked = in_array($day, $selected_days);
                             $short_day = substr($day, 0, 3);
                         ?>
                             <label class="day-checkbox <?= $is_checked ? 'checked' : '' ?>">
-                                <input type="checkbox" 
-                                       name="day_offs[]" 
-                                       value="<?= $day ?>" 
+                                <input type="checkbox"
+                                       name="day_offs[]"
+                                       value="<?= $day ?>"
                                        <?= $is_checked ? 'checked' : '' ?>>
                                 <div class="day-label">
                                     <span class="day-full"><?= $day ?></span>
@@ -331,7 +331,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             function updateDayOffCount() {
                 const checkedCount = document.querySelectorAll('.day-checkbox input[type="checkbox"]:checked').length;
                 counter.textContent = checkedCount;
-                
+
                 // Update visual state
                 checkboxes.forEach(checkbox => {
                     const label = checkbox.closest('.day-checkbox');
@@ -357,7 +357,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Form validation
             form.addEventListener('submit', function(e) {
                 const checkedCount = document.querySelectorAll('.day-checkbox input[type="checkbox"]:checked').length;
-                
+
                 if (checkedCount !== 2) {
                     e.preventDefault();
                     alert('You must select exactly 2 days off per week.');

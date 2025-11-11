@@ -30,10 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
             // Then mark selected days as day-offs
             if (!empty($day_offs)) {
                 $placeholders = implode(',', array_fill(0, count($day_offs), '?'));
-                $update_days = "UPDATE trainer_day_offs SET is_day_off = TRUE 
+                $update_days = "UPDATE trainer_day_offs SET is_day_off = TRUE
                                WHERE trainer_id = ? AND day_of_week IN ($placeholders)";
                 $stmt = $conn->prepare($update_days);
-                
+
                 $types = str_repeat('s', count($day_offs));
                 $params = array_merge([$trainer_id], $day_offs);
                 $stmt->bind_param("i$types", ...$params);
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
 
             // Log activity
             $day_off_list = !empty($day_offs) ? implode(', ', $day_offs) : 'None';
-            $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) 
+            $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details)
                          VALUES (?, ?, 'Schedule Updated', ?)";
             $details = "Day-offs updated: $day_off_list";
             $stmt = $conn->prepare($log_query);
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
 // Get all active trainers with their day-offs
 $trainers_query = "
     SELECT t.id, t.name, t.email, t.specialization, t.photo, t.status,
-           GROUP_CONCAT(CASE WHEN td.is_day_off = TRUE THEN td.day_of_week END ORDER BY 
+           GROUP_CONCAT(CASE WHEN td.is_day_off = TRUE THEN td.day_of_week END ORDER BY
                FIELD(td.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
            ) as day_offs,
            COUNT(CASE WHEN td.is_day_off = TRUE THEN 1 END) as day_off_count
@@ -77,15 +77,15 @@ $trainers_result = $conn->query($trainers_query);
 
 // Get statistics
 $stats_query = "
-    SELECT 
+    SELECT
         COUNT(DISTINCT t.id) as total_trainers,
         COUNT(DISTINCT CASE WHEN t.status = 'Active' THEN t.id END) as active_trainers,
         AVG(day_off_count) as avg_day_offs
     FROM trainers t
     LEFT JOIN (
-        SELECT trainer_id, COUNT(*) as day_off_count 
-        FROM trainer_day_offs 
-        WHERE is_day_off = TRUE 
+        SELECT trainer_id, COUNT(*) as day_off_count
+        FROM trainer_day_offs
+        WHERE is_day_off = TRUE
         GROUP BY trainer_id
     ) dc ON t.id = dc.trainer_id
     WHERE t.deleted_at IS NULL
@@ -134,7 +134,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
         <div class="info-banner">
             <i class="fas fa-info-circle"></i>
             <div>
-                <strong>Full-Time Schedule:</strong> Trainers must have exactly 2 days off per week. 
+                <strong>Full-Time Schedule:</strong> Trainers must have exactly 2 days off per week.
                 Select the days each trainer will be unavailable. The system will automatically prevent bookings on their day-offs.
             </div>
         </div>
@@ -178,18 +178,18 @@ $stats = $conn->query($stats_query)->fetch_assoc();
             $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             $coverage = [];
             $trainers_result->data_seek(0); // Reset pointer
-            
+
             foreach ($days as $day) {
                 $coverage[$day] = ['available' => 0, 'off' => 0, 'trainers' => []];
             }
-            
+
             while ($trainer = $trainers_result->fetch_assoc()) {
                 $day_offs_query = "SELECT day_of_week, is_day_off FROM trainer_day_offs WHERE trainer_id = ?";
                 $stmt = $conn->prepare($day_offs_query);
                 $stmt->bind_param("i", $trainer['id']);
                 $stmt->execute();
                 $day_offs_result = $stmt->get_result();
-                
+
                 while ($row = $day_offs_result->fetch_assoc()) {
                     if ($row['is_day_off']) {
                         $coverage[$row['day_of_week']]['off']++;
@@ -199,16 +199,16 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                     }
                 }
             }
-            
+
             $trainers_result->data_seek(0); // Reset again for other views
             ?>
-            
+
             <div class="calendar-grid">
-                <?php foreach ($days as $day): 
+                <?php foreach ($days as $day):
                     $available = $coverage[$day]['available'];
                     $total = $stats['active_trainers'];
                     $percentage = $total > 0 ? ($available / $total) * 100 : 0;
-                    
+
                     // Determine warning level
                     $warning_class = '';
                     if ($percentage < 40) {
@@ -242,12 +242,12 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                             <?php foreach (array_slice($coverage[$day]['trainers'], 0, 3) as $trainer_name): ?>
                                 <div class="trainer-chip"><?= htmlspecialchars($trainer_name) ?></div>
                             <?php endforeach; ?>
-                            <?php if (count($coverage[$day]['trainers']) > 3): 
+                            <?php if (count($coverage[$day]['trainers']) > 3):
                                 $remaining_trainers = array_slice($coverage[$day]['trainers'], 3);
                                 $all_trainers = $coverage[$day]['trainers'];
                                 $remaining_count = count($remaining_trainers);
                             ?>
-                                <div class="trainer-chip more" 
+                                <div class="trainer-chip more"
                                      data-all-trainers="<?= htmlspecialchars(implode('|', $all_trainers)) ?>"
                                      data-day="<?= $day ?>"
                                      data-total="<?= count($all_trainers) ?>"
@@ -264,7 +264,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
         <!-- Card View -->
         <div id="cardsView" class="view-container schedules-container">
             <?php if ($trainers_result->num_rows > 0): ?>
-                <?php while ($trainer = $trainers_result->fetch_assoc()): 
+                <?php while ($trainer = $trainers_result->fetch_assoc()):
                     // Get detailed day-off information
                     $day_offs_query = "SELECT day_of_week, is_day_off FROM trainer_day_offs WHERE trainer_id = ?";
                     $stmt = $conn->prepare($day_offs_query);
@@ -275,11 +275,11 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                     while ($row = $day_offs_result->fetch_assoc()) {
                         $schedule[$row['day_of_week']] = $row['is_day_off'];
                     }
-                    
+
                     // Check if exactly 2 days off
                     $is_compliant = $trainer['day_off_count'] == 2;
                 ?>
-                    <div class="trainer-schedule-card <?= !$is_compliant ? 'non-compliant' : '' ?></div>" 
+                    <div class="trainer-schedule-card <?= !$is_compliant ? 'non-compliant' : '' ?></div>"
                          data-trainer-name="<?= htmlspecialchars($trainer['name']) ?>"
                          data-status="<?= htmlspecialchars($trainer['status']) ?>"
                          data-specialization="<?= htmlspecialchars($trainer['specialization']) ?>"
@@ -287,7 +287,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                         <div class="trainer-info">
                             <div class="trainer-avatar">
                                 <?php if (!empty($trainer['photo'])): ?>
-                                    <img src="../../../uploads/trainers/<?= htmlspecialchars($trainer['photo']) ?>" 
+                                    <img src="../../../uploads/trainers/<?= htmlspecialchars($trainer['photo']) ?>"
                                          alt="<?= htmlspecialchars($trainer['name']) ?>">
                                 <?php else: ?>
                                     <i class="fas fa-user-tie"></i>
@@ -320,16 +320,16 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                                 <span>Selected: <strong class="days-selected"><?= $trainer['day_off_count'] ?></strong> / 2 days off</span>
                             </div>
                             <div class="days-grid">
-                                <?php 
+                                <?php
                                 $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                                foreach ($days as $day): 
+                                foreach ($days as $day):
                                     $is_checked = isset($schedule[$day]) && $schedule[$day] == 1;
                                     $short_day = substr($day, 0, 3);
                                 ?>
                                     <label class="day-checkbox <?= $is_checked ? 'checked' : '' ?>">
-                                        <input type="checkbox" 
-                                               name="day_offs[]" 
-                                               value="<?= $day ?>" 
+                                        <input type="checkbox"
+                                               name="day_offs[]"
+                                               value="<?= $day ?>"
                                                <?= $is_checked ? 'checked' : '' ?>>
                                         <div class="day-label">
                                             <span class="day-full"><?= $day ?></span>
@@ -386,9 +386,9 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php 
+                        <?php
                         $trainers_result->data_seek(0); // Reset pointer
-                        while ($trainer = $trainers_result->fetch_assoc()): 
+                        while ($trainer = $trainers_result->fetch_assoc()):
                             $day_offs_query = "SELECT day_of_week, is_day_off FROM trainer_day_offs WHERE trainer_id = ?";
                             $stmt = $conn->prepare($day_offs_query);
                             $stmt->bind_param("i", $trainer['id']);
@@ -409,7 +409,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                                     <div class="trainer-info-compact">
                                         <div class="trainer-avatar-small">
                                             <?php if (!empty($trainer['photo'])): ?>
-                                                <img src="../../../uploads/trainers/<?= htmlspecialchars($trainer['photo']) ?>" 
+                                                <img src="../../../uploads/trainers/<?= htmlspecialchars($trainer['photo']) ?>"
                                                      alt="<?= htmlspecialchars($trainer['name']) ?>">
                                             <?php else: ?>
                                                 <i class="fas fa-user-tie"></i>
@@ -424,13 +424,13 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                                         <?= $trainer['status'] ?>
                                     </span>
                                 </td>
-                                <?php 
+                                <?php
                                 $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                                foreach ($days as $day): 
+                                foreach ($days as $day):
                                     $is_off = isset($schedule[$day]) && $schedule[$day] == 1;
                                 ?>
                                     <td class="day-cell text-center">
-                                        <span class="day-status <?= $is_off ? 'off' : 'working' ?>" 
+                                        <span class="day-status <?= $is_off ? 'off' : 'working' ?>"
                                               title="<?= $is_off ? 'Day Off' : 'Working' ?>">
                                             <i class="fas fa-<?= $is_off ? 'times-circle' : 'check-circle' ?>"></i>
                                         </span>
@@ -449,7 +449,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn-icon btn-edit-schedule" 
+                                    <button class="btn-icon btn-edit-schedule"
                                             data-trainer-id="<?= $trainer['id'] ?>"
                                             data-trainer-name="<?= htmlspecialchars($trainer['name']) ?>"
                                             title="Edit Schedule">
@@ -484,9 +484,9 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                         <span>Selected: <strong class="days-selected">0</strong> / 2 days off</span>
                     </div>
                     <div class="days-grid modal-days-grid">
-                        <?php 
+                        <?php
                         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                        foreach ($days as $day): 
+                        foreach ($days as $day):
                             $short_day = substr($day, 0, 3);
                         ?>
                             <label class="day-checkbox">
