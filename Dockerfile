@@ -57,10 +57,16 @@ RUN npm ci || npm install
 # Restore working dir
 WORKDIR /var/www/html
 
-# Create writable directories
+# Create writable directories and set permissions
 RUN mkdir -p uploads/avatars uploads/equipment uploads/products uploads/receipts \
+    && mkdir -p server-renderer/.cache \
     && chown -R www-data:www-data uploads server-renderer/.cache \
-    && chmod -R 775 uploads server-renderer/.cache
+    && chmod -R 775 uploads \
+    && chmod -R 775 server-renderer/.cache
+
+# Also ensure images directory is readable
+RUN chown -R www-data:www-data images \
+    && chmod -R 755 images
 
 # Environment defaults (override with .env)
 ENV APP_ENV=production \

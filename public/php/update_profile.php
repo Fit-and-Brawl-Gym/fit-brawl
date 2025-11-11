@@ -70,7 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Set to default avatar
         $avatar = 'default-avatar.png';
     } elseif (!empty($_FILES['avatar']['name'])) {
-        $targetDir = "../../uploads/avatars/";
+        // Use absolute path to uploads directory
+        $targetDir = __DIR__ . "/../../uploads/avatars/";
         $uploadHandler = SecureFileUpload::imageUpload($targetDir, 2);
 
         $result = $uploadHandler->uploadFile($_FILES['avatar']);
