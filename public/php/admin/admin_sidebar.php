@@ -1,12 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-include_once('../../../includes/db_connect.php');
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../login.php");
-    exit();
-}
+// Session and DB are already initialized by init.php in parent page
+// Just get the current page for active menu highlighting
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <!-- Hamburger Menu Button -->
@@ -21,7 +15,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <aside class="sidebar" id="adminSidebar">
     <div class="sidebar-header">
-        <img src="../../../images/header-title.svg" alt="FitXBrawl" class="logo-title"
+        <img src="<?= PUBLIC_PATH ?>/images/header-title.svg" alt="FitXBrawl" class="logo-title"
             style="width: 220px !important; height: auto !important; max-width: 220px !important;">
         <button class="sidebar-close" id="sidebarClose" aria-label="Close Menu">
             <i class="fas fa-times"></i>
