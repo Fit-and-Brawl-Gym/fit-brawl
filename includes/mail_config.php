@@ -72,6 +72,11 @@ function sendTrainerCredentialsEmail($email, $name, $username, $password)
         $mail->isHTML(true);
         $mail->Subject = 'Welcome to FitXBrawl - Your Trainer Account';
 
+        // Build login URL dynamically based on environment
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        $loginUrl = $protocol . '://' . $host . (ENVIRONMENT === 'production' ? '' : BASE_PATH) . '/php/login.php';
+
         // Use the shared email template
         $html = "<h2>Welcome to FitXBrawl, " . htmlspecialchars($name) . "!</h2>"
             . "<p>Your trainer account has been created successfully. Here are your login credentials:</p>"
@@ -80,7 +85,7 @@ function sendTrainerCredentialsEmail($email, $name, $username, $password)
             . "<p style='margin: 5px 0;'><strong>Temporary Password:</strong> " . htmlspecialchars($password) . "</p>"
             . "</div>"
             . "<p><strong style='color: #d5ba2b;'>Important:</strong> Please change your password after your first login for security purposes.</p>"
-            . "<p>You can login at: <a href='" . getenv('APP_URL') . "/php/login.php'>FitXBrawl Login</a></p>"
+            . "<p>You can login at: <a href='" . htmlspecialchars($loginUrl) . "'>FitXBrawl Login</a></p>"
             . "<p>If you have any questions, please contact the administrator.</p>";
 
         applyEmailTemplate($mail, $html);
