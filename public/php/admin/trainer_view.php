@@ -19,23 +19,21 @@ if (!$trainer_id) {
 $query = "SELECT t.*,
           (SELECT COUNT(DISTINCT ur.user_id)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date = CURDATE()) as clients_today,
+           AND ur.booking_date = CURDATE()) as clients_today,
           (SELECT COUNT(*)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date >= CURDATE()) as upcoming_bookings,
+           AND ur.booking_date > CURDATE()) as upcoming_bookings,
           (SELECT COUNT(*)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'completed') as total_sessions
           FROM trainers t
           WHERE t.id = ? AND t.deleted_at IS NULL";
+
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $trainer_id);
 $stmt->execute();
@@ -48,15 +46,15 @@ if (!$trainer) {
 }
 
 // Fetch upcoming sessions
-$sessions_query = "SELECT r.*, ur.user_id, ur.booking_status, u.username, u.email
-                   FROM reservations r
-                   JOIN user_reservations ur ON ur.reservation_id = r.id
+$sessions_query = "SELECT ur.*, u.username, u.email
+                   FROM user_reservations ur
                    JOIN users u ON u.id = ur.user_id
-                   WHERE r.trainer_id = ?
+                   WHERE ur.trainer_id = ?
                    AND ur.booking_status = 'confirmed'
-                   AND r.date >= CURDATE()
-                   ORDER BY r.date ASC, r.start_time ASC
+                   AND ur.booking_date >= CURDATE()
+                   ORDER BY ur.booking_date ASC, ur.session_time ASC
                    LIMIT 10";
+
 $stmt = $conn->prepare($sessions_query);
 $stmt->bind_param("i", $trainer_id);
 $stmt->execute();
