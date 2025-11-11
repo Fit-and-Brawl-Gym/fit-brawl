@@ -57,8 +57,12 @@ define('UPLOADS_PATH', rtrim(BASE_PATH, '/') . '/uploads');
 // Expose a simple ENVIRONMENT flag
 define('ENVIRONMENT', $appEnv);
 
-// Set timezone to Philippine Time (UTC+8)
-date_default_timezone_set('Asia/Manila');
+// Set timezone based on environment
+// Production server (EC2) is UTC by default, so set to Philippine Time
+// Localhost already uses system timezone, so only set for production
+if ($appEnv === 'production') {
+    date_default_timezone_set('Asia/Manila');
+}
 
 // Helper to build URL paths
 function getPath($path) {
