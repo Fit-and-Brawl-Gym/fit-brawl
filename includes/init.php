@@ -4,6 +4,7 @@
  * Global initialization file for Fit & Brawl Gym Website
  * --------------------------------------------------------
  * This file handles:
+ *  - Configuration constants (PUBLIC_PATH, BASE_PATH)
  *  - Environment loading
  *  - Database connection
  *  - Session handling
@@ -12,6 +13,7 @@
  */
 
 // Use __DIR__ to make includes absolute (never breaks)
+require_once __DIR__ . '/config.php';           // Load configuration constants FIRST
 require_once __DIR__ . '/env_loader.php';
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/log_action.php';
