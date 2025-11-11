@@ -114,11 +114,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     if ($insertQuery->execute()) {
         // Build verification URL based on environment
         // For localhost: http://localhost/fit-brawl/public/php/verify-email.php
-        // For production: https://domain.com/php/verify-email.php
+        // For production: https://domain.com/php/verify-email.php (DocumentRoot is /public)
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'];
-        $baseUrl = $protocol . '://' . $host . rtrim(BASE_PATH, '/');
-        $verificationLink = $baseUrl . '/public/php/verify-email.php?token=' . $verificationToken;
+        
+        // On production, PUBLIC_PATH is empty (DocumentRoot is already /public)
+        // On localhost, PUBLIC_PATH is /fit-brawl/public
+        if (ENVIRONMENT === 'production') {
+            // Production: just /php/verify-email.php
+            $verificationLink = $protocol . '://' . $host . '/php/verify-email.php?token=' . $verificationToken;
+        } else {
+            // Localhost: /fit-brawl/public/php/verify-email.php
+            $verificationLink = $protocol . '://' . $host . PUBLIC_PATH . '/php/verify-email.php?token=' . $verificationToken;
+        }
 
         $mail = new PHPMailer(true);
         try {
