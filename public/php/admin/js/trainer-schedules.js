@@ -61,6 +61,7 @@ addBlockForm.addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error('Error:', error);
+
         showToast('An error occurred', 'error');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Block Schedule';

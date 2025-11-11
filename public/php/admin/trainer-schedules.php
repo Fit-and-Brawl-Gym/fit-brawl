@@ -1,11 +1,20 @@
 <?php
-include_once('../../../includes/init.php');
+// Core initialization first
+session_start();
+require_once('../../../includes/init.php');
 require_once('../../../includes/activity_logger.php');
-
+// Load environment variables (if needed for SMTP)
+include_once __DIR__ . '/../../../includes/env_loader.php';
+loadEnv(__DIR__ . '/../../.env');
+// Mail config and templates
+require_once('../../../includes/mail_config.php');
+require_once __DIR__ . ('/../../../includes/email_template.php');
+// Composer autoloader (PHPMailer and other packages)
+require_once __DIR__ . '/../../../vendor/autoload.php';
+// PHPMailer namespace
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once '../../../vendor/autoload.php'; 
 // Check if user is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header('Location: ../../index.php');
@@ -18,7 +27,6 @@ ActivityLogger::init($conn);
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
     header('Content-Type: application/json');
-
     $action = $_POST['action'] ?? null;
 
   if ($action === 'add_block') {
@@ -60,14 +68,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             if ($session_time === 'All Day') {
                 $cancel_stmt = $conn->prepare("
                     UPDATE user_reservations 
-                    SET booking_status = 'cancelled', cancelled_at = NOW() 
+                    SET booking_status = 'cancelled', cancelled_at = NOW()
                     WHERE trainer_id = ? AND booking_date = ? AND booking_status = 'confirmed'
                 ");
                 $cancel_stmt->bind_param('is', $trainer_id, $date);
             } else {
                 $cancel_stmt = $conn->prepare("
                     UPDATE user_reservations 
-                    SET booking_status = 'cancelled', cancelled_at = NOW() 
+                    SET booking_status = 'cancelled', cancelled_at = NOW()
                     WHERE trainer_id = ? AND booking_date = ? AND session_time = ? AND booking_status = 'confirmed'
                 ");
                 $cancel_stmt->bind_param('iss', $trainer_id, $date, $session_time);
@@ -79,18 +87,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
                 // Fetch cancelled reservations to notify members
                 if ($session_time === 'All Day') {
                     $membersStmt = $conn->prepare("
-                        SELECT u.email, u.name, r.session_time, r.class_type
-                        FROM user_reservations r
-                        JOIN users u ON r.user_id = u.id
-                        WHERE r.trainer_id = ? AND r.booking_date = ? AND r.booking_status = 'cancelled'
+                        SELECT ur.id, u.email, u.username, ur.class_type
+                        FROM user_reservations ur
+                        JOIN users u ON ur.user_id = u.id
+                        WHERE ur.trainer_id = ? AND ur.booking_date = ? AND ur.booking_status = 'cancelled' AND ur.cancelled_at IS NOT NULL
                     ");
                     $membersStmt->bind_param('is', $trainer_id, $date);
                 } else {
                     $membersStmt = $conn->prepare("
-                        SELECT u.email, u.name, r.session_time, r.class_type
-                        FROM user_reservations r
-                        JOIN users u ON r.user_id = u.id
-                        WHERE r.trainer_id = ? AND r.booking_date = ? AND r.session_time = ? AND r.booking_status = 'cancelled'
+                        SELECT ur.id, u.email, u.username, ur.class_type
+                        FROM user_reservations ur
+                        JOIN users u ON ur.user_id = u.id
+                        WHERE ur.trainer_id = ? AND ur.booking_date = ? AND ur.session_time = ? AND ur.booking_status = 'cancelled' AND ur.cancelled_at IS NOT NULL
                     ");
                     $membersStmt->bind_param('iss', $trainer_id, $date, $session_time);
                 }
@@ -102,12 +110,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
                     while ($member = $membersResult->fetch_assoc()) {
                         sendMemberBookingCancellationNotification(
                             $member['email'],
-                            $member['name'],
+                            $member['username'],
                             $trainer_name,
                             $date,
-                            $member['session_time'],
+                            $session_time,
                             $member['class_type'],
-                            $reason
+                            $reason ?: 'Trainer unavailability'
                         );
                     }
                 } catch (Exception $e) {
@@ -120,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
                         'reservations_cancelled',
                         $trainer_name,
                         $trainer_id,
-                        "Automatically cancelled $cancelled_count reservation(s) due to admin block on $date ($session_time)"
+                        "Cancelled $cancelled_count reservation(s) due to schedule block on $date ($session_time)" . ($reason ? " - Reason: $reason" : "")
                     );
                 }
             }
@@ -473,7 +481,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
-            <form id="addBlockForm">
+            <form id="addBlockForm" method="POST">
                 <div class="form-group">
                     <label for="trainer">Trainer *</label>
                     <select id="trainer" name="trainer_id" required>
