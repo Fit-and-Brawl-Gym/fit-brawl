@@ -172,7 +172,7 @@
 
 .input-group.password-input-group input {
     width: 100%;
-    padding: var(--spacing-3) 10px var(--spacing-3) 50px;
+    padding: var(--spacing-3) 50px var(--spacing-3) 50px; /* Equal padding for icon on both sides */
     border: 2px solid #ddd;
     border-radius: var(--radius-2xl);
     font-size: var(--font-size-base);
@@ -355,6 +355,37 @@
 .input-group.password-input-group input {
     -webkit-appearance: none;
     appearance: none;
+    /* iOS-specific fixes */
+    -webkit-text-security: disc;
+}
+
+/* Ensure input is visible and properly sized on iOS */
+.input-group.password-input-group input[type="password"] {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    min-height: 50px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Prevent iOS from showing its own password visibility toggle */
+    -webkit-text-security: disc !important;
+}
+
+/* When password is shown as text */
+.input-group.password-input-group input[type="text"] {
+    font-size: 16px !important;
+    min-height: 50px;
+    -webkit-text-security: none !important;
+}
+
+/* Disable iOS autocomplete/autofill buttons that can cause overlap */
+.input-group.password-input-group input::-webkit-contacts-auto-fill-button,
+.input-group.password-input-group input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+    margin: 0;
 }
 
 /* Edge / IE built-in reveal and clear */
@@ -369,6 +400,45 @@
 .input-group.password-input-group input::-webkit-textfield-decoration-container,
 .input-group.password-input-group input::-webkit-textfield-decoration-button {
     display: none !important;
+}
+
+/* iOS Safari password autofill button */
+.input-group.password-input-group input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+}
+
+/* Additional iOS fixes for password input */
+@supports (-webkit-touch-callout: none) {
+    /* iOS-only styles */
+    .input-group.password-input-group {
+        /* Ensure proper stacking context */
+        isolation: isolate;
+    }
+
+    .input-group.password-input-group input {
+        padding-right: 50px !important;
+        font-size: 16px !important;
+        line-height: 1.5;
+        /* Force hardware acceleration */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        /* Prevent text field zoom */
+        -webkit-text-size-adjust: 100%;
+    }
+
+    .input-group.password-input-group .eye-toggle {
+        z-index: 999;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        padding: 12px;
+        margin-right: -12px;
+        /* Force hardware acceleration */
+        transform: translateY(-50%) translateZ(0);
+        -webkit-transform: translateY(-50%) translateZ(0);
+    }
 }
 
 .form-options {

@@ -114,7 +114,8 @@ function test_input($data)
 $pageTitle = "Login - Fit and Brawl";
 $currentPage = "login";
 $additionalCSS = [PUBLIC_PATH . "/css/pages/login.css?v=" . time()];
-$additionalJS = [PUBLIC_PATH . "/js/hamburger-menu.js"];
+// No need to add hamburger-menu.js - it's already loaded in header.php
+$additionalJS = [];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
