@@ -162,7 +162,7 @@ if (!isset($metaKeywords)) {
     $metaKeywords = "boxing gym, MMA training, Muay Thai, fitness center, combat sports, gym membership, martial arts, personal training";
 }
 if (!isset($ogImage)) {
-    $ogImage = IMAGES_PATH . "/homepage-boxer.webp";
+    $ogImage = IMAGES_PATH . "/website-preview-image.png";
 }
 ?>
 <!DOCTYPE html>
