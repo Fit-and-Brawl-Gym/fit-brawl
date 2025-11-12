@@ -31,9 +31,12 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             $status = strtolower($row['status']);
             $row['status'] = $status;
 
-            // Ensure image path is valid
+            // Ensure image path is valid - use absolute path for production
             if (empty($row['image'])) {
-                $row['image'] = '../../uploads/products' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
+                $row['image'] = UPLOADS_PATH . '/products/' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
+            } elseif (!str_starts_with($row['image'], '/') && !str_starts_with($row['image'], 'http')) {
+                // Convert relative path to absolute
+                $row['image'] = UPLOADS_PATH . '/products/' . basename($row['image']);
             }
 
             $products[] = $row;
