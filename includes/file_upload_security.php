@@ -54,9 +54,12 @@ class SecureFileUpload {
 
         // Create upload directory with secure permissions
         if (!is_dir($this->uploadDir)) {
-            if (!mkdir($this->uploadDir, 0750, true)) {
+            if (!mkdir($this->uploadDir, 0775, true)) {
                 return ['success' => false, 'message' => 'Failed to create upload directory'];
             }
+            // Ensure proper ownership in Docker environment
+            @chown($this->uploadDir, 'www-data');
+            @chgrp($this->uploadDir, 'www-data');
         }
 
         // Generate secure filename
@@ -68,8 +71,10 @@ class SecureFileUpload {
             return ['success' => false, 'message' => 'Failed to save uploaded file'];
         }
 
-        // Set secure file permissions
-        chmod($targetPath, 0640);
+        // Set secure file permissions (more permissive for Docker)
+        chmod($targetPath, 0664);
+        @chown($targetPath, 'www-data');
+        @chgrp($targetPath, 'www-data');
 
         return ['success' => true, 'filename' => $filename, 'path' => $targetPath];
     }

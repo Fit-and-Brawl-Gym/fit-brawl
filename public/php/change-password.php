@@ -197,4 +197,12 @@ require_once '../../includes/header.php';
     </section>
     </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php 
+// Clear OTP timer from sessionStorage if redirected from verification
+if (isset($_SESSION['clear_otp_timer'])) {
+    echo '<script>sessionStorage.removeItem("otpExpiryTime");</script>';
+    unset($_SESSION['clear_otp_timer']);
+}
+
+require_once '../../includes/footer.php'; 
+?>

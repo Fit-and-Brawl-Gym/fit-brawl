@@ -45,7 +45,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param("s", $email);
             $stmt->execute();
 
-            echo "<script>sessionStorage.removeItem('otpExpiryTime');</script>";
+            // Set flag to clear session storage after redirect
+            $_SESSION['clear_otp_timer'] = true;
+            
             header("Location: change-password.php");
             exit;
         } else {

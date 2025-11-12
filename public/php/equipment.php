@@ -17,7 +17,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         $equipment = [];
         while ($row = $result->fetch_assoc()) {
             require_once __DIR__ . '/../../includes/config.php';
-            
+
             // Use absolute path for equipment images
             if (!empty($row['image_path'])) {
                 // If it's already an absolute path or URL, use it

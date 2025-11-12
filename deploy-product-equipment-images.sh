@@ -87,7 +87,7 @@ echo ""
 # Copy products
 if [ "$PRODUCT_COUNT" -gt 0 ]; then
     echo -e "${BLUE}📦 Copying $PRODUCT_COUNT product image(s)...${NC}"
-    
+
     # Show sample files being copied
     echo -e "${YELLOW}   Sample files:${NC}"
     ls "$TEMP_PRODUCTS" | head -3 | while read file; do
@@ -96,7 +96,7 @@ if [ "$PRODUCT_COUNT" -gt 0 ]; then
     if [ "$PRODUCT_COUNT" -gt 3 ]; then
         echo -e "${YELLOW}   ... and $((PRODUCT_COUNT - 3)) more${NC}"
     fi
-    
+
     sudo cp -v "$TEMP_PRODUCTS/"* "$UPLOAD_DIR/products/" 2>/dev/null || true
     echo -e "${GREEN}   ✓ Products copied${NC}"
     echo ""
@@ -105,7 +105,7 @@ fi
 # Copy equipment
 if [ "$EQUIPMENT_COUNT" -gt 0 ]; then
     echo -e "${BLUE}🏋️  Copying $EQUIPMENT_COUNT equipment image(s)...${NC}"
-    
+
     # Show sample files being copied
     echo -e "${YELLOW}   Sample files:${NC}"
     ls "$TEMP_EQUIPMENT" | head -3 | while read file; do
@@ -114,7 +114,7 @@ if [ "$EQUIPMENT_COUNT" -gt 0 ]; then
     if [ "$EQUIPMENT_COUNT" -gt 3 ]; then
         echo -e "${YELLOW}   ... and $((EQUIPMENT_COUNT - 3)) more${NC}"
     fi
-    
+
     sudo cp -v "$TEMP_EQUIPMENT/"* "$UPLOAD_DIR/equipment/" 2>/dev/null || true
     echo -e "${GREEN}   ✓ Equipment copied${NC}"
     echo ""
