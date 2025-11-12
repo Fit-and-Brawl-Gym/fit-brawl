@@ -724,11 +724,36 @@ body::before {
     cursor: pointer;
     transition: var(--transition-base);
     background: rgba(255, 255, 255, 0.05);
+    position: relative;
+    /* Ensure proper touch handling on iOS */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .file-upload-area:hover {
     border-color: var(--color-accent);
     background: rgba(213, 186, 43, 0.1);
+}
+
+/* iOS-compatible file input positioning - CRITICAL FOR iOS */
+#receiptFile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2; /* Above content */
+    font-size: 16px; /* Prevents iOS zoom */
+}
+
+/* Ensure upload area content is visible but doesn't block file input clicks */
+.file-upload-area > svg,
+.file-upload-area > p {
+    position: relative;
+    pointer-events: none; /* Let clicks pass through to file input */
+    z-index: 1;
 }
 
 .upload-icon {

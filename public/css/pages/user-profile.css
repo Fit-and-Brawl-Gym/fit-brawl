@@ -624,6 +624,16 @@ body::before {
     cursor: pointer;
     width: 100%;
     height: 100%;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    z-index: 2;
+}
+
+/* iOS-specific file input improvements */
+@supports (-webkit-touch-callout: none) {
+    .upload-btn-wrapper input[type=file] {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
 }
 
 .file-size-hint {

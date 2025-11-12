@@ -278,7 +278,7 @@ if (!isset($ogImage)) {
                     </li>
                     <li>
                         <a href="products.php" <?= $currentPage === 'products' ? 'class="active"' : '' ?> title="Products">
-                            <i class="fas fa-capsules"></i>
+                            <i class="fas fa-jar"></i>
                         </a>
                     </li>
                     <li>

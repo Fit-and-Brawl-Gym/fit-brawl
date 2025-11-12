@@ -137,7 +137,9 @@ require_once '../../includes/header.php';
                 <!-- New password -->
                 <div class="input-group password-input-group">
                     <i class="fas fa-key"></i>
-                    <input type="password" id="passwordInput" name="new_password" placeholder="New Password" required>
+                    <input type="password" id="passwordInput" name="new_password" placeholder="New Password"
+                           autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                           spellcheck="false" required>
                     <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
                 </div>
 
@@ -179,7 +181,9 @@ require_once '../../includes/header.php';
                 <!-- Confirm new password -->
                 <div class="input-group password-input-group">
                     <i class="fas fa-key"></i>
-                    <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Re-enter New Password" required>
+                    <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Re-enter New Password"
+                           autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                           spellcheck="false" required>
                     <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
                 </div>
 

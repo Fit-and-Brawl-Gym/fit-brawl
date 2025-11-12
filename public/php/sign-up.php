@@ -189,8 +189,8 @@ $additionalCSS = [
     '../css/pages/sign-up.css?v=5',
     '../css/components/terms-modal.css'
 ];
+// No need to add hamburger.js - it's already loaded as hamburger-menu.js in header.php
 $additionalJS = [
-    '../js/hamburger.js',
     '../js/password-validation.js',
     '../js/signup-error-handler.js'
 ];
@@ -250,7 +250,9 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <div class="input-group password-input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" id="passwordInput" name="password" placeholder="Password" required>
+                        <input type="password" id="passwordInput" name="password" placeholder="Password"
+                               autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                               spellcheck="false" required>
                         <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
 
                         <!-- Password Requirements Modal -->
@@ -292,7 +294,9 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <div class="input-group password-input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Confirm Password" required>
+                        <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Confirm Password"
+                               autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                               spellcheck="false" required>
                         <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
                     </div>
 
