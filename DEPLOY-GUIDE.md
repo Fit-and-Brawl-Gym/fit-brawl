@@ -237,4 +237,4 @@ docker compose up -d --build
 
 **Last Updated:** November 12, 2025
 **Branch:** main
-**Server:** EC2 (54.227.103.23)
+**Server:** EC2 (18.208.222.13)

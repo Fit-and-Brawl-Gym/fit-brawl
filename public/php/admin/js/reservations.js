@@ -51,40 +51,59 @@ document.querySelectorAll('.status-badge').forEach(badge => {
         const row = badge.closest('tr');
         const bookingId = row.dataset.id;
         const currentStatus = badge.dataset.status;
+        const cell = badge.closest('td');
 
-        // Create wrapper for positioning
-        const wrapper = document.createElement('div');
-        wrapper.style.position = 'relative';
-        wrapper.style.display = 'inline-block';
-
+        // Create dropdown
         const dropdown = document.createElement('div');
         dropdown.className = 'status-dropdown';
 
-        // Fixed: Use confirmed instead of scheduled to match database
-        ['confirmed', 'completed', 'cancelled'].forEach(status => {
-            if (status !== currentStatus) {
-                const btn = document.createElement('button');
-                btn.textContent = '✓ ' + ucFirst(status);
+        // Add all status options
+        const statuses = [
+            { value: 'confirmed', label: 'Confirmed', icon: '✓' },
+            { value: 'completed', label: 'Completed', icon: '✓' },
+            { value: 'cancelled', label: 'Cancelled', icon: '✓' }
+        ];
+
+        statuses.forEach(status => {
+            const btn = document.createElement('button');
+            btn.className = 'status-dropdown-item';
+
+            // Mark currently selected status
+            if (status.value === currentStatus) {
+                btn.classList.add('active');
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> ${status.label} <span class="current-badge">(Current)</span>`;
+            } else {
+                btn.innerHTML = `<i class="fa-regular fa-circle"></i> ${status.label}`;
+            }
+
+            // Only allow changing to different status
+            if (status.value !== currentStatus) {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    updateStatus(bookingId, status, badge);
+                    updateStatus(bookingId, status.value, badge);
                     dropdown.remove();
                 });
-                dropdown.appendChild(btn);
+            } else {
+                btn.style.cursor = 'default';
+                btn.style.opacity = '0.7';
             }
+
+            dropdown.appendChild(btn);
         });
 
-        wrapper.appendChild(dropdown);
-        badge.parentElement.style.position = 'relative';
-        badge.parentElement.appendChild(wrapper);
+        // Position dropdown relative to the table cell
+        cell.style.position = 'relative';
+        cell.appendChild(dropdown);
 
         // Close dropdown when clicking outside
         setTimeout(() => {
-            document.addEventListener('click', (e) => {
-                if (!dropdown.contains(e.target)) {
-                    wrapper.remove();
+            const closeHandler = (e) => {
+                if (!dropdown.contains(e.target) && !badge.contains(e.target)) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeHandler);
                 }
-            }, { once: true });
+            };
+            document.addEventListener('click', closeHandler);
         }, 10);
     });
 });
@@ -134,14 +153,29 @@ function bulkUpdate(status) {
     const ids = Array.from(document.querySelectorAll('.booking-checkbox:checked')).map(cb => cb.value);
     if (!ids.length) return;
 
+    if (!confirm(`Are you sure you want to mark ${ids.length} reservation(s) as ${status}?`)) {
+        return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append('action', 'bulk_update');
+    formData.append('status', status);
+    // Send as array format
+    ids.forEach(id => formData.append('ids[]', id));
+
     fetch('reservations.php?ajax=1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `action=bulk_update&ids=${ids.join(',')}&status=${status}`
+        body: formData.toString()
     })
         .then(r => r.json())
         .then(data => {
             if (data.success) location.reload();
+            else alert('Failed to update reservations. Please try again.');
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('An error occurred. Please try again.');
         });
 }
 

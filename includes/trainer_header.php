@@ -89,10 +89,10 @@ if (class_exists('SessionManager')) {
                 <span></span>
             </button>
             <div class="title">
-                <a href="index.php">
+                <a href="schedule.php">
                     <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
-                <a href="index.php">
+                <a href="schedule.php">
                     <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>

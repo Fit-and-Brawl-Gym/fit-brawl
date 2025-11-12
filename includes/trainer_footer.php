@@ -7,7 +7,6 @@
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
                 <ul class="footer-menu-list">
-                    <li><a href="index.php">Home</a></li>
                     <li><a href="schedule.php">Schedule</a></li>
                     <li><a href="feedback.php">Feedback</a></li>
                 </ul>

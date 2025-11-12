@@ -317,6 +317,7 @@
     cursor: pointer;
     transition: var(--admin-transition-all);
     position: relative;
+    user-select: none;
 }
 
 .status-scheduled,
@@ -340,34 +341,77 @@
     box-shadow: var(--admin-shadow-hover);
 }
 
+/* Status Dropdown - Improved positioning and visibility */
 .status-dropdown {
     position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
+    top: calc(100% + 8px);
+    right: 0;
     background: var(--admin-bg-white);
-    border: 1px solid var(--admin-input-border);
-    border-radius: var(--admin-input-radius);
-    box-shadow: var(--admin-shadow-lg);
-    z-index: var(--admin-z-dropdown);
-    min-width: 150px;
+    border: 2px solid var(--admin-primary);
+    border-radius: var(--admin-radius-lg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    min-width: 200px;
     overflow: hidden;
+    animation: dropdownSlide 0.2s ease;
 }
 
-.status-dropdown button {
-    display: block;
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.status-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
-    padding: 10px 16px;
+    padding: 12px 16px;
     border: none;
     background: none;
     text-align: left;
     cursor: pointer;
     font-size: var(--admin-font-size-md);
     color: var(--admin-text-primary);
-    transition: background var(--admin-transition-fast);
+    transition: all 0.2s ease;
+    font-weight: var(--admin-font-weight-medium);
+    border-bottom: 1px solid var(--admin-border-light);
 }
 
-.status-dropdown button:hover {
+.status-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.status-dropdown-item:hover:not(.active) {
     background: var(--admin-bg-main);
+    color: var(--admin-primary);
+}
+
+.status-dropdown-item.active {
+    background: #e3f2fd;
+    color: var(--admin-primary);
+    font-weight: var(--admin-font-weight-semibold);
+    cursor: default;
+}
+
+.status-dropdown-item i {
+    width: 16px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.status-dropdown-item .current-badge {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--admin-text-muted);
+    font-weight: var(--admin-font-weight-normal);
+    font-style: italic;
 }
 
 .time-info {

@@ -57,18 +57,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         $ids = $_POST['ids'] ?? [];
         $new_status = $_POST['status'] ?? '';
 
-        if (!empty($ids) && in_array($new_status, ['completed', 'cancelled'])) {
+        // Ensure $ids is an array
+        if (!is_array($ids)) {
+            $ids = explode(',', $ids);
+        }
+
+        // Filter and sanitize IDs
+        $ids = array_filter(array_map('intval', $ids));
+
+        if (!empty($ids) && in_array($new_status, ['confirmed', 'completed', 'cancelled'])) {
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $types = 's' . str_repeat('i', count($ids));
+
             $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id IN ($placeholders)");
             $params = array_merge([$new_status], $ids);
-            $stmt->bind_param(str_repeat('i', count($params)), ...$params);
+            $stmt->bind_param($types, ...$params);
             $success = $stmt->execute();
 
-            // Log bulk cancellation
-            if ($success && $new_status === 'cancelled') {
+            // Log bulk actions
+            if ($success) {
                 $count = count($ids);
                 $ids_str = implode(', ', $ids);
-                ActivityLogger::log('reservation_bulk_cancelled', null, null, "Bulk cancellation: $count reservation(s) cancelled (IDs: $ids_str)");
+                $action_name = $new_status === 'cancelled' ? 'reservation_bulk_cancelled' :
+                              ($new_status === 'completed' ? 'reservation_bulk_completed' : 'reservation_bulk_confirmed');
+                ActivityLogger::log($action_name, null, null, "Bulk update: $count reservation(s) marked as $new_status (IDs: $ids_str)");
             }
 
             echo json_encode(['success' => $success]);
