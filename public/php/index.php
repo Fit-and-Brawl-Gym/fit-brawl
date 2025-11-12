@@ -38,8 +38,8 @@ require_once __DIR__ . '/../../includes/header.php';
             </h1>
             <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
             <div class="hero-buttons">
-                <a href="membership.php" class="hero-btn">Log in</a>
-                <button class="hero-services-btn" id="openServicesModal">Non-Member Services</button>
+                <a href="membership.php" class="hero-btn">Get Started</a>
+                <button class="hero-services-btn" id="openServicesModal">Daily Rates</button>
             </div>
         </div>
     </section>
@@ -50,15 +50,21 @@ require_once __DIR__ . '/../../includes/header.php';
             <h2 class="overview-title">
                 <span class="title-with-line">Our Story</span>
             </h2>
-            <h3 class="overview-subtitle">
-                FORGED BY A <span class="highlight">FIGHTER.</span> BUILT FOR <span class="highlight">YOU.</span>
-            </h3>
-            <p class="overview-description">
-                Our story begins with our CEO, an MMA player and dedicated advocate for holistic health. They founded
-                Fit and Brawl not just as a gym, but as a commitment to a training philosophy: that the discipline and
-                intensity of combat sports are the fastest, most effective path to a sustainably healthy body. We teach
-                you how to fight, and in the process, transform your life.
-            </p>
+            <div class="overview-contents">
+                <h3 class="overview-subtitle">
+                    FORGED BY A <span class="highlight">FIGHTER.</span> BUILT FOR <span class="highlight">YOU.</span>
+                </h3>
+                <p class="overview-description">
+                    Our story begins with our CEO, an MMA player and dedicated advocate for holistic health. They
+                    founded
+                    Fit and Brawl not just as a gym, but as a commitment to a training philosophy: that the discipline
+                    and
+                    intensity of combat sports are the fastest, most effective path to a sustainably healthy body. We
+                    teach
+                    you how to fight, and in the process, transform your life.
+                </p>
+            </div>
+
 
             <div class="features-grid">
                 <div class="feature-card">

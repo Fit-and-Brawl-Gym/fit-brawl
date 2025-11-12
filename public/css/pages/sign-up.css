@@ -41,8 +41,22 @@
   letter-spacing: 2px;
 }
 
-.hero-title .yellow {
-  color: var(--color-accent);
+.hero-title-flex {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+}
+
+.hero-title-flex p {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-8xl);
+    font-weight: var(--font-weight-black);
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    line-height: 1.1;
 }
 
 .hero-underline {
@@ -53,11 +67,11 @@
 }
 
 .signup-modal {
-  flex: 0 0 400px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: var(--radius-2xl);
-  padding: var(--spacing-8);
-  position: relative;
+    width: 30%;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-2xl);
+    padding: var(--spacing-8);
+    position: relative;
 }
 
 .modal-header h2 {
@@ -81,6 +95,7 @@
   margin-bottom: var(--spacing-8);
   text-transform: uppercase;
 }
+
 .success-message {
   color: var(--color-success);
   background-color: transparent;
@@ -91,6 +106,7 @@
   font-weight: var(--font-weight-medium);
   text-align: center;
 }
+
 .error-message {
   background-color: transparent;
   color: var(--color-error);
@@ -100,6 +116,13 @@
   margin-bottom: var(--spacing-3);
   font-weight: var(--font-weight-medium);
   text-align: center;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
 }
 
 /* Message Container - Prominent error/success display */
@@ -125,14 +148,15 @@
 }
 
 @keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .error-message-box {
@@ -163,23 +187,13 @@
   flex: 1;
   line-height: var(--line-height-normal);
 }
+
 .input-group {
-  position: relative;
-  margin-bottom: 1.5rem;
+    position: relative;
 }
 
 .input-group.password-input-group {
   position: relative;
-}
-
-.input-group.password-input-group input {
-  width: 100%;
-  padding: var(--spacing-3) 10px var(--spacing-3) 50px;
-  border: 2px solid #ddd;
-  border-radius: var(--radius-2xl);
-  font-size: var(--font-size-base);
-  background: var(--color-text-light);
-  transition: var(--transition-base);
 }
 
 .input-group.password-input-group input:focus {
@@ -226,14 +240,23 @@
 }
 
 .input-group input {
-  width: 100%;
-  padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 50px;
-  border: 2px solid #ddd;
-  border-radius: var(--radius-2xl);
-  font-size: var(--font-size-base);
-  background: var(--color-text-light);
-  transition: var(--transition-base);
+    padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 50px;
+    border: 2px solid #ddd;
+    border-radius: var(--radius-2xl);
+    font-size: var(--font-size-base);
+    background: var(--color-text-light);
+    transition: var(--transition-base);
 }
+
+input {
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 2px solid #ddd;
+    border-radius: var(--radius-2xl);
+    font-size: var(--font-size-base);
+    background: var(--color-text-light);
+    transition: var(--transition-base);
+}
+
 
 .input-group input:focus {
   outline: none;
@@ -310,16 +333,19 @@
   border: 1px solid rgba(220, 53, 69, 0.3);
 }
 
-.password-group {
-  display: flex;
-  border: 2px solid #ddd;
-  border-radius: var(--radius-3xl);
-  overflow: hidden;
-  transition: var(--transition-base);
+#confirmPasswordInput {
+    position: relative;
 }
 
-.password-group:focus-within {
-  border-color: var(--color-accent);
+#toggleConfirmPasswordVisibility {
+    position: absolute;
+    right: 15px;
+    top: 0;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all 0.2s ease;
+    z-index: 10;
 }
 
 .icon-left,
@@ -443,40 +469,44 @@
     padding: var(--spacing-10);
   }
 
-  .password-requirements-modal {
-    position: absolute !important; /* Absolute to the input group */
-    left: 50% !important;
-    bottom: 20px !important; /* Changed from top to bottom */
-    top: auto !important; /* Remove top positioning */
-    transform: translateX(-50%) !important;
-    max-width: calc(100% - 40px);
-    min-width: 280px;
-    background: linear-gradient(135deg, #002f3f 0%, #1a4552 100%);
-    border: 2px solid var(--color-accent);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.5),
-      0 0 0 1px rgba(213, 186, 43, 0.2);
-    max-height: 60vh; /* Limit height */
-    overflow-y: auto; /* Allow scrolling if needed */
-    z-index: 9999 !important; /* Ensure it's on top */
-  }
+    .password-requirements-modal {
+        position: absolute !important;
+        /* Absolute to the input group */
+        left: 50% !important;
+        bottom: 100% !important;
+        /* Position directly above the input */
+        top: auto !important;
+        transform: translateX(-50%) translateY(-10px) !important;
+        /* 10px gap above input */
+        max-width: calc(100% - 40px);
+        min-width: 280px;
+        background: linear-gradient(135deg, #002f3f 0%, #1a4552 100%);
+        border: 2px solid var(--color-accent);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(213, 186, 43, 0.2);
+        max-height: 60vh;
+        /* Limit height */
+        overflow-y: auto;
+        /* Allow scrolling if needed */
+        z-index: 100 !important;
+        /* Keep it above other elements */
+    }
 
   .password-requirements-modal.show {
     animation: slideInUp 0.3s ease !important;
     transform: translateX(-50%) translateY(0) !important;
   }
 
-  @keyframes slideInUp {
-    from {
-      transform: translateX(-50%) translateY(100px);
-      opacity: 0;
-      transform: translateX(-50%) translateY(-5px);
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
     }
-    to {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-10px);
-    }
-  }
 
   /* Make sure the password input container has relative positioning */
   .password-input-group {
@@ -558,6 +588,7 @@
     font-size: var(--font-size-xs);
   }
 }
+
 /* Password Requirements Modal Styles */
 .password-requirements-modal {
   position: absolute;
@@ -595,14 +626,15 @@
 }
 
 @keyframes slideInLeft {
-  from {
-    transform: translateY(-50%) translateX(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(-50%) translateX(0);
-    opacity: 1;
-  }
+    from {
+        transform: translateY(-50%) translateX(-10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(-50%) translateX(0);
+        opacity: 1;
+    }
 }
 
 .password-requirements-header {

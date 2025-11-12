@@ -154,89 +154,77 @@ $additionalCSS = [PUBLIC_PATH . "/css/pages/products.css"];
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
 ?>
+<!--Main-->
+<main class="container">
+    <!-- Products Heading - Full Width -->
+    <div class="panel-header">
+        <h2>Products</h2>
+    </div>
 
-    <!-- HERO -->
-    <section class="products-hero">
-        <div style="width:100%;margin:0;padding:var(--spacing-4) var(--spacing-12);">
-        <h1 class="title"><strong style="color:var(--color-accent)">ESSENTIALS</strong> FOR EVERY</h1>
-        <h1 class="title"><strong style="color:var(--color-accent)">REP, SET,</strong> AND <strong style="color:var(--color-accent)">GOAL<span class="exclamation">!</span></strong></h1>
-        <p class="subtitle"> Check the available <strong style="color:var(--color-accent)">PRODUCTS</strong> in our store!</p>
-        </div>
-    </section>
+    <!-- Products Wrapper - Contains Sidebar and Grid -->
+    <div class="products-wrapper">
+        <!-- Left Sidebar - Filters -->
+        <aside class="filter-sidebar">
+            <h3>Filters</h3>
 
-    <!--Main-->
-    <main class="container">
-        <!-- Products Heading - Full Width -->
-        <div class="panel-header">
-            <h2>Products</h2>
-        </div>
+            <!-- Search Section -->
+            <div class="filter-section search-section">
+                <label for="q">Search</label>
+                <input type="search" id="q" placeholder="Search products..." aria-label="Search products">
+            </div>
 
-        <!-- Products Wrapper - Contains Sidebar and Grid -->
-        <div class="products-wrapper">
-            <!-- Left Sidebar - Filters -->
-            <aside class="filter-sidebar">
-                <h3>Filters</h3>
+            <!-- Status Filter -->
+            <div class="filter-section">
+                <label for="statusFilter">Status</label>
+                <select id="statusFilter">
+                    <option value="all">All Products</option>
+                    <option value="in">In Stock</option>
+                    <option value="low">Low on Stock</option>
+                    <option value="out">Out of Stock</option>
+                </select>
+            </div>
 
-                <!-- Search Section -->
-                <div class="filter-section search-section">
-                    <label for="q">Search</label>
-                    <input type="search" id="q" placeholder="Search products..." aria-label="Search products">
-                </div>
-
-                <!-- Status Filter -->
-                <div class="filter-section">
-                    <label for="statusFilter">Status</label>
-                    <select id="statusFilter">
-                        <option value="all">All Products</option>
-                        <option value="in">In Stock</option>
-                        <option value="low">Low on Stock</option>
-                        <option value="out">Out of Stock</option>
-                    </select>
-                </div>
-
-                <!-- Categories -->
-                <div class="filter-section">
-                    <label>Categories</label>
-                    <div class="categories-list">
-                        <div class="category-chip" data-cat="supplements">
-                            <img src="../../images/supplements-icon.svg" alt="Supplements">
-                            <p>Supplements</p>
-                        </div>
-                        <div class="category-chip" data-cat="hydration">
-                            <img src="../../images/hydration-icon.svg" alt="Hydration & Drinks">
-                            <p>Hydration and Drinks</p>
-                        </div>
-                        <div class="category-chip" data-cat="snacks">
-                            <img src="../../images/snacks-icon.svg" alt="Snacks">
-                            <p>Snacks</p>
-                        </div>
-                        <div class="category-chip" data-cat="boxing gloves">
-                            <img src="../../images/boxing-icon.svg" alt="Boxing and Muay Thai Gloves">
-                            <p>Boxing and Muay Thai</p>
-                        </div>
-                        <div class="category-chip" data-cat="accessories">
-                            <img src="../../images/strength-icon.svg" alt="Accessories">
-                            <p>Accessories</p>
-                        </div>
+            <!-- Categories -->
+            <div class="filter-section">
+                <label>Categories</label>
+                <div class="categories-list">
+                    <div class="category-chip" data-cat="supplements">
+                        <img src="../../images/supplements-icon.svg" alt="Supplements">
+                        <p>Supplements</p>
+                    </div>
+                    <div class="category-chip" data-cat="hydration">
+                        <img src="../../images/hydration-icon.svg" alt="Hydration & Drinks">
+                        <p>Hydration and Drinks</p>
+                    </div>
+                    <div class="category-chip" data-cat="snacks">
+                        <img src="../../images/snacks-icon.svg" alt="Snacks">
+                        <p>Snacks</p>
+                    </div>
+                    <div class="category-chip" data-cat="boxing gloves">
+                        <img src="../../images/boxing-icon.svg" alt="Boxing and Muay Thai Gloves">
+                        <p>Boxing and Muay Thai</p>
+                    </div>
+                    <div class="category-chip" data-cat="accessories">
+                        <img src="../../images/strength-icon.svg" alt="Accessories">
+                        <p>Accessories</p>
                     </div>
                 </div>
-            </aside>
+            </div>
+        </aside>
 
-            <!-- Main Content Area -->
-            <div class="products-content">
-                <div class="products-panel">
-                    <!-- Grid -->
-                    <div id="grid" class="grid"></div>
-                </div>
+        <!-- Main Content Area -->
+        <div class="products-content">
+            <div class="products-panel">
+                <!-- Grid -->
+                <div id="grid" class="grid"></div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <!-- Back to Top Button -->
-    <button class="back-to-top" aria-label="Back to top">
-        <i class="fas fa-chevron-up"></i>
-    </button>
+<!-- Back to Top Button -->
+<button class="back-to-top" aria-label="Back to top">
+    <i class="fas fa-chevron-up"></i>
+</button>
 
-    <script src="<?= PUBLIC_PATH ?>/js/products.js?=v1"></script>
-
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<script src="<?= PUBLIC_PATH ?>/js/products.js?=v1"></script>

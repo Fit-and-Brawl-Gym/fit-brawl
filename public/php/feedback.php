@@ -1,50 +1,59 @@
 <?php
 
-require_once __DIR__ . '/../../includes/db_connect.php';
-require_once __DIR__ . '/../../includes/session_manager.php';
-require_once __DIR__ . '/../../includes/config.php';
+require_once __DIR__ . "/../../includes/db_connect.php";
+require_once __DIR__ . "/../../includes/session_manager.php";
+require_once __DIR__ . "/../../includes/config.php";
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 SessionManager::initialize();
 
+if (
+    $_SERVER["REQUEST_METHOD"] === "POST" ||
+    (isset($_GET["api"]) && $_GET["api"] === "true")
+) {
+    header("Content-Type: application/json");
+    include __DIR__ . "/../../includes/db_connect.php";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
-    header('Content-Type: application/json');
-    include __DIR__ . '/../../includes/db_connect.php';
+    $method = $_SERVER["REQUEST_METHOD"];
 
-    $method = $_SERVER['REQUEST_METHOD'];
-
-    if ($method === 'POST') {
+    if ($method === "POST") {
         $data = json_decode(file_get_contents("php://input"), true);
-        $user_id = $data['user_id'];
-        $message = $data['message'];
+        $user_id = $data["user_id"];
+        $message = $data["message"];
 
         $sql = "INSERT INTO feedback (user_id, message) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("is", $user_id, $message);
 
         if ($stmt->execute()) {
-            echo json_encode(["status" => "success", "message" => "Feedback submitted"]);
+            echo json_encode([
+                "status" => "success",
+                "message" => "Feedback submitted",
+            ]);
         } else {
             echo json_encode(["status" => "error", "message" => $conn->error]);
         }
         $stmt->close();
-        exit;
+        exit();
     }
 
     // Get filter parameters
-    $plan_filter = isset($_GET['plan']) ? trim($_GET['plan']) : 'all';
-    $sort_by = isset($_GET['sort']) ? trim($_GET['sort']) : 'recent';
-    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-    $current_user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+    $plan_filter = isset($_GET["plan"]) ? trim($_GET["plan"]) : "all";
+    $sort_by = isset($_GET["sort"]) ? trim($_GET["sort"]) : "recent";
+    $search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
+    $current_user_id = isset($_SESSION["user_id"])
+        ? $_SESSION["user_id"]
+        : null;
 
     // Check if is_visible column exists
     $checkColumn = $conn->query("SHOW COLUMNS FROM feedback LIKE 'is_visible'");
     $hasVisibleColumn = $checkColumn->num_rows > 0;
 
     // Check if helpful_count column exists
-    $checkHelpfulColumn = $conn->query("SHOW COLUMNS FROM feedback LIKE 'helpful_count'");
+    $checkHelpfulColumn = $conn->query(
+        "SHOW COLUMNS FROM feedback LIKE 'helpful_count'",
+    );
     $hasHelpfulColumn = $checkHelpfulColumn->num_rows > 0;
 
     // Build SQL - ALWAYS include id column
@@ -74,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
             FROM feedback f";
 
     if ($current_user_id) {
-        $sql .= " LEFT JOIN feedback_votes fv ON f.id = fv.feedback_id AND fv.user_id = ?";
+        $sql .=
+            " LEFT JOIN feedback_votes fv ON f.id = fv.feedback_id AND fv.user_id = ?";
     }
 
     $sql .= " LEFT JOIN users u ON f.user_id = u.id
@@ -88,17 +98,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
     }
 
     // Apply plan filter
-    if ($plan_filter !== 'all') {
+    if ($plan_filter !== "all") {
         $sql .= " AND m.plan_name = ?";
     }
 
     // Apply search filter
-    if ($search !== '') {
+    if ($search !== "") {
         $sql .= " AND (f.message LIKE ? OR f.username LIKE ?)";
     }
 
     // Apply sorting
-    if ($sort_by === 'relevant' && $hasHelpfulColumn) {
+    if ($sort_by === "relevant" && $hasHelpfulColumn) {
         $sql .= " ORDER BY f.helpful_count DESC, f.date DESC";
     } else {
         $sql .= " ORDER BY f.date DESC";
@@ -108,23 +118,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
 
     // Bind parameters
     $params = [];
-    $types = '';
+    $types = "";
 
     if ($current_user_id) {
         $params[] = $current_user_id;
-        $types .= 'i';
+        $types .= "i";
     }
 
-    if ($plan_filter !== 'all') {
+    if ($plan_filter !== "all") {
         $params[] = $plan_filter;
-        $types .= 's';
+        $types .= "s";
     }
 
-    if ($search !== '') {
+    if ($search !== "") {
         $search_param = "%$search%";
         $params[] = $search_param;
         $params[] = $search_param;
-        $types .= 'ss';
+        $types .= "ss";
     }
 
     if (!empty($params)) {
@@ -141,19 +151,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
 
     echo json_encode($feedbacks);
     $stmt->close();
-    exit;
+    exit();
 }
 
 // Check membership status for header
-require_once '../../includes/membership_check.php';
+require_once "../../includes/membership_check.php";
 
 $hasActiveMembership = false;
 $hasAnyRequest = false;
 $gracePeriodDays = 3;
 
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-    $today = date('Y-m-d');
+if (isset($_SESSION["user_id"])) {
+    $user_id = $_SESSION["user_id"];
+    $today = date("Y-m-d");
 
     // Check user_memberships table
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
@@ -171,17 +181,19 @@ if (isset($_SESSION['user_id'])) {
             $result = $stmt->get_result();
 
             if ($row = $result->fetch_assoc()) {
-                $requestStatus = $row['request_status'] ?? null;
-                $membershipStatus = $row['membership_status'] ?? null;
-                $endDate = $row['end_date'] ?? null;
+                $requestStatus = $row["request_status"] ?? null;
+                $membershipStatus = $row["membership_status"] ?? null;
+                $endDate = $row["end_date"] ?? null;
 
                 $hasAnyRequest = true;
 
-                if ($requestStatus === 'approved' && $endDate) {
-                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+                if ($requestStatus === "approved" && $endDate) {
+                    $expiryWithGrace = date(
+                        "Y-m-d",
+                        strtotime($endDate . " +$gracePeriodDays days"),
+                    );
 
                     if ($expiryWithGrace >= $today) {
-
                         $hasActiveMembership = true;
                         $hasAnyRequest = false;
                     }
@@ -190,8 +202,6 @@ if (isset($_SESSION['user_id'])) {
 
             $stmt->close();
         }
-
-
     } elseif ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
         $stmt = $conn->prepare("
             SELECT status, end_date
@@ -206,12 +216,15 @@ if (isset($_SESSION['user_id'])) {
             $result = $stmt->get_result();
 
             if ($row = $result->fetch_assoc()) {
-                $status = strtolower($row['status']);
-                $endDate = $row['end_date'] ?? null;
+                $status = strtolower($row["status"]);
+                $endDate = $row["end_date"] ?? null;
                 $hasAnyRequest = true;
 
-                if ($status === 'approved' && $endDate) {
-                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+                if ($status === "approved" && $endDate) {
+                    $expiryWithGrace = date(
+                        "Y-m-d",
+                        strtotime($endDate . " +$gracePeriodDays days"),
+                    );
 
                     if ($expiryWithGrace >= $today) {
                         $hasActiveMembership = true;
@@ -225,20 +238,23 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 
-
 if ($hasActiveMembership) {
-    $membershipLink = 'reservations.php';
+    $membershipLink = "reservations.php";
 } elseif ($hasAnyRequest) {
-    $membershipLink = 'membership-status.php';
+    $membershipLink = "membership-status.php";
 } else {
-    $membershipLink = 'membership.php';
+    $membershipLink = "membership.php";
 }
 
 // Determine avatar source for logged-in users
-$avatarSrc = '../../images/account-icon.svg';
-if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
+$avatarSrc = "../../images/account-icon.svg";
+if (isset($_SESSION["email"]) && isset($_SESSION["avatar"])) {
+    $hasCustomAvatar =
+        $_SESSION["avatar"] !== "default-avatar.png" &&
+        !empty($_SESSION["avatar"]);
+    $avatarSrc = $hasCustomAvatar
+        ? "../../uploads/avatars/" . htmlspecialchars($_SESSION["avatar"])
+        : "../../images/account-icon.svg";
 }
 
 // Set variables for header
@@ -247,7 +263,7 @@ $currentPage = "feedback";
 $additionalCSS = [PUBLIC_PATH . "/css/pages/feedback.css?=v2"];
 
 // Include header
-require_once '../../includes/header.php';
+require_once "../../includes/header.php";
 ?>
 <!--Main-->
 <main>
@@ -310,15 +326,20 @@ require_once '../../includes/header.php';
             </div>
         </div>
     </div>
-    <div class="feedback-button fab-group">
-        <button class="back-to-top" aria-label="Back to top">
-            <i class="fas fa-chevron-up"></i>
-        </button>
-        <button class="floating-btn" id="openFeedbackModal">
-            <i class="fas fa-comment-dots"></i>
-            Share your feedback!
-        </button>
-    </div>
+    <?php if (!isset($_SESSION["user_id"])): ?>
+
+    <?php else: ?>
+        <div class="feedback-button fab-group">
+            <button class="back-to-top" aria-label="Back to top">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+            <button class="floating-btn" id="openFeedbackModal">
+                <i class="fas fa-comment-dots"></i>
+                Share your feedback!
+            </button>
+        </div>
+    <?php endif; ?>
+
 </main>
 
 <!-- Feedback Modal -->
@@ -331,7 +352,7 @@ require_once '../../includes/header.php';
             </button>
         </div>
         <form id="feedbackSubmitForm" class="feedback-modal-form">
-            <?php if (!isset($_SESSION['user_id'])): ?>
+            <?php if (!isset($_SESSION["user_id"])): ?>
                 <!-- Non-logged in users see name and email fields -->
                 <div class="form-row">
                     <div class="form-group">
@@ -347,7 +368,9 @@ require_once '../../includes/header.php';
                 <!-- Logged in users don't see name/email fields -->
                 <div class="logged-in-notice">
                     <i class="fas fa-user-check"></i>
-                    <span>Posting as: <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Member') ?></strong></span>
+                    <span>Posting as: <strong><?= htmlspecialchars(
+                        $_SESSION["username"] ?? "Member",
+                    ) ?></strong></span>
                 </div>
             <?php endif; ?>
 
@@ -385,42 +408,8 @@ require_once '../../includes/header.php';
 </div>
 
 <!--Footer-->
-<footer>
-    <div class="container footer-flex">
-        <div class="footer-logo-block">
-            <img src="../../images/footer-title.png" alt="FITXBRAWL" class="footer-logo-title">
-        </div>
-        <div class="footer-menu-block">
-            <div class="footer-menu-title">MENU</div>
-            <ul class="footer-menu-list">
-                <li><a href="index.php">Home</a></li>
-                <li><a href="membership.php">Membership</a></li>
-                <li><a href="equipment.php">Equipment</a></li>
-                <li><a href="products.php">Products</a></li>
-                <li><a href="contact.php">Contact</a></li>
-                <li><a href="feedback.php">Feedback</a></li>
-            </ul>
-        </div>
-        <div class="footer-contact-block">
-            <div class="footer-contact-title">CONTACT</div>
-            <div class="footer-contact-details">
-                1832 Oroquieta Rd, Santa Cruz, Manila,<br>
-                1008 Metro Manila<br><br>
-                Gmail: fitxbrawl@gmail.com
-            </div>
-        </div>
-        <div class="footer-hours-block">
-            <div class="footer-hours-title">OPENING HOURS</div>
-            <div class="footer-hours-details">
-                Sun–Fri: 9AM to 10PM<br>
-                Saturday: 10AM to 7PM
-            </div>
-        </div>
-    </div>
-    <div class="copyright">
-        <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
-    </div>
-</footer>
+<?php require_once __DIR__ . "/../../includes/footer.php"; ?>
+
 <script>
     const IMAGES_PATH = "<?= IMAGES_PATH ?>";
     const UPLOADS_PATH = "<?= UPLOADS_PATH ?>";

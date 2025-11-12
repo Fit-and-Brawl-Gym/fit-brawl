@@ -125,33 +125,33 @@ require_once __DIR__ . '/../../includes/header.php';
     <section class="login-hero">
         <div class="hero-content">
             <div class="hero-line"></div>
-            <h1 class="hero-title">
-                STRONG TODAY <span class="yellow"> STRONGER </span> TOMORROW
-            </h1>
+            <div class="hero-title-flex">
+                <p>STRONG TODAY</p>
+                <p style="color: #d5ba2b">STRONGER EVERYDAY </p>
+            </div>
             <div class="hero-underline"></div>
         </div>
 
         <div class="login-modal">
             <div class="modal-header">
-                <h2>Sign in to access your account</h2>
+                <h2>Sign in to your account</h2>
             </div>
 
             <form method="post" class="login-form" id="loginForm">
-                <h3>ARE YOU READY TO FOR THE NEXT CHALLENGE?</h3>
                 <?php if (!empty($error)): ?>
                     <div class="error-box"><?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
-                <div class="input-group">
+
+                <div class="input-container">
                     <i class="fas fa-envelope"></i>
                     <input type="text" name="email" placeholder="Username or Email"
                         value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
-                </div>
 
-                <div class="input-group password-group">
                     <div class="icon-left">
                         <i class="fas fa-key"></i>
                     </div>
                     <input type="password" name="password" id="password" placeholder="Password" required>
+
                 </div>
 
                 <div class="form-options">
@@ -172,5 +172,3 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </section>
 </main>
-
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

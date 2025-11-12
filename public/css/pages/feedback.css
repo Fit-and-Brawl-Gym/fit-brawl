@@ -5,8 +5,6 @@
 
 * {
     box-sizing: border-box;
-    padding: 0;
-    margin: 0;
 }
 
 html,
@@ -16,33 +14,7 @@ body {
     padding: 0;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: var(--color-bg-dark);
-    background-image: url('../../../images/feedback-bg.webp');
-    background-repeat: no-repeat;
-    background-position: center right;
-    background-size: cover;
-    background-attachment: fixed;
-    position: relative;
-}
 
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to right,
-            rgba(0, 47, 63, 0.50) 0%,
-            rgba(0, 47, 63, 0.40) 50%,
-            rgba(0, 47, 63, 0.30) 100%);
-    z-index: 0;
-    pointer-events: none;
-}
 
 main {
     min-height: 100vh;
@@ -51,6 +23,7 @@ main {
     flex-direction: column;
     position: relative;
     padding-bottom: 100px;
+    background-color: #021422;
 }
 
 /* Page Header */

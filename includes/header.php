@@ -16,10 +16,10 @@
  */
 
 // Load environment configuration
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . "/config.php";
 
 // Ensure session is started if SessionManager is available
-if (class_exists('SessionManager')) {
+if (class_exists("SessionManager")) {
     SessionManager::initialize();
 }
 
@@ -34,17 +34,20 @@ if (!isset($currentPage)) {
 
 // Calculate membership link if not already set
 if (!isset($membershipLink)) {
-    $membershipLink = 'membership.php';
+    $membershipLink = "membership.php";
     $hasActiveMembership = false;
 
-    if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION["user_id"])) {
         $hasAnyRequest = false;
         $gracePeriodDays = 3;
-        $user_id = $_SESSION['user_id'];
-        $today = date('Y-m-d');
+        $user_id = $_SESSION["user_id"];
+        $today = date("Y-m-d");
 
         // Check user_memberships table
-        if (isset($conn) && $conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
+        if (
+            isset($conn) &&
+            $conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows
+        ) {
             $stmt = $conn->prepare("
                 SELECT request_status, membership_status, end_date
                 FROM user_memberships
@@ -59,14 +62,17 @@ if (!isset($membershipLink)) {
                 $result = $stmt->get_result();
 
                 if ($row = $result->fetch_assoc()) {
-                    $requestStatus = $row['request_status'] ?? null;
-                    $membershipStatus = $row['membership_status'] ?? null;
-                    $endDate = $row['end_date'] ?? null;
+                    $requestStatus = $row["request_status"] ?? null;
+                    $membershipStatus = $row["membership_status"] ?? null;
+                    $endDate = $row["end_date"] ?? null;
 
                     $hasAnyRequest = true;
 
-                    if ($requestStatus === 'approved' && $endDate) {
-                        $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+                    if ($requestStatus === "approved" && $endDate) {
+                        $expiryWithGrace = date(
+                            "Y-m-d",
+                            strtotime($endDate . " +$gracePeriodDays days"),
+                        );
 
                         if ($expiryWithGrace >= $today) {
                             $hasActiveMembership = true;
@@ -77,7 +83,10 @@ if (!isset($membershipLink)) {
 
                 $stmt->close();
             }
-        } elseif (isset($conn) && $conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+        } elseif (
+            isset($conn) &&
+            $conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows
+        ) {
             $stmt = $conn->prepare("
                 SELECT status, end_date
                 FROM subscriptions
@@ -91,12 +100,15 @@ if (!isset($membershipLink)) {
                 $result = $stmt->get_result();
 
                 if ($row = $result->fetch_assoc()) {
-                    $status = strtolower($row['status']);
-                    $endDate = $row['end_date'] ?? null;
+                    $status = strtolower($row["status"]);
+                    $endDate = $row["end_date"] ?? null;
                     $hasAnyRequest = true;
 
-                    if ($status === 'approved' && $endDate) {
-                        $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+                    if ($status === "approved" && $endDate) {
+                        $expiryWithGrace = date(
+                            "Y-m-d",
+                            strtotime($endDate . " +$gracePeriodDays days"),
+                        );
 
                         if ($expiryWithGrace >= $today) {
                             $hasActiveMembership = true;
@@ -110,56 +122,63 @@ if (!isset($membershipLink)) {
         }
 
         if ($hasActiveMembership) {
-            $membershipLink = 'reservations.php';
+            $membershipLink = "reservations.php";
         } elseif ($hasAnyRequest) {
-            $membershipLink = 'membership-status.php';
+            $membershipLink = "membership-status.php";
         } else {
-            $membershipLink = 'membership.php';
+            $membershipLink = "membership.php";
         }
     }
 } else {
     // If membershipLink is already set, determine hasActiveMembership status
-    $hasActiveMembership = ($membershipLink === 'reservations.php');
+    $hasActiveMembership = $membershipLink === "reservations.php";
 }
 
 // Determine membership icon and title based on status
 if (!isset($membershipIcon)) {
-    $membershipIcon = 'fa-id-card';
-    $membershipTitle = 'Membership';
+    $membershipIcon = "fa-id-card";
+    $membershipTitle = "Membership";
 
     if (isset($hasActiveMembership) && $hasActiveMembership) {
-        $membershipIcon = 'fa-calendar-alt';
-        $membershipTitle = 'Schedule';
+        $membershipIcon = "fa-calendar-alt";
+        $membershipTitle = "Schedule";
     }
 }
 
 // Determine avatar source for logged-in users
 if (!isset($avatarSrc)) {
-    $avatarSrc = IMAGES_PATH . '/account-icon.svg';
+    $avatarSrc = IMAGES_PATH . "/account-icon.svg";
     $hasCustomAvatar = false;
-    if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-        $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-        $avatarSrc = $hasCustomAvatar ? UPLOADS_PATH . "/avatars/" . htmlspecialchars($_SESSION['avatar']) : IMAGES_PATH . "/account-icon.svg";
+    if (isset($_SESSION["email"]) && isset($_SESSION["avatar"])) {
+        $hasCustomAvatar =
+            $_SESSION["avatar"] !== "default-avatar.png" &&
+            !empty($_SESSION["avatar"]);
+        $avatarSrc = $hasCustomAvatar
+            ? UPLOADS_PATH . "/avatars/" . htmlspecialchars($_SESSION["avatar"])
+            : IMAGES_PATH . "/account-icon.svg";
     }
 } else {
     // If avatarSrc is already set, determine if it's custom
-    $hasCustomAvatar = isset($avatarSrc) && strpos($avatarSrc, 'uploads/avatars') !== false;
+    $hasCustomAvatar =
+        isset($avatarSrc) && strpos($avatarSrc, "uploads/avatars") !== false;
 }
 
 // Check if SessionManager is available
 $isLoggedIn = false;
-if (class_exists('SessionManager')) {
+if (class_exists("SessionManager")) {
     $isLoggedIn = SessionManager::isLoggedIn();
 } else {
-    $isLoggedIn = isset($_SESSION['email']);
+    $isLoggedIn = isset($_SESSION["email"]);
 }
 
 // SEO defaults - can be overridden in individual pages
 if (!isset($metaDescription)) {
-    $metaDescription = "Fit and Brawl Gym - Build a body that's built for battle. Premier boxing, MMA, and Muay Thai training facility. Professional trainers, modern equipment, flexible membership plans.";
+    $metaDescription =
+        "Fit and Brawl Gym - Build a body that's built for battle. Premier boxing, MMA, and Muay Thai training facility. Professional trainers, modern equipment, flexible membership plans.";
 }
 if (!isset($metaKeywords)) {
-    $metaKeywords = "boxing gym, MMA training, Muay Thai, fitness center, combat sports, gym membership, martial arts, personal training";
+    $metaKeywords =
+        "boxing gym, MMA training, Muay Thai, fitness center, combat sports, gym membership, martial arts, personal training";
 }
 if (!isset($ogImage)) {
     $ogImage = IMAGES_PATH . "/homepage-boxer.webp";
@@ -167,28 +186,41 @@ if (!isset($ogImage)) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta name="description" content="<?= htmlspecialchars(
+        $metaDescription,
+    ) ?>">
     <meta name="keywords" content="<?= htmlspecialchars($metaKeywords) ?>">
     <meta name="author" content="Fit and Brawl Gym">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="<?= htmlspecialchars($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
+    <meta property="og:url" content="<?= htmlspecialchars(
+        $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"],
+    ) ?>">
     <meta property="og:title" content="<?= htmlspecialchars($pageTitle) ?>">
-    <meta property="og:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars(
+        $metaDescription,
+    ) ?>">
     <meta property="og:image" content="<?= htmlspecialchars($ogImage) ?>">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="<?= htmlspecialchars($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']) ?>">
-    <meta property="twitter:title" content="<?= htmlspecialchars($pageTitle) ?>">
-    <meta property="twitter:description" content="<?= htmlspecialchars($metaDescription) ?>">
+    <meta property="twitter:url" content="<?= htmlspecialchars(
+        $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"],
+    ) ?>">
+    <meta property="twitter:title" content="<?= htmlspecialchars(
+        $pageTitle,
+    ) ?>">
+    <meta property="twitter:description" content="<?= htmlspecialchars(
+        $metaDescription,
+    ) ?>">
     <meta property="twitter:image" content="<?= htmlspecialchars($ogImage) ?>">
 
     <title><?= htmlspecialchars($pageTitle) ?></title>
@@ -205,7 +237,7 @@ if (!isset($ogImage)) {
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/member-nav.css">
     <?php if (isset($additionalCSS) && is_array($additionalCSS)): ?>
         <?php foreach ($additionalCSS as $cssFile): ?>
-    <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
+            <link rel="stylesheet" href="<?= htmlspecialchars($cssFile) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
 
@@ -220,7 +252,8 @@ if (!isset($ogImage)) {
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/7d9cda96f6.js" crossorigin="anonymous" defer></script>
@@ -233,80 +266,139 @@ if (!isset($ogImage)) {
     <script src="<?= PUBLIC_PATH ?>/js/header-dropdown.js" defer></script>
     <script src="<?= PUBLIC_PATH ?>/js/hamburger-menu.js" defer></script>
     <?php if ($isLoggedIn): ?>
-    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/session-warning.css">
-    <script src="<?= PUBLIC_PATH ?>/js/session-timeout.js"></script>
+        <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/session-warning.css">
+        <script src="<?= PUBLIC_PATH ?>/js/session-timeout.js"></script>
     <?php endif; ?>
     <?php if (isset($additionalJS) && is_array($additionalJS)): ?>
         <?php foreach ($additionalJS as $jsFile): ?>
-    <script src="<?= htmlspecialchars($jsFile) ?>" defer></script>
+            <script src="<?= htmlspecialchars($jsFile) ?>" defer></script>
         <?php endforeach; ?>
     <?php endif; ?>
 </head>
+
 <body>
     <!--Header-->
     <header>
-        <div class="wrapper">
-            <button class="hamburger-menu" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-            <div class="title">
-                <a href="index.php">
-                    <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
-                </a>
-                <a href="index.php">
-                    <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
-                </a>
-            </div>
-            <nav class="nav-bar member-nav">
-                <ul>
-                    <li>
-                        <a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
+        <button class="hamburger-menu" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="title">
+            <a href="index.php">
+                <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+            </a>
+            <a href="index.php">
+                <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
+            </a>
+        </div>
+        <?php if (isset($_SESSION["email"])): ?>
+            <!-- Logged-in dropdown -->
+            <nav class="nav-bar">
+                <ul class="nav-links">
+                    <li class="member-nav">
+                        <a href="index.php" <?= $currentPage === "home"
+                            ? 'class="active"'
+                            : "" ?> title="Home">
                             <i class="fas fa-home"></i>
+                            Home
                         </a>
                     </li>
                     <li>
-                        <a href="<?= htmlspecialchars($membershipLink) ?>" <?= $currentPage === 'membership' ? 'class="active"' : '' ?> title="<?= htmlspecialchars($membershipTitle) ?>">
-                            <i class="fas <?= htmlspecialchars($membershipIcon) ?>"></i>
+                        <a href="<?= htmlspecialchars(
+                            $membershipLink,
+                        ) ?>" <?= $currentPage === "membership"
+                             ? 'class="active"'
+                             : "" ?> title="<?= htmlspecialchars(
+                                $membershipTitle,
+                            ) ?>">
+                            <i class="fas <?= htmlspecialchars(
+                                $membershipIcon,
+                            ) ?>"></i>
+
+                            <?= $membershipTitle === "Schedule"
+                                ? "Schedule"
+                                : "Membership" ?>
                         </a>
                     </li>
                     <li>
-                        <a href="equipment.php" <?= $currentPage === 'equipment' ? 'class="active"' : '' ?> title="Equipment">
+                        <a href="equipment.php" <?= $currentPage ===
+                            "equipment"
+                            ? 'class="active"'
+                            : "" ?> title="Equipment">
                             <i class="fas fa-dumbbell"></i>
+                            Equipment
                         </a>
                     </li>
                     <li>
-                        <a href="products.php" <?= $currentPage === 'products' ? 'class="active"' : '' ?> title="Products">
+                        <a href="products.php" <?= $currentPage ===
+                            "products"
+                            ? 'class="active"'
+                            : "" ?> title="Products">
                             <i class="fas fa-shopping-cart"></i>
+                            Products
                         </a>
                     </li>
+
                     <li>
-                        <a href="contact.php" <?= $currentPage === 'contact' ? 'class="active"' : '' ?> title="Contact">
-                            <i class="fas fa-envelope"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="feedback.php" <?= $currentPage === 'feedback' ? 'class="active"' : '' ?> title="Feedback">
+                        <a href="feedback.php" <?= $currentPage ===
+                            "feedback"
+                            ? 'class="active"'
+                            : "" ?> title="Feedback">
                             <i class="fas fa-comments"></i>
+                            Feedbacks
                         </a>
                     </li>
+
                 </ul>
-            </nav>
-            <?php if (isset($_SESSION['email'])): ?>
-                <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
+                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar
+                          ? "default-icon"
+                          : "" ?>">
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
                     </div>
                 </div>
-            <?php else: ?>
-                <!-- Not logged-in -->
-                <a href="login.php" class="account-link">
-                    <img src="<?= IMAGES_PATH ?>/account-icon-white.svg" alt="Account" class="account-icon default-icon">
-                </a>
-            <?php endif; ?>
-        </div>
+            </nav>
+
+
+        <?php else: ?>
+            <!-- Not logged-in -->
+            <nav class="nav-bar">
+                <ul class="nav-links">
+                    <li class="member-nav">
+                        <a href="index.php" <?= $currentPage === "home"
+                            ? 'class="active"'
+                            : "" ?> title="Home">
+
+                            Home
+                        </a>
+                    </li>
+
+                    <li class="member-nav">
+                        <a href="contact.php" <?= $currentPage ===
+                            "contact"
+                            ? 'class="active"'
+                            : "" ?> title="Contact">
+                            Contact
+                        </a>
+                    </li>
+                    <li class="member-nav">
+                        <a href="feedback.php" <?= $currentPage ===
+                            "feedback"
+                            ? 'class="active"'
+                            : "" ?> title="Feedback">
+                            Feedbacks
+                        </a>
+                    </li>
+                    <li class="member-nav">
+                        <a href="login.php">Login</a>
+                    </li>
+                    <li>
+                        <a href="sign-up.php" class="nav-btn">Sign Up</a>
+                    </li>
+                </ul>
+            </nav>
+        <?php endif; ?>
     </header>

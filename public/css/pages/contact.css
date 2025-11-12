@@ -3,37 +3,16 @@
    =================================== */
 
 /* Background & Layout */
-body {
-  min-height: 100vh;
-  background-color: var(--color-bg-dark);
-  background-image: url('../../../images/contact_bg.webp');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  background-attachment: fixed;
-  position: relative;
-}
 
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg,
-      rgba(0, 47, 63, 0.5) 0%,
-      rgba(0, 47, 63, 0.4) 50%,
-      rgba(0, 47, 63, 0.3) 100%);
-  z-index: 0;
-  pointer-events: none;
-}
+
+
 
 .contact-page {
   min-height: calc(100vh - 80px);
   padding-bottom: var(--spacing-8);
   position: relative;
   z-index: 1;
+  background-color: #021422;
 }
 
 /* ===================================

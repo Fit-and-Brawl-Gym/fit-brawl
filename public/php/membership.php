@@ -627,5 +627,3 @@ require_once __DIR__ . '/../../includes/header.php';
     window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
 </script>
 <script src="<?= PUBLIC_PATH ?>/js/membership.js?=v1"></script>
-
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

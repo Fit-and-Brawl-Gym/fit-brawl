@@ -11,6 +11,7 @@ body {
   background-size: cover;
   background-attachment: fixed;
   position: relative;
+  z-index: 0;
 }
 
 body::before {
@@ -24,7 +25,7 @@ body::before {
       rgba(0, 47, 63, 0.95) 0%,
       rgba(0, 47, 63, 0.85) 50%,
       rgba(0, 47, 63, 0.7) 100%);
-  z-index: 0;
+  z-index: -10;
   pointer-events: none;
 }
 

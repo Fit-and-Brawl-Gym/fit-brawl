@@ -13,13 +13,13 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 150px;
   background-image: url('../../../images/homepage-boxer.webp');
   background-repeat: no-repeat;
   background-position: right -600px top -130px;
   background-size: auto 1100px;
   background-attachment: scroll;
-  min-height: 700px;
+  /* min-height: 700px; */
+  padding: 6rem 8rem;
 }
 
 .hero-content {
@@ -297,6 +297,11 @@ main {
 .overview-container {
   width: 100%;
   text-align: left;
+  padding: 1rem;
+}
+
+.overview-contents {
+  padding: 0rem 10rem;
 }
 
 .overview-title {
@@ -370,16 +375,17 @@ main {
   grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-10);
   margin-top: var(--spacing-12);
-  padding: var(--spacing-8);
+  padding: var(--spacing-8) 6rem;
   position: relative;
-  z-index: 3; /* make sure grid is above footer */
+  z-index: 3;
+  /* make sure grid is above footer */
 }
 
 .feature-card {
   background: var(--color-teal-overlay);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  padding: var(--spacing-10) var(--spacing-8);
+  padding: var(--spacing-8) var(--spacing-4);
   border-radius: var(--radius-xl);
   transition: var(--transition-base);
   border: 2px solid rgba(213, 186, 43, 0.3);
@@ -425,7 +431,7 @@ main {
 
 .feature-text {
   color: var(--color-white);
-  font-size: var(--font-size-base);
+  font-size: 14px;
   line-height: var(--line-height-relaxed);
   text-align: center;
 }
@@ -437,6 +443,7 @@ main {
   main {
     min-height: 1600px;
   }
+
   .homepage-hero {
     background-position: left -250px top -140px;
     background-size: auto 1000px;
@@ -483,6 +490,7 @@ main {
   main {
     min-height: 1700px;
   }
+
   .homepage-hero {
     flex-direction: column;
     align-items: flex-start;
@@ -858,4 +866,3 @@ main {
     font-size: var(--font-size-sm);
   }
 }
-

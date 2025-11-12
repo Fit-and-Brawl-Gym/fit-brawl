@@ -25,7 +25,7 @@ body::before {
             rgba(0, 47, 63, 0.95) 0%,
             rgba(0, 47, 63, 0.85) 50%,
             rgba(0, 47, 63, 0.7) 100%);
-    z-index: 0;
+    z-index: -10;
     pointer-events: none;
 }
 
@@ -117,13 +117,16 @@ body::before {
    =================================== */
 
 .membership-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     background: linear-gradient(135deg, rgba(255, 206, 0, 0.08) 0%, rgba(0, 47, 63, 0.7) 100%);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
     border-bottom: 2px solid rgba(255, 206, 0, 0.2);
     text-align: center;
     position: relative;
+    padding: 2rem 1rem;
 }
 
 .hero-title {
@@ -134,6 +137,7 @@ body::before {
     margin-bottom: var(--spacing-3);
     text-transform: uppercase;
     letter-spacing: 2px;
+    line-height: 0;
 }
 
 .hero-title .yellow {
@@ -1401,8 +1405,15 @@ body::before {
     }
 
     @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
     }
 
     .comparison-table-wrapper {
@@ -1610,4 +1621,3 @@ body::before {
         padding: var(--spacing-2) var(--spacing-3);
     }
 }
-

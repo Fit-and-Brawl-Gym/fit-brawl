@@ -1,29 +1,18 @@
 .login-main {
-    min-height: 100vh;
     background: var(--color-bg-dark) url('../../../images/login-bg.webp') no-repeat center center / cover;
     position: relative;
-}
-
-.login-main::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
-    z-index: 1;
+    height: fit-content;
 }
 
 .login-hero {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-20);
+    padding: 0rem 8rem;
     gap: var(--spacing-12);
     position: relative;
     z-index: 2;
-    min-height: 100vh;
+    height: 100dvh;
 }
 
 .hero-content {
@@ -45,10 +34,25 @@
     font-family: var(--font-family-display);
     font-size: var(--font-size-9xl);
     font-weight: var(--font-weight-black);
-    line-height: var(--line-height-tight);
     text-transform: uppercase;
-    margin-bottom: var(--spacing-6);
-    letter-spacing: 2px;
+}
+
+.hero-title-flex {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+}
+
+.hero-title-flex p {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-8xl);
+    font-weight: var(--font-weight-black);
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    line-height: 1.1;
 }
 
 .hero-title .yellow {
@@ -115,11 +119,17 @@
     transform: translateY(-50%);
     color: var(--color-text-muted);
     font-size: var(--font-size-lg);
+    width: full;
 }
 
-.input-group input {
-    width: 100%;
-    padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 50px;
+.input-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+input {
+    padding: var(--spacing-3) var(--spacing-4);
     border: 2px solid #ddd;
     border-radius: var(--radius-2xl);
     font-size: var(--font-size-base);

@@ -1,10 +1,9 @@
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     min-height: 100%;
     margin: 0;
     padding: 0;
@@ -146,7 +145,6 @@ main {
 
 /* Panel Header - Full Width */
 .panel-header {
-    margin-bottom: var(--spacing-6);
     width: 100%;
 }
 
@@ -299,7 +297,8 @@ select#statusFilter:focus {
     box-shadow: 0 0 0 3px rgba(255, 206, 0, 0.1);
 }
 
-input[type="search"]::placeholder, input#equipmentSearch::placeholder {
+input[type="search"]::placeholder,
+input#equipmentSearch::placeholder {
     color: rgba(255, 255, 255, 0.5);
 }
 
