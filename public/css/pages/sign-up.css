@@ -355,26 +355,23 @@
 .input-group.password-input-group input {
     -webkit-appearance: none;
     appearance: none;
-    /* iOS-specific fixes */
+}
+
+/* Prevent iOS password autofill overlay (yellow box) */
+.input-group.password-input-group input[type="password"] {
     -webkit-text-security: disc;
 }
 
-/* Ensure input is visible and properly sized on iOS */
-.input-group.password-input-group input[type="password"] {
-    font-size: 16px !important; /* Prevents iOS zoom on focus */
-    min-height: 50px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    /* Prevent iOS from showing its own password visibility toggle */
-    -webkit-text-security: disc !important;
+.input-group.password-input-group input[type="text"] {
+    -webkit-text-security: none;
 }
 
-/* When password is shown as text */
-.input-group.password-input-group input[type="text"] {
-    font-size: 16px !important;
-    min-height: 50px;
-    -webkit-text-security: none !important;
+/* iOS-specific fixes - ONLY apply on actual iOS devices */
+@supports (-webkit-touch-callout: none) {
+    .input-group.password-input-group input[type="password"],
+    .input-group.password-input-group input[type="text"] {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
 }
 
 /* Disable iOS autocomplete/autofill buttons that can cause overlap */
@@ -410,34 +407,34 @@
     right: 0;
 }
 
-/* Additional iOS fixes for password input */
-@supports (-webkit-touch-callout: none) {
-    /* iOS-only styles */
-    .input-group.password-input-group {
-        /* Ensure proper stacking context */
-        isolation: isolate;
-    }
+/* Additional iOS fixes for password input - ONLY on mobile screens */
+@media (max-width: 480px) {
+    @supports (-webkit-touch-callout: none) {
+        /* iOS-only styles for mobile */
+        .input-group.password-input-group {
+            /* Ensure proper stacking context */
+            isolation: isolate;
+        }
 
-    .input-group.password-input-group input {
-        padding-right: 50px !important;
-        font-size: 16px !important;
-        line-height: 1.5;
-        /* Force hardware acceleration */
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        /* Prevent text field zoom */
-        -webkit-text-size-adjust: 100%;
-    }
+        .input-group.password-input-group input {
+            padding-right: 50px;
+            font-size: 16px;
+            line-height: 1.5;
+            /* Force hardware acceleration */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
 
-    .input-group.password-input-group .eye-toggle {
-        z-index: 999;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-        padding: 12px;
-        margin-right: -12px;
-        /* Force hardware acceleration */
-        transform: translateY(-50%) translateZ(0);
-        -webkit-transform: translateY(-50%) translateZ(0);
+        .input-group.password-input-group .eye-toggle {
+            z-index: 999;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            padding: 12px;
+            margin-right: -12px;
+            /* Force hardware acceleration */
+            -webkit-transform: translateY(-50%) translateZ(0);
+            transform: translateY(-50%) translateZ(0);
+        }
     }
 }
 

@@ -201,22 +201,52 @@
             });
         }
 
-        // Toggle password visibility
+        // Toggle password visibility - iOS compatible
         if (togglePassword && passwordInput) {
             togglePassword.addEventListener('click', () => {
-                const type = passwordInput.type === 'password' ? 'text' : 'password';
-                passwordInput.type = type;
+                const isPassword = passwordInput.type === 'password';
+
+                // Store current value and cursor position
+                const currentValue = passwordInput.value;
+                const cursorPosition = passwordInput.selectionStart;
+
+                // Change type
+                passwordInput.type = isPassword ? 'text' : 'password';
+
+                // Restore value and cursor position (iOS fix)
+                passwordInput.value = currentValue;
+                passwordInput.setSelectionRange(cursorPosition, cursorPosition);
+
+                // Toggle icon
                 togglePassword.classList.toggle('fa-eye');
                 togglePassword.classList.toggle('fa-eye-slash');
+
+                // Refocus input to maintain UX
+                passwordInput.focus();
             });
         }
 
         if (toggleConfirmPassword && confirmPasswordInput) {
             toggleConfirmPassword.addEventListener('click', () => {
-                const type = confirmPasswordInput.type === 'password' ? 'text' : 'password';
-                confirmPasswordInput.type = type;
+                const isPassword = confirmPasswordInput.type === 'password';
+
+                // Store current value and cursor position
+                const currentValue = confirmPasswordInput.value;
+                const cursorPosition = confirmPasswordInput.selectionStart;
+
+                // Change type
+                confirmPasswordInput.type = isPassword ? 'text' : 'password';
+
+                // Restore value and cursor position (iOS fix)
+                confirmPasswordInput.value = currentValue;
+                confirmPasswordInput.setSelectionRange(cursorPosition, cursorPosition);
+
+                // Toggle icon
                 toggleConfirmPassword.classList.toggle('fa-eye');
                 toggleConfirmPassword.classList.toggle('fa-eye-slash');
+
+                // Refocus input to maintain UX
+                confirmPasswordInput.focus();
             });
         }
 

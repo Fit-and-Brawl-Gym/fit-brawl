@@ -392,11 +392,7 @@ main {
    MOBILE RESPONSIVENESS UTILITIES
    ======================================== */
 
-/* Prevent horizontal overflow on all devices */
-* {
-  max-width: 100%;
-}
-
+/* Prevent horizontal overflow - but allow normal widths */
 html {
   overflow-x: hidden;
 }
@@ -407,24 +403,21 @@ body {
   position: relative;
 }
 
-/* Touch-friendly interactive elements */
-@media (max-width: 768px) {
+/* Touch-friendly interactive elements - ONLY on actual mobile devices */
+@media (max-width: 480px) {
   /* Minimum touch target size - 44x44px for iOS, 48x48px for Android */
   button,
   a,
   input[type="submit"],
   input[type="button"],
-  input[type="checkbox"],
-  input[type="radio"],
   select {
     min-height: 44px;
-    min-width: 44px;
   }
 
-  /* Ensure proper touch target spacing */
-  button:not(:last-child),
-  a:not(:last-child) {
-    margin-bottom: var(--spacing-2);
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 20px;
+    min-height: 20px;
   }
 
   /* Improve form input usability */
@@ -438,7 +431,6 @@ body {
   select {
     font-size: 16px !important; /* Prevents iOS zoom on focus */
     min-height: 44px;
-    padding: var(--spacing-3) var(--spacing-4);
   }
 
   /* Better spacing for mobile */
