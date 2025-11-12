@@ -3598,4 +3598,1340 @@ We'd write tests for:
 
 ---
 
+---
+
+## ♿ Accessibility (a11y) Gaps
+
+### Question 25: Screen Reader Support & ARIA Attributes
+
+**Panel Question:** "Can visually impaired users navigate your system using screen readers? Are there ARIA labels, alt texts, and semantic HTML?"
+
+**Sample Answer:**
+
+"We have **minimal accessibility support** - system not usable by visually impaired users.
+
+**Current Accessibility:**
+
+✅ **Some semantic HTML** (`<button>`, `<nav>`, `<form>`)
+✅ **Alt text on some images** (product images)
+
+❌ No ARIA labels on interactive elements
+❌ No screen reader announcements for dynamic content
+❌ No skip-to-content links
+❌ No focus indicators for keyboard navigation
+❌ Icons without text alternatives
+❌ Form errors not announced to screen readers
+❌ No landmark regions (`role="main"`, `role="navigation"`)
+
+**Screen Reader User Experience:**
+
+**Example: Booking a Session (Current)**
+
+Screen reader announces:
+1. "Button" (which button? no label)
+2. "Link" (link to where? no context)
+3. "Click here" (click where for what?)
+4. "Image" (what image shows? no alt text)
+5. **User gives up - can't use system**
+
+**Problems:**
+
+**1. Icon Buttons Without Labels:**
+```html
+<!-- Current: Screen reader says "button" only -->
+<button onclick="deleteBooking(42)">
+    <i class="fas fa-trash"></i>
+</button>
+
+<!-- Should be: -->
+<button onclick="deleteBooking(42)" aria-label="Delete booking for Nov 15 Morning session">
+    <i class="fas fa-trash" aria-hidden="true"></i>
+    <span class="sr-only">Delete booking</span>
+</button>
+```
+
+**2. Form Errors Not Announced:**
+```html
+<!-- Current: Visual error only -->
+<div class="error-message" style="color: red;">
+    Invalid email format
+</div>
+
+<!-- Should be: -->
+<div class="error-message" role="alert" aria-live="polite">
+    Invalid email format
+</div>
+
+<input 
+    type="email" 
+    id="email"
+    aria-invalid="true"
+    aria-describedby="email-error"
+>
+<span id="email-error" class="error">Invalid email format</span>
+```
+
+**3. Dynamic Content Not Announced:**
+```javascript
+// Current: Toast notification appears but screen reader doesn't know
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+}
+
+// Should be:
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive'); // Interrupts screen reader
+    document.body.appendChild(toast);
+}
+```
+
+**4. No Skip Links:**
+```html
+<!-- Should have at top of every page: -->
+<a href="#main-content" class="skip-link">
+    Skip to main content
+</a>
+
+<style>
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0; /* Appears when focused via Tab key */
+}
+</style>
+
+<main id="main-content">
+    <!-- Page content here -->
+</main>
+```
+
+**5. Landmark Regions Missing:**
+```html
+<!-- Current: Generic divs -->
+<div class="header">...</div>
+<div class="sidebar">...</div>
+<div class="content">...</div>
+<div class="footer">...</div>
+
+<!-- Should be: -->
+<header role="banner">
+    <nav role="navigation" aria-label="Main navigation">...</nav>
+</header>
+<aside role="complementary" aria-label="Filters">...</aside>
+<main role="main">...</main>
+<footer role="contentinfo">...</footer>
+```
+
+**6. Tables Without Proper Headers:**
+```html
+<!-- Current: No header association -->
+<table>
+    <tr>
+        <td>Name</td>
+        <td>Date</td>
+        <td>Session</td>
+    </tr>
+    <tr>
+        <td>John Doe</td>
+        <td>Nov 15</td>
+        <td>Morning</td>
+    </tr>
+</table>
+
+<!-- Should be: -->
+<table>
+    <thead>
+        <tr>
+            <th scope="col">Trainer Name</th>
+            <th scope="col">Date</th>
+            <th scope="col">Session Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>John Doe</td>
+            <td>Nov 15, 2025</td>
+            <td>Morning (7-11 AM)</td>
+        </tr>
+    </tbody>
+</table>
+```
+
+**7. Modal Dialogs Not Accessible:**
+```html
+<!-- Current: Can tab out of modal, focus not trapped -->
+<div class="modal">
+    <h2>Confirm Cancellation</h2>
+    <button onclick="confirmCancel()">Yes</button>
+    <button onclick="closeModal()">No</button>
+</div>
+
+<!-- Should be: -->
+<div 
+    class="modal" 
+    role="dialog" 
+    aria-labelledby="modal-title"
+    aria-describedby="modal-description"
+    aria-modal="true"
+>
+    <h2 id="modal-title">Confirm Cancellation</h2>
+    <p id="modal-description">
+        Are you sure you want to cancel your booking for Nov 15?
+    </p>
+    <button onclick="confirmCancel()" autofocus>Yes, Cancel Booking</button>
+    <button onclick="closeModal()">No, Keep Booking</button>
+</div>
+
+<script>
+// Trap focus inside modal
+function trapFocus(modal) {
+    const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+            } else if (!e.shiftKey && document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+            }
+        }
+        
+        // Escape closes modal
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+}
+</script>
+```
+
+**WCAG 2.1 Compliance Gaps:**
+
+**Level A (Minimum - We Fail):**
+- ❌ **1.1.1 Non-text Content**: Images without alt text
+- ❌ **2.1.1 Keyboard**: Some elements not keyboard accessible
+- ❌ **3.3.1 Error Identification**: Errors not clearly identified
+- ❌ **4.1.2 Name, Role, Value**: Interactive elements missing ARIA
+
+**Level AA (Target - We Fail More):**
+- ❌ **1.4.3 Contrast**: Some text fails color contrast ratio (4.5:1)
+- ❌ **2.4.7 Focus Visible**: No visible focus indicators
+- ❌ **3.3.3 Error Suggestion**: No suggestions to fix errors
+
+**Level AAA (Advanced - Not Attempting):**
+- ❌ Everything
+
+**Accessibility Testing Tools We Don't Use:**
+
+1. **axe DevTools** (Browser extension)
+2. **WAVE** (Web accessibility evaluation)
+3. **Screen reader testing** (NVDA, JAWS, VoiceOver)
+4. **Keyboard-only navigation testing**
+5. **Color contrast checkers**
+
+**Quick Accessibility Audit Results:**
+
+```bash
+# Running axe-core on reservations.php would find:
+- 25 critical issues (breaks screen readers)
+- 47 serious issues (major barriers)
+- 103 moderate issues (usability problems)
+- 89 minor issues (nice to fix)
+```
+
+**Why We Don't Have Accessibility:**
+
+1. **Not Taught**: Web accessibility not covered in curriculum
+2. **Not Visible**: Can test app visually, don't notice a11y issues
+3. **Time Constraints**: Accessibility retrofit takes significant time
+4. **Awareness Gap**: Didn't think about disabled users
+5. **No Requirements**: Capstone rubric doesn't mandate WCAG compliance
+
+**Legal/Ethical Issues:**
+
+**Legal:**
+- Violates accessibility laws in many countries
+- Government/educational institutions can't use system
+- Could face discrimination lawsuits
+
+**Ethical:**
+- Excludes 15% of population with disabilities
+- Blind gym members can't book sessions independently
+- Discriminates against disabled users
+
+**If Panel Member is Visually Impaired:**
+
+This would be **very** obvious problem in demo.
+
+**Minimum Viable Accessibility (1-2 Weeks):**
+
+**Phase 1: Semantic HTML (2 days)**
+- Add proper heading hierarchy (h1, h2, h3)
+- Use semantic elements (nav, main, aside, footer)
+- Add landmark roles
+
+**Phase 2: Keyboard Navigation (2 days)**
+- Ensure all interactive elements keyboard accessible
+- Add visible focus indicators
+- Fix tab order
+
+**Phase 3: Screen Reader Basics (3 days)**
+- Add ARIA labels to all buttons/links
+- Add alt text to all images
+- Make error messages announced
+
+**Phase 4: Forms (2 days)**
+- Associate labels with inputs
+- Add aria-invalid for errors
+- Use aria-describedby for help text
+
+**Quick Wins (1 Day):**
+
+```html
+<!-- 1. Add alt text to all images -->
+<img src="trainer.jpg" alt="John Doe - Boxing Trainer">
+
+<!-- 2. Add labels to form inputs -->
+<label for="email">Email Address</label>
+<input type="email" id="email" name="email">
+
+<!-- 3. Add ARIA labels to icon buttons -->
+<button aria-label="Delete booking">
+    <i class="fas fa-trash"></i>
+</button>
+
+<!-- 4. Add skip link -->
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<!-- 5. Add landmark roles -->
+<main role="main">...</main>
+```
+
+**Trade-offs:**
+
+| No Accessibility | Accessible |
+|------------------|------------|
+| Fast development | Slower (learn + implement) |
+| Excludes disabled | Inclusive for all |
+| Legal risk | Legal compliance |
+| Poor UX for 15% | Good UX for everyone |
+
+**If Asked to Make Accessible:**
+
+We'd hire accessibility consultant or follow WCAG 2.1 AA guidelines systematically.
+
+**Key Assessment Point:** Acknowledge this is major gap, understand what accessibility means, know it's important for production systems even if not implemented in capstone."
+
+**Key Assessment Points:** WCAG awareness, accessibility importance, screen reader understanding, legal/ethical considerations
+
+---
+
+### Question 26: Color Blindness & Visual Design Accessibility
+
+**Panel Question:** "Your system uses red/green indicators for status (approved/pending). What about users with color blindness who can't distinguish these colors?"
+
+**Sample Answer:**
+
+"We rely on **color alone** to convey information - inaccessible to color-blind users.
+
+**Current Color-Dependent Design:**
+
+**1. Status Indicators (Red/Green):**
+```html
+<!-- Member can't distinguish if color blind -->
+<span class="status-approved" style="color: green;">✓ Approved</span>
+<span class="status-pending" style="color: orange;">⏱ Pending</span>
+<span class="status-rejected" style="color: red;">✗ Rejected</span>
+```
+
+**Color blind users see:** Grey, grey, grey (can't tell status!)
+
+**2. Form Validation (Red Borders):**
+```css
+input.error {
+    border: 2px solid red; /* Only indicator of error */
+}
+```
+
+**Color blind users:** Don't notice error, submit form again, confused why failing.
+
+**3. Calendar Availability:**
+```javascript
+// Green = available, red = booked
+calendar.style.backgroundColor = trainer.available ? 'green' : 'red';
+```
+
+**Protanopia (red-blind) users:** Can't tell which dates are available.
+
+**4. Charts/Graphs (If We Had Them):**
+```html
+<!-- Revenue chart with red/green lines -->
+<canvas id="revenue-chart"></canvas>
+<!-- Color blind can't distinguish lines -->
+```
+
+**Types of Color Blindness:**
+
+**Deuteranopia (Green-blind):** 5% of males
+**Protanopia (Red-blind):** 2% of males  
+**Tritanopia (Blue-blind):** 0.001% of population
+**Achromatopsia (Complete):** Rare
+
+**~8% of men, ~0.5% of women** affected by some form.
+
+**WCAG 2.1 Guideline 1.4.1:**
+
+> "Color is not used as the only visual means of conveying information"
+
+We violate this extensively.
+
+**Proper Implementation:**
+
+**1. Multiple Visual Indicators:**
+```html
+<!-- Color + icon + text -->
+<span class="status-approved">
+    <i class="fas fa-check-circle" aria-hidden="true"></i>
+    <span style="color: green;">Approved</span>
+</span>
+
+<span class="status-pending">
+    <i class="fas fa-clock" aria-hidden="true"></i>
+    <span style="color: orange;">Pending Review</span>
+</span>
+
+<span class="status-rejected">
+    <i class="fas fa-times-circle" aria-hidden="true"></i>
+    <span style="color: red;">Rejected</span>
+</span>
+```
+
+**Even if colors invisible:** Icon shape + text convey status.
+
+**2. Form Errors with Icons:**
+```html
+<div class="form-group">
+    <label for="email">Email</label>
+    <input 
+        type="email" 
+        id="email"
+        class="error"
+        style="border: 2px solid red; background-image: url('error-icon.svg');"
+    >
+    <i class="fas fa-exclamation-triangle" style="color: red;"></i>
+    <span class="error-text">Invalid email format</span>
+</div>
+```
+
+**Multiple indicators:** Red border + icon + error text + background pattern.
+
+**3. Patterns/Textures Instead of Color Alone:**
+```css
+/* Calendar dates */
+.date-available {
+    background-color: #28a745;
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255,255,255,.1) 10px,
+        rgba(255,255,255,.1) 20px
+    );
+    /* Green color + diagonal stripes pattern */
+}
+
+.date-booked {
+    background-color: #dc3545;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 5px,
+        rgba(0,0,0,.1) 5px,
+        rgba(0,0,0,.1) 10px
+    );
+    /* Red color + crosshatch pattern */
+}
+```
+
+**Even in grayscale:** Patterns distinguishable.
+
+**4. High Contrast Mode Support:**
+```css
+/* Respect user's high contrast settings */
+@media (prefers-contrast: high) {
+    .status-approved {
+        border: 3px solid currentColor;
+        font-weight: bold;
+    }
+}
+
+/* Respect reduced motion settings */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+```
+
+**5. Text Labels Always Visible:**
+```html
+<!-- Bad: Tooltip only shows on hover (color blind can't see color) -->
+<div class="status-dot red" title="Rejected"></div>
+
+<!-- Good: Text always visible -->
+<div class="status-badge">
+    <span class="dot red"></span>
+    <span class="text">Rejected</span>
+</div>
+```
+
+**Color Contrast Issues:**
+
+**Current Problems:**
+```css
+/* Light grey text on white background */
+.hint {
+    color: #999;  /* Contrast ratio: 2.85:1 - FAILS WCAG AA (needs 4.5:1) */
+}
+
+/* Blue link on dark blue background */
+a {
+    color: #007bff; /* On #003d7a background = 2.1:1 - FAILS */
+}
+```
+
+**Tool to Check:** WebAIM Contrast Checker
+
+**Fixed:**
+```css
+.hint {
+    color: #6c6c6c;  /* Contrast ratio: 5.74:1 - PASSES */
+}
+
+a {
+    color: #66b3ff; /* On #003d7a background = 4.52:1 - PASSES */
+}
+```
+
+**Testing for Color Blindness:**
+
+**Tools:**
+1. **Coblis (Color Blindness Simulator)** - Upload screenshot, see how color blind users see it
+2. **Chrome DevTools** - Emulate vision deficiencies
+3. **Stark plugin** (Figma/Sketch) - Design accessibility checker
+
+**What We'd Find:**
+
+Simulating Deuteranopia on our booking page:
+- "Available" and "Booked" slots look identical
+- Approved/Pending memberships indistinguishable
+- Error messages invisible (just see empty red boxes)
+
+**Why We Don't Consider This:**
+
+1. **Not Aware**: Didn't know about color blindness requirements
+2. **Can't Test**: Team has normal color vision, don't notice issue
+3. **Design Habits**: Use color because it's easiest (red=bad, green=good)
+4. **Not Taught**: Accessibility not in curriculum
+
+**Real User Impact:**
+
+**Scenario:**
+- Color-blind member books session
+- Sees green/red calendar but can't tell which dates available
+- Randomly clicks dates hoping one works
+- Gets error "Trainer already booked"
+- Frustrated, calls gym instead
+
+**Quick Fixes (1-2 Days):**
+
+```html
+<!-- 1. Add icons everywhere we use color -->
+✓ Approved (green check)
+⏱ Pending (orange clock)
+✗ Rejected (red X)
+
+<!-- 2. Add text labels to visual indicators -->
+<span class="badge badge-success">
+    <i class="fas fa-check"></i> Active
+</span>
+
+<!-- 3. Use CSS patterns/borders in addition to color -->
+.available { 
+    background: green; 
+    border: 3px solid darkgreen;
+    font-weight: bold;
+}
+.booked { 
+    background: red; 
+    border: 3px dashed darkred;
+    opacity: 0.6;
+}
+```
+
+**Trade-offs:**
+
+| Color Only | Color + Other Indicators |
+|------------|--------------------------|
+| Clean design | Slightly busier UI |
+| Fast to implement | Takes more thought |
+| Excludes 8% users | Accessible to all |
+| WCAG failure | WCAG compliant |
+
+**If Demonstrating:**
+
+"We acknowledge color accessibility gap. In production, we'd use color + icons + text + patterns to ensure color-blind users can distinguish all states."
+
+**Key Assessment Points:** Color blindness awareness, WCAG understanding, inclusive design thinking, testing tools knowledge
+
+---
+
+## 📚 Learnability & Usability Gaps
+
+### Question 27: Onboarding & First-Time User Experience
+
+**Panel Question:** "When a new member first logs in, how do they learn how to use the system? Is there a tutorial, tooltips, or help documentation?"
+
+**Sample Answer:**
+
+"We have **zero onboarding** - users must figure out system by trial and error.
+
+**Current First-Time Experience:**
+
+1. Member registers account
+2. Logs in
+3. **Sees dashboard with no explanation**
+4. Clicks around randomly hoping to understand
+5. Eventually figures out booking process (maybe)
+
+❌ No welcome tour
+❌ No tooltips explaining features
+❌ No help documentation  
+❌ No tutorial videos
+❌ No contextual help
+❌ No FAQ page
+❌ No "What's this?" buttons
+
+**Problems:**
+
+**1. Unclear User Flow:**
+```
+New member logs in, sees:
+- Dashboard (empty, no bookings yet)
+- "View Reservations" button (confusing - they have no reservations)
+- "Membership Status" showing pending
+
+What should they do? System doesn't say.
+```
+
+**Better:**
+```
+Welcome message:
+"Your membership is pending approval. You'll be able to book sessions once approved (usually 24 hours). Check your email for updates!"
+```
+
+**2. Complex Booking Flow Without Guidance:**
+```
+Booking requires:
+1. Choose trainer (how do I know which trainer?)
+2. Select date (any restrictions?)
+3. Pick session time (what's difference between Morning/Afternoon/Evening?)
+4. Confirm
+
+User confused at each step.
+```
+
+**Better:**
+```
+Each step has help text:
+"Choose a trainer based on your membership type. 
+Boxing membership? Select a Boxing trainer."
+
+"Sessions: Morning (7-11 AM), Afternoon (1-5 PM), Evening (6-10 PM)"
+
+"You can book up to 12 sessions per week."
+```
+
+**3. No Explanation of Business Rules:**
+
+Users discover rules by error:
+- Try booking 13th session → "Weekly limit exceeded" (surprise!)
+- Try booking past date → Error (doesn't explain why)
+- Membership expires → Can't book (no warning given)
+
+**Proper Onboarding Implementation:**
+
+**1. Welcome Tour (First Login):**
+```javascript
+// Using Intro.js or Shepherd.js
+const tour = new Shepherd.Tour({
+    useModalOverlay: true,
+    defaultStepOptions: {
+        classes: 'shepherd-theme-arrows',
+        scrollTo: true
+    }
+});
+
+tour.addStep({
+    id: 'welcome',
+    text: 'Welcome to FitXBrawl! Let\'s take a quick tour.',
+    buttons: [
+        { text: 'Skip', action: tour.cancel },
+        { text: 'Start Tour', action: tour.next }
+    ]
+});
+
+tour.addStep({
+    id: 'dashboard',
+    text: 'This is your dashboard. See your upcoming sessions and membership status.',
+    attachTo: { element: '.dashboard-widget', on: 'bottom' },
+    buttons: [
+        { text: 'Back', action: tour.back },
+        { text: 'Next', action: tour.next }
+    ]
+});
+
+tour.addStep({
+    id: 'booking',
+    text: 'Click here to book a training session with our trainers.',
+    attachTo: { element: '#book-session-btn', on: 'bottom' },
+    buttons: [
+        { text: 'Back', action: tour.back },
+        { text: 'Got it!', action: tour.complete }
+    ]
+});
+
+// Show tour only on first login
+if (!localStorage.getItem('tour_completed')) {
+    tour.start();
+    tour.on('complete', () => {
+        localStorage.setItem('tour_completed', 'true');
+    });
+}
+```
+
+**2. Contextual Tooltips:**
+```html
+<!-- Info icons with helpful tooltips -->
+<label>
+    Session Time 
+    <i class="fas fa-info-circle tooltip-trigger" 
+       data-tooltip="Morning: 7-11 AM, Afternoon: 1-5 PM, Evening: 6-10 PM">
+    </i>
+</label>
+
+<script>
+// Tooltip library (Tippy.js)
+tippy('.tooltip-trigger', {
+    content(reference) {
+        return reference.getAttribute('data-tooltip');
+    },
+    placement: 'right'
+});
+</script>
+```
+
+**3. Inline Help Text:**
+```html
+<div class="form-group">
+    <label for="trainer">Select Trainer</label>
+    <select id="trainer" name="trainer_id">
+        <option value="">Choose a trainer...</option>
+        <!-- ... -->
+    </select>
+    <small class="form-text text-muted">
+        💡 Tip: Choose a trainer that specializes in your membership type 
+        (Boxing, Muay Thai, MMA, or Gym).
+    </small>
+</div>
+
+<div class="weekly-limit-info">
+    <i class="fas fa-info-circle"></i>
+    You can book up to 12 sessions per week (resets every Sunday).
+    <strong>Current week: <?= $weeklyBookings ?>/12 sessions used</strong>
+</div>
+```
+
+**4. Empty State Messaging:**
+```html
+<!-- Instead of showing empty table -->
+<?php if (empty($bookings)): ?>
+    <div class="empty-state">
+        <i class="fas fa-calendar-plus fa-3x"></i>
+        <h3>No Upcoming Sessions</h3>
+        <p>You haven't booked any training sessions yet.</p>
+        <a href="reservations.php" class="btn btn-primary">
+            Book Your First Session
+        </a>
+    </div>
+<?php else: ?>
+    <!-- Show bookings table -->
+<?php endif; ?>
+```
+
+**5. Progress Indicators:**
+```html
+<!-- Multi-step form with clear progress -->
+<div class="booking-steps">
+    <div class="step completed">
+        <span class="step-number">✓</span>
+        <span class="step-label">Choose Trainer</span>
+    </div>
+    <div class="step active">
+        <span class="step-number">2</span>
+        <span class="step-label">Select Date & Time</span>
+        <span class="step-help">Pick an available slot</span>
+    </div>
+    <div class="step">
+        <span class="step-number">3</span>
+        <span class="step-label">Confirm</span>
+    </div>
+</div>
+```
+
+**6. Help Documentation Page:**
+```html
+<!-- help.php -->
+<h1>FitXBrawl Help Center</h1>
+
+<section id="getting-started">
+    <h2>Getting Started</h2>
+    <div class="help-article">
+        <h3>How do I book a training session?</h3>
+        <ol>
+            <li>Go to Reservations page</li>
+            <li>Choose a trainer that matches your membership</li>
+            <li>Select an available date</li>
+            <li>Pick a session time (Morning/Afternoon/Evening)</li>
+            <li>Click "Book Session"</li>
+        </ol>
+        <img src="/images/help/booking-process.gif" alt="Booking walkthrough">
+    </div>
+    
+    <div class="help-article">
+        <h3>What's the weekly booking limit?</h3>
+        <p>You can book up to 12 sessions per week. The week runs from Sunday to Saturday and resets every Sunday at midnight.</p>
+    </div>
+</section>
+
+<section id="faq">
+    <h2>Frequently Asked Questions</h2>
+    <!-- Expandable accordion -->
+    <details>
+        <summary>Can I cancel a booking?</summary>
+        <p>Yes, but please cancel at least 24 hours before the session to avoid penalties.</p>
+    </details>
+    
+    <details>
+        <summary>What happens when my membership expires?</summary>
+        <p>You have a 3-day grace period after expiry to continue booking while you renew.</p>
+    </details>
+</section>
+
+<!-- Search functionality -->
+<input type="search" placeholder="Search help articles..." id="help-search">
+```
+
+**7. Onboarding Checklist:**
+```html
+<!-- Show until completed -->
+<div class="onboarding-checklist">
+    <h4>Get Started with FitXBrawl</h4>
+    <ul>
+        <li class="completed">
+            <i class="fas fa-check"></i> Create account
+        </li>
+        <li class="completed">
+            <i class="fas fa-check"></i> Purchase membership
+        </li>
+        <li class="pending">
+            <i class="far fa-circle"></i> 
+            <a href="reservations.php">Book your first session</a>
+        </li>
+        <li class="pending">
+            <i class="far fa-circle"></i> 
+            <a href="profile.php">Complete your profile</a>
+        </li>
+        <li class="pending">
+            <i class="far fa-circle"></i> 
+            <a href="feedback.php">Share feedback</a>
+        </li>
+    </ul>
+    <button onclick="dismissChecklist()">Dismiss</button>
+</div>
+```
+
+**8. Video Tutorials:**
+```html
+<div class="help-section">
+    <h3>Video Tutorials</h3>
+    <div class="video-grid">
+        <div class="video-card">
+            <iframe src="https://youtube.com/embed/..." title="How to book sessions"></iframe>
+            <h4>How to Book a Training Session</h4>
+            <p>2:30 min</p>
+        </div>
+        <div class="video-card">
+            <iframe src="https://youtube.com/embed/..." title="Managing membership"></iframe>
+            <h4>Managing Your Membership</h4>
+            <p>1:45 min</p>
+        </div>
+    </div>
+</div>
+```
+
+**Why We Don't Have Onboarding:**
+
+1. **Assumed Intuitive**: Thought system self-explanatory
+2. **Time Investment**: Onboarding takes 1-2 weeks to build
+3. **Content Creation**: Need to write help docs, record videos
+4. **Not Required**: Capstone doesn't mandate user education
+5. **We Know System**: Team knows how it works, didn't test with fresh users
+
+**Real User Testing Would Reveal:**
+
+Without instructions:
+- "How do I book a session?" (clicks around 30 seconds)
+- "What's the difference between these trainers?" (confused)
+- "Why can't I book?" (membership pending, not explained)
+- "What does Morning session mean? What time?" (unclear)
+
+**Learnability Metrics We Can't Measure:**
+
+- ❓ Time to first successful booking
+- ❓ Error rate for new users
+- ❓ Support requests from new users
+- ❓ Feature discovery rate
+
+**Cognitive Load Issues:**
+
+**Too Much Information at Once:**
+- Booking form shows all options simultaneously
+- No progressive disclosure
+- Overwhelming for first-time users
+
+**Better: Progressive Disclosure:**
+```javascript
+// Step 1: Choose trainer
+showTrainerSelection();
+
+// Step 2: Only show dates after trainer selected
+onTrainerSelected(() => {
+    showDateSelection();
+});
+
+// Step 3: Only show times after date selected
+onDateSelected(() => {
+    showTimeSelection();
+});
+
+// One decision at a time = less cognitive load
+```
+
+**Quick Wins (1 Week):**
+
+1. **Add help text** under form fields (1 day)
+2. **Empty state messages** instead of blank screens (1 day)
+3. **FAQ page** with common questions (2 days)
+4. **Welcome message** on first login (1 day)
+5. **Tooltips** on unclear elements (2 days)
+
+**If User Testing:**
+
+We'd use **"Think Aloud Protocol"**:
+- Watch new user use system
+- Ask them to narrate thoughts
+- Note where they get confused
+- Identify missing explanations
+
+**Trade-offs:**
+
+| No Onboarding | With Onboarding |
+|---------------|-----------------|
+| Immediate access | Small upfront delay |
+| Clean interface | Slightly cluttered |
+| Users confused | Users confident |
+| High support burden | Low support burden |
+| Slow feature adoption | Fast feature adoption |
+
+**If Panel Asks:**
+
+"We acknowledge lack of user education. For production, we'd implement progressive onboarding: welcome tour → contextual tooltips → help docs → video tutorials. Reduces support burden and improves user satisfaction."
+
+**Key Assessment Points:** Usability awareness, user-centered design, learning curve understanding, help system importance
+
+---
+
+### Question 28: Error Messages & Recovery Guidance
+
+**Panel Question:** "When something goes wrong, your error messages say 'Booking failed' without explaining why or how to fix it. How should users recover from errors?"
+
+**Sample Answer:**
+
+"We have **generic error messages without recovery guidance** - users stuck when errors occur.
+
+**Current Error Message Pattern:**
+
+```javascript
+// Typical error handling
+if (!response.success) {
+    showToast('Booking failed', 'error');
+}
+```
+
+**What users see:** "Booking failed"  
+**What users need:**
+- WHY did it fail?
+- WHAT should I do differently?
+- HOW can I fix it?
+
+**Problem Examples:**
+
+**1. Generic Database Error:**
+```
+Current: "Operation failed. Please try again."
+
+User thinks: 
+- Try what again? 
+- What did I do wrong?
+- Will it fail again?
+- Should I contact someone?
+```
+
+**Better:**
+```
+"Booking could not be saved due to a technical issue. 
+Please try again in a few minutes. If problem persists, 
+contact support at support@fitxbrawl.com with error code: BK-2025"
+```
+
+**2. Validation Error Without Context:**
+```
+Current: "Invalid input"
+
+User thinks:
+- Which input?
+- What's invalid about it?
+- What format is expected?
+```
+
+**Better:**
+```
+"Email format is invalid. 
+Please use format: yourname@example.com
+Example: john.doe@gmail.com"
+```
+
+**3. Business Rule Violation:**
+```
+Current: "Booking failed"
+
+Reason: Weekly limit exceeded (12/12 bookings)
+
+User thinks:
+- Huh? Worked yesterday, why not today?
+- Random failure?
+- System broken?
+```
+
+**Better:**
+```
+"You've reached your weekly booking limit (12 sessions). 
+Limit resets every Sunday at midnight.
+
+Current week (Nov 10-16): 12/12 sessions used
+
+Next available booking: Sunday, Nov 17 at 12:00 AM
+
+Tip: Cancel an existing booking to free up a slot."
+```
+
+**Proper Error Message Design:**
+
+**Template:**
+```
+[WHAT HAPPENED] 
+[WHY IT HAPPENED]
+[WHAT TO DO NEXT]
+[ALTERNATIVE OPTIONS]
+```
+
+**Examples:**
+
+**1. Trainer Unavailable:**
+```javascript
+{
+    success: false,
+    error_code: 'TRAINER_BOOKED',
+    title: 'Trainer Not Available',
+    message: 'John Doe is already booked for Morning session on Nov 15.',
+    suggestion: 'Try selecting a different time slot or choose another trainer.',
+    actions: [
+        { label: 'View John\'s Other Available Slots', action: 'showAvailability' },
+        { label: 'Choose Different Trainer', action: 'changeTrainer' }
+    ]
+}
+```
+
+**2. Membership Expired:**
+```javascript
+{
+    success: false,
+    error_code: 'MEMBERSHIP_EXPIRED',
+    title: 'Membership Has Expired',
+    message: 'Your Boxing membership expired on Nov 10, 2025.',
+    suggestion: 'Renew your membership to continue booking sessions.',
+    grace_period: 'You have 1 day remaining in your 3-day grace period.',
+    actions: [
+        { label: 'Renew Membership Now', action: 'redirectToMembership', primary: true },
+        { label: 'View Membership Plans', action: 'viewPlans' }
+    ]
+}
+```
+
+**3. Network Error:**
+```javascript
+{
+    success: false,
+    error_code: 'NETWORK_ERROR',
+    title: 'Connection Problem',
+    message: 'Could not connect to server. Please check your internet connection.',
+    suggestion: 'Make sure you\'re connected to the internet and try again.',
+    auto_retry: true,
+    retry_in: 5, // seconds
+    actions: [
+        { label: 'Retry Now', action: 'retry', primary: true },
+        { label: 'Work Offline', action: 'offlineMode' }
+    ]
+}
+```
+
+**Error Message Component:**
+
+```html
+<div class="error-dialog" role="alert">
+    <div class="error-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="error-content">
+        <h3 class="error-title">Trainer Not Available</h3>
+        <p class="error-message">
+            John Doe is already booked for Morning session on Nov 15, 2025.
+        </p>
+        <div class="error-suggestion">
+            <strong>What you can do:</strong>
+            <ul>
+                <li>Select a different time slot (Afternoon or Evening)</li>
+                <li>Choose another trainer who teaches Boxing</li>
+                <li>Try a different date</li>
+            </ul>
+        </div>
+    </div>
+    <div class="error-actions">
+        <button class="btn btn-primary" onclick="viewAvailability()">
+            View Available Slots
+        </button>
+        <button class="btn btn-secondary" onclick="changeTrainer()">
+            Choose Different Trainer
+        </button>
+        <button class="btn btn-text" onclick="closeDialog()">
+            Cancel
+        </button>
+    </div>
+</div>
+```
+
+**Error Recovery Patterns:**
+
+**1. Automatic Retry:**
+```javascript
+async function bookSession(data, retryCount = 0) {
+    try {
+        const response = await fetch('/api/book_session.php', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok && retryCount < 3) {
+            // Network error - retry
+            showToast(`Connection failed. Retrying (${retryCount + 1}/3)...`, 'warning');
+            await sleep(2000); // Wait 2 seconds
+            return bookSession(data, retryCount + 1);
+        }
+        
+        return response.json();
+    } catch (error) {
+        if (retryCount < 3) {
+            return bookSession(data, retryCount + 1);
+        }
+        
+        // Failed after 3 retries
+        showError({
+            title: 'Booking Failed After Multiple Attempts',
+            message: 'We tried 3 times but couldn\'t complete your booking.',
+            suggestion: 'This might be a temporary server issue. Please try again in a few minutes.',
+            savedData: data, // Save for later retry
+            actions: [
+                { label: 'Retry Now', action: () => bookSession(data, 0) },
+                { label: 'Save Draft', action: () => saveDraft(data) },
+                { label: 'Contact Support', action: () => window.location.href = 'contact.php' }
+            ]
+        });
+    }
+}
+```
+
+**2. Form Data Preservation:**
+```javascript
+// Save form data before submission
+function handleSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    // Save to sessionStorage
+    sessionStorage.setItem('booking_draft', JSON.stringify(Object.fromEntries(formData)));
+    
+    // Submit
+    submitBooking(formData)
+        .then(response => {
+            if (response.success) {
+                // Clear draft
+                sessionStorage.removeItem('booking_draft');
+            } else {
+                // Show error, data still in form
+                showErrorWithRecovery(response.error);
+            }
+        });
+}
+
+// Restore draft on page load
+window.addEventListener('load', () => {
+    const draft = sessionStorage.getItem('booking_draft');
+    if (draft) {
+        if (confirm('Restore your previous booking attempt?')) {
+            const data = JSON.parse(draft);
+            // Populate form fields
+            document.getElementById('trainer_id').value = data.trainer_id;
+            document.getElementById('booking_date').value = data.booking_date;
+            // ...
+        } else {
+            sessionStorage.removeItem('booking_draft');
+        }
+    }
+});
+```
+
+**3. Contextual Help in Errors:**
+```javascript
+function showTrainerBookedError(booking) {
+    showError({
+        title: 'Trainer Already Booked',
+        message: `${booking.trainer_name} has another booking for ${booking.session_time} on ${booking.date}.`,
+        context: {
+            current_selection: {
+                trainer: booking.trainer_name,
+                date: booking.date,
+                session: booking.session_time
+            },
+            alternatives: getAlternatives(booking) // Suggest other options
+        },
+        actions: [
+            {
+                label: `Book ${booking.trainer_name} for ${getNextAvailableSlot(booking.trainer_id)}`,
+                action: () => bookAlternative(booking.trainer_id, getNextAvailableSlot())
+            },
+            {
+                label: 'Find Available Trainer',
+                action: () => findAvailableTrainers(booking.date, booking.session_time)
+            }
+        ]
+    });
+}
+```
+
+**Error Message Levels:**
+
+**1. Info (Blue):** FYI, no action needed
+```
+"Your booking has been confirmed. You'll receive an email shortly."
+```
+
+**2. Warning (Orange):** Action recommended but not required
+```
+"Your membership expires in 3 days. Consider renewing to avoid interruption."
+```
+
+**3. Error (Red):** Action required
+```
+"Booking failed: Weekly limit exceeded. Cancel an existing booking or wait until Sunday."
+```
+
+**4. Success (Green):** Confirmation
+```
+"Booking successful! You're scheduled for Boxing with John Doe on Nov 15 at 9 AM."
+```
+
+**Why We Have Poor Error Messages:**
+
+1. **Developer-Centric**: Wrote errors for debugging, not users
+2. **Generic for Simplicity**: One message for all failures
+3. **No User Testing**: Didn't see how confusing generic errors are
+4. **Backend Returns Details**: API has info but frontend doesn't use it
+
+**Current vs Better:**
+
+| Current | Better |
+|---------|--------|
+| "Booking failed" | "Trainer already booked for this time" |
+| "Invalid input" | "Email must contain @ symbol" |
+| "Error" | "Session has ended. Please book a future session." |
+| "Try again" | "Click 'Retry' or choose a different trainer" |
+
+**Nielsen's Error Message Heuristics:**
+
+✅ **Expressed in plain language** (not error codes)
+✅ **Indicate the problem precisely**
+✅ **Suggest a constructive solution**
+
+We fail all three.
+
+**Quick Wins (2-3 Days):**
+
+1. **Map error codes to friendly messages** (1 day)
+2. **Add recovery suggestions** (1 day)
+3. **Preserve form data on errors** (1 day)
+
+**If Panel Tests:**
+
+Try booking with:
+- Expired membership → See generic "failed"
+- 13th weekly booking → See generic "failed"
+- Past date → See generic "failed"
+
+All need specific messages + recovery guidance.
+
+**Key Assessment Points:** Error message design, user guidance, recovery patterns, Nielsen heuristics understanding
+
+---
+
 **Key Message:** Gaps exist due to **pragmatic scope management** and **appropriate architecture for scale**, not lack of technical knowledge.
