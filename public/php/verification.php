@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Set flag to clear session storage after redirect
             $_SESSION['clear_otp_timer'] = true;
-            
+
             header("Location: change-password.php");
             exit;
         } else {
