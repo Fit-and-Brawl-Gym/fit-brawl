@@ -1,11 +1,7 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 /* 3. Prevent font size inflation on mobile */
@@ -18,7 +14,10 @@ html {
 }
 
 /* 4. Remove built-in form typography styles */
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
   color: inherit;
 }
@@ -32,7 +31,11 @@ body {
 }
 
 /* 6. Improve media defaults */
-img, picture, video, canvas, svg {
+img,
+picture,
+video,
+canvas,
+svg {
   display: block;
   max-width: 100%;
   height: auto;
@@ -54,7 +57,8 @@ select:focus {
 }
 
 /* 9. Remove default list styles */
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -70,7 +74,8 @@ table {
   border-spacing: 0;
 }
 
-th, td {
+th,
+td {
   text-align: left;
   font-weight: inherit;
 }
@@ -103,7 +108,8 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 input[type="number"] {
-  appearance: none; /* Removes all default styling */
+  appearance: none;
+  /* Removes all default styling */
 }
 
 /* 16. Improve default cursor for interactive elements */

@@ -249,10 +249,6 @@ h2 {
   text-transform: uppercase;
 }
 
-p {
-  margin-bottom: var(--spacing-4);
-}
-
 /* Links */
 a {
   color: inherit;

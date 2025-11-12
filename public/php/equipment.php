@@ -158,86 +158,76 @@ $additionalJS = ['../js/equipment.js'];
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-        <div class="bg"></div>
- <!-- HERO -->
-    <section class="equipment-hero">
-        <div style="width:100%;margin:0;padding:var(--spacing-4) var(--spacing-12);">
-        <h1 class="title"><strong style="color:var(--color-accent)">PLAN</strong> YOUR WORKOUT</h1>
-        <h1 class="title">WITH <strong style="color:var(--color-accent)">CONFIDENCE</strong></h1>
-        <p class="subtitle"> Choose the <strong style="color:var(--color-accent)">EQUIPMENT</strong> best for you!</p>
-        </div>
-    </section>
+<div class="bg"></div>
 
-    <!--Main-->
-    <main>
-        <!-- Equipment Heading - Full Width -->
-        <div class="panel-header">
-            <h2>Equipment Availability</h2>
-        </div>
+<!--Main-->
+<main>
+    <!-- Equipment Heading - Full Width -->
+    <div class="panel-header">
+        <h2>Equipment Availability</h2>
+    </div>
 
-        <!-- Equipment Wrapper - Contains Sidebar and Grid -->
-        <div class="equipment-wrapper">
-            <!-- Left Sidebar - Filters -->
-            <aside class="filter-sidebar">
-                <h3>Filters</h3>
+    <!-- Equipment Wrapper - Contains Sidebar and Grid -->
+    <div class="equipment-wrapper">
+        <!-- Left Sidebar - Filters -->
+        <aside class="filter-sidebar">
+            <h3>Filters</h3>
 
-                <!-- Search Section -->
-                <div class="filter-section search-section">
-                    <label for="equipmentSearch">Search</label>
-                    <input type="search" id="equipmentSearch" placeholder="Search Equipment...">
-                </div>
+            <!-- Search Section -->
+            <div class="filter-section search-section">
+                <label for="equipmentSearch">Search</label>
+                <input type="search" id="equipmentSearch" placeholder="Search Equipment...">
+            </div>
 
-                <!-- Status Filter -->
-                <div class="filter-section">
-                    <label for="statusFilter">Status</label>
-                    <select id="statusFilter">
-                        <option value="all">All Equipment</option>
-                        <option value="available">Available</option>
-                        <option value="maintenance">Maintenance</option>
-                    </select>
-                </div>
+            <!-- Status Filter -->
+            <div class="filter-section">
+                <label for="statusFilter">Status</label>
+                <select id="statusFilter">
+                    <option value="all">All Equipment</option>
+                    <option value="available">Available</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+            </div>
 
-                <!-- Categories -->
-                <div class="filter-section">
-                    <label>Categories</label>
-                    <div class="categories-list" id="category-filters">
-                        <div class="category-chip" data-category="cardio">
-                            <img src="../../images/cardio-icon.svg" alt="Cardio">
-                            <p>Cardio</p>
-                        </div>
-                        <div class="category-chip" data-category="flexibility">
-                            <img src="../../images/flexibility-icon.svg" alt="Flexibility">
-                            <p>Flexibility</p>
-                        </div>
-                        <div class="category-chip" data-category="core">
-                            <img src="../../images/core-icon.svg" alt="Core">
-                            <p>Core</p>
-                        </div>
-                        <div class="category-chip" data-category="strength">
-                            <img src="../../images/strength-icon.svg" alt="Strength Training">
-                            <p>Strength Training</p>
-                        </div>
-                        <div class="category-chip" data-category="functional">
-                            <img src="../../images/functional-icon.svg" alt="Functional Training">
-                            <p>Functional Training</p>
-                        </div>
+            <!-- Categories -->
+            <div class="filter-section">
+                <label>Categories</label>
+                <div class="categories-list" id="category-filters">
+                    <div class="category-chip" data-category="cardio">
+                        <img src="../../images/cardio-icon.svg" alt="Cardio">
+                        <p>Cardio</p>
+                    </div>
+                    <div class="category-chip" data-category="flexibility">
+                        <img src="../../images/flexibility-icon.svg" alt="Flexibility">
+                        <p>Flexibility</p>
+                    </div>
+                    <div class="category-chip" data-category="core">
+                        <img src="../../images/core-icon.svg" alt="Core">
+                        <p>Core</p>
+                    </div>
+                    <div class="category-chip" data-category="strength">
+                        <img src="../../images/strength-icon.svg" alt="Strength Training">
+                        <p>Strength Training</p>
+                    </div>
+                    <div class="category-chip" data-category="functional">
+                        <img src="../../images/functional-icon.svg" alt="Functional Training">
+                        <p>Functional Training</p>
                     </div>
                 </div>
-            </aside>
+            </div>
+        </aside>
 
-            <!-- Main Content Area -->
-            <div class="equipment-content">
-                <!-- equipment list -->
-                <div id="equipment-container">
-                    <!-- JS will render equipment cards here -->
-                </div>
+        <!-- Main Content Area -->
+        <div class="equipment-content">
+            <!-- equipment list -->
+            <div id="equipment-container">
+                <!-- JS will render equipment cards here -->
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <!-- Back to Top Button -->
-    <button class="back-to-top" aria-label="Back to top">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<!-- Back to Top Button -->
+<button class="back-to-top" aria-label="Back to top">
+    <i class="fas fa-chevron-up"></i>
+</button>

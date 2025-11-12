@@ -101,60 +101,17 @@ require_once __DIR__ . '/../../includes/header.php';
                     <h1 class="page-title">Book Your Training Session</h1>
                     <p class="page-subtitle">Reserve your spot with our expert trainers</p>
                 </div>
-                <div
-                    class="membership-status-bar <?= $showExpirationWarning ? ($daysUntilExpiration < 0 ? 'critical' : 'warning') : '' ?>">
-                    <div class="status-badge <?= $daysUntilExpiration < 0 ? 'expired' : '' ?>">
-                        <?php if ($daysUntilExpiration < 0): ?>
-                            <i class="fas fa-times-circle"></i>
-                        <?php elseif ($showExpirationWarning): ?>
-                            <i class="fas fa-exclamation-triangle"></i>
-                        <?php else: ?>
-                            <i class="fas fa-check-circle"></i>
-                        <?php endif; ?>
 
-                        <div class="status-content">
-                            <?php if ($daysUntilExpiration < 0): ?>
-                                <!-- Expired - Grace Period -->
-                                <span class="status-title">Membership Expired</span>
-                                <span class="status-details">
-                                    Expired on <strong><?= date('M d, Y', strtotime($activeMembership['end_date'])) ?></strong>
-                                    (<?= abs($daysUntilExpiration) ?> day<?= abs($daysUntilExpiration) != 1 ? 's' : '' ?> ago) •
-                                    Book until <strong><?= $endDateWithGrace->format('M d, Y') ?></strong>
-                                    (<?= $daysUntilGraceEnd ?> day<?= $daysUntilGraceEnd != 1 ? 's' : '' ?> left)
-                                </span>
-                            <?php elseif ($showExpirationWarning): ?>
-                                <!-- Expiring Soon -->
-                                <span class="status-title">Membership Expiring Soon</span>
-                                <span class="status-details">
-                                    <?php if ($daysUntilExpiration == 0): ?>
-                                        Expires <strong>Today</strong>
-                                        (<?= date('M d, Y', strtotime($activeMembership['end_date'])) ?>) •
-                                    <?php else: ?>
-                                        Expires on <strong><?= date('M d, Y', strtotime($activeMembership['end_date'])) ?></strong>
-                                        (<?= $daysUntilExpiration ?> day<?= $daysUntilExpiration != 1 ? 's' : '' ?> left) •
-                                    <?php endif; ?>
-                                    Book until <strong><?= $endDateWithGrace->format('M d, Y') ?></strong> •
-                                    Visit gym to renew or wait for expiration date to renew online.
-                                </span>
-                            <?php else: ?>
-                                <!-- Active - No Warning -->
-                                <span class="status-title">
-                                    Membership Active until <?= date('M d, Y', strtotime($activeMembership['end_date'])) ?>
-                                    (<?= htmlspecialchars($activeMembership['plan_name']) ?> Plan)
-                                </span>
-                            <?php endif; ?>
-                        </div>
-                    </div>
 
-                    <?php if ($daysUntilExpiration < 0): ?>
-                        <!-- Renew Button for Expired Memberships in Grace Period -->
-                        <a href="membership.php" class="renew-btn">
-                            <i class="fas fa-sync-alt"></i>
-                            <span>Renew Membership</span>
-                        </a>
-                    <?php endif; ?>
-                </div>
+                <?php if ($daysUntilExpiration < 0): ?>
+                    <!-- Renew Button for Expired Memberships in Grace Period -->
+                    <a href="membership.php" class="renew-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Renew Membership</span>
+                    </a>
+                <?php endif; ?>
             </div>
+        </div>
         </div>
 
         <div class="reservations-container">
@@ -204,21 +161,27 @@ require_once __DIR__ . '/../../includes/header.php';
                     <!-- Step 1: Select Date -->
                     <div class="wizard-step active" id="step1" data-step="1">
                         <div class="step-header">
-                            <div class="step-number">1</div>
-                            <div class="step-info">
-                                <div class="step-text">
-                                    <h2 class="step-title">Select Date</h2>
-                                    <p class="step-subtitle">Choose a date for your training session</p>
+                            <div class="step-header-box">
+                                <div class="step-header-box-title">
+                                    <div class="step-number">1</div>
+                                    <div class="step-text">
+                                        <h2 class="step-title">Select Date</h2>
+                                        <p class="step-subtitle">Choose a date for your training session</p>
+                                    </div>
                                 </div>
-                                <div class="wizard-navigation">
-                                    <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
-                                        <i class="fas fa-arrow-left"></i>
-                                        Back
-                                    </button>
-                                    <button class="btn-wizard btn-next" id="btnNext" disabled>
-                                        Next
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
+
+
+                                <div class="step-info">
+                                    <div class="wizard-navigation">
+                                        <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Back
+                                        </button>
+                                        <button class="btn-wizard btn-next" id="btnNext" disabled>
+                                            Next
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -279,23 +242,29 @@ require_once __DIR__ . '/../../includes/header.php';
                     <!-- Step 2: Select Session Time -->
                     <div class="wizard-step" id="step2" data-step="2">
                         <div class="step-header">
-                            <div class="step-number">2</div>
-                            <div class="step-info">
-                                <div class="step-text">
-                                    <h2 class="step-title">Select Session Time</h2>
-                                    <p class="step-subtitle">Choose your preferred time block</p>
+                            <div class="step-header-box">
+                                <div class="step-header-box-title">
+                                    <div class="step-number">2</div>
+                                    <div class="step-text">
+                                        <h2 class="step-title">Select Session Time</h2>
+                                        <p class="step-subtitle">Choose your preferred time block</p>
+                                    </div>
                                 </div>
-                                <div class="wizard-navigation">
-                                    <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
-                                        <i class="fas fa-arrow-left"></i>
-                                        Back
-                                    </button>
-                                    <button class="btn-wizard btn-next" id="btnNext" disabled>
-                                        Next
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
+                                <div class="step-info">
+
+                                    <div class="wizard-navigation">
+                                        <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Back
+                                        </button>
+                                        <button class="btn-wizard btn-next" id="btnNext" disabled>
+                                            Next
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
                         <div class="step-content">
                             <div class="session-blocks">
@@ -345,23 +314,30 @@ require_once __DIR__ . '/../../includes/header.php';
                     <!-- Step 3: Select Class Type -->
                     <div class="wizard-step" id="step3" data-step="3">
                         <div class="step-header">
-                            <div class="step-number">3</div>
-                            <div class="step-info">
-                                <div class="step-text">
-                                    <h2 class="step-title">Select Class Type</h2>
-                                    <p class="step-subtitle">Choose your training discipline</p>
+                            <div class="step-header-box">
+                                <div class="step-header-box-title">
+                                    <div class="step-number">3</div>
+
+                                    <div class="step-text">
+                                        <h2 class="step-title">Select Class Type</h2>
+                                        <p class="step-subtitle">Choose your training discipline</p>
+                                    </div>
                                 </div>
-                                <div class="wizard-navigation">
-                                    <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
-                                        <i class="fas fa-arrow-left"></i>
-                                        Back
-                                    </button>
-                                    <button class="btn-wizard btn-next" id="btnNext" disabled>
-                                        Next
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
+                                <div class="step-info">
+
+                                    <div class="wizard-navigation">
+                                        <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Back
+                                        </button>
+                                        <button class="btn-wizard btn-next" id="btnNext" disabled>
+                                            Next
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
                         <div class="step-content">
                             <div class="class-types">
@@ -404,159 +380,165 @@ require_once __DIR__ . '/../../includes/header.php';
                     <!-- Step 4: Select Trainer -->
                     <div class="wizard-step" id="step4" data-step="4">
                         <div class="step-header">
-                            <div class="step-number">4</div>
-                            <div class="step-info">
-                                <div class="step-text">
-                                    <h2 class="step-title">Select Trainer</h2>
-                                    <p class="step-subtitle">Choose your preferred trainer</p>
+                            <div class="step-header-box">
+                                <div class="step-header-box-title">
+                                    <div class="step-number">4</div>
+                                    <div class="step-text">
+                                        <h2 class="step-title">Select Trainer</h2>
+                                        <p class="step-subtitle">Choose your preferred trainer</p>
+                                    </div>
+
                                 </div>
-                                <div class="wizard-navigation">
-                                    <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
-                                        <i class="fas fa-arrow-left"></i>
-                                        Back
-                                    </button>
-                                    <button class="btn-wizard btn-next" id="btnNext" disabled>
-                                        Next
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
+                                <div class="step-info">
+
+                                    <div class="wizard-navigation">
+                                        <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Back
+                                        </button>
+                                        <button class="btn-wizard btn-next" id="btnNext" disabled>
+                                            Next
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-content">
+                                <div class="facility-capacity-info" id="facilityCapacityInfo">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Checking trainer availability...</span>
+                                </div>
+                                <div class="trainers-grid" id="trainersGrid">
+                                    <!-- Trainers populated by JS -->
                                 </div>
                             </div>
                         </div>
-                        <div class="step-content">
-                            <div class="facility-capacity-info" id="facilityCapacityInfo">
-                                <i class="fas fa-info-circle"></i>
-                                <span>Checking trainer availability...</span>
+
+                        <!-- Step 5: Confirmation -->
+                        <div class="wizard-step" id="step5" data-step="5">
+                            <div class="step-header">
+
+                                <div class="step-number">5</div>
+                                <div class="step-info">
+                                    <div class="step-text">
+                                        <h2 class="step-title">Confirm Booking</h2>
+                                        <p class="step-subtitle">Review your session details</p>
+                                    </div>
+                                    <div class="wizard-navigation">
+                                        <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
+                                            <i class="fas fa-arrow-left"></i>
+                                            Back
+                                        </button>
+                                        <button class="btn-wizard btn-next" id="btnNext" disabled>
+                                            Next
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="trainers-grid" id="trainersGrid">
-                                <!-- Trainers populated by JS -->
+                            <div class="step-content">
+                                <div class="booking-summary">
+                                    <div class="summary-card">
+                                        <div class="summary-row">
+                                            <span class="summary-label">
+                                                <i class="fas fa-calendar"></i> Date
+                                            </span>
+                                            <span class="summary-value" id="summaryDate">-</span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span class="summary-label">
+                                                <i class="fas fa-clock"></i> Session
+                                            </span>
+                                            <span class="summary-value" id="summarySession">-</span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span class="summary-label">
+                                                <i class="fas fa-dumbbell"></i> Class Type
+                                            </span>
+                                            <span class="summary-value" id="summaryClass">-</span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span class="summary-label">
+                                                <i class="fas fa-user"></i> Trainer
+                                            </span>
+                                            <span class="summary-value" id="summaryTrainer">-</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn-confirm-booking" id="btnConfirmBooking">
+                                        <i class="fas fa-check-circle"></i>
+                                        Confirm Booking
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Step 5: Confirmation -->
-                    <div class="wizard-step" id="step5" data-step="5">
-                        <div class="step-header">
-                            <div class="step-number">5</div>
-                            <div class="step-info">
-                                <div class="step-text">
-                                    <h2 class="step-title">Confirm Booking</h2>
-                                    <p class="step-subtitle">Review your session details</p>
-                                </div>
-                                <div class="wizard-navigation">
-                                    <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
-                                        <i class="fas fa-arrow-left"></i>
-                                        Back
-                                    </button>
-                                    <button class="btn-wizard btn-next" id="btnNext" disabled>
-                                        Next
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
-                                </div>
+                <!-- My Bookings Section -->
+                <div class="my-bookings-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            My Bookings
+                        </h2>
+                        <div class="bookings-controls">
+                            <div class="bookings-filter">
+                                <label for="classFilter" class="filter-label">
+                                    <i class="fas fa-filter"></i>
+                                    Filter by Class:
+                                </label>
+                                <select id="classFilter" class="class-filter-dropdown">
+                                    <option value="all">All Classes</option>
+                                    <?php foreach ($membershipClassTypes as $classType): ?>
+                                        <option value="<?php echo htmlspecialchars($classType); ?>">
+                                            <?php echo htmlspecialchars($classType); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
-                        </div>
-                        <div class="step-content">
-                            <div class="booking-summary">
-                                <div class="summary-card">
-                                    <div class="summary-row">
-                                        <span class="summary-label">
-                                            <i class="fas fa-calendar"></i> Date
-                                        </span>
-                                        <span class="summary-value" id="summaryDate">-</span>
-                                    </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label">
-                                            <i class="fas fa-clock"></i> Session
-                                        </span>
-                                        <span class="summary-value" id="summarySession">-</span>
-                                    </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label">
-                                            <i class="fas fa-dumbbell"></i> Class Type
-                                        </span>
-                                        <span class="summary-value" id="summaryClass">-</span>
-                                    </div>
-                                    <div class="summary-row">
-                                        <span class="summary-label">
-                                            <i class="fas fa-user"></i> Trainer
-                                        </span>
-                                        <span class="summary-value" id="summaryTrainer">-</span>
-                                    </div>
-                                </div>
-                                <button class="btn-confirm-booking" id="btnConfirmBooking">
-                                    <i class="fas fa-check-circle"></i>
-                                    Confirm Booking
+                            <div class="bookings-tabs">
+                                <button class="tab-btn active" data-tab="upcoming">
+                                    Upcoming
+                                    <span class="tab-count" id="upcomingCount">0</span>
+                                </button>
+                                <button class="tab-btn" data-tab="past">
+                                    Past
+                                    <span class="tab-count" id="pastCount">0</span>
+                                </button>
+                                <button class="tab-btn" data-tab="cancelled">
+                                    Cancelled
+                                    <span class="tab-count" id="cancelledCount">0</span>
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- My Bookings Section -->
-            <div class="my-bookings-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <i class="fas fa-calendar-alt"></i>
-                        My Bookings
-                    </h2>
-                    <div class="bookings-controls">
-                        <div class="bookings-filter">
-                            <label for="classFilter" class="filter-label">
-                                <i class="fas fa-filter"></i>
-                                Filter by Class:
-                            </label>
-                            <select id="classFilter" class="class-filter-dropdown">
-                                <option value="all">All Classes</option>
-                                <?php foreach ($membershipClassTypes as $classType): ?>
-                                    <option value="<?php echo htmlspecialchars($classType); ?>">
-                                        <?php echo htmlspecialchars($classType); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                    <div class="bookings-content">
+                        <div class="bookings-list active" id="upcomingBookings">
+                            <p class="loading-text">Loading bookings...</p>
                         </div>
-                        <div class="bookings-tabs">
-                            <button class="tab-btn active" data-tab="upcoming">
-                                Upcoming
-                                <span class="tab-count" id="upcomingCount">0</span>
-                            </button>
-                            <button class="tab-btn" data-tab="past">
-                                Past
-                                <span class="tab-count" id="pastCount">0</span>
-                            </button>
-                            <button class="tab-btn" data-tab="cancelled">
-                                Cancelled
-                                <span class="tab-count" id="cancelledCount">0</span>
-                            </button>
+                        <div class="bookings-list" id="pastBookings">
+                            <p class="loading-text">Loading bookings...</p>
+                        </div>
+                        <div class="bookings-list" id="cancelledBookings">
+                            <p class="loading-text">Loading bookings...</p>
                         </div>
                     </div>
                 </div>
-                <div class="bookings-content">
-                    <div class="bookings-list active" id="upcomingBookings">
-                        <p class="loading-text">Loading bookings...</p>
+            <?php else: ?>
+                <!-- No Membership CTA -->
+                <div class="no-membership-cta">
+                    <div class="cta-icon">
+                        <i class="fas fa-ticket-alt"></i>
                     </div>
-                    <div class="bookings-list" id="pastBookings">
-                        <p class="loading-text">Loading bookings...</p>
-                    </div>
-                    <div class="bookings-list" id="cancelledBookings">
-                        <p class="loading-text">Loading bookings...</p>
-                    </div>
+                    <h2>Get Started with a Membership</h2>
+                    <p>To book training sessions, you need an active membership plan.</p>
+                    <a href="membership.php" class="btn-cta">
+                        View Membership Plans
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
-            </div>
-        <?php else: ?>
-            <!-- No Membership CTA -->
-            <div class="no-membership-cta">
-                <div class="cta-icon">
-                    <i class="fas fa-ticket-alt"></i>
-                </div>
-                <h2>Get Started with a Membership</h2>
-                <p>To book training sessions, you need an active membership plan.</p>
-                <a href="membership.php" class="btn-cta">
-                    View Membership Plans
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        <?php endif; ?>
-    </div>
+            <?php endif; ?>
+        </div>
 </main>
 
 <script>
@@ -576,8 +558,6 @@ require_once __DIR__ . '/../../includes/header.php';
         window.maxBookingDate = null;
     <?php endif; ?>
 </script>
-
-<?php require_once '../../includes/footer.php'; ?>
 </body>
 
 </html>

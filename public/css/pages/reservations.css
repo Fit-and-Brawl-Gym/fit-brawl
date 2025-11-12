@@ -26,7 +26,7 @@ body::before {
             rgba(0, 47, 63, 0.5) 0%,
             rgba(0, 47, 63, 0.4) 50%,
             rgba(0, 47, 63, 0.3) 100%);
-    z-index: 0;
+    z-index: -10;
     pointer-events: none;
 }
 
@@ -52,11 +52,14 @@ body::before {
 }
 
 .page-header-content {
+    padding: 0rem 8rem;
     max-width: 1400px;
     margin: 0 auto;
 }
 
 .page-header-text {
+    display: flex;
+    flex-direction: column;
     margin-bottom: 0;
 }
 
@@ -74,6 +77,7 @@ body::before {
     font-size: var(--font-size-lg);
     color: rgba(255, 255, 255, 0.7);
     font-weight: var(--font-weight-normal);
+    margin: 0;
 }
 
 .membership-status-bar {
@@ -88,6 +92,7 @@ body::before {
     backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 206, 0, 0.3);
     border-radius: 8px;
+    width: fit-content;
 }
 
 /* Warning state - expiring soon */
@@ -983,7 +988,6 @@ body::before {
 }
 
 .schedule-day {
-    aspect-ratio: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2372,15 +2376,6 @@ body::before {
     align-self: flex-start;
 }
 
-.step-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-3);
-    flex-direction: row;
-    width: 100%;
-}
-
 .step-text {
     flex: 1;
     text-align: left;
@@ -2401,12 +2396,26 @@ body::before {
     font-size: var(--font-size-lg);
     color: var(--color-text-muted);
     line-height: 1.4;
+    margin: 0;
 }
 
 .step-content {
     padding: 0;
     position: relative;
     z-index: 1;
+}
+
+.step-header-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding: 1.5rem;
+}
+
+.step-header-box-title {
+    display: flex;
+    gap: 1rem;
 }
 
 /* V2 Monthly Schedule in Wizard - Matching Stat Cards */
@@ -3413,13 +3422,6 @@ body::before {
         align-self: center;
     }
 
-    .step-info {
-        flex-direction: column;
-        width: 100%;
-        align-items: center;
-        gap: var(--spacing-3);
-    }
-
     .step-text {
         text-align: center;
         width: 100%;
@@ -3557,12 +3559,6 @@ body::before {
         align-self: center;
     }
 
-    .step-info {
-        flex-direction: column;
-        align-items: center;
-        gap: var(--spacing-2);
-        width: 100%;
-    }
 
     .step-text {
         width: 100%;
@@ -3645,11 +3641,6 @@ body::before {
         padding-bottom: var(--spacing-1);
         margin-bottom: var(--spacing-2);
         gap: var(--spacing-2);
-    }
-
-    .step-info {
-        gap: var(--spacing-2);
-        flex-direction: column;
     }
 
     .step-text {
