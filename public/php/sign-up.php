@@ -259,7 +259,6 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="password-requirements-modal" id="passwordRequirementsModal">
                             <div class="password-requirements-header">
                                 <h4>Password Requirements</h4>
-                                <button type="button" class="mobile-close-btn" id="closePwdRequirements" aria-label="Close">×</button>
                             </div>
                             <div class="password-requirements-list">
                             <div class="requirement-item" id="req-length">

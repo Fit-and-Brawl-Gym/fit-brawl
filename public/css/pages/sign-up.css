@@ -680,40 +680,8 @@
     font-family: var(--font-family-display);
 }
 
-/* Mobile close button - hidden on desktop */
-.mobile-close-btn {
-    display: none;
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: var(--color-accent);
-    color: var(--color-dark);
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    font-size: 24px;
-    line-height: 1;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: bold;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.mobile-close-btn:hover {
-    background: #ffdb4d;
-    transform: scale(1.1);
-}
-
-.mobile-close-btn:active {
-    transform: scale(0.95);
-}
-
-@media (max-width: 768px) {
-    .mobile-close-btn {
-        display: block;
-    }
-}
+/* Mobile close button - REMOVED: Modal closes automatically on tap outside or scroll */
+/* .mobile-close-btn styles removed - button no longer exists */
 
 .password-requirements-list {
     display: flex;

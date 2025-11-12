@@ -250,12 +250,36 @@
             });
         }
 
-        // Mobile close button for password requirements
-        const closePwdRequirementsBtn = document.getElementById('closePwdRequirements');
-        if (closePwdRequirementsBtn && passwordRequirementsModal) {
-            closePwdRequirementsBtn.addEventListener('click', () => {
-                passwordRequirementsModal.classList.remove('show');
+        // Close password requirements modal when clicking outside or scrolling
+        if (passwordRequirementsModal) {
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                const isClickInsideModal = passwordRequirementsModal.contains(e.target);
+                const isClickOnPasswordInput = passwordInput && passwordInput.contains(e.target);
+
+                if (!isClickInsideModal && !isClickOnPasswordInput && passwordRequirementsModal.classList.contains('show')) {
+                    passwordRequirementsModal.classList.remove('show');
+                }
             });
+
+            // Close on scroll (mobile devices)
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                if (passwordRequirementsModal.classList.contains('show')) {
+                    // Add slight delay to avoid closing during normal scrolling
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        passwordRequirementsModal.classList.remove('show');
+                    }, 100);
+                }
+            }, { passive: true });
+
+            // Close when user scrolls within the page
+            document.addEventListener('touchmove', () => {
+                if (passwordRequirementsModal.classList.contains('show')) {
+                    passwordRequirementsModal.classList.remove('show');
+                }
+            }, { passive: true });
         }
     };
 
