@@ -37,15 +37,17 @@ function getRolePrefix($role) {
  * @param mysqli $conn Database connection
  * @param string $role User role (member, trainer, admin)
  * @return string Formatted ID like MBR-25-0012
+ * @note This function does NOT start its own transaction - caller must wrap in transaction
  */
 function generateFormattedUserId($conn, $role) {
     $prefix = getRolePrefix($role);
     $year = date('y'); // Last 2 digits of year (25 for 2025)
     
     // Get the next sequence number for this role and year
+    // Use FOR UPDATE lock to prevent race conditions during concurrent signups
     $pattern = $prefix . '-' . $year . '-%';
     
-    $sql = "SELECT id FROM users WHERE id LIKE ? ORDER BY id DESC LIMIT 1";
+    $sql = "SELECT id FROM users WHERE id LIKE ? ORDER BY id DESC LIMIT 1 FOR UPDATE";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $pattern);
     $stmt->execute();
@@ -148,9 +150,19 @@ function getSequenceFromUserId($userId) {
 function generateBulkFormattedUserIds($conn, $role, $count) {
     $ids = [];
     
-    for ($i = 0; $i < $count; $i++) {
-        $ids[] = generateFormattedUserId($conn, $role);
-    }
+    // Start transaction to prevent race conditions
+    $conn->begin_transaction();
     
-    return $ids;
+    try {
+        for ($i = 0; $i < $count; $i++) {
+            $ids[] = generateFormattedUserId($conn, $role);
+        }
+        
+        $conn->commit();
+        return $ids;
+        
+    } catch (Exception $e) {
+        $conn->rollback();
+        throw $e;
+    }
 }

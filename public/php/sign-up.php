@@ -105,17 +105,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 
     $verificationToken = bin2hex(random_bytes(32));
     
-    // Generate formatted user ID based on role
-    $userId = generateFormattedUserId($conn, $role);
+    // Start transaction to prevent duplicate IDs during concurrent signups
+    $conn->begin_transaction();
+    
+    try {
+        // Generate formatted user ID based on role (with FOR UPDATE lock)
+        $userId = generateFormattedUserId($conn, $role);
 
-    // Insert user with verification token and formatted ID
-    $insertQuery = $conn->prepare("
-        INSERT INTO users (id, username, email, password, role, verification_token, is_verified)
-        VALUES (?, ?, ?, ?, ?, ?, 0)
-    ");
-    $insertQuery->bind_param("ssssss", $userId, $name, $email, $password, $role, $verificationToken);
+        // Insert user with verification token and formatted ID
+        $insertQuery = $conn->prepare("
+            INSERT INTO users (id, username, email, password, role, verification_token, is_verified)
+            VALUES (?, ?, ?, ?, ?, ?, 0)
+        ");
+        $insertQuery->bind_param("ssssss", $userId, $name, $email, $password, $role, $verificationToken);
 
-    if ($insertQuery->execute()) {
+        if (!$insertQuery->execute()) {
+            throw new Exception("Failed to insert user");
+        }
+        
+        // Commit transaction
+        $conn->commit();
+        
         // Build verification URL based on environment
         // For localhost: http://localhost/fit-brawl/public/php/verify-email.php
         // For production: https://domain.com/php/verify-email.php (DocumentRoot is /public)
@@ -164,9 +174,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
             header("Location: sign-up.php");
             exit();
         }
-
-    } else {
-        $_SESSION['register_error'] = "Database error: " . $conn->error;
+        
+    } catch (Exception $e) {
+        // Rollback transaction on any error
+        $conn->rollback();
+        $_SESSION['register_error'] = "Registration failed. Please try again. Error: " . $e->getMessage();
         header("Location: sign-up.php");
         exit();
     }
