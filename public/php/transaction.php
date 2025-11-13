@@ -451,6 +451,7 @@ require_once __DIR__ . '/../../includes/header.php';
             subscription.</p>
 
         <div class="file-upload-area" id="fileUploadArea">
+            <input type="file" id="receiptFile" name="receipt" accept="image/*,.pdf">
             <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
                 <path
                     d="M7 18C4.23858 18 2 15.7614 2 13C2 10.2386 4.23858 8 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8C19.7614 8 22 10.2386 22 13C22 15.7614 19.7614 18 17 18M12 13V21M12 13L9 16M12 13L15 16"
@@ -458,7 +459,6 @@ require_once __DIR__ . '/../../includes/header.php';
             </svg>
             <p class="upload-text">Click to upload or drag and drop</p>
             <p class="upload-subtext">PNG, JPG, PDF up to 10MB</p>
-            <input type="file" id="receiptFile" name="receipt" accept="image/*,.pdf" hidden>
         </div>
 
         <div class="file-preview" id="filePreview" style="display: none;">
@@ -480,7 +480,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
-<script src="/public/js/transaction.js?=v2"></script>
+<script src="<?= PUBLIC_PATH ?>/js/transaction.js?=v2"></script>
 </body>
 
 </html>

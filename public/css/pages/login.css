@@ -38,7 +38,6 @@
     max-width: 720px;
     height: 4px;
     background: var(--color-accent);
-    margin-bottom: var(--spacing-8);
 }
 
 .hero-title {
@@ -47,7 +46,6 @@
     font-weight: var(--font-weight-black);
     line-height: var(--line-height-tight);
     text-transform: uppercase;
-    margin-bottom: var(--spacing-6);
     letter-spacing: 2px;
 }
 
@@ -63,11 +61,13 @@
 }
 
 .login-modal {
-    flex: 0 0 400px;
-    background: rgba(255, 255, 255, 0.95);
+    flex: 1; /* Match hero content flex */
+    max-width: 720px; /* Match hero content max-width */
+    background: rgba(255, 255, 255, 0.98);
     border-radius: var(--radius-2xl);
-    padding: var(--spacing-8);
+    padding: var(--spacing-6);
     position: relative;
+    box-shadow: var(--shadow-2xl);
 }
 
 .modal-header h2 {
@@ -75,7 +75,7 @@
     color: var(--color-white);
     text-align: center;
     padding: var(--spacing-4);
-    margin: calc(var(--spacing-8) * -1) calc(var(--spacing-8) * -1) var(--spacing-8);
+    margin: calc(var(--spacing-6) * -1) calc(var(--spacing-6) * -1) var(--spacing-6);
     border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-semibold);
@@ -136,20 +136,25 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-8);
+    margin-bottom: var(--spacing-6); /* Reduced from spacing-8 */
     font-size: var(--font-size-sm);
 }
 
 .checkbox-container {
     display: flex;
-    align-items: center;
+    align-items: center; /* Center align for proper alignment */
     cursor: pointer;
     color: var(--color-text-dark);
+    line-height: 1.4;
+    gap: var(--spacing-2);
 }
 
 .checkbox-container input {
-    margin: 0 var(--spacing-3);
-    scale: 1.2;
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .forgot-password {
@@ -204,21 +209,6 @@
         padding: var(--spacing-10);
     }
 
-    .hero-line {
-        width: 100%;
-        max-width: none;
-    }
-
-    .hero-underline {
-        width: 100%;
-        max-width: none;
-    }
-
-    .hero-content {
-        max-width: 100%;
-        margin-bottom: 2rem;
-    }
-
     .hero-title {
         font-size: var(--font-size-7xl);
     }
@@ -226,26 +216,50 @@
     .login-modal {
         flex: none;
         width: 100%;
-        min-width: 0;
+        max-width: 720px; /* Match hero content max-width */
     }
 
     .modal-header h2 {
         font-size: var(--font-size-5xl);
     }
 
-    .login-form h3 {
-        font-size: var(--font-size-xl);
-    }
-
-    .checkbox-container input {
-        scale: 2;
-        margin: 0 var(--spacing-4);
+    .hero-line,
+    .hero-underline {
+        margin: 0 auto;
+        margin-bottom: var(--spacing-6);
     }
 }
 
 @media (max-width: 768px) {
+    .login-modal {
+        width: 98%;
+        padding: var(--spacing-5);
+    }
+
+    .modal-header h2 {
+        margin: calc(var(--spacing-5) * -1) calc(var(--spacing-5) * -1) var(--spacing-5);
+        font-size: var(--font-size-3xl);
+    }
+
     .hero-title {
         font-size: var(--font-size-6xl);
+    }
+
+    /* Better checkbox sizing and alignment for mobile */
+    .checkbox-container input {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+    }
+
+    .checkbox-container {
+        align-items: center;
+        font-size: var(--font-size-sm);
+    }
+
+    /* Reduce spacing between checkbox and button */
+    .form-options {
+        margin-bottom: var(--spacing-4);
     }
 
     .login-hero {
@@ -255,25 +269,17 @@
 
 @media (max-width: 600px) {
     .hero-title {
-        font-size: var(--font-size-6xl);
-    }
-
-    .login-hero {
-        padding: var(--spacing-8);
+        font-size: var(--font-size-4xl);
     }
 }
 
-@media (max-width: 480px) {
-    .login-hero {
-        padding: var(--spacing-6);
-    }
-
+@media (max-width: 360px) {
     .hero-title {
-        font-size: var(--font-size-4xl);
+        font-size: var(--font-size-3xl);
     }
 
     .modal-header h2 {
-        font-size: var(--font-size-4xl);
+        font-size: var(--font-size-xl);
     }
 
     .login-form h3 {

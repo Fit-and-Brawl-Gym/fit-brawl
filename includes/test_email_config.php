@@ -38,4 +38,3 @@ if (!getenv('EMAIL_HOST') || !getenv('EMAIL_USER') || !getenv('EMAIL_PASS')) {
 }
 
 echo "</pre>";
-?>

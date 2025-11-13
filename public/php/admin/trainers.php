@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once '../../../includes/db_connect.php';
+require_once '../../../includes/init.php';
 require_once '../../../includes/activity_logger.php';
 
 // Only admins can access
@@ -214,9 +213,9 @@ if (!$stats) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trainers Management - Admin Panel</title>
-    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
-    <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="css/trainers.css">
+    <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/trainers.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -578,7 +577,7 @@ if (!$stats) {
         </div>
     <?php endif; ?>
 
-    <script src="js/trainers.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/trainers.js"></script>
     <script>
         function copyToClipboard(elementId) {
             const input = document.getElementById(elementId);
@@ -601,7 +600,7 @@ if (!$stats) {
             document.getElementById('credentialsModal').classList.remove('active');
         }
     </script>
-    <script src="js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 
 </html>

@@ -257,21 +257,55 @@ function filterProducts() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const selectedCategory = document.getElementById('categoryFilter').value;
     const selectedStatus = document.getElementById('statusFilter').value;
-    const rows = document.querySelectorAll('#productsTableBody tr');
 
+    // Filter table rows
+    const rows = document.querySelectorAll('#productsTableBody tr');
     rows.forEach(row => {
-        const name = row.querySelector('.product-name').textContent.toLowerCase();
-        const category = row.dataset.category;
-        const status = row.dataset.status;
+        const name = (row.querySelector('.product-name') && row.querySelector('.product-name').textContent.toLowerCase()) || '';
+        const category = (row.dataset.category || '').toString();
+        const status = (row.dataset.status || '').toString();
 
         const matchesSearch = name.includes(searchTerm);
-        const matchesCategory = selectedCategory === 'all' || category === selectedCategory;
-        const matchesStatus = selectedStatus === 'all' || status === selectedStatus;
+    const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesStatus = selectedStatus === 'all' || status.toLowerCase() === selectedStatus.toLowerCase();
 
-        if (matchesSearch && matchesCategory && matchesStatus) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
+        row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
+    });
+
+    // Filter card view
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => {
+        const name = (card.querySelector('.product-name') && card.querySelector('.product-name').textContent.toLowerCase()) || '';
+        const category = (card.dataset.category || '').toString();
+        const status = (card.dataset.status || '').toString();
+
+        const matchesSearch = name.includes(searchTerm);
+    const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesStatus = selectedStatus === 'all' || status.toLowerCase() === selectedStatus.toLowerCase();
+
+        card.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
     });
 }
+
+// View Toggle (Table vs Cards)
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+
+        // Update active button
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Toggle views
+        const tableView = document.getElementById('tableView');
+        const cardsView = document.getElementById('cardsView');
+
+        if (view === 'table') {
+            tableView.classList.add('active');
+            cardsView.classList.remove('active');
+        } else {
+            tableView.classList.remove('active');
+            cardsView.classList.add('active');
+        }
+    });
+});

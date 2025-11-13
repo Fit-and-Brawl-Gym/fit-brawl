@@ -59,6 +59,3 @@ class CSRFProtection {
         return '<input type="hidden" name="' . self::TOKEN_NAME . '" value="' . htmlspecialchars($token) . '">';
     }
 }
-
-?>
-

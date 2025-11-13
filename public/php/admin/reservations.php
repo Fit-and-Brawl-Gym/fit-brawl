@@ -1,7 +1,5 @@
 <?php
-session_start();
 include_once('../../../includes/init.php');
-require_once('../../../includes/config.php');
 require_once('../../../includes/activity_logger.php');
 
 // Check if user is admin
@@ -59,18 +57,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         $ids = $_POST['ids'] ?? [];
         $new_status = $_POST['status'] ?? '';
 
-        if (!empty($ids) && in_array($new_status, ['completed', 'cancelled'])) {
+        // Ensure $ids is an array
+        if (!is_array($ids)) {
+            $ids = explode(',', $ids);
+        }
+
+        // Filter and sanitize IDs
+        $ids = array_filter(array_map('intval', $ids));
+
+        if (!empty($ids) && in_array($new_status, ['confirmed', 'completed', 'cancelled'])) {
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $types = 's' . str_repeat('i', count($ids));
+
             $stmt = $conn->prepare("UPDATE user_reservations SET booking_status = ? WHERE id IN ($placeholders)");
             $params = array_merge([$new_status], $ids);
-            $stmt->bind_param(str_repeat('i', count($params)), ...$params);
+            $stmt->bind_param($types, ...$params);
             $success = $stmt->execute();
 
-            // Log bulk cancellation
-            if ($success && $new_status === 'cancelled') {
+            // Log bulk actions
+            if ($success) {
                 $count = count($ids);
                 $ids_str = implode(', ', $ids);
-                ActivityLogger::log('reservation_bulk_cancelled', null, null, "Bulk cancellation: $count reservation(s) cancelled (IDs: $ids_str)");
+                $action_name = $new_status === 'cancelled' ? 'reservation_bulk_cancelled' :
+                              ($new_status === 'completed' ? 'reservation_bulk_completed' : 'reservation_bulk_confirmed');
+                ActivityLogger::log($action_name, null, null, "Bulk update: $count reservation(s) marked as $new_status (IDs: $ids_str)");
             }
 
             echo json_encode(['success' => $success]);
@@ -170,9 +180,9 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservations Management - Fit & Brawl Admin</title>
-    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
-    <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="css/reservations.css">
+    <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/reservations.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
@@ -396,8 +406,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     <script>
         window.bookingsData = <?php echo json_encode($bookings); ?>;
     </script>
-    <script src="js/sidebar.js"></script>
-    <script src="js/reservations.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/reservations.js"></script>
 </body>
 
 </html>

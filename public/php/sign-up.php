@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../includes/config.php';  // Add config for BASE_PATH
 require_once __DIR__ . '/../../includes/db_connect.php';
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
@@ -111,9 +112,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $insertQuery->bind_param("sssss", $name, $email, $password, $role, $verificationToken);
 
     if ($insertQuery->execute()) {
-        // Use environment variable for APP_URL (works in both local and production)
-        $appUrl = getenv('APP_URL') ?: 'http://localhost/fit-brawl';
-        $verificationLink = $appUrl . "/public/php/verify-email.php?token=" . $verificationToken;
+        // Build verification URL based on environment
+        // For localhost: http://localhost/fit-brawl/public/php/verify-email.php
+        // For production: https://domain.com/php/verify-email.php (DocumentRoot is /public)
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+
+        // On production, PUBLIC_PATH is empty (DocumentRoot is already /public)
+        // On localhost, PUBLIC_PATH is /fit-brawl/public
+        if (ENVIRONMENT === 'production') {
+            // Production: just /php/verify-email.php
+            $verificationLink = $protocol . '://' . $host . '/php/verify-email.php?token=' . $verificationToken;
+        } else {
+            // Localhost: /fit-brawl/public/php/verify-email.php
+            $verificationLink = $protocol . '://' . $host . PUBLIC_PATH . '/php/verify-email.php?token=' . $verificationToken;
+        }
 
         $mail = new PHPMailer(true);
         try {
@@ -176,8 +189,8 @@ $additionalCSS = [
     '../css/pages/sign-up.css?v=5',
     '../css/components/terms-modal.css'
 ];
+// No need to add hamburger.js - it's already loaded as hamburger-menu.js in header.php
 $additionalJS = [
-    '../js/hamburger.js',
     '../js/password-validation.js',
     '../js/signup-error-handler.js'
 ];
@@ -237,16 +250,17 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <div class="input-group password-input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" id="passwordInput" name="password" placeholder="Password" required>
+                        <input type="password" id="passwordInput" name="password" placeholder="Password"
+                               autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                               spellcheck="false" data-form-type="other" required>
                         <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
-                    </div>
 
-                    <!-- Password Requirements Modal -->
-                    <div class="password-requirements-modal" id="passwordRequirementsModal">
-                        <div class="password-requirements-header">
-                            <h4>Password Requirements</h4>
-                        </div>
-                        <div class="password-requirements-list">
+                        <!-- Password Requirements Modal -->
+                        <div class="password-requirements-modal" id="passwordRequirementsModal">
+                            <div class="password-requirements-header">
+                                <h4>Password Requirements</h4>
+                            </div>
+                            <div class="password-requirements-list">
                             <div class="requirement-item" id="req-length">
                                 <span class="requirement-icon">✗</span>
                                 <span class="requirement-text">At least 8 characters</span>
@@ -275,10 +289,13 @@ require_once __DIR__ . '/../../includes/header.php';
                             <span class="strength-text" id="strengthText">Strength: Weak</span>
                         </div>
                     </div>
+                    </div>
 
                     <div class="input-group password-input-group">
                         <i class="fas fa-key"></i>
-                        <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Confirm Password" required>
+                        <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Confirm Password"
+                               autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                               spellcheck="false" data-form-type="other" required>
                         <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
                     </div>
 

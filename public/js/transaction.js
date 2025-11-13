@@ -81,10 +81,39 @@ document.addEventListener('DOMContentLoaded', () => {
         submitReceiptBtn.disabled = false;
     }
 
-    fileUploadArea.addEventListener('click', () => receiptFileInput.click());
+    // File input change handler - iOS compatible (no programmatic click needed)
     receiptFileInput.addEventListener('change', e => {
         if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
     });
+
+    // Add drag and drop support for desktop browsers
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileUploadArea.style.borderColor = 'var(--color-accent)';
+        fileUploadArea.style.background = 'rgba(213, 186, 43, 0.15)';
+    });
+
+    fileUploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileUploadArea.style.borderColor = '';
+        fileUploadArea.style.background = '';
+    });
+
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fileUploadArea.style.borderColor = '';
+        fileUploadArea.style.background = '';
+
+        if (e.dataTransfer.files.length > 0) {
+            // Manually set the files to the input for consistency
+            receiptFileInput.files = e.dataTransfer.files;
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+
     removeFileBtn.addEventListener('click', resetFileUpload);
 
 

@@ -2,12 +2,11 @@
     <footer>
         <div class="container footer-flex">
             <div class="footer-logo-block">
-                <img src="../../../images/footer-title.webp" alt="FITXBRAWL" class="footer-logo-title">
+                <img src="<?= IMAGES_PATH ?>/footer-title.svg" alt="FITXBRAWL" class="footer-logo-title">
             </div>
             <div class="footer-menu-block">
                 <div class="footer-menu-title">MENU</div>
                 <ul class="footer-menu-list">
-                    <li><a href="index.php">Home</a></li>
                     <li><a href="schedule.php">Schedule</a></li>
                     <li><a href="feedback.php">Feedback</a></li>
                 </ul>

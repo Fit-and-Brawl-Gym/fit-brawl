@@ -137,7 +137,9 @@ require_once '../../includes/header.php';
                 <!-- New password -->
                 <div class="input-group password-input-group">
                     <i class="fas fa-key"></i>
-                    <input type="password" id="passwordInput" name="new_password" placeholder="New Password" required>
+                    <input type="password" id="passwordInput" name="new_password" placeholder="New Password"
+                           autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                           spellcheck="false" data-form-type="other" required>
                     <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
                 </div>
 
@@ -179,7 +181,9 @@ require_once '../../includes/header.php';
                 <!-- Confirm new password -->
                 <div class="input-group password-input-group">
                     <i class="fas fa-key"></i>
-                    <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Re-enter New Password" required>
+                    <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Re-enter New Password"
+                           autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                           spellcheck="false" data-form-type="other" required>
                     <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
                 </div>
 
@@ -193,4 +197,12 @@ require_once '../../includes/header.php';
     </section>
     </main>
 
-<?php require_once '../../includes/footer.php'; ?>
+<?php
+// Clear OTP timer from sessionStorage if redirected from verification
+if (isset($_SESSION['clear_otp_timer'])) {
+    echo '<script>sessionStorage.removeItem("otpExpiryTime");</script>';
+    unset($_SESSION['clear_otp_timer']);
+}
+
+require_once '../../includes/footer.php';
+?>

@@ -197,9 +197,10 @@
 .hamburger-menu {
     display: none;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center; /* Changed from space-between */
+    gap: 5px; /* Fixed spacing between lines */
     width: 30px;
-    height: 24px;
+    height: auto; /* Auto height based on content */
     background: transparent;
     border: none;
     cursor: pointer;
@@ -212,9 +213,10 @@
     height: 3px;
     background-color: var(--color-accent);
     border-radius: var(--radius-sm);
-    transition: none;
+    transition: none; /* No animation */
 }
 
+/* Remove all active animations */
 .hamburger-menu.active span:nth-child(1) {
     transform: none;
 }
@@ -295,11 +297,11 @@
     .wrapper .title {
         order: 0;
         margin: 0 auto;
-        gap: var(--spacing-3);
+        gap: var(--spacing-2); /* Reduced gap for better alignment */
         display: flex;
         align-items: center;
         justify-content: center;
-        transform: translateY(4px);
+        transform: none; /* Removed translateY for proper alignment */
     }
 
     .wrapper .title .fnb-logo {
@@ -311,6 +313,8 @@
     .wrapper .title .logo-title {
         height: 36px;
         display: inline-block;
+        vertical-align: middle;
+        align-items: center;
     }
 
     .wrapper .nav-bar {
@@ -393,7 +397,8 @@
 
     .hamburger-menu {
         width: 26px;
-        height: 20px;
+        height: auto; /* Changed from fixed 20px */
+        gap: 4px; /* Slightly tighter for smaller screens */
         margin-right: var(--spacing-3);
     }
 

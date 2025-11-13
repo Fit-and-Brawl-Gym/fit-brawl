@@ -29,11 +29,11 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
     // Check user_memberships table (including grace period)
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
         $stmt = $conn->prepare("
-            SELECT id, plan_name, end_date 
-            FROM user_memberships 
-            WHERE user_id = ? 
-            AND request_status = 'approved' 
-            AND membership_status = 'active' 
+            SELECT id, plan_name, end_date
+            FROM user_memberships
+            WHERE user_id = ?
+            AND request_status = 'approved'
+            AND membership_status = 'active'
             AND DATE_ADD(end_date, INTERVAL ? DAY) >= ?
             LIMIT 1
         ");
@@ -98,39 +98,63 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php endif; ?>
 
     <?php if ($hasActiveMembership && !$isInGracePeriod): ?>
-        <!-- Active Membership Notice - Only for truly active members -->
-        <div class="active-membership-notice"
-            style="max-width: 800px; margin: 40px auto; padding: 30px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: 2px solid #FFD700; border-radius: 15px; text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 20px;">🏋️</div>
-            <h2 style="color: #FFD700; font-size: 28px; margin-bottom: 15px;">Active Membership</h2>
-            <p style="color: #fff; font-size: 18px; margin-bottom: 10px;">
-                You currently have an active <strong
-                    style="color: #FFD700;"><?= htmlspecialchars($activeMembershipDetails['plan_name']) ?></strong> plan.
-            </p>
-            <p style="color: #fff; font-size: 16px; margin-bottom: 10px;">
-                Valid until: <strong
-                    style="color: #FFD700;"><?= date('F d, Y', strtotime($activeMembershipDetails['end_date'])) ?></strong>
-            </p>
-            <div style="background: rgba(255, 215, 0, 0.1); padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <p style="color: #FFD700; font-size: 18px; font-weight: bold; margin-bottom: 10px;">
-                    <i class="fas fa-info-circle"></i> Want to Change or Upgrade Your Plan?
-                </p>
-                <p style="color: #fff; font-size: 16px;">
-                    Please visit our gym in person to change or upgrade your membership plan. Our staff will be happy to
-                    assist you!
-                </p>
+        <!-- Active Membership Notice - Consistent Design -->
+        <section class="active-membership-section">
+            <div class="active-membership-container">
+                <!-- Icon and Badge -->
+                <div class="membership-badge">
+                    <i class="fas fa-trophy"></i>
+                </div>
+
+                <!-- Title -->
+                <h1 class="membership-title">
+                    ACTIVE <span class="highlight">MEMBERSHIP</span>
+                </h1>
+
+                <!-- Membership Details Card -->
+                <div class="membership-details-card">
+                    <div class="detail-row">
+                        <div class="detail-label">Current Plan</div>
+                        <div class="detail-value plan-name">
+                            <?= htmlspecialchars($activeMembershipDetails['plan_name']) ?>
+                        </div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Valid Until</div>
+                        <div class="detail-value">
+                            <i class="far fa-calendar-alt"></i>
+                            <?= date('F d, Y', strtotime($activeMembershipDetails['end_date'])) ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="info-content">
+                        <h3 class="info-title">Want to Change or Upgrade Your Plan?</h3>
+                        <p class="info-text">
+                            Please visit our gym in person to change or upgrade your membership plan.
+                            Our staff will be happy to assist you!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="membership-actions">
+                    <a href="loggedin-index.php" class="membership-btn primary-btn">
+                        <i class="fas fa-home"></i>
+                        <span>Go to Dashboard</span>
+                    </a>
+                    <a href="reservations.php" class="membership-btn secondary-btn">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Book a Session</span>
+                    </a>
+                </div>
             </div>
-            <div style="margin-top: 25px;">
-                <a href="loggedin-index.php"
-                    style="display: inline-block; padding: 12px 30px; background: #FFD700; color: #000; text-decoration: none; border-radius: 8px; font-weight: bold; margin-right: 10px; transition: transform 0.3s;">
-                    <i class="fas fa-home"></i> Go to Dashboard
-                </a>
-                <a href="reservations.php"
-                    style="display: inline-block; padding: 12px 30px; background: transparent; color: #FFD700; text-decoration: none; border: 2px solid #FFD700; border-radius: 8px; font-weight: bold; transition: transform 0.3s;">
-                    <i class="fas fa-calendar-check"></i> Book a Session
-                </a>
-            </div>
-        </div>
+        </section>
     <?php else: ?>
         <!-- Show membership plans for: non-members OR members in grace period -->
 

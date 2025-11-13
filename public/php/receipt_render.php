@@ -20,13 +20,47 @@ $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\'); // e.g., /fit-brawl/
 $receiptPath = $type === 'member' ? 'receipt_service.php' : 'receipt_nonmember.php';
 $receiptUrl = $scheme . '://' . $host . $basePath . '/' . $receiptPath . '?id=' . rawurlencode($id) . '&render=1';
 
-// Locate Node and the renderer script
+// Prefer calling internal renderer service via HTTP if configured
+$rendererUrl = getenv('RENDERER_URL');
+if ($rendererUrl) {
+    $payload = json_encode([
+        'url' => $receiptUrl,
+        'format' => $format,
+        'selector' => '.receipt-wrapper',
+        'timeout' => intval(getenv('RENDERER_TIMEOUT_MS') ?: 20000)
+    ]);
+
+    $ch = curl_init(rtrim($rendererUrl, '/') . '/render');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_TIMEOUT => 30
+    ]);
+    $resp = curl_exec($ch);
+    $errno = curl_errno($ch);
+    $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($errno === 0 && $http >= 200 && $http < 300) {
+        // Proxy binary from renderer
+        $filename = 'receipt_' . preg_replace('/[^A-Za-z0-9_-]/', '', $id) . ($format === 'pdf' ? '.pdf' : '.png');
+        header('Content-Type: ' . ($format === 'pdf' ? 'application/pdf' : 'image/png'));
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: no-store');
+        echo $resp;
+        exit;
+    }
+    // Fall back to local rendering below on failure
+}
+
+// Local rendering fallback using Node (works when Node is in the same container)
 $projectRoot = realpath(__DIR__ . '/../../');
 $wrapper = $projectRoot . DIRECTORY_SEPARATOR . 'server-renderer' . DIRECTORY_SEPARATOR . 'render-wrapper.js';
-$node = 'node'; // assumes node in PATH
+$node = 'node';
 
 if (!file_exists($wrapper)) {
-    // Graceful fallback: redirect to browser print instructions
     header('Location: receipt_fallback.php?type=' . urlencode($type) . '&id=' . urlencode($id));
     exit;
 }
@@ -49,7 +83,6 @@ $cmd = escapeshellcmd($node) . ' ' . escapeshellarg($wrapper) .
     ' --format=' . escapeshellarg($format) .
     ' --output=' . escapeshellarg($outFile);
 
-// Execute
 $descriptorSpec = [1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
 $proc = proc_open($cmd, $descriptorSpec, $pipes, $projectRoot);
 if (!is_resource($proc)) {
@@ -81,6 +114,5 @@ header('Content-Disposition: attachment; filename="' . $filename . '"');
 header('Content-Length: ' . filesize($outFile));
 readfile($outFile);
 
-// Cleanup
 unlink($outFile);
 @unlink($tmpFile);

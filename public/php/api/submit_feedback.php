@@ -100,17 +100,14 @@ try {
     $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
 
     // Insert feedback into database
-    $sql = "INSERT INTO feedback (user_id, username, email, avatar, message, date, is_visible, helpful_count, not_helpful_count) 
+    $sql = "INSERT INTO feedback (user_id, username, email, avatar, message, date, is_visible, helpful_count, not_helpful_count)
             VALUES (?, ?, ?, ?, ?, NOW(), 1, 0, 0)";
 
     $stmt = $conn->prepare($sql);
-
-    if ($isLoggedIn) {
-        $stmt->bind_param("issss", $user_id, $username, $email, $avatar, $message);
-    } else {
-        $null_user_id = null;
-        $stmt->bind_param("issss", $null_user_id, $username, $email, $avatar, $message);
-    }
+    
+    // Bind parameters - use "issss" for all cases
+    // For anonymous users, $user_id will be NULL
+    $stmt->bind_param("issss", $user_id, $username, $email, $avatar, $message);
 
     if ($stmt->execute()) {
         $feedback_id = $stmt->insert_id;

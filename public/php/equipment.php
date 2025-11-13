@@ -16,14 +16,21 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
         $equipment = [];
         while ($row = $result->fetch_assoc()) {
-            $imageBase = '/fit-brawl/uploads/equipment/';
-            $placeholder = '/fit-brawl/images/placeholder-equipment.jpg';
+            require_once __DIR__ . '/../../includes/config.php';
 
-            $row['image_path'] = !empty($row['image_path'])
-                ? (strpos($row['image_path'], '/fit-brawl/') === false
-                    ? $imageBase . basename($row['image_path'])
-                    : $row['image_path'])
-                : $placeholder;
+            // Use absolute path for equipment images
+            if (!empty($row['image_path'])) {
+                // If it's already an absolute path or URL, use it
+                if (str_starts_with($row['image_path'], '/') || str_starts_with($row['image_path'], 'http')) {
+                    // Already absolute or external URL
+                } else {
+                    // Convert to absolute path
+                    $row['image_path'] = UPLOADS_PATH . '/equipment/' . basename($row['image_path']);
+                }
+            } else {
+                // Use placeholder if no image
+                $row['image_path'] = IMAGES_PATH . '/boxing-gloves.png';
+            }
 
             $equipment[] = $row;
         }

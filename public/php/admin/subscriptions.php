@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once '../../../includes/init.php';
 
 // Require admin role
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
   header("Location: ../login.php");
   exit();
 }
-
-// Load environment config for paths
-require_once '../../../includes/config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,9 +13,9 @@ require_once '../../../includes/config.php';
 <head>
   <meta charset="UTF-8">
   <title>Admin | Manage Subscriptions</title>
-  <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
-  <link rel="stylesheet" href="css/admin.css">
-  <link rel="stylesheet" href="css/subscriptions.css">
+  <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/subscriptions.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
@@ -109,8 +106,8 @@ require_once '../../../includes/config.php';
     // Pass PHP environment paths to JavaScript
     window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
   </script>
-  <script src="js/sidebar.js"></script>
-  <script src="js/subscriptions.js"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/subscriptions.js"></script>
 </body>
 
 </html>

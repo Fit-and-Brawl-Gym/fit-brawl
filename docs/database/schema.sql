@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS products (
 -- =====================
 CREATE TABLE feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NULL,
     username VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
     avatar VARCHAR(255) DEFAULT 'default-avatar.png',

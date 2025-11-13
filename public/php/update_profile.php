@@ -70,7 +70,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Set to default avatar
         $avatar = 'default-avatar.png';
     } elseif (!empty($_FILES['avatar']['name'])) {
-        $targetDir = "../../uploads/avatars/";
+        // Use absolute path to uploads directory
+        $targetDir = __DIR__ . "/../../uploads/avatars/";
+
+        // Ensure directory exists with proper permissions
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0775, true);
+        }
+        // Try to ensure writable permissions (may fail in some environments)
+        @chmod($targetDir, 0775);
+
         $uploadHandler = SecureFileUpload::imageUpload($targetDir, 2);
 
         $result = $uploadHandler->uploadFile($_FILES['avatar']);

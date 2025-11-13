@@ -4,6 +4,7 @@
 // ===========================================
 
 include_once('../../../includes/init.php');
+require_once('../../../includes/config.php');
 require_once('../../../includes/activity_logger.php');
 
 // Initialize activity logger
@@ -69,9 +70,9 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard | Fit & Brawl Gym</title>
-  <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
-  <link rel="stylesheet" href="css/admin.css">
-  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
@@ -201,7 +202,8 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
     if (!$timestamp)
       return 'N/A';
 
-    $time = strtotime($timestamp);
+    // Convert UTC timestamp to Philippine Time by adding 8 hours
+    $time = strtotime($timestamp) + (8 * 3600);
     $now = time();
     $diff = $now - $time;
 
@@ -244,7 +246,7 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
   }
   ?>
 
-  <script src="js/sidebar.js"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 
 </html>

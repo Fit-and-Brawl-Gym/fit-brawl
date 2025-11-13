@@ -1,5 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
-    loadFeedback();
+    // Default now list (table) view first
+    const currentFilter = document.getElementById('dateFilter').value;
+    loadFeedback(currentFilter).then(() => {
+        const tableView = document.getElementById('tableView');
+        if (tableView && tableView.classList.contains('active')) {
+            fetch('api/get_feedback.php')
+                .then(res => res.json())
+                .then(feedbacks => {
+                    const filtered = filterByDate(feedbacks, currentFilter);
+                    renderFeedbackTable(filtered);
+                });
+        }
+    });
 });
 
 // Load feedback from database
@@ -307,3 +319,101 @@ function showError(message) {
         </div>
     `;
 }
+
+// Render feedback table
+function renderFeedbackTable(feedbacks) {
+    const tbody = document.getElementById('feedbackTableBody');
+
+    if (!feedbacks || feedbacks.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
+                    <i class="fa-solid fa-comments" style="font-size: 48px; margin-bottom: 12px; display: block;"></i>
+                    No Feedback Yet
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = feedbacks.map(feedback => `
+        <tr>
+            <td><strong>${escapeHtml(feedback.name || 'Anonymous')}</strong></td>
+            <td class="table-message" title="${escapeHtml(feedback.message || 'No message')}">${escapeHtml(feedback.message || 'No message')}</td>
+            <td>
+                <span class="table-rating">${'⭐'.repeat(feedback.rating || 0)}</span>
+                <span style="color: #999; font-size: 12px;">(${feedback.rating || 0}/5)</span>
+            </td>
+            <td style="color: #999; font-size: 13px;">${formatDate(feedback.date || feedback.created_at)}</td>
+            <td>
+                <span class="visibility-badge ${feedback.is_visible == 1 ? 'visible' : 'hidden'}">
+                    <i class="fa-solid fa-${feedback.is_visible == 1 ? 'eye' : 'eye-slash'}"></i>
+                    ${feedback.is_visible == 1 ? 'Visible' : 'Hidden'}
+                </span>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    ${feedback.is_visible == 1
+                        ? `<button class="btn-secondary btn-small" onclick="toggleVisibility(${feedback.id}, false)">
+                            <i class="fa-solid fa-eye-slash"></i> Hide
+                           </button>`
+                        : `<button class="btn-primary btn-small" onclick="toggleVisibility(${feedback.id}, true)">
+                            <i class="fa-solid fa-eye"></i> Show
+                           </button>`
+                    }
+                    <button class="btn-danger btn-small" onclick="deleteFeedback(${feedback.id})">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// View Toggle (Table vs Cards)
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+
+        // Update active button
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Toggle views
+        const tableView = document.getElementById('tableView');
+        const cardsView = document.getElementById('cardsView');
+
+        if (view === 'table') {
+            tableView.classList.add('active');
+            cardsView.classList.remove('active');
+
+            // Re-render table with current filter
+            const currentFilter = document.getElementById('dateFilter').value;
+            fetch('api/get_feedback.php')
+                .then(res => res.json())
+                .then(feedbacks => {
+                    const filtered = filterByDate(feedbacks, currentFilter);
+                    renderFeedbackTable(filtered);
+                });
+        } else {
+            tableView.classList.remove('active');
+            cardsView.classList.add('active');
+        }
+    });
+});
+
+// Update date filter to also update table view
+document.getElementById('dateFilter').addEventListener('change', function() {
+    loadFeedback(this.value);
+
+    // Also update table if in table view
+    const tableView = document.getElementById('tableView');
+    if (tableView.classList.contains('active')) {
+        fetch('api/get_feedback.php')
+            .then(res => res.json())
+            .then(feedbacks => {
+                const filtered = filterByDate(feedbacks, this.value);
+                renderFeedbackTable(filtered);
+            });
+    }
+});

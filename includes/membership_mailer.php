@@ -121,5 +121,3 @@ function sendMembershipDecisionEmail($email, $name, $plan, $accepted = false, $s
         return false;
     }
 }
-
-?>

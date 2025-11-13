@@ -21,6 +21,6 @@ if ($conn->connect_error) {
 // Set character set to support UTF-8 (emojis, international characters)
 $conn->set_charset("utf8mb4");
 
-// Optional: Set timezone to UTC for consistency
-$conn->query("SET time_zone = '+00:00'");
+// Set MySQL timezone to Philippine Time (UTC+8)
+$conn->query("SET time_zone = '+08:00'");
 ?>

@@ -27,9 +27,9 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity Log - Fit & Brawl Gym</title>
-    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
-    <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         .filters {
@@ -142,7 +142,12 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
                                 <td><?= htmlspecialchars($activity['target_user'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($activity['details']) ?></td>
                                 <td style="color: #666; font-size: 13px;">
-                                    <?= date('M d, Y h:i A', strtotime($activity['timestamp'])) ?>
+                                    <?php
+                                    // Convert UTC timestamp to Philippine Time by adding 8 hours
+                                    $utcTime = strtotime($activity['timestamp']);
+                                    $phtTime = $utcTime + (8 * 3600); // Add 8 hours in seconds
+                                    echo date('M d, Y h:i A', $phtTime);
+                                    ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -159,7 +164,7 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
             </table>
         </section>
     </main>
-    <script src="js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 
 </html>

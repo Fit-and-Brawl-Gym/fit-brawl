@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once '../../../includes/db_connect.php';
+require_once '../../../includes/init.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -20,23 +19,21 @@ if (!$trainer_id) {
 $query = "SELECT t.*,
           (SELECT COUNT(DISTINCT ur.user_id)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date = CURDATE()) as clients_today,
+           AND ur.booking_date = CURDATE()) as clients_today,
           (SELECT COUNT(*)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date >= CURDATE()) as upcoming_bookings,
+           AND ur.booking_date > CURDATE()) as upcoming_bookings,
           (SELECT COUNT(*)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'completed') as total_sessions
           FROM trainers t
           WHERE t.id = ? AND t.deleted_at IS NULL";
+
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $trainer_id);
 $stmt->execute();
@@ -49,15 +46,15 @@ if (!$trainer) {
 }
 
 // Fetch upcoming sessions
-$sessions_query = "SELECT r.*, ur.user_id, ur.booking_status, u.username, u.email
-                   FROM reservations r
-                   JOIN user_reservations ur ON ur.reservation_id = r.id
+$sessions_query = "SELECT ur.*, u.username, u.email
+                   FROM user_reservations ur
                    JOIN users u ON u.id = ur.user_id
-                   WHERE r.trainer_id = ?
+                   WHERE ur.trainer_id = ?
                    AND ur.booking_status = 'confirmed'
-                   AND r.date >= CURDATE()
-                   ORDER BY r.date ASC, r.start_time ASC
+                   AND ur.booking_date >= CURDATE()
+                   ORDER BY ur.booking_date ASC, ur.session_time ASC
                    LIMIT 10";
+
 $stmt = $conn->prepare($sessions_query);
 $stmt->bind_param("i", $trainer_id);
 $stmt->execute();
@@ -82,9 +79,9 @@ $log_result = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Trainer - Admin Panel</title>
-    <link rel="icon" type="image/png" href="../../../images/favicon-admin.png">
-    <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="css/trainer-view.css">
+    <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/trainer-view.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -269,7 +266,7 @@ $log_result = $stmt->get_result();
             </div>
         </div>
     </main>
-    <script src="js/sidebar.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 
 </html>

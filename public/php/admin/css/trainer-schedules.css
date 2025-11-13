@@ -30,7 +30,7 @@
 
 .page-header .btn-primary {
     padding: 12px 24px;
-    background: #d5ba2b;
+    background: var(--admin-btn-primary-bg);
     color: white;
     border: none;
     border-radius: 8px;
