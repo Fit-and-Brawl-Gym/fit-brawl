@@ -121,10 +121,51 @@
 
 
 .account-link,
-.account-dropdown {
+.account-dropdown,
+.auth-buttons {
     margin-left: auto;
     display: flex;
     align-items: center;
+}
+
+/* Auth Buttons for Non-Logged-In Users */
+.auth-buttons {
+    gap: var(--spacing-3);
+}
+
+.auth-buttons .btn-signup,
+.auth-buttons .btn-signin {
+    padding: var(--spacing-2) var(--spacing-5);
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    border: 2px solid transparent;
+}
+
+.auth-buttons .btn-signup {
+    background-color: var(--color-accent);
+    color: var(--color-primary);
+    border-color: var(--color-accent);
+}
+
+.auth-buttons .btn-signup:hover {
+    background-color: transparent;
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.auth-buttons .btn-signin {
+    background-color: transparent;
+    color: var(--color-white);
+    border-color: var(--color-white);
+}
+
+.auth-buttons .btn-signin:hover {
+    background-color: var(--color-white);
+    color: var(--color-primary);
 }
 
 .account-icon {
@@ -267,6 +308,7 @@
     .wrapper .title .fnb-logo {
         width: 45px;
         height: 45px;
+        margin-bottom: -5px;
     }
 
     .wrapper .nav-bar ul li a {
@@ -275,6 +317,27 @@
 
     .wrapper .nav-bar ul li a:hover {
         font-size: 15px;
+    }
+}
+
+/* Hide Sign Up button and transfer yellow accent to Sign In at 1000px and below */
+@media (max-width: 1000px) {
+    /* Hide Sign Up button */
+    .auth-buttons .btn-signup {
+        display: none;
+    }
+
+    /* Transfer yellow accent to Sign In button */
+    .auth-buttons .btn-signin {
+        background-color: var(--color-accent);
+        color: var(--color-primary);
+        border-color: var(--color-accent);
+    }
+
+    .auth-buttons .btn-signin:hover {
+        background-color: transparent;
+        color: var(--color-accent);
+        border-color: var(--color-accent);
     }
 }
 
@@ -374,10 +437,21 @@
     }
 
     .account-link,
-    .account-dropdown {
+    .account-dropdown,
+    .auth-buttons {
         order: 1;
         margin-left: 0;
         padding-left: 0;
+    }
+
+    /* Adjust auth buttons spacing for mobile */
+    .auth-buttons {
+        gap: var(--spacing-2);
+    }
+
+    .auth-buttons .btn-signin {
+        padding: var(--spacing-2) var(--spacing-4);
+        font-size: var(--font-size-sm);
     }
 
     .account-icon {
@@ -392,14 +466,7 @@
     }
 
     .wrapper .title .logo-title {
-        height: 32px;
-    }
-
-    .hamburger-menu {
-        width: 26px;
-        height: auto; /* Changed from fixed 20px */
-        gap: 4px; /* Slightly tighter for smaller screens */
-        margin-right: var(--spacing-3);
+        margin-bottom: -12px;
     }
 
     .hamburger-menu span {
