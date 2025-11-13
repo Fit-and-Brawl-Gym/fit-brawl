@@ -306,7 +306,7 @@ if (!isset($ogImage)) {
                 <!-- Not logged-in - Auth buttons -->
                 <div class="auth-buttons">
                     <a href="sign-up.php" class="btn-signup">Sign Up</a>
-                    <a href="login.php" class="btn-signin">Sign In</a>
+                    <a href="login.php" class="btn-signin">Log In</a>
                 </div>
             <?php endif; ?>
         </div>

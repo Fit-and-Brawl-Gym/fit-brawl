@@ -105,11 +105,7 @@ try {
 
     $stmt = $conn->prepare($sql);
     
-<<<<<<< Updated upstream
     // Bind parameters - use "sssss" for all cases (user_id is now VARCHAR)
-=======
-    // Bind parameters - use "sssss" for all cases
->>>>>>> Stashed changes
     // For anonymous users, $user_id will be NULL
     $stmt->bind_param("sssss", $user_id, $username, $email, $avatar, $message);
 

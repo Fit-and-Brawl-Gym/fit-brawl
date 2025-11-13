@@ -70,11 +70,8 @@ switch ($action) {
         $stmt->bind_param("ii", $isVisible, $id);
 
         if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
-                echo json_encode(['success' => true, 'message' => 'Visibility updated']);
-            } else {
-                echo json_encode(['success' => false, 'message' => "No rows updated for $primaryKey = $id"]);
-            }
+            // Success even if no rows changed (already had that visibility value)
+            echo json_encode(['success' => true, 'message' => 'Visibility updated']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
         }
