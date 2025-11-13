@@ -188,6 +188,22 @@
     cursor: pointer;
 }
 
+.account-dropdown .account-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.account-dropdown .username-display {
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .account-dropdown .dropdown-menu {
     display: none;
     position: absolute;
@@ -296,6 +312,11 @@
 
 /* Small tablets (900px and below) */
 @media (max-width: 900px) {
+    /* Hide username on smaller screens */
+    .account-dropdown .username-display {
+        display: none;
+    }
+
     .wrapper .title .logo-title {
         display: none;
     }

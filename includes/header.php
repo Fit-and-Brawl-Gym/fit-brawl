@@ -296,7 +296,10 @@ if (!isset($ogImage)) {
             <?php if (isset($_SESSION['email'])): ?>
                 <!-- Logged-in dropdown -->
                 <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
+                    <div class="account-info">
+                        <span class="username-display"><?= htmlspecialchars($_SESSION['name'] ?? 'User') ?></span>
+                        <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
+                    </div>
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
                         <a href="logout.php">Logout</a>
