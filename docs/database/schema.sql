@@ -20,9 +20,10 @@ USE fit_and_brawl_gym;
 -- =====================
 -- USERS TABLE
 -- Stores user accounts with authentication and verification
+-- Uses UUID for user IDs instead of auto-incrementing integers
 -- =====================
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id CHAR(36) PRIMARY KEY COMMENT 'UUID v4 primary key',
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL COMMENT 'Hashed password using bcrypt',
@@ -42,7 +43,7 @@ CREATE TABLE users (
 -- =====================
 CREATE TABLE remember_password (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id CHAR(36) NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user

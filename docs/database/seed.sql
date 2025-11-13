@@ -109,39 +109,39 @@ INSERT INTO membership_trainers (membership_id, trainer_id) VALUES
 -- =====================
 INSERT INTO equipment (name, category, status, description, image_path) VALUES
 -- Cardio Equipment
-('Treadmill Pro X500', 'Cardio', 'Available', 'High-performance treadmill with incline features', '../uploads/equipment/treadmill-pro-x500.jpg'),
-('Stationary Bike Elite', 'Cardio', 'Available', 'Adjustable resistance cycling bike', '../uploads/equipment/stationary-bike-elite.jpg'),
-('Elliptical Trainer', 'Cardio', 'Out of Order', 'Low-impact cardio machine', '../uploads/equipment/elliptical-trainer.jpg'),
-('Rowing Machine', 'Cardio', 'Available', 'Full-body cardio workout equipment', '../uploads/equipment/rowing-machine.jpg'),
-('Assault AirBike', 'Cardio', 'Available', 'Fan-based resistance bike for HIIT', '../uploads/equipment/assault-airbike.jpg'),
+('Treadmill Pro X500', 'Cardio', 'Available', 'High-performance treadmill with incline features', 'treadmill-pro-x500.jpg'),
+('Stationary Bike Elite', 'Cardio', 'Available', 'Adjustable resistance cycling bike', 'stationary-bike-elite.jpg'),
+('Elliptical Trainer', 'Cardio', 'Out of Order', 'Low-impact cardio machine', 'elliptical-trainer.jpg'),
+('Rowing Machine', 'Cardio', 'Available', 'Full-body cardio workout equipment', 'rowing-machine.jpg'),
+('Assault AirBike', 'Cardio', 'Available', 'Fan-based resistance bike for HIIT', 'assault-airbike.jpg'),
 
 -- Flexibility Equipment
-('Yoga Mat Premium', 'Flexibility', 'Available', 'Non-slip yoga mat with carrying strap', '../uploads/equipment/yoga-mat-premium.jpg'),
-('Foam Roller', 'Flexibility', 'Available', 'Muscle recovery and stretching tool', '../uploads/equipment/foam-roller.jpg'),
-('Resistance Bands Set', 'Flexibility', 'Available', 'Multiple resistance levels for stretching', '../uploads/equipment/resistance-bands-set.jpg'),
-('Pilates Reformer', 'Flexibility', 'Maintenance', 'Professional pilates equipment', '../uploads/equipment/pilates-reformer.jpg'),
-('Stretch Strap', 'Flexibility', 'Available', 'Assisted stretching tool', '../uploads/equipment/stretch-strap.jpg'),
+('Yoga Mat Premium', 'Flexibility', 'Available', 'Non-slip yoga mat with carrying strap', 'yoga-mat-premium.jpg'),
+('Foam Roller', 'Flexibility', 'Available', 'Muscle recovery and stretching tool', 'foam-roller.jpg'),
+('Resistance Bands Set', 'Flexibility', 'Available', 'Multiple resistance levels for stretching', 'resistance-bands-set.jpg'),
+('Pilates Reformer', 'Flexibility', 'Maintenance', 'Professional pilates equipment', 'pilates-reformer.jpg'),
+('Stretch Strap', 'Flexibility', 'Available', 'Assisted stretching tool', 'stretch-strap.jpg'),
 
 -- Core Equipment
-('Ab Wheel Roller', 'Core', 'Available', 'Core strengthening wheel', '../uploads/equipment/ab-wheel-roller.jpg'),
-('Medicine Ball 10kg', 'Core', 'Available', 'Weighted ball for core exercises', '../uploads/equipment/medicine-ball-10kg.jpg'),
-('Stability Ball 65cm', 'Core', 'Available', 'Swiss ball for balance training', '../uploads/equipment/stability-ball-65cm.jpg'),
-('Captains Chair', 'Core', 'Out of Order', 'Leg raise station - needs repair', '../uploads/equipment/captains-chair.jpg'),
-('Plank Station', 'Core', 'Available', 'Dedicated plank workout area', '../uploads/equipment/plank-station.jpg'),
+('Ab Wheel Roller', 'Core', 'Available', 'Core strengthening wheel', 'ab-wheel-roller.jpg'),
+('Medicine Ball 10kg', 'Core', 'Available', 'Weighted ball for core exercises', 'medicine-ball-10kg.jpg'),
+('Stability Ball 65cm', 'Core', 'Available', 'Swiss ball for balance training', 'stability-ball-65cm.jpg'),
+('Captains Chair', 'Core', 'Out of Order', 'Leg raise station - needs repair', 'captains-chair.jpg'),
+('Plank Station', 'Core', 'Available', 'Dedicated plank workout area', 'plank-station.jpg'),
 
 -- Strength Training Equipment
-('Barbell Olympic 20kg', 'Strength Training', 'Available', 'Standard Olympic barbell', '../uploads/equipment/barbell-olympic-20kg.jpg'),
-('Dumbbell Set 5 to 50kg', 'Strength Training', 'Available', 'Complete dumbbell rack', '../uploads/equipment/dumbbell-set-5-to-50kg.jpg'),
-('Power Rack', 'Strength Training', 'Available', 'Multi-purpose squat rack with safety bars', '../uploads/equipment/power-rack.jpg'),
-('Bench Press Station', 'Strength Training', 'Available', 'Adjustable bench with barbell support', '../uploads/equipment/bench-press-station.jpg'),
-('Leg Press Machine', 'Strength Training', 'Maintenance', 'Heavy-duty leg press - under servicing', '../uploads/equipment/leg-press-machine.jpg'),
+('Barbell Olympic 20kg', 'Strength Training', 'Available', 'Standard Olympic barbell', 'barbell-olympic-20kg.jpg'),
+('Dumbbell Set 5 to 50kg', 'Strength Training', 'Available', 'Complete dumbbell rack', 'dumbbell-set-5-to-50kg.jpg'),
+('Power Rack', 'Strength Training', 'Available', 'Multi-purpose squat rack with safety bars', 'power-rack.jpg'),
+('Bench Press Station', 'Strength Training', 'Available', 'Adjustable bench with barbell support', 'bench-press-station.jpg'),
+('Leg Press Machine', 'Strength Training', 'Maintenance', 'Heavy-duty leg press - under servicing', 'leg-press-machine.jpg'),
 
 -- Functional Training Equipment
-('Kettlebell 16kg', 'Functional Training', 'Available', 'Cast iron kettlebell', '../uploads/equipment/kettlebell-16kg.jpg'),
-('Battle Ropes', 'Functional Training', 'Available', '15m heavy rope for conditioning', '../uploads/equipment/battle-ropes.jpg'),
-('Suspension Trainer', 'Functional Training', 'Available', 'TRX-style bodyweight training', '../uploads/equipment/suspension-trainer.jpg'),
-('Plyometric Box Set', 'Functional Training', 'Available', 'Jump boxes in various heights', '../uploads/equipment/plyometric-box-set.jpg'),
-('Slam Ball 15kg', 'Functional Training', 'Available', 'Heavy ball for power training', '../uploads/equipment/slam-ball-15kg.jpg');
+('Kettlebell 16kg', 'Functional Training', 'Available', 'Cast iron kettlebell', 'kettlebell-16kg.jpg'),
+('Battle Ropes', 'Functional Training', 'Available', '15m heavy rope for conditioning', 'battle-ropes.jpg'),
+('Suspension Trainer', 'Functional Training', 'Available', 'TRX-style bodyweight training', 'suspension-trainer.jpg'),
+('Plyometric Box Set', 'Functional Training', 'Available', 'Jump boxes in various heights', 'plyometric-box-set.jpg'),
+('Slam Ball 15kg', 'Functional Training', 'Available', 'Heavy ball for power training', 'slam-ball-15kg.jpg');
 
 
 -- =====================
@@ -150,24 +150,24 @@ INSERT INTO equipment (name, category, status, description, image_path) VALUES
 -- =====================
 INSERT INTO products (name, category, stock, status, image_path) VALUES
 -- Supplements
-('Whey Protein Powder', 'Supplements', 50, 'in stock', '../../uploads/products/whey-protein-powder.jpg'),
-('Pre-Workout Supplement', 'Supplements', 10, 'low stock', '../../uploads/products/workout-supplement.jpg'),
-('BCAA Powder', 'Supplements', 30, 'in stock', '../../uploads/products/bcaa-powder.jpg'),
+('Whey Protein Powder', 'Supplements', 50, 'in stock', 'whey-protein-powder.jpg'),
+('Pre-Workout Supplement', 'Supplements', 10, 'low stock', 'workout-supplement.jpg'),
+('BCAA Powder', 'Supplements', 30, 'in stock', 'bcaa-powder.jpg'),
 
 -- Hydration & Drinks
-('Bottled Water', 'Hydration & Drinks', 100, 'in stock', '../../uploads/products/bottled-water.jpg'),
-('Sports Drink', 'Hydration & Drinks', 45, 'in stock', '../../uploads/products/sports-drink.jpg'),
+('Bottled Water', 'Hydration & Drinks', 100, 'in stock', 'bottled-water.jpg'),
+('Sports Drink', 'Hydration & Drinks', 45, 'in stock', 'sports-drink.jpg'),
 
 -- Snacks
-('Protein Bar', 'Snacks', 30, 'in stock', '../../uploads/products/recovery-bar.jpg'),
-('Energy Bar', 'Snacks', 25, 'in stock', '../../uploads/products/energy-bar.jpg'),
+('Protein Bar', 'Snacks', 30, 'in stock', 'recovery-bar.jpg'),
+('Energy Bar', 'Snacks', 25, 'in stock', 'energy-bar.jpg'),
 
 -- Accessories
-('Muscle Roller', 'Accessories', 15, 'in stock', '../../uploads/products/muscle-roller.jpg'),
-('Ice Pack', 'Accessories', 5, 'low stock', '../../uploads/products/ice-pack.jpg'),
-('Resistance Bands', 'Accessories', 0, 'out of stock', '../../uploads/products/resistance-bands.jpg'),
-('Hand Wraps', 'Boxing & Muay Thai Products', 20, 'in stock', '../../uploads/products/hand-wraps.jpg'),
-('Mouth Guards', 'Boxing & Muay Thai Products', 25, 'in stock', '../../uploads/products/mouth-guards.jpg');
+('Muscle Roller', 'Accessories', 15, 'in stock', 'muscle-roller.jpg'),
+('Ice Pack', 'Accessories', 5, 'low stock', 'ice-pack.jpg'),
+('Resistance Bands', 'Accessories', 0, 'out of stock', 'resistance-bands.jpg'),
+('Hand Wraps', 'Boxing & Muay Thai Products', 20, 'in stock', 'hand-wraps.jpg'),
+('Mouth Guards', 'Boxing & Muay Thai Products', 25, 'in stock', 'mouth-guards.jpg');
 -- =====================
 -- SEED DATA FOR FEEDBACK
 -- Sample user feedback and reviews
