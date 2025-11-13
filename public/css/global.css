@@ -565,10 +565,10 @@ body {
   user-select: none;
 }
 
-/* Smooth scrolling for mobile */
+/* Smooth scrolling for mobile - removed deprecated property */
 .mobile-scroll {
-  -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 /* Responsive image container */
