@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
 
         $sql = "INSERT INTO feedback (user_id, message) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $user_id, $message);
+        $stmt->bind_param("ss", $user_id, $message);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Feedback submitted"]);

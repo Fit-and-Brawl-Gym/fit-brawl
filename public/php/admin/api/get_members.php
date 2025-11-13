@@ -93,6 +93,25 @@ try {
 
     $members = [];
     while ($row = $result->fetch_assoc()) {
+        // Calculate total_payment based on plan_name and billing_type
+        $planPrices = [
+            'Gladiator' => ['monthly' => 14500, 'quarterly' => 36540],
+            'Brawler' => ['monthly' => 11500, 'quarterly' => 32775],
+            'Champion' => ['monthly' => 7000, 'quarterly' => 19950],
+            'Clash' => ['monthly' => 6000, 'quarterly' => 17100],
+            'Resolution Regular' => ['monthly' => 4000, 'quarterly' => 11400],
+            'Resolution Student' => ['monthly' => 2500, 'quarterly' => 7125]
+        ];
+        
+        $planName = $row['plan_name'];
+        $billingType = $row['billing_type'] ?? 'monthly';
+        
+        if (isset($planPrices[$planName][$billingType])) {
+            $row['total_payment'] = $planPrices[$planName][$billingType];
+        } else {
+            $row['total_payment'] = null;
+        }
+        
         $members[] = $row;
     }
 

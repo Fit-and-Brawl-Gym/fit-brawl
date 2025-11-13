@@ -19,7 +19,7 @@ if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
     while ($row = $result->fetch_assoc()) {
         if (password_verify($token, $row['token_hash'])) {
             $stmtUser = $conn->prepare("SELECT * FROM users WHERE id = ?");
-            $stmtUser->bind_param("i", $row['user_id']);
+            $stmtUser->bind_param("s", $row['user_id']);
             $stmtUser->execute();
             $user = $stmtUser->get_result()->fetch_assoc();
 

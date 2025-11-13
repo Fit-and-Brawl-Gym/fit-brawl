@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../../includes/config.php';  // Add config for BASE_PATH
 require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/user_id_generator.php'; // Add ID generator
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
@@ -103,13 +104,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     }
 
     $verificationToken = bin2hex(random_bytes(32));
+    
+    // Generate formatted user ID based on role
+    $userId = generateFormattedUserId($conn, $role);
 
-    // Insert user with verification token
+    // Insert user with verification token and formatted ID
     $insertQuery = $conn->prepare("
-        INSERT INTO users (username, email, password, role, verification_token, is_verified)
-        VALUES (?, ?, ?, ?, ?, 0)
+        INSERT INTO users (id, username, email, password, role, verification_token, is_verified)
+        VALUES (?, ?, ?, ?, ?, ?, 0)
     ");
-    $insertQuery->bind_param("sssss", $name, $email, $password, $role, $verificationToken);
+    $insertQuery->bind_param("ssssss", $userId, $name, $email, $password, $role, $verificationToken);
 
     if ($insertQuery->execute()) {
         // Build verification URL based on environment

@@ -282,10 +282,9 @@ select#statusFilter {
 }
 
 select#statusFilter {
-    background-image: url("../../../images/arrow-down.svg");
-    background-repeat: no-repeat;
-    background-position: right var(--spacing-3) center;
-    background-size: 12px;
+    background: rgba(255, 255, 255, 0.08) url("../../../images/arrow-down.svg") no-repeat right var(--spacing-3) center;
+    background-size: auto, 12px;
+    background-attachment: scroll;
     padding-right: var(--spacing-8);
     cursor: pointer;
 }
@@ -295,8 +294,19 @@ input#equipmentSearch:focus,
 select#statusFilter:focus {
     outline: none;
     border-color: rgba(255, 206, 0, 0.5);
-    background: rgba(255, 255, 255, 0.12);
     box-shadow: 0 0 0 3px rgba(255, 206, 0, 0.1);
+}
+
+/* Keep background on focus for inputs */
+input[type="search"]:focus,
+input#equipmentSearch:focus {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Keep arrow on focus for select */
+select#statusFilter:focus {
+    background: rgba(255, 255, 255, 0.12) url("../../../images/arrow-down.svg") no-repeat right var(--spacing-3) center;
+    background-size: auto, 12px;
 }
 
 input[type="search"]::placeholder, input#equipmentSearch::placeholder {
@@ -307,6 +317,60 @@ select#statusFilter option {
     background: var(--color-primary);
     color: var(--color-text-light);
     border: none;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-6);
+    margin-bottom: var(--spacing-8);
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 206, 0, 0.2);
+    border-radius: var(--radius-lg);
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: var(--transition-base);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: rgba(255, 206, 0, 0.15);
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+}
+
+.pagination-btn.active {
+    background: var(--color-accent);
+    color: var(--color-primary);
+    border-color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.pagination-dots {
+    color: rgba(255, 255, 255, 0.5);
+    padding: 0 var(--spacing-2);
+    font-weight: var(--font-weight-bold);
+}
+
+.pagination-btn.page-number {
+    min-width: 40px;
+    justify-content: center;
 }
 
 /* Equipment Container */
@@ -354,6 +418,9 @@ select#statusFilter option {
     border-radius: var(--radius-xl);
     border: 1px solid rgba(255, 206, 0, 0.15);
     background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .equipment-image {
@@ -365,8 +432,19 @@ select#statusFilter option {
     will-change: transform;
 }
 
+/* Equipment Emoji Style */
+.equipment-emoji {
+    font-size: 80px;
+    line-height: 1;
+    transition: transform var(--transition-base);
+}
+
 .equipment-card:hover .equipment-image {
     transform: scale(1.1);
+}
+
+.equipment-card:hover .equipment-emoji {
+    transform: scale(1.2);
 }
 
 .equipment-info h3 {

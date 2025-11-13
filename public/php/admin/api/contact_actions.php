@@ -88,7 +88,7 @@ try {
     $log_sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_id, details) 
                 VALUES (?, ?, 'contact_management', ?, ?)";
     $log_stmt = $conn->prepare($log_sql);
-    $log_stmt->bind_param("isis", $admin_id, $admin_name, $id, $details);
+    $log_stmt->bind_param("ssis", $admin_id, $admin_name, $id, $details);
     $log_stmt->execute();
 
     echo json_encode([

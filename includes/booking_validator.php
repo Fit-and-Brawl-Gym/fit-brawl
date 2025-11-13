@@ -75,7 +75,7 @@ class BookingValidator
             AND (session_time = ? OR session_time = 'All Day')
             AND block_status = 'blocked'
         ");
-        $stmt->bind_param("iss", $trainer_id, $booking_date, $session_time);
+        $stmt->bind_param("sss", $trainer_id, $booking_date, $session_time);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -103,7 +103,7 @@ class BookingValidator
             AND session_time = ?
             AND booking_status = 'confirmed'
         ");
-        $stmt->bind_param("iss", $trainer_id, $booking_date, $session_time);
+        $stmt->bind_param("sss", $trainer_id, $booking_date, $session_time);
         $stmt->execute();
         $result = $stmt->get_result();
 

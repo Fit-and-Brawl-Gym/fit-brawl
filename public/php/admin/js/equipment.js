@@ -19,11 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadEquipment();
                 location.reload();
             } else {
+                console.error('Server error:', data);
                 alert('Failed to save equipment: ' + (data.message || 'Unknown error'));
             }
         } catch (err) {
             console.error('Error saving equipment:', err);
-            alert('An error occurred. Please try again.');
+            alert('An error occurred: ' + err.message);
         }
     });
 });

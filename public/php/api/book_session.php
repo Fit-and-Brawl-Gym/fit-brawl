@@ -193,7 +193,7 @@ try {
         if ($count_stmt === false) {
             throw new Exception('Failed to prepare count query');
         }
-        $count_stmt->bind_param("iss", $user_id, $week_start, $week_end);
+        $count_stmt->bind_param("sss", $user_id, $week_start, $week_end);
         $count_stmt->execute();
         $count_result = $count_stmt->get_result();
         $count_row = $count_result ? $count_result->fetch_assoc() : ['booking_count' => 0];

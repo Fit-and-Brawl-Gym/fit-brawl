@@ -15,7 +15,7 @@ if (isset($_GET['token'])) {
         // Token found → Verify the account
         $user = $result->fetch_assoc();
         $update = $conn->prepare("UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?");
-        $update->bind_param("i", $user['id']);
+        $update->bind_param("s", $user['id']); // Changed "i" to "s" for VARCHAR ID
         $update->execute();
 
         $_SESSION['success_message'] = "Your email has been verified! You can now log in.";

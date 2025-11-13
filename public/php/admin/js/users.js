@@ -124,7 +124,7 @@ function createMemberRow(member) {
                         </span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Total Payment</span>
+                        <span class="detail-label">Amount</span>
                         <span class="detail-value highlight">${totalPayment}</span>
                     </div>
                     <div class="detail-item">
@@ -252,7 +252,7 @@ function createHistoryItem(item) {
                 </div>
             </div>
             <div class="history-payment">
-                Total Payment: ${payment}
+                Amount: ${payment}
             </div>
         </div>
     `;

@@ -65,7 +65,7 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
         source_table = 'user_memberships',
         source_id = id
         WHERE id = ?");
-    $stmt->bind_param('isssi', $admin_id, $date_approved, $start_date, $end_date, $id);
+    $stmt->bind_param('ssssi', $admin_id, $date_approved, $start_date, $end_date, $id);
 
     if ($stmt->execute()) {
         // LOG THE ACTIVITY - FIX: Don't use LEFT JOIN with m, plan_name is in user_memberships
@@ -142,7 +142,7 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
         source_table = 'user_memberships',
         source_id = id
         WHERE id = ? AND request_status = 'pending'");
-    $stmt->bind_param('isi', $admin_id, $remarks, $id);
+    $stmt->bind_param('ssi', $admin_id, $remarks, $id);
 
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {

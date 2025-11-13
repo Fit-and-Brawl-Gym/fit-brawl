@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
 
         // Insert new block
         $stmt = $conn->prepare("INSERT INTO trainer_availability_blocks (trainer_id, date, session_time, reason, blocked_by, block_status) VALUES (?, ?, ?, ?, ?, 'blocked')");
-        $stmt->bind_param('isssi', $trainer_id, $date, $session_time, $reason, $_SESSION['user_id']);
+        $stmt->bind_param('issss', $trainer_id, $date, $session_time, $reason, $_SESSION['user_id']);
         $success = $stmt->execute();
 
         if ($success) {

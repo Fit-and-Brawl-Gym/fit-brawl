@@ -31,7 +31,7 @@ if ($user_id) {
     ");
 
     if ($stmt) {
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -184,7 +184,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <!-- Left Column -->
                     <div class="transaction-left">
                         <div class="form-group">
-                            <label for="name">Name</label>
+                            <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
                         </div>
 

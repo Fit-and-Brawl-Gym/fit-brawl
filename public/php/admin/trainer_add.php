@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $day_offs_str = implode(', ', $day_offs);
                     $details = "New trainer added: $name ($specialization) with username: $generated_username. Day-offs: $day_offs_str";
                     $stmt = $conn->prepare($log_query);
-                    $stmt->bind_param("iis", $trainer_id, $admin_id, $details);
+                    $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
                     $stmt->execute();
 
                     // Log to main activity log

@@ -65,7 +65,7 @@ try {
         $log_sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_id, details) 
                     VALUES (?, ?, 'contact_reply', ?, ?)";
         $log_stmt = $conn->prepare($log_sql);
-        $log_stmt->bind_param("isis", $admin_id, $admin_name, $contactId, $details);
+        $log_stmt->bind_param("ssis", $admin_id, $admin_name, $contactId, $details);
         $log_stmt->execute();
     }
 

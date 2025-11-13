@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
                          VALUES (?, ?, 'Schedule Updated', ?)";
             $details = "Day-offs updated: $day_off_list";
             $stmt = $conn->prepare($log_query);
-            $stmt->bind_param("iis", $trainer_id, $admin_id, $details);
+            $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
             $stmt->execute();
 
             $conn->commit();
