@@ -144,6 +144,7 @@ body::before {
     border-radius: var(--radius-2xl);
     padding: var(--spacing-8);
     margin-bottom: var(--spacing-8);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     position: relative;
     z-index: 2;
@@ -1006,6 +1007,7 @@ body::before {
 .comparison-table-wrapper {
     overflow-x: auto;
     background: rgba(0, 47, 63, 0.5);
+    -webkit-backdrop-filter: blur(15px);
     backdrop-filter: blur(15px);
     border: 2px solid rgba(255, 206, 0, 0.2);
     border-radius: var(--radius-2xl);
@@ -1073,6 +1075,7 @@ body::before {
     text-align: center;
     border-bottom: 3px solid rgba(255, 206, 0, 0.4);
     background: rgba(0, 47, 63, 0.98);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -1086,6 +1089,7 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 1.5px;
     background: rgba(0, 47, 63, 0.98);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 

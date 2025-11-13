@@ -73,10 +73,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fa-solid fa-comment-dots"></i>
             <span>Feedback</span>
         </a>
-       <!-- <a href="<?= PUBLIC_PATH ?>/php/admin/announcements.php" class="<?= $current_page == 'announcements.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-bullhorn"></i>
-            <span>Announcements</span>
-        </a> -->
         <a href="<?= PUBLIC_PATH ?>/php/admin/contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-address-book"></i>
             <span>Contacts</span>
