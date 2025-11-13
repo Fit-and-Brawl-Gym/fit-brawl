@@ -65,7 +65,7 @@ if (isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -102,7 +102,7 @@ if (isset($_SESSION['user_id'])) {
             LIMIT 1
         ");
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -148,7 +148,7 @@ if (isset($_SESSION['user_id'])) {
         AND booking_status IN ('confirmed', 'completed')
     ");
     if ($stmt) {
-        $stmt->bind_param("iss", $user_id, $weekStart, $weekEnd);
+        $stmt->bind_param("sss", $user_id, $weekStart, $weekEnd);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
@@ -170,7 +170,7 @@ if (isset($_SESSION['user_id'])) {
         LIMIT 3
     ");
     if ($stmt) {
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
@@ -191,7 +191,7 @@ if (isset($_SESSION['user_id'])) {
         LIMIT 1
     ");
     if ($stmt) {
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {

@@ -15,8 +15,8 @@ $isLoggedIn = true;
 $userName = $_SESSION['username'] ?? '';
 $user_id = $_SESSION['user_id'];
 
-// Check membership status
-require_once '../../includes/membership_check.php';
+// Don't include membership_check.php - we do our own check below
+// require_once '../../includes/membership_check.php';
 
 // Determine avatar source
 $avatarSrc = '../../images/account-icon.svg';
@@ -40,7 +40,7 @@ if ($user_id) {
                         ORDER BY um.end_date DESC
                         LIMIT 1";
     $stmt = $conn->prepare($membership_query);
-    $stmt->bind_param("ii", $user_id, $gracePeriodDays);
+    $stmt->bind_param("si", $user_id, $gracePeriodDays);
     $stmt->execute();
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {

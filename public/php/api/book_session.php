@@ -66,7 +66,7 @@ try {
         ORDER BY end_date DESC
         LIMIT 1
     ");
-    $membership_check->bind_param("i", $user_id);
+    $membership_check->bind_param("s", $user_id);
     $membership_check->execute();
     $membership_result = $membership_check->get_result();
 
@@ -130,7 +130,7 @@ try {
     if ($member_stmt === false) {
         throw new Exception('Failed to prepare member query');
     }
-    $member_stmt->bind_param("i", $user_id);
+    $member_stmt->bind_param("s", $user_id);
     $member_stmt->execute();
     $member_result = $member_stmt->get_result();
     $member_data = $member_result ? $member_result->fetch_assoc() : null;
@@ -154,7 +154,7 @@ try {
         if ($insert_stmt === false) {
             throw new Exception('Failed to prepare insert statement');
         }
-        $insert_stmt->bind_param("iisss", $user_id, $trainer_id, $session_time, $class_type, $booking_date);
+        $insert_stmt->bind_param("sisss", $user_id, $trainer_id, $session_time, $class_type, $booking_date);
 
         if (!$insert_stmt->execute()) {
             $err = $insert_stmt->error ?: 'unknown';

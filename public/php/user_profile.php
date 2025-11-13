@@ -31,7 +31,7 @@ if (isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -66,7 +66,7 @@ if (isset($_SESSION['user_id'])) {
             LIMIT 1
         ");
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -129,7 +129,7 @@ $nextPayment = isset($endDate) ? date('F j, Y', strtotime($endDate)) : "N/A";
 $lastTrainingDate = $lastTrainingType = $lastTrainerName = "N/A";
 $activityQuery = $conn->prepare("SELECT activity_date, activity_type, trainer_name FROM training_sessions WHERE user_id = ? ORDER BY activity_date DESC LIMIT 1");
 if ($activityQuery) {
-    $activityQuery->bind_param("i", $user_id);
+    $activityQuery->bind_param("s", $user_id);
     $activityQuery->execute();
     $activityResult = $activityQuery->get_result();
     if ($row = $activityResult->fetch_assoc()) {

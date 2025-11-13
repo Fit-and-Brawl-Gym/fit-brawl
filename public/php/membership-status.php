@@ -27,7 +27,7 @@ $stmt = $conn->prepare("
     ORDER BY date_submitted DESC
     LIMIT 1
 ");
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("s", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $membershipRequest = $result->fetch_assoc();

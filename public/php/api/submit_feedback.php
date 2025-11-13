@@ -43,7 +43,7 @@ try {
 
         // Get user info from database
         $stmt = $conn->prepare("SELECT username, avatar FROM users WHERE id = ?");
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -105,9 +105,9 @@ try {
 
     $stmt = $conn->prepare($sql);
     
-    // Bind parameters - use "issss" for all cases
+    // Bind parameters - use "sssss" for all cases (user_id is now VARCHAR)
     // For anonymous users, $user_id will be NULL
-    $stmt->bind_param("issss", $user_id, $username, $email, $avatar, $message);
+    $stmt->bind_param("sssss", $user_id, $username, $email, $avatar, $message);
 
     if ($stmt->execute()) {
         $feedback_id = $stmt->insert_id;

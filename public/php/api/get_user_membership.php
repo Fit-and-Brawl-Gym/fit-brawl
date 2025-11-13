@@ -20,7 +20,7 @@ $query = "SELECT um.*, m.plan_name, m.price, m.duration
           LIMIT 1";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("s", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
