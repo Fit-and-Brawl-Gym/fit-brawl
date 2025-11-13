@@ -267,7 +267,7 @@ if (!isset($ogImage)) {
                         </a>
                     </li>
                     <li>
-                        <a href="<?= htmlspecialchars($membershipLink) ?>" <?= $currentPage === 'membership' ? 'class="active"' : '' ?> title="<?= htmlspecialchars($membershipTitle) ?>">
+                        <a href="<?= htmlspecialchars($membershipLink) ?>" <?= ($currentPage === 'membership' || $currentPage === 'reservations') ? 'class="active"' : '' ?> title="<?= htmlspecialchars($membershipTitle) ?>">
                             <i class="fas <?= htmlspecialchars($membershipIcon) ?>"></i>
                         </a>
                     </li>
@@ -303,10 +303,11 @@ if (!isset($ogImage)) {
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Not logged-in -->
-                <a href="login.php" class="account-link">
-                    <img src="<?= IMAGES_PATH ?>/account-icon-white.svg" alt="Account" class="account-icon default-icon">
-                </a>
+                <!-- Not logged-in - Auth buttons -->
+                <div class="auth-buttons">
+                    <a href="sign-up.php" class="btn-signup">Sign Up</a>
+                    <a href="login.php" class="btn-signin">Sign In</a>
+                </div>
             <?php endif; ?>
         </div>
     </header>
