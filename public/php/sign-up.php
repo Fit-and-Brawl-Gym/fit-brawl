@@ -104,10 +104,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     }
 
     $verificationToken = bin2hex(random_bytes(32));
-    
+
     // Start transaction to prevent duplicate IDs during concurrent signups
     $conn->begin_transaction();
-    
+
     try {
         // Generate formatted user ID based on role (with FOR UPDATE lock)
         $userId = generateFormattedUserId($conn, $role);
@@ -122,10 +122,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         if (!$insertQuery->execute()) {
             throw new Exception("Failed to insert user");
         }
-        
+
         // Commit transaction
         $conn->commit();
-        
+
         // Build verification URL based on environment
         // For localhost: http://localhost/fit-brawl/public/php/verify-email.php
         // For production: https://domain.com/php/verify-email.php (DocumentRoot is /public)
@@ -174,7 +174,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
             header("Location: sign-up.php");
             exit();
         }
-        
+
     } catch (Exception $e) {
         // Rollback transaction on any error
         $conn->rollback();
