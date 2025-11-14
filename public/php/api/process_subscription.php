@@ -135,7 +135,7 @@ $check_existing = $conn->prepare("
     ORDER BY id DESC
     LIMIT 1
 ");
-$check_existing->bind_param("i", $user_id);
+$check_existing->bind_param("s", $user_id);
 $check_existing->execute();
 $existing = $check_existing->get_result()->fetch_assoc();
 
@@ -187,7 +187,7 @@ if ($existing && $existing['membership_status'] === 'active') {
 
         $stmt = $conn->prepare($update_query);
         $stmt->bind_param(
-            "issssssssissii",
+            "issssssssisssi",
             $plan_id,
             $name,
             $country,
@@ -224,7 +224,7 @@ if ($existing && $existing['membership_status'] === 'active') {
 
         $stmt = $conn->prepare($update_query);
         $stmt->bind_param(
-            "issssssssiis",
+            "issssssssiss",
             $plan_id,
             $name,
             $country,
@@ -256,7 +256,7 @@ if ($existing && $existing['membership_status'] === 'active') {
 
         $stmt = $conn->prepare($insert_query);
         $stmt->bind_param(
-            "iissssssssisi",
+            "sissssssssisi",
             $user_id,
             $plan_id,
             $name,
@@ -281,7 +281,7 @@ if ($existing && $existing['membership_status'] === 'active') {
 
         $stmt = $conn->prepare($insert_query);
         $stmt->bind_param(
-            "iissssssssi",
+            "sissssssssi",
             $user_id,
             $plan_id,
             $name,

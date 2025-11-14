@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
 require_once '../../includes/db_connect.php';
+require_once '../../includes/user_id_generator.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 

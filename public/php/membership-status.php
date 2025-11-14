@@ -11,6 +11,17 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 $user_id = $_SESSION['user_id'] ?? null;
 
 if (!$user_id) {
@@ -27,7 +38,7 @@ $stmt = $conn->prepare("
     ORDER BY date_submitted DESC
     LIMIT 1
 ");
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("s", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $membershipRequest = $result->fetch_assoc();

@@ -51,7 +51,7 @@ $stmt = $conn->prepare("
     AND membership_status = 'active'
     AND end_date >= CURDATE()
 ");
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("s", $user_id);
 $stmt->execute();
 $result = $stmt->get_result()->fetch_assoc();
 $is_member = $result['has_membership'] > 0;

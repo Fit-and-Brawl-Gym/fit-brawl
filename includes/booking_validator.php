@@ -75,7 +75,7 @@ class BookingValidator
             AND (session_time = ? OR session_time = 'All Day')
             AND block_status = 'blocked'
         ");
-        $stmt->bind_param("iss", $trainer_id, $booking_date, $session_time);
+        $stmt->bind_param("sss", $trainer_id, $booking_date, $session_time);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -103,7 +103,7 @@ class BookingValidator
             AND session_time = ?
             AND booking_status = 'confirmed'
         ");
-        $stmt->bind_param("iss", $trainer_id, $booking_date, $session_time);
+        $stmt->bind_param("sss", $trainer_id, $booking_date, $session_time);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -179,7 +179,7 @@ class BookingValidator
             AND booking_date BETWEEN ? AND ?
             AND booking_status IN ('confirmed', 'completed')
         ");
-        $stmt->bind_param("iss", $user_id, $week_start, $week_end);
+        $stmt->bind_param("sss", $user_id, $week_start, $week_end);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
@@ -221,7 +221,7 @@ class BookingValidator
             AND session_time = ?
             AND booking_status = 'confirmed'
         ");
-        $stmt->bind_param("iss", $user_id, $booking_date, $session_time);
+        $stmt->bind_param("sss", $user_id, $booking_date, $session_time);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -255,7 +255,7 @@ class BookingValidator
             AND membership_status = 'active'
             AND end_date >= CURDATE()
         ");
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -297,7 +297,7 @@ class BookingValidator
             FROM user_reservations
             WHERE id = ? AND user_id = ?
         ");
-        $stmt->bind_param("ii", $booking_id, $user_id);
+        $stmt->bind_param("is", $booking_id, $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
 

@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Edited', ?)";
                         $details = "Updated: " . implode(", ", $changes);
                         $stmt = $conn->prepare($log_query);
-                        $stmt->bind_param("iis", $trainer_id, $admin_id, $details);
+                        $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
                         $stmt->execute();
 
                         // Log to main activity log

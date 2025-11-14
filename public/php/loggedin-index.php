@@ -12,6 +12,17 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
     $token = $_SESSION['remember_password'];
 
@@ -19,7 +30,7 @@ if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
     while ($row = $result->fetch_assoc()) {
         if (password_verify($token, $row['token_hash'])) {
             $stmtUser = $conn->prepare("SELECT * FROM users WHERE id = ?");
-            $stmtUser->bind_param("i", $row['user_id']);
+            $stmtUser->bind_param("s", $row['user_id']);
             $stmtUser->execute();
             $user = $stmtUser->get_result()->fetch_assoc();
 
@@ -65,7 +76,7 @@ if (isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -102,7 +113,7 @@ if (isset($_SESSION['user_id'])) {
             LIMIT 1
         ");
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -141,14 +152,14 @@ if (isset($_SESSION['user_id'])) {
     $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
 
     $stmt = $conn->prepare("
-        SELECT COUNT(*) as count 
-        FROM user_reservations 
-        WHERE user_id = ? 
-        AND booking_date BETWEEN ? AND ? 
+        SELECT COUNT(*) as count
+        FROM user_reservations
+        WHERE user_id = ?
+        AND booking_date BETWEEN ? AND ?
         AND booking_status IN ('confirmed', 'completed')
     ");
     if ($stmt) {
-        $stmt->bind_param("iss", $user_id, $weekStart, $weekEnd);
+        $stmt->bind_param("sss", $user_id, $weekStart, $weekEnd);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
@@ -162,15 +173,15 @@ if (isset($_SESSION['user_id'])) {
         SELECT ur.*, t.name as trainer_name, t.photo as trainer_photo
         FROM user_reservations ur
         LEFT JOIN trainers t ON ur.trainer_id = t.id
-        WHERE ur.user_id = ? 
+        WHERE ur.user_id = ?
         AND ur.booking_date >= CURDATE()
         AND ur.booking_status = 'confirmed'
-        ORDER BY ur.booking_date ASC, 
+        ORDER BY ur.booking_date ASC,
                  FIELD(ur.session_time, 'Morning', 'Afternoon', 'Evening')
         LIMIT 3
     ");
     if ($stmt) {
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
@@ -184,14 +195,14 @@ if (isset($_SESSION['user_id'])) {
         SELECT t.name, t.photo, COUNT(*) as booking_count
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
-        WHERE ur.user_id = ? 
+        WHERE ur.user_id = ?
         AND ur.booking_status = 'confirmed'
         GROUP BY ur.trainer_id
         ORDER BY booking_count DESC
         LIMIT 1
     ");
     if ($stmt) {
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {

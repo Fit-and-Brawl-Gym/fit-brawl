@@ -274,7 +274,7 @@ unset($it);
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <form id="equipmentForm" class="side-panel-body" method="post">
+      <form id="equipmentForm" class="side-panel-body" method="post" enctype="multipart/form-data">
         <input type="hidden" id="equipmentId" name="id">
 
         <input type="hidden" id="existingImage" name="existing_image">

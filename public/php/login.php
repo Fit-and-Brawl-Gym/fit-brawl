@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                             $stmtToken = $conn->prepare("INSERT INTO remember_password (user_id, token_hash) VALUES (?, ?)");
                             if ($stmtToken) {
-                                $stmtToken->bind_param("is", $user['id'], $token_hash);
+                                $stmtToken->bind_param("ss", $user['id'], $token_hash);
                                 if ($stmtToken->execute()) {
                                     $_SESSION['remember_password'] = $token;
                                 }

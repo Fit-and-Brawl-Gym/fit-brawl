@@ -17,6 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         // Store email in session and redirect to verification page
         $_SESSION['reset_email'] = $email;
+        // Initialize resend counter
+        $_SESSION['otp_resend_count'] = 0;
         header("Location: verification.php");  // Changed from change-password.php
         exit;
     } else {

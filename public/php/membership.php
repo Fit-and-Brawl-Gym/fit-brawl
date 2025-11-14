@@ -12,6 +12,17 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 // Check if user is logged in
 $isLoggedIn = isset($_SESSION['email']);
 
@@ -39,7 +50,7 @@ if ($isLoggedIn && isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("iis", $user_id, $gracePeriodDays, $today);
+            $stmt->bind_param("sis", $user_id, $gracePeriodDays, $today);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result && $result->num_rows > 0) {

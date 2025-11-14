@@ -11,6 +11,17 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 // Check if user already has an active membership - if so, redirect them
 $user_id = $_SESSION['user_id'] ?? null;
 $hasActiveMembership = false;
@@ -31,7 +42,7 @@ if ($user_id) {
     ");
 
     if ($stmt) {
-        $stmt->bind_param("i", $user_id);
+        $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -184,7 +195,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <!-- Left Column -->
                     <div class="transaction-left">
                         <div class="form-group">
-                            <label for="name">Name</label>
+                            <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
                         </div>
 

@@ -10,6 +10,17 @@ if (!isset($_SESSION['reset_email'])) {
     exit;
 }
 
+// Initialize resend counter if not set
+if (!isset($_SESSION['otp_resend_count'])) {
+    $_SESSION['otp_resend_count'] = 0;
+}
+
+// Check if resend limit reached (5 resends)
+if ($_SESSION['otp_resend_count'] >= 5) {
+    echo json_encode(['error' => 'Maximum resend limit reached. Please try again later or contact support.']);
+    exit;
+}
+
 try {
     // Generate new OTP
     $otp = sprintf("%06d", random_int(0, 999999));
@@ -23,9 +34,17 @@ try {
     }
 
     $stmt->bind_param("sss", $otp, $expiry, $email);
-    
+
     if ($stmt->execute() && sendOTPEmail($email, $otp)) {
-        echo json_encode(['success' => true]);
+        // Increment resend counter
+        $_SESSION['otp_resend_count']++;
+        $remaining = 5 - $_SESSION['otp_resend_count'];
+
+        echo json_encode([
+            'success' => true,
+            'resend_count' => $_SESSION['otp_resend_count'],
+            'remaining_resends' => $remaining
+        ]);
     } else {
         throw new Exception("Failed to update or send OTP");
     }

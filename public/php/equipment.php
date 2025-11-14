@@ -18,18 +18,35 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         while ($row = $result->fetch_assoc()) {
             require_once __DIR__ . '/../../includes/config.php';
 
-            // Use absolute path for equipment images
+            // Trim category to remove any whitespace
+            $category = trim($row['category']);
+
+            // Check if actual equipment image exists
+            $hasImage = false;
             if (!empty($row['image_path'])) {
                 // If it's already an absolute path or URL, use it
                 if (str_starts_with($row['image_path'], '/') || str_starts_with($row['image_path'], 'http')) {
-                    // Already absolute or external URL
+                    $hasImage = true;
                 } else {
-                    // Convert to absolute path
-                    $row['image_path'] = UPLOADS_PATH . '/equipment/' . basename($row['image_path']);
+                    $physicalPath = __DIR__ . '/../../uploads/equipment/' . basename($row['image_path']);
+                    if (file_exists($physicalPath)) {
+                        $hasImage = true;
+                        $row['image_path'] = UPLOADS_PATH . '/equipment/' . basename($row['image_path']);
+                    }
                 }
-            } else {
-                // Use placeholder if no image
-                $row['image_path'] = IMAGES_PATH . '/boxing-gloves.png';
+            }
+
+            // Use category-specific emoji as fallback if no image
+            if (!$hasImage) {
+                $categoryEmojis = [
+                    'Cardio' => '🏃',
+                    'Flexibility' => '🧘',
+                    'Core' => '💪',
+                    'Strength Training' => '🏋️',
+                    'Functional Training' => '⚡'
+                ];
+                $row['emoji'] = $categoryEmojis[$category] ?? '🥊';
+                unset($row['image_path']);
             }
 
             $equipment[] = $row;
@@ -56,6 +73,17 @@ SessionManager::initialize();
 if (!SessionManager::isLoggedIn()) {
     header('Location: login.php');
     exit;
+}
+
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
 }
 
 // Avatar for header
@@ -87,7 +115,7 @@ if (isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -122,7 +150,7 @@ if (isset($_SESSION['user_id'])) {
             LIMIT 1
         ");
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -157,8 +185,8 @@ if ($hasActiveMembership) {
 
 $pageTitle = "Equipment - Fit and Brawl";
 $currentPage = "equipment";
-$additionalCSS = ['../css/pages/equipment.css?=v1'];
-$additionalJS = ['../js/equipment.js'];
+$additionalCSS = ['../css/pages/equipment.css?v=' . time()];
+$additionalJS = ['../js/equipment.js?v=' . time()];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';

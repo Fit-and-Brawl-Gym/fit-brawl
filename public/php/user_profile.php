@@ -31,7 +31,7 @@ if (isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -66,7 +66,7 @@ if (isset($_SESSION['user_id'])) {
             LIMIT 1
         ");
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -109,6 +109,17 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 // Fetch user data
 $email = $_SESSION['email'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -125,19 +136,30 @@ $nextPayment = isset($endDate) ? date('F j, Y', strtotime($endDate)) : "N/A";
 
 // Removed gym streak calculation per request
 
-// Fetch last training session
-$lastTrainingDate = $lastTrainingType = $lastTrainerName = "N/A";
-$activityQuery = $conn->prepare("SELECT activity_date, activity_type, trainer_name FROM training_sessions WHERE user_id = ? ORDER BY activity_date DESC LIMIT 1");
-if ($activityQuery) {
-    $activityQuery->bind_param("i", $user_id);
-    $activityQuery->execute();
-    $activityResult = $activityQuery->get_result();
-    if ($row = $activityResult->fetch_assoc()) {
-        $lastTrainingDate = date('F j, Y', strtotime($row['activity_date']));
-        $lastTrainingType = $row['activity_type'];
-        $lastTrainerName = $row['trainer_name'];
+// Fetch last booking (completed or upcoming)
+$lastBookingDate = $lastBookingTime = $lastBookingTrainer = $lastBookingStatus = "No bookings yet";
+$bookingQuery = $conn->prepare("
+    SELECT ur.booking_date, ur.session_time, ur.class_type, t.name as trainer_name, ur.booking_status
+    FROM user_reservations ur
+    LEFT JOIN trainers t ON ur.trainer_id = t.id
+    WHERE ur.user_id = ?
+    ORDER BY ur.booking_date DESC, ur.session_time DESC
+    LIMIT 1
+");
+
+if ($bookingQuery) {
+    $bookingQuery->bind_param("s", $user_id);
+    $bookingQuery->execute();
+    $bookingResult = $bookingQuery->get_result();
+
+    if ($bookingRow = $bookingResult->fetch_assoc()) {
+        $lastBookingDate = date('F j, Y', strtotime($bookingRow['booking_date']));
+        // Format session_time (Morning/Afternoon/Evening)
+        $lastBookingTime = ucfirst($bookingRow['session_time']);
+        $lastBookingTrainer = $bookingRow['trainer_name'] ?? 'Not assigned';
+        $lastBookingStatus = ucfirst($bookingRow['booking_status']);
     }
-    $activityQuery->close();
+    $bookingQuery->close();
 }
 
 $pageTitle = "My Profile - Fit and Brawl";
@@ -198,9 +220,10 @@ require_once __DIR__ . '/../../includes/header.php';
                 <ul class="activity-list">
                     <li class="activity-item">
                         <div class="activity-details">
-                            <strong>Last Training Session:</strong> <?= htmlspecialchars($lastTrainingDate) ?> <br>
-                            <strong>Type:</strong> <?= htmlspecialchars($lastTrainingType) ?><br>
-                            <strong>Trainer:</strong> <?= htmlspecialchars($lastTrainerName) ?>
+                            <strong>Last Booking:</strong> <?= htmlspecialchars($lastBookingDate) ?><br>
+                            <strong>Time:</strong> <?= htmlspecialchars($lastBookingTime) ?><br>
+                            <strong>Trainer:</strong> <?= htmlspecialchars($lastBookingTrainer) ?><br>
+                            <strong>Status:</strong> <span class="status-badge status-<?= strtolower($lastBookingStatus) ?>"><?= htmlspecialchars($lastBookingStatus) ?></span>
                         </div>
                     </li>
                 </ul>

@@ -1,17 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Default now list (table) view first
+    // Load feedback with default filter
     const currentFilter = document.getElementById('dateFilter').value;
-    loadFeedback(currentFilter).then(() => {
-        const tableView = document.getElementById('tableView');
-        if (tableView && tableView.classList.contains('active')) {
-            fetch('api/get_feedback.php')
-                .then(res => res.json())
-                .then(feedbacks => {
-                    const filtered = filterByDate(feedbacks, currentFilter);
-                    renderFeedbackTable(filtered);
-                });
-        }
-    });
+    loadFeedback(currentFilter);
 });
 
 // Load feedback from database
@@ -45,8 +35,20 @@ async function loadFeedback(filter = 'all') {
         // Update stats
         updateStats(feedbacks);
 
-        // Render feedback cards
-        renderFeedback(filteredFeedbacks);
+        // Check which view is active and render accordingly
+        const tableView = document.getElementById('tableView');
+        const cardsView = document.getElementById('cardsView');
+        
+        if (tableView && tableView.classList.contains('active')) {
+            // Render table view
+            renderFeedbackTable(filteredFeedbacks);
+        } else if (cardsView && cardsView.classList.contains('active')) {
+            // Render card view
+            renderFeedback(filteredFeedbacks);
+        } else {
+            // Default to card view
+            renderFeedback(filteredFeedbacks);
+        }
 
     } catch (error) {
         console.error('Error loading feedback:', error);
@@ -398,6 +400,16 @@ document.querySelectorAll('.view-btn').forEach(btn => {
         } else {
             tableView.classList.remove('active');
             cardsView.classList.add('active');
+
+            // Re-render cards with current filter
+            const currentFilter = document.getElementById('dateFilter').value;
+            fetch('api/get_feedback.php')
+                .then(res => res.json())
+                .then(feedbacks => {
+                    const filtered = filterByDate(feedbacks, currentFilter);
+                    updateStats(feedbacks);
+                    renderFeedback(filtered);
+                });
         }
     });
 });

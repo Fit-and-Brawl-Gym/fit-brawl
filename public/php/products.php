@@ -1,20 +1,8 @@
 <?php
-// Check if this is an API request
-
-require_once __DIR__ . '/../../includes/session_manager.php';
-require_once __DIR__ . '/../../includes/config.php';
-
-// Initialize session manager (handles session_start internally)
-SessionManager::initialize();
-
-// Check if user is logged in
-if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
-
+// Check if this is an API request FIRST
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
+    require_once __DIR__ . '/../../includes/config.php';
     include __DIR__ . '/../../includes/db_connect.php';
 
     try {
@@ -31,12 +19,30 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
             $status = strtolower($row['status']);
             $row['status'] = $status;
 
-            // Ensure image path is valid - use absolute path for production
-            if (empty($row['image'])) {
-                $row['image'] = UPLOADS_PATH . '/products/' . strtolower(str_replace(' ', '-', $row['name'])) . '.jpg';
-            } elseif (!str_starts_with($row['image'], '/') && !str_starts_with($row['image'], 'http')) {
-                // Convert relative path to absolute
-                $row['image'] = UPLOADS_PATH . '/products/' . basename($row['image']);
+            // Trim category to remove any whitespace
+            $category = trim($row['cat']);
+
+            // Check if actual product image exists
+            $hasImage = false;
+            if (!empty($row['image'])) {
+                $physicalPath = __DIR__ . '/../../uploads/products/' . basename($row['image']);
+                if (file_exists($physicalPath)) {
+                    $hasImage = true;
+                    $row['image'] = UPLOADS_PATH . '/products/' . basename($row['image']);
+                }
+            }
+
+            // Use category-specific emoji as fallback if no image
+            if (!$hasImage) {
+                $categoryEmojis = [
+                    'Supplements' => '💊',
+                    'Hydration & Drinks' => '💧',
+                    'Snacks' => '🍫',
+                    'Accessories' => '🎽',
+                    'Boxing & Muay Thai Products' => '🥊'
+                ];
+                $row['emoji'] = $categoryEmojis[$category] ?? '📦';
+                unset($row['image']);
             }
 
             $products[] = $row;
@@ -48,6 +54,29 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
     exit;
+}
+
+require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/config.php';
+
+// Initialize session manager (handles session_start internally)
+SessionManager::initialize();
+
+// Check if user is logged in
+if (!SessionManager::isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
 }
 
 require_once __DIR__ . '/../../includes/db_connect.php';
@@ -75,7 +104,7 @@ if (isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -110,7 +139,7 @@ if (isset($_SESSION['user_id'])) {
             LIMIT 1
         ");
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -152,7 +181,7 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Products - Fit and Brawl";
 $currentPage = "products";
-$additionalCSS = [PUBLIC_PATH . "/css/pages/products.css"];
+$additionalCSS = [PUBLIC_PATH . "/css/pages/products.css?v=" . time()];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
@@ -192,8 +221,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <select id="statusFilter">
                         <option value="all">All Products</option>
                         <option value="in">In Stock</option>
-                        <option value="low">Low on Stock</option>
-                        <option value="out">Out of Stock</option>
+                        <option value="unavailable">Unavailable</option>
                     </select>
                 </div>
 
@@ -240,6 +268,6 @@ require_once __DIR__ . '/../../includes/header.php';
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <script src="<?= PUBLIC_PATH ?>/js/products.js?=v1"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/products.js?v=<?= time() ?>"></script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

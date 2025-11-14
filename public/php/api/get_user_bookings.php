@@ -49,7 +49,7 @@ try {
         AND ur.booking_status IN ('confirmed', 'completed', 'cancelled')
         ORDER BY ur.booking_date DESC, ur.session_time ASC
     ");
-    $stmt->bind_param("i", $user_id);
+    $stmt->bind_param("s", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -114,7 +114,7 @@ try {
         AND booking_date BETWEEN ? AND ?
         AND booking_status IN ('confirmed', 'completed')
     ");
-    $weekly_stmt->bind_param("iss", $user_id, $week_start, $week_end);
+    $weekly_stmt->bind_param("sss", $user_id, $week_start, $week_end);
     $weekly_stmt->execute();
     $weekly_result = $weekly_stmt->get_result();
     $weekly_row = $weekly_result->fetch_assoc();

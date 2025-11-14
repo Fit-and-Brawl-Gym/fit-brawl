@@ -60,7 +60,7 @@ try {
         JOIN users u ON ur.user_id = u.id
         WHERE ur.id = ? AND ur.user_id = ?
     ");
-    $stmt->bind_param("ii", $booking_id, $user_id);
+    $stmt->bind_param("is", $booking_id, $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -83,7 +83,7 @@ try {
                 cancelled_at = NOW()
             WHERE id = ? AND user_id = ?
         ");
-        $update_stmt->bind_param("ii", $booking_id, $user_id);
+        $update_stmt->bind_param("is", $booking_id, $user_id);
 
         if (!$update_stmt->execute()) {
             throw new Exception('Failed to cancel booking');

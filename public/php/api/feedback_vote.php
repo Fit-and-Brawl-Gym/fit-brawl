@@ -36,7 +36,7 @@ try {
 
     // Check if user already voted
     $check_stmt = $conn->prepare("SELECT vote_type FROM feedback_votes WHERE feedback_id = ? AND user_id = ?");
-    $check_stmt->bind_param("ii", $feedback_id, $user_id);
+    $check_stmt->bind_param("is", $feedback_id, $user_id);
     $check_stmt->execute();
     $existing_vote = $check_stmt->get_result()->fetch_assoc();
     $check_stmt->close();
@@ -45,7 +45,7 @@ try {
         // Remove vote
         if ($existing_vote) {
             $delete_stmt = $conn->prepare("DELETE FROM feedback_votes WHERE feedback_id = ? AND user_id = ?");
-            $delete_stmt->bind_param("ii", $feedback_id, $user_id);
+            $delete_stmt->bind_param("is", $feedback_id, $user_id);
             $delete_stmt->execute();
             $delete_stmt->close();
 
@@ -66,7 +66,7 @@ try {
         // Update existing vote
         if ($existing_vote['vote_type'] !== $vote_type) {
             $update_vote_stmt = $conn->prepare("UPDATE feedback_votes SET vote_type = ? WHERE feedback_id = ? AND user_id = ?");
-            $update_vote_stmt->bind_param("sii", $vote_type, $feedback_id, $user_id);
+            $update_vote_stmt->bind_param("sis", $vote_type, $feedback_id, $user_id);
             $update_vote_stmt->execute();
             $update_vote_stmt->close();
 
@@ -87,7 +87,7 @@ try {
     } else {
         // Insert new vote
         $insert_stmt = $conn->prepare("INSERT INTO feedback_votes (feedback_id, user_id, vote_type) VALUES (?, ?, ?)");
-        $insert_stmt->bind_param("iis", $feedback_id, $user_id, $vote_type);
+        $insert_stmt->bind_param("iss", $feedback_id, $user_id, $vote_type);
         $insert_stmt->execute();
         $insert_stmt->close();
 

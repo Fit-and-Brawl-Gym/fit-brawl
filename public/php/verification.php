@@ -45,6 +45,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param("s", $email);
             $stmt->execute();
 
+            // Clear resend counter
+            unset($_SESSION['otp_resend_count']);
+
             // Set flag to clear session storage after redirect
             $_SESSION['clear_otp_timer'] = true;
 

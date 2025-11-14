@@ -8,6 +8,17 @@ require_once __DIR__ . '/../../includes/config.php';
 SessionManager::initialize();
 SessionManager::initialize();
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'] === 'true')) {
     header('Content-Type: application/json');
@@ -22,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' || (isset($_GET['api']) && $_GET['api'
 
         $sql = "INSERT INTO feedback (user_id, message) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $user_id, $message);
+        $stmt->bind_param("ss", $user_id, $message);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Feedback submitted"]);
@@ -166,7 +177,7 @@ if (isset($_SESSION['user_id'])) {
         ");
 
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -201,7 +212,7 @@ if (isset($_SESSION['user_id'])) {
             LIMIT 1
         ");
         if ($stmt) {
-            $stmt->bind_param("i", $user_id);
+            $stmt->bind_param("s", $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 

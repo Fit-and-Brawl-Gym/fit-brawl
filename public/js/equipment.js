@@ -4,28 +4,53 @@ const statusFilter = document.getElementById('statusFilter');
 const categoryChips = document.getElementById('category-filters');
 
 let EQUIPMENT_DATA = [];
+let FILTERED_DATA = [];
 let activeCategory = null; // no filter by default
+let currentPage = 1;
+const itemsPerPage = 12;
+let paginationContainer = null;
 
 function capitalize(s) {
   return s && s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
 function renderEquipment(items) {
-  container.innerHTML = items.map(item => {
+  FILTERED_DATA = items;
+  
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="no-equipment">No equipment found</div>';
+    if (paginationContainer) paginationContainer.style.display = 'none';
+    return;
+  }
+
+  // Calculate pagination
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedItems = items.slice(startIndex, endIndex);
+
+  container.innerHTML = paginatedItems.map(item => {
     const categories = item.category ? item.category.split(',').map(c => c.trim()) : [];
     const statusClass = (item.status || '').toLowerCase().replace(/\s+/g, '-');
-    const imageSrc = item.image_path && item.image_path.trim() !== ''
-        ? item.image_path
-        : '../../images/placeholder-equipment.jpg';
+    
+    // Use image if available, otherwise use emoji
+    let imageContent;
+    if (item.image_path && item.image_path.trim() !== '') {
+      imageContent = `<img src="${item.image_path}"
+               alt="${escapeHtml(item.name)}"
+               class="equipment-image"
+               loading="lazy"
+               onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'equipment-emoji\\'>${escapeHtml(item.emoji || '🥊')}</span>';">`;
+    } else if (item.emoji) {
+      imageContent = `<span class="equipment-emoji">${escapeHtml(item.emoji)}</span>`;
+    } else {
+      imageContent = `<span class="equipment-emoji">🥊</span>`;
+    }
 
     return `
       <div class="equipment-card" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
         <div class="equipment-image-container">
-          <img src="${imageSrc}"
-               alt="${escapeHtml(item.name)}"
-               class="equipment-image"
-               loading="lazy"
-               onerror="this.onerror=null; this.src='../../images/placeholder-equipment.jpg';">
+          ${imageContent}
         </div>
 
         <div class="equipment-content">
@@ -46,6 +71,102 @@ function renderEquipment(items) {
       </div>
     `;
   }).join('');
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  if (!paginationContainer) {
+    paginationContainer = document.createElement('div');
+    paginationContainer.className = 'pagination';
+    container.parentNode.appendChild(paginationContainer);
+  }
+
+  if (totalPages <= 1) {
+    paginationContainer.style.display = 'none';
+    return;
+  }
+
+  paginationContainer.style.display = 'flex';
+  paginationContainer.innerHTML = createPaginationHTML(totalPages);
+  attachPaginationEvents(paginationContainer);
+}
+
+function createPaginationHTML(totalPages) {
+  let html = '';
+
+  // Previous button
+  html += `<button class="pagination-btn prev-btn" ${currentPage === 1 ? 'disabled' : ''}>&laquo; Previous</button>`;
+
+  // Page numbers
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage < maxVisiblePages - 1) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  if (startPage > 1) {
+    html += `<button class="pagination-btn page-number" data-page="1">1</button>`;
+    if (startPage > 2) {
+      html += `<span class="pagination-dots">...</span>`;
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<button class="pagination-btn page-number ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      html += `<span class="pagination-dots">...</span>`;
+    }
+    html += `<button class="pagination-btn page-number" data-page="${totalPages}">${totalPages}</button>`;
+  }
+
+  // Next button
+  html += `<button class="pagination-btn next-btn" ${currentPage === totalPages ? 'disabled' : ''}>Next &raquo;</button>`;
+
+  return html;
+}
+
+function attachPaginationEvents(paginationContainer) {
+  // Previous button
+  const prevBtn = paginationContainer.querySelector('.prev-btn');
+  if (prevBtn) {
+    prevBtn.onclick = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderEquipment(FILTERED_DATA);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+  }
+
+  // Next button
+  const nextBtn = paginationContainer.querySelector('.next-btn');
+  if (nextBtn) {
+    nextBtn.onclick = () => {
+      const totalPages = Math.ceil(FILTERED_DATA.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderEquipment(FILTERED_DATA);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+  }
+
+  // Page number buttons
+  const pageButtons = paginationContainer.querySelectorAll('.page-number');
+  pageButtons.forEach(btn => {
+    btn.onclick = () => {
+      const pageNum = parseInt(btn.dataset.page);
+      currentPage = pageNum;
+      renderEquipment(FILTERED_DATA);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  });
 }
 
 function escapeHtml(unsafe) {
@@ -90,6 +211,8 @@ function applyFilters() {
     return true;
   });
 
+  // Reset to page 1 when filters change
+  currentPage = 1;
   renderEquipment(filtered);
 }
 

@@ -37,7 +37,7 @@ if (isset($_SESSION['user_id'])) {
     if ($membership_query) {
         $stmt = $conn->prepare($membership_query);
         if ($stmt) {
-            $stmt->bind_param('i', $user_id);
+            $stmt->bind_param('s', $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
             $hasActiveMembership = ($result && $result->num_rows > 0);

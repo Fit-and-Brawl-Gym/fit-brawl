@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
             $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Status Changed', ?)";
             $details = "Status changed from $current to $new_status";
             $stmt = $conn->prepare($log_query);
-            $stmt->bind_param("iis", $trainer_id, $admin_id, $details);
+            $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
             $stmt->execute();
 
             // Log to main activity log
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
         // Log activity
         $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Deleted', 'Trainer soft-deleted')";
         $stmt = $conn->prepare($log_query);
-        $stmt->bind_param("ii", $trainer_id, $admin_id);
+        $stmt->bind_param("is", $trainer_id, $admin_id);
         $stmt->execute();
 
         // Log to main activity log
