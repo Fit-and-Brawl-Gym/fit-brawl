@@ -40,7 +40,7 @@
     function createProductCard(product) {
         const card = document.createElement('div');
         card.className = 'card';
-        
+
         // Use image if available, otherwise use emoji
         let imageContent;
         if (product.image) {
@@ -51,7 +51,7 @@
         } else {
             imageContent = `<span class="product-emoji">${escapeHtml(product.emoji || '📦')}</span>`;
         }
-        
+
         card.innerHTML = `
             <div class="product-image">
                 ${imageContent}
@@ -73,8 +73,8 @@
             return;
         }
 
-        // Calculate pagination
-        const totalPages = Math.ceil(products.length / state.itemsPerPage);
+        // Calculate pagination - only show pagination if more items than items per page
+        const totalPages = products.length > state.itemsPerPage ? Math.ceil(products.length / state.itemsPerPage) : 1;
         const startIndex = (state.currentPage - 1) * state.itemsPerPage;
         const endIndex = startIndex + state.itemsPerPage;
         const paginatedProducts = products.slice(startIndex, endIndex);
@@ -98,8 +98,10 @@
             ui.grid.parentNode.appendChild(ui.pagination);
         }
 
-        if (totalPages <= 1) {
+        // Hide pagination if there's only 1 page, no pages, or products fit on one page
+        if (totalPages <= 1 || state.renderedProducts.length <= state.itemsPerPage) {
             ui.pagination.style.display = 'none';
+            ui.pagination.innerHTML = ''; // Clear pagination content
             return;
         }
 

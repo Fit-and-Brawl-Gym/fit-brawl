@@ -64,7 +64,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 expiryTime = Date.now() + (180 * 1000); // Changed to 3 minutes
                 sessionStorage.setItem('otpExpiryTime', expiryTime);
                 updateCountdown();
-                showMessage('New OTP sent to your email', 'success');
+                
+                // Show message with remaining resends
+                const remainingMsg = data.remaining_resends > 0 
+                    ? ` (${data.remaining_resends} resends remaining)` 
+                    : ' (This was your last resend)';
+                showMessage('New OTP sent to your email' + remainingMsg, 'success');
+                
+                // Disable resend button if limit reached
+                if (data.remaining_resends === 0) {
+                    resendBtn.disabled = true;
+                    resendBtn.style.opacity = '0.5';
+                    resendBtn.style.cursor = 'not-allowed';
+                }
             } else {
                 throw new Error(data.error || 'Failed to send OTP');
             }
