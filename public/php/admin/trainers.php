@@ -20,6 +20,7 @@ $show_credentials_modal = false;
 $new_trainer_username = '';
 $new_trainer_password = '';
 $new_trainer_name = '';
+$new_trainer_user_id = '';
 $email_sent = false;
 
 if (isset($_SESSION['new_trainer_username'])) {
@@ -27,12 +28,14 @@ if (isset($_SESSION['new_trainer_username'])) {
     $new_trainer_username = $_SESSION['new_trainer_username'];
     $new_trainer_password = $_SESSION['new_trainer_password'];
     $new_trainer_name = $_SESSION['new_trainer_name'];
+    $new_trainer_user_id = $_SESSION['new_trainer_user_id'] ?? '';
     $email_sent = $_SESSION['email_sent'] ?? false;
 
     // Clear session variables
     unset($_SESSION['new_trainer_username']);
     unset($_SESSION['new_trainer_password']);
     unset($_SESSION['new_trainer_name']);
+    unset($_SESSION['new_trainer_user_id']);
     unset($_SESSION['email_sent']);
 }
 
@@ -517,9 +520,24 @@ if (!$stats) {
 
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                         <h4 style="margin-top: 0; color: var(--admin-color-primary);">Login Credentials:</h4>
+                        <?php if (!empty($new_trainer_user_id)): ?>
                         <div style="margin: 15px 0;">
                             <label
-                                style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">Email:</label>
+                                style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">User ID:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="text" id="userIdDisplay"
+                                    value="<?= htmlspecialchars($new_trainer_user_id) ?>" readonly
+                                    style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: white; font-family: monospace;">
+                                <button onclick="copyToClipboard('userIdDisplay')" class="btn-secondary"
+                                    style="padding: 10px 15px;">
+                                    <i class="fa-solid fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        <div style="margin: 15px 0;">
+                            <label
+                                style="display: block; font-weight: bold; margin-bottom: 5px; color: #555;">Username:</label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="text" id="usernameDisplay"
                                     value="<?= htmlspecialchars($new_trainer_username) ?>" readonly

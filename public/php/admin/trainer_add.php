@@ -3,6 +3,7 @@ require_once '../../../includes/init.php';
 require_once '../../../includes/mail_config.php';
 require_once '../../../includes/file_upload_security.php';
 require_once '../../../includes/activity_logger.php';
+require_once '../../../includes/user_id_generator.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -69,29 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $conn->begin_transaction();
 
                 try {
-                    // Insert trainer
-                    $insert_query = "INSERT INTO trainers (name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, status, password_changed)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
-                    $stmt = $conn->prepare($insert_query);
-                    $stmt->bind_param("sssssssss", $name, $email, $phone, $specialization, $bio, $photo, $emergency_contact_name, $emergency_contact_phone, $status);
-
-                    if (!$stmt->execute()) {
-                        throw new Exception('Failed to add trainer.');
-                    }
-
-                    $trainer_id = $stmt->insert_id;
-
-                    // Insert day-off schedule
-                    $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                    $day_off_insert = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off) VALUES (?, ?, ?)";
-                    $day_stmt = $conn->prepare($day_off_insert);
-
-                    foreach ($days as $day) {
-                        $is_day_off = in_array($day, $day_offs) ? 1 : 0;
-                        $day_stmt->bind_param("isi", $trainer_id, $day, $is_day_off);
-                        $day_stmt->execute();
-                    }
-                     // Generate username from name (e.g., "John Doe" -> "john.doe")
+                    // Generate formatted user ID (TRN-25-XXXX) BEFORE inserting trainer
+                    $user_id = generateFormattedUserId($conn, 'trainer');
+                    
+                    // Generate username from name (e.g., "John Doe" -> "john.doe")
                     $username_base = strtolower(str_replace(' ', '.', trim($name)));
                     $username_base = preg_replace('/[^a-z0-9._]/', '', $username_base); // Remove special chars
 
@@ -109,8 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $counter++;
                     }
 
-                    // Generate default password: "Trainer" + trainer_id
-                    $generated_password = "Trainer" . $trainer_id;
+                    // Generate default password: "Trainer" + last 4 digits of user_id
+                    $generated_password = "Trainer" . substr($user_id, -4);
                     $hashed_password = password_hash($generated_password, PASSWORD_DEFAULT);
 
                     // Copy photo to avatars folder if exists
@@ -125,37 +107,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $avatar = 'default-avatar.png';
                     }
 
-                    // Create user account with email as username
-                    $user_query = "INSERT INTO users (username, email, password, role, avatar, is_verified)
-                                VALUES (?, ?, ?, 'trainer', ?, 1)";
+                    // Create user account FIRST with generated user ID
+                    $user_query = "INSERT INTO users (id, username, email, password, role, avatar, is_verified)
+                                VALUES (?, ?, ?, ?, 'trainer', ?, 1)";
                     $stmt = $conn->prepare($user_query);
-                    $stmt->bind_param("ssss", $generated_username, $email, $hashed_password, $avatar);
+                    $stmt->bind_param("sssss", $user_id, $generated_username, $email, $hashed_password, $avatar);
                     if (!$stmt->execute()) {
                         throw new Exception('Failed to create user account.');
+                    }
+                    
+                    // Insert trainer with user_id reference
+                    $insert_query = "INSERT INTO trainers (user_id, name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, status, password_changed)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+                    $stmt = $conn->prepare($insert_query);
+                    $stmt->bind_param("ssssssssss", $user_id, $name, $email, $phone, $specialization, $bio, $photo, $emergency_contact_name, $emergency_contact_phone, $status);
+
+                    if (!$stmt->execute()) {
+                        throw new Exception('Failed to add trainer.');
+                    }
+
+                    $trainer_id = $stmt->insert_id;
+
+                    // Insert day-off schedule
+                    $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                    $day_off_insert = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off) VALUES (?, ?, ?)";
+                    $day_stmt = $conn->prepare($day_off_insert);
+
+                    foreach ($days as $day) {
+                        $is_day_off = in_array($day, $day_offs) ? 1 : 0;
+                        $day_stmt->bind_param("isi", $trainer_id, $day, $is_day_off);
+                        $day_stmt->execute();
                     }
 
                     // Log activity
                     $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Added', ?)";
                     $day_offs_str = implode(', ', $day_offs);
-                    $details = "New trainer added: $name ($specialization) with username: $generated_username. Day-offs: $day_offs_str";
+                    $details = "New trainer added: $name ($specialization) with username: $generated_username, User ID: $user_id. Day-offs: $day_offs_str";
                     $stmt = $conn->prepare($log_query);
                     $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
                     $stmt->execute();
 
                     // Log to main activity log
-                    ActivityLogger::log('trainer_created', $name, $trainer_id, "New trainer '$name' (#$trainer_id) added with specialization: $specialization. Day-offs: $day_offs_str");
+                    ActivityLogger::log('trainer_created', $name, $trainer_id, "New trainer '$name' (User ID: $user_id, Trainer ID: #$trainer_id) added with specialization: $specialization. Day-offs: $day_offs_str");
 
                     // Send email with credentials
-                    $email_sent = sendTrainerCredentialsEmail($email, $name, $email, $generated_password);
+                    $email_sent = sendTrainerCredentialsEmail($email, $name, $generated_username, $generated_password);
 
 
                     // Commit transaction
                     $conn->commit();
 
                     // Store credentials in session for display
-                    $_SESSION['new_trainer_username'] = $email;
+                    $_SESSION['new_trainer_username'] = $generated_username;
                     $_SESSION['new_trainer_password'] = $generated_password;
                     $_SESSION['new_trainer_name'] = $name;
+                    $_SESSION['new_trainer_user_id'] = $user_id;
                     $_SESSION['email_sent'] = $email_sent;
 
                     header('Location: trainers.php?success=added');
