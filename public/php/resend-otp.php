@@ -34,12 +34,12 @@ try {
     }
 
     $stmt->bind_param("sss", $otp, $expiry, $email);
-    
+
     if ($stmt->execute() && sendOTPEmail($email, $otp)) {
         // Increment resend counter
         $_SESSION['otp_resend_count']++;
         $remaining = 5 - $_SESSION['otp_resend_count'];
-        
+
         echo json_encode([
             'success' => true,
             'resend_count' => $_SESSION['otp_resend_count'],

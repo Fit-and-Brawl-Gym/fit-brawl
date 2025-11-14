@@ -11,6 +11,17 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 $isLoggedIn = true;
 $userName = $_SESSION['username'] ?? '';
 $user_id = $_SESSION['user_id'];
@@ -34,8 +45,8 @@ if ($user_id) {
     $membership_query = "SELECT um.*, m.plan_name, m.class_type
                         FROM user_memberships um
                         JOIN memberships m ON um.plan_id = m.id
-                        WHERE um.user_id = ? 
-                        AND um.membership_status = 'active' 
+                        WHERE um.user_id = ?
+                        AND um.membership_status = 'active'
                         AND DATE_ADD(um.end_date, INTERVAL ? DAY) >= CURDATE()
                         ORDER BY um.end_date DESC
                         LIMIT 1";

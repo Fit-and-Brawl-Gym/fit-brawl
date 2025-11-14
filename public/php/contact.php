@@ -9,6 +9,17 @@ require_once __DIR__ . '/../../includes/membership_check.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
 require_once __DIR__ . '/../../includes/config.php';
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 
 
 $hasActiveMembership = false;

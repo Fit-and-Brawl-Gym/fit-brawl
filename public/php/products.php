@@ -21,7 +21,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
             // Trim category to remove any whitespace
             $category = trim($row['cat']);
-            
+
             // Check if actual product image exists
             $hasImage = false;
             if (!empty($row['image'])) {
@@ -31,7 +31,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                     $row['image'] = UPLOADS_PATH . '/products/' . basename($row['image']);
                 }
             }
-            
+
             // Use category-specific emoji as fallback if no image
             if (!$hasImage) {
                 $categoryEmojis = [
@@ -66,6 +66,17 @@ SessionManager::initialize();
 if (!SessionManager::isLoggedIn()) {
     header('Location: login.php');
     exit;
+}
+
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
 }
 
 require_once __DIR__ . '/../../includes/db_connect.php';

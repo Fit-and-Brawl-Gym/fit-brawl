@@ -11,10 +11,19 @@ require_once __DIR__ . '/../../includes/config.php';
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 
-// Redirect logged-in users to logged-in homepage
+// Redirect logged-in users to their appropriate dashboard
 if (SessionManager::isLoggedIn()) {
-    header("Location: loggedin-index.php");
-    exit;
+    $role = $_SESSION['role'] ?? 'member';
+    if ($role === 'admin') {
+        header("Location: admin/admin.php");
+        exit;
+    } elseif ($role === 'trainer') {
+        header("Location: trainer/schedule.php");
+        exit;
+    } else {
+        header("Location: loggedin-index.php");
+        exit;
+    }
 }
 
 // Set variables for header

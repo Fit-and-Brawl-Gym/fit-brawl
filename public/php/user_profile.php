@@ -109,6 +109,17 @@ if (!SessionManager::isLoggedIn()) {
     exit;
 }
 
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
+}
+
 // Fetch user data
 $email = $_SESSION['email'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -128,11 +139,11 @@ $nextPayment = isset($endDate) ? date('F j, Y', strtotime($endDate)) : "N/A";
 // Fetch last booking (completed or upcoming)
 $lastBookingDate = $lastBookingTime = $lastBookingTrainer = $lastBookingStatus = "No bookings yet";
 $bookingQuery = $conn->prepare("
-    SELECT ur.booking_date, ur.session_time, ur.class_type, t.name as trainer_name, ur.booking_status 
+    SELECT ur.booking_date, ur.session_time, ur.class_type, t.name as trainer_name, ur.booking_status
     FROM user_reservations ur
     LEFT JOIN trainers t ON ur.trainer_id = t.id
-    WHERE ur.user_id = ? 
-    ORDER BY ur.booking_date DESC, ur.session_time DESC 
+    WHERE ur.user_id = ?
+    ORDER BY ur.booking_date DESC, ur.session_time DESC
     LIMIT 1
 ");
 
@@ -140,7 +151,7 @@ if ($bookingQuery) {
     $bookingQuery->bind_param("s", $user_id);
     $bookingQuery->execute();
     $bookingResult = $bookingQuery->get_result();
-    
+
     if ($bookingRow = $bookingResult->fetch_assoc()) {
         $lastBookingDate = date('F j, Y', strtotime($bookingRow['booking_date']));
         // Format session_time (Morning/Afternoon/Evening)

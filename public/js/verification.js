@@ -2,10 +2,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const otpInput = document.getElementById('otp');
     const resendBtn = document.getElementById('resend-otp');
     const countdownEl = document.getElementById('countdown');
-    
+
     // Track attempts
     let isFirstAttempt = !sessionStorage.getItem('hasAttemptedResend');
-    
+
     // Get original expiry time from session storage
     let originalExpiryTime = sessionStorage.getItem('originalOtpExpiryTime');
     let expiryTime = sessionStorage.getItem('otpExpiryTime');
@@ -21,10 +21,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCountdown() {
         const now = Date.now();
         const timeLeft = Math.max(0, Math.floor((expiryTime - now) / 1000));
-        
+
         const minutes = Math.floor(timeLeft / 60);
         const seconds = timeLeft % 60;
-        
+
         if (timeLeft > 0) {
             countdownEl.innerHTML = `OTP expires in: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
             requestAnimationFrame(updateCountdown);
@@ -48,29 +48,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 // Mark first attempt as used
                 isFirstAttempt = false;
                 sessionStorage.setItem('hasAttemptedResend', 'true');
-                
+
                 // Reset timer to 3 minutes for subsequent attempts
                 expiryTime = Date.now() + (180 * 1000); // Changed to 3 minutes
                 sessionStorage.setItem('otpExpiryTime', expiryTime);
                 updateCountdown();
-                
+
                 // Show message with remaining resends
-                const remainingMsg = data.remaining_resends > 0 
-                    ? ` (${data.remaining_resends} resends remaining)` 
+                const remainingMsg = data.remaining_resends > 0
+                    ? ` (${data.remaining_resends} resends remaining)`
                     : ' (This was your last resend)';
                 showMessage('New OTP sent to your email' + remainingMsg, 'success');
-                
+
                 // Disable resend button if limit reached
                 if (data.remaining_resends === 0) {
                     resendBtn.disabled = true;
@@ -91,10 +91,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const msgDiv = document.createElement('div');
         msgDiv.className = `${type}-message`;
         msgDiv.textContent = message;
-        
+
         const form = document.querySelector('.verification-form');
         form.insertBefore(msgDiv, form.firstChild);
-        
+
         setTimeout(() => msgDiv.remove(), 3000);
     }
 

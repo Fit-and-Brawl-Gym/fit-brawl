@@ -20,7 +20,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
             // Trim category to remove any whitespace
             $category = trim($row['category']);
-            
+
             // Check if actual equipment image exists
             $hasImage = false;
             if (!empty($row['image_path'])) {
@@ -35,7 +35,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
                     }
                 }
             }
-            
+
             // Use category-specific emoji as fallback if no image
             if (!$hasImage) {
                 $categoryEmojis = [
@@ -73,6 +73,17 @@ SessionManager::initialize();
 if (!SessionManager::isLoggedIn()) {
     header('Location: login.php');
     exit;
+}
+
+// Redirect admin and trainer to their respective dashboards
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header('Location: admin/admin.php');
+        exit;
+    } elseif ($_SESSION['role'] === 'trainer') {
+        header('Location: trainer/schedule.php');
+        exit;
+    }
 }
 
 // Avatar for header
