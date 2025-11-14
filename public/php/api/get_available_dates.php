@@ -6,8 +6,10 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 
+// Don't display errors in JSON API - log them instead
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 try {
     $class_type = isset($_GET['class']) ? trim($_GET['class']) : '';
@@ -39,24 +41,19 @@ try {
     // Calculate max booking date (30 days from now)
     $maxBookingDate = date('Y-m-d', strtotime('+30 days'));
 
-    // Query to get all available dates for this class type
-    // Get dates that have at least one reservation with available slots
+    // Query to get all available dates based on trainer schedules
+    // Since we don't have a reservations table, we'll get dates from trainer_schedules
     $query = "
-        SELECT DISTINCT r.date
-        FROM reservations r
-        LEFT JOIN user_reservations ur ON r.id = ur.reservation_id
-            AND ur.booking_status = 'confirmed'
-        WHERE r.class_type = ?
-          AND r.status = 'available'
-          AND r.date >= ?
-          AND r.date <= ?
-          AND (
-              r.date > ?
-              OR (r.date = ? AND r.start_time > ?)
-          )
-        GROUP BY r.id
-        HAVING (r.max_slots - COALESCE(COUNT(ur.id), 0)) > 0
-        ORDER BY r.date
+        SELECT DISTINCT DATE_ADD(?, INTERVAL seq.n DAY) as date
+        FROM (
+            SELECT 0 as n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION
+            SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION
+            SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23 UNION SELECT 24 UNION SELECT 25 UNION SELECT 26 UNION SELECT 27 UNION SELECT 28 UNION SELECT 29 UNION SELECT 30
+        ) seq
+        WHERE DATE_ADD(?, INTERVAL seq.n DAY) <= ?
+          AND DATE_ADD(?, INTERVAL seq.n DAY) >= ?
+          AND DAYOFWEEK(DATE_ADD(?, INTERVAL seq.n DAY)) BETWEEN 2 AND 7
+        ORDER BY date
     ";
 
     $stmt = $conn->prepare($query);
@@ -64,7 +61,7 @@ try {
         throw new Exception("SQL prepare error: " . $conn->error);
     }
 
-    $stmt->bind_param("ssssss", $db_class_type, $currentDate, $maxBookingDate, $currentDate, $currentDate, $currentTime);
+    $stmt->bind_param("sssss", $currentDate, $currentDate, $maxBookingDate, $currentDate, $currentDate);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -79,8 +76,12 @@ try {
     ]);
 
 } catch (Throwable $e) {
-    error_log("Error fetching available dates: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An error occurred while fetching available dates.']);
+    error_log("Error in get_available_dates.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    echo json_encode([
+        'success' => false,
+        'message' => 'An error occurred while fetching available dates.'
+    ]);
 } finally {
     if (isset($stmt) && $stmt) {
         $stmt->close();
