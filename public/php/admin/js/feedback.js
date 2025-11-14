@@ -217,7 +217,6 @@ function createFeedbackCard(feedback) {
     const username = feedback.username || 'Anonymous';
     const message = feedback.message || '';
     const date = formatDate(feedback.date || feedback.created_at);
-    const initials = getInitials(username);
     const id = parseInt(feedback.id); // Ensure it's a number
 
     console.log('Creating card - ID:', id, 'Type:', typeof id, 'Is Visible:', isVisible);
@@ -226,7 +225,9 @@ function createFeedbackCard(feedback) {
         <div class="feedback-card ${isVisible ? 'visible' : 'hidden'}" data-id="${id}">
             <div class="feedback-card-header">
                 <div class="feedback-user">
-                    <div class="user-avatar">${initials}</div>
+                    <div class="user-avatar">
+                        <img src="../../../images/account-icon.svg" alt="${escapeHtml(username)}" class="account-icon default-icon">
+                    </div>
                     <div class="user-info">
                         <h3>${escapeHtml(username)}</h3>
                         <div class="feedback-date">

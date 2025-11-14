@@ -247,11 +247,10 @@ require_once __DIR__ . '/../../includes/header.php';
 
                         <?php if (isset($_SESSION['success_message'])): ?>
                         <div class="success-message-box" id="successMessageBox">
-                            <i class="fas fa-check-circle"></i>
                             <div class="message-text"><?= $_SESSION['success_message']; ?></div>
                             <?php if (isset($_SESSION['verification_email'])): ?>
                             <button type="button" class="resend-verification-btn" id="resendVerificationBtn" data-email="<?= htmlspecialchars($_SESSION['verification_email']); ?>">
-                                <i class="fas fa-envelope"></i> Resend Verification Email
+                                 Resend Verification Email
                             </button>
                             <?php endif; ?>
                         </div>

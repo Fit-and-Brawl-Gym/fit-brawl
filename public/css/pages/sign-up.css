@@ -217,7 +217,7 @@
     opacity: 0.7;
 }
 
-.resend-verification-btn.limit-reached {
+.resend-verification-btn. limit-reached {
     background: var(--color-error);
     border-color: var(--color-error);
     color: var(--color-white);
