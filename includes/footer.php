@@ -24,9 +24,9 @@
             </div>
         </div>
         <div class="footer-hours-block">
-            <div class="footer-hours-title">OPENING HOURS</div>
+            <div class="footer-hours-title">VISIT US</div>
             <div class="footer-hours-details">
-                Mon–Sun: 7AM to 12NN </div>
+                Mon–Sun: 7AM to 12AM </div>
         </div>
     </div>
     <div class="copyright">

@@ -217,6 +217,10 @@
     opacity: 0.7;
 }
 
+.terms-link {
+text-decoration: none;
+}
+
 .resend-verification-btn. limit-reached {
     background: var(--color-error);
     border-color: var(--color-error);

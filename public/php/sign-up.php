@@ -393,7 +393,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
                 <div class="terms-content">
                     <p class="terms-last-updated">Last Updated: October 7, 2025</p>
-                    <p class="terms-intro">Welcome to Fit and Brawl! These Terms and Conditions ("Terms") govern your use of our website, [Wala pang website link], and all related services offered by Fit and Brawl. By accessing or using our website, scheduling sessions, or purchasing services, you agree to comply with these Terms.</p>
+                    <p class="terms-intro">Welcome to Fit and Brawl! These Terms and Conditions ("Terms") govern your use of our website, <a href="#" class="terms-link"> fitxbrawl.com</a>  and all related services offered by Fit and Brawl. By accessing or using our website, scheduling sessions, or purchasing services, you agree to comply with these Terms.</p>
 
                     <h3 id="use-of-website">1. Use of Our Website</h3>
                     <ul>
