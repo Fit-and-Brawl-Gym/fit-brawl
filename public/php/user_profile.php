@@ -247,7 +247,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             <div class="upload-btn">
                                 <i class="fas fa-camera"></i> Choose Photo
                             </div>
-                            <input type="file" name="avatar" id="avatarInput" accept="image/*">
+                            <input type="file" name="avatar" id="avatarInput" accept="image/png,image/jpeg,image/jpg">
                         </div>
                         <small class="file-size-hint">Maximum file size: 2MB</small>
                         <button type="button" class="btn-remove-avatar <?= $hasCustomAvatar ? 'show' : '' ?>"

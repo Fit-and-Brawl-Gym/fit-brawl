@@ -340,7 +340,7 @@ unset($p);
                             <i class="fa-solid fa-image"></i>
                             <p>Click to upload image</p>
                         </div>
-                        <input type="file" id="productImage" name="image" accept="image/*" style="display:none;"
+                        <input type="file" id="productImage" name="image" accept="image/png,image/jpeg,image/jpg" style="display:none;"
                             onchange="previewImage(event)">
                         <button type="button" class="btn-secondary btn-small"
                             onclick="document.getElementById('productImage').click()">

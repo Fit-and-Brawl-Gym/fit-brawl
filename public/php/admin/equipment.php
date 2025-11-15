@@ -287,7 +287,7 @@ unset($it);
               <i class="fa-solid fa-image"></i>
               <p>Click to upload or drag image here</p>
             </div>
-            <input type="file" id="equipmentImage" name="image" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;"
+            <input type="file" id="equipmentImage" name="image" accept="image/png,image/jpeg,image/jpg" style="display:none;"
               onchange="previewImage(event)">
             <button type="button" class="btn-secondary btn-small"
               onclick="document.getElementById('equipmentImage').click()">
