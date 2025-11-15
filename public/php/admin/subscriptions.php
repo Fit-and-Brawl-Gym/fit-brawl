@@ -30,10 +30,39 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
       <p>Approve or reject membership payments.</p>
     </header>
 
-    <!-- Processing Subscriptions -->
+    <!-- Cash Payments Section -->
+    <section class="subscriptions-section cash-section">
+      <h2>Cash Payments (Pay at Gym)</h2>
+      <p class="muted">Members who selected cash payment option and need to pay at the gym.</p>
+      <div class="controls">
+        <button onclick="location.reload()">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table class="subs-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Member</th>
+              <th>Plan</th>
+              <th>Date Submitted</th>
+              <th>Payment Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="cashTableBody">
+            <!-- Data loaded via JavaScript -->
+            <tr>
+              <td colspan="6" style="text-align:center; color:#999;">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Processing Subscriptions (Online Payments) -->
     <section class="subscriptions-section">
-      <h2>Processing Subscriptions</h2>
-      <p class="muted">Pending payments that need admin action.</p>
+      <h2>Online Payment Submissions</h2>
+      <p class="muted">Pending online payments with QR proof that need admin verification.</p>
       <div class="controls">
         <button onclick="location.reload()">Refresh</button>
       </div>
@@ -87,18 +116,17 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
   </main>
 
   <!-- Confirmation Modal -->
-  <div id="confirmModal" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
+  <div id="confirmModal">
+    <div class="modal-card">
       <h3 id="confirmTitle">Confirm Action</h3>
       <p id="confirmMessage">Are you sure?</p>
-      <div id="rejectReasonContainer" style="display:none; margin-top:12px;">
-        <label style="display:block; font-weight:600; margin-bottom:6px;">Reason for Rejection:</label>
-        <textarea id="rejectReason" rows="3" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;"
-          placeholder="Enter rejection reason..."></textarea>
+      <div id="rejectReasonContainer" style="display:none;">
+        <label>Reason for Rejection:</label>
+        <textarea id="rejectReason" rows="3" placeholder="Enter rejection reason..."></textarea>
       </div>
       <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
-        <button id="confirmCancel" onclick="closeModal()" class="btn-secondary">Cancel</button>
-        <button id="confirmOk" onclick="executeAction()" class="btn-primary">Confirm</button>
+        <button id="confirmCancel" class="btn-modal">Cancel</button>
+        <button id="confirmOk" class="btn-modal">Confirm</button>
       </div>
     </div>
   </div>

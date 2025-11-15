@@ -145,7 +145,7 @@ function createMemberRow(member) {
                     </div>
                 </div>
                 <div class="details-actions">
-                    <button class="btn-history" onclick="viewHistory(${member.user_id}, '${escapeHtml(member.name)}')">
+                    <button class="btn-history" onclick="viewHistory('${member.user_id}', '${escapeHtml(member.name)}')">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         View History
                     </button>

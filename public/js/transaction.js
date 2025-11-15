@@ -51,6 +51,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updatePlanPrice();
 
+    // Payment method switching
+    const paymentMethodInputs = document.querySelectorAll('input[name="payment_method"]');
+    const modalQrSection = document.getElementById('modalQrSection');
+    const modalCashInstructions = document.getElementById('modalCashInstructions');
+    const modalTitle = document.getElementById('modalTitle');
+    const submitCashBtn = document.getElementById('submitCashBtn');
+
+    function updatePaymentMethodUI() {
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'online';
+        
+        if (selectedMethod === 'cash') {
+            confirmPaymentBtn.style.display = 'none';
+            submitCashBtn.style.display = 'inline-block';
+        } else {
+            confirmPaymentBtn.style.display = 'inline-block';
+            submitCashBtn.style.display = 'none';
+        }
+    }
+
+    paymentMethodInputs.forEach(input => {
+        input.addEventListener('change', updatePaymentMethodUI);
+    });
+
+    // Initialize on load
+    updatePaymentMethodUI();
+
     function resetFileUpload() {
         selectedFile = null;
         receiptFileInput.value = '';
@@ -122,6 +148,20 @@ document.addEventListener('DOMContentLoaded', () => {
             subscriptionForm.reportValidity();
             return;
         }
+        
+        // Update modal content based on payment method
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'online';
+        
+        if (selectedMethod === 'cash') {
+            modalTitle.textContent = 'Submit Cash Payment Receipt';
+            modalQrSection.style.display = 'none';
+            modalCashInstructions.style.display = 'block';
+        } else {
+            modalTitle.textContent = 'Submit Payment Receipt';
+            modalQrSection.style.display = 'block';
+            modalCashInstructions.style.display = 'none';
+        }
+        
         receiptModal.classList.add('active');
         receiptModalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -140,6 +180,50 @@ document.addEventListener('DOMContentLoaded', () => {
     receiptModalOverlay.addEventListener('click', closeModal);
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape' && receiptModal.classList.contains('active')) closeModal();
+    });
+
+    // Cash payment submission handler
+    submitCashBtn.addEventListener('click', () => {
+        if (!subscriptionForm.checkValidity()) {
+            subscriptionForm.reportValidity();
+            return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const basePlan = urlParams.get('plan') || 'gladiator';
+        const formData = new FormData(subscriptionForm);
+        formData.append('plan', basePlan);
+        formData.append('billing', urlParams.get('billing') || 'monthly');
+        formData.append('payment_method', 'cash');
+
+        submitCashBtn.disabled = true;
+        submitCashBtn.textContent = 'SUBMITTING...';
+
+        fetch('api/process_subscription.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const msg = document.createElement('div');
+                    msg.className = 'success-message';
+                    msg.textContent = 'Request submitted! Please visit the gym to complete payment.';
+                    msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#28a745;color:white;padding:15px 30px;border-radius:8px;z-index:10000;';
+                    document.body.appendChild(msg);
+                    setTimeout(() => window.location.href = 'membership-status.php', 2500);
+                } else {
+                    alert('Error: ' + data.message);
+                    submitCashBtn.disabled = false;
+                    submitCashBtn.textContent = 'SUBMIT REQUEST';
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('An error occurred. Please try again.');
+                submitCashBtn.disabled = false;
+                submitCashBtn.textContent = 'SUBMIT REQUEST';
+            });
     });
 
     submitReceiptBtn.addEventListener('click', () => {

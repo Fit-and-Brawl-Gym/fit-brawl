@@ -35,10 +35,11 @@ body::before {
 }
 
 .transaction-container {
-    max-width: 1100px;
+    max-width: 1400px;
     width: 100%;
     margin: 0 auto;
     position: relative;
+    padding: 0 var(--spacing-6);
 }
 
 .transaction-title {
@@ -65,13 +66,13 @@ body::before {
 
 /* Main Transaction Box */
 .transaction-box {
-    background: rgba(0, 47, 63, 0.7);
-    -webkit-backdrop-filter: blur(15px);
-    backdrop-filter: blur(15px);
+    background: rgba(0, 47, 63, 0.75);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 206, 0, 0.15);
     border-radius: var(--radius-3xl);
-    padding: var(--spacing-12) var(--spacing-10);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    padding: var(--spacing-16) var(--spacing-12);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
     position: relative;
     transition: var(--transition-base);
 }
@@ -84,16 +85,16 @@ body::before {
 /* Two Column Layout */
 .transaction-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-8);
-    margin-bottom: var(--spacing-6);
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--spacing-12);
+    margin-bottom: var(--spacing-8);
 }
 
 /* Left Column - Form & QR */
 .transaction-left {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-5);
+    gap: var(--spacing-6);
 }
 
 .form-group {
@@ -102,31 +103,60 @@ body::before {
     gap: var(--spacing-2);
 }
 
+.form-section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 206, 0, 0.3), transparent);
+    margin: var(--spacing-6) 0;
+}
+
+.form-section-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: var(--spacing-4);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.form-section-title::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: var(--color-accent);
+    border-radius: 2px;
+}
+
 .form-group label {
     color: var(--color-accent);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-semibold);
     font-size: var(--font-size-xs);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
+    margin-bottom: var(--spacing-1);
 }
 
 .form-group input,
 .form-group select {
     padding: var(--spacing-4) var(--spacing-5);
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 47, 63, 0.5);
+    border: 2px solid rgba(255, 206, 0, 0.2);
     border-radius: var(--radius-xl);
-    color: var(--color-white);
+    color: rgba(255, 255, 255, 0.95);
     font-size: var(--font-size-base);
-    transition: var(--transition-base);
+    transition: all 0.3s ease;
+    font-weight: 400;
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: rgba(255, 206, 0, 0.4);
-    background: rgba(0, 0, 0, 0.4);
-    box-shadow: 0 0 0 3px rgba(255, 206, 0, 0.1);
+    border-color: var(--color-accent);
+    background: rgba(0, 47, 63, 0.7);
+    box-shadow: 0 0 0 4px rgba(255, 206, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
 }
 
 .form-group select {
@@ -590,6 +620,7 @@ body::before {
 }
 
 .confirm-payment-btn,
+.submit-cash-btn,
 .cancel-btn {
     padding: var(--spacing-5) var(--spacing-8);
     font-size: var(--font-size-lg);
@@ -603,14 +634,16 @@ body::before {
     letter-spacing: 1.5px;
 }
 
-.confirm-payment-btn {
+.confirm-payment-btn,
+.submit-cash-btn {
     flex: 2;
     background: linear-gradient(135deg, var(--color-accent) 0%, #ffd700 100%);
     color: var(--color-fog);
     box-shadow: 0 8px 24px rgba(255, 206, 0, 0.3);
 }
 
-.confirm-payment-btn:hover {
+.confirm-payment-btn:hover,
+.submit-cash-btn:hover {
     background: linear-gradient(135deg, #ffd700 0%, var(--color-accent) 100%);
     transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(255, 206, 0, 0.5);
@@ -650,8 +683,9 @@ body::before {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.9);
-    width: 90%;
-    max-width: 500px;
+    width: 95%;
+    max-width: 900px;
+    max-height: 90vh;
     background: linear-gradient(135deg, rgba(0, 47, 63, 0.98) 0%, rgba(1, 13, 23, 0.98) 100%);
     border: 3px solid var(--color-accent);
     border-radius: var(--radius-2xl);
@@ -660,6 +694,8 @@ body::before {
     opacity: 0;
     pointer-events: none;
     transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
 }
 
 .receipt-modal.active {
@@ -706,14 +742,131 @@ body::before {
 
 .modal-body {
     padding: var(--spacing-6);
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+}
+
+.modal-two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-8);
+    align-items: start;
+}
+
+.modal-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+}
+
+.modal-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    position: sticky;
+    top: 0;
 }
 
 .modal-instruction {
     color: var(--color-text-light);
-    margin-bottom: var(--spacing-5);
-    text-align: center;
+    margin-bottom: 0;
+    text-align: left;
     line-height: var(--line-height-relaxed);
     font-size: var(--font-size-sm);
+}
+
+/* Modal QR Code Section */
+.modal-qr-section {
+    text-align: center;
+    width: 100%;
+}
+
+.modal-qr-section .qr-code-container {
+    background: var(--color-white);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-xl);
+    display: inline-block;
+    margin-bottom: var(--spacing-4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.modal-qr-section .qr-code {
+    width: 220px;
+    height: 220px;
+    display: block;
+}
+
+.modal-qr-section .qr-instruction {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0;
+}
+
+/* Modal Cash Instructions */
+.modal-cash-instructions {
+    background: rgba(0, 47, 63, 0.5);
+    border: 2px solid rgba(255, 206, 0, 0.3);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-6);
+    width: 100%;
+}
+
+.modal-cash-instructions .instruction-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-3);
+    border-bottom: 1px solid rgba(255, 206, 0, 0.2);
+}
+
+.modal-cash-instructions .instruction-header i {
+    color: var(--color-accent);
+    font-size: var(--font-size-xl);
+}
+
+.modal-cash-instructions .instruction-header h4 {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin: 0;
+    font-size: var(--font-size-base);
+}
+
+.modal-cash-instructions .instruction-content p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: var(--spacing-4);
+    line-height: 1.6;
+}
+
+.modal-cash-instructions .instruction-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.modal-cash-instructions .instruction-content ul li {
+    color: rgba(255, 255, 255, 0.85);
+    padding: var(--spacing-2) 0;
+    padding-left: var(--spacing-6);
+    position: relative;
+    line-height: 1.5;
+}
+
+.modal-cash-instructions .instruction-content ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
 }
 
 .file-upload-area {
@@ -782,9 +935,10 @@ body::before {
 
 .file-preview img {
     max-width: 100%;
-    max-height: 250px;
+    max-height: 180px;
     margin: 0 auto var(--spacing-3);
     border-radius: var(--radius-md);
+    object-fit: contain;
 }
 
 #fileName {
@@ -988,6 +1142,7 @@ body::before {
     }
 
     .confirm-payment-btn,
+    .submit-cash-btn,
     .cancel-btn {
         width: 100%;
         padding: var(--spacing-4) var(--spacing-6);
@@ -1005,5 +1160,243 @@ body::before {
     .qr-code {
         width: 160px;
         height: 160px;
+    }
+}
+
+/* ================================
+   PAYMENT METHOD SELECTION
+   ================================ */
+
+.payment-method-section {
+    margin-bottom: var(--spacing-6);
+}
+
+.payment-method-section > label {
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: var(--spacing-4);
+}
+
+.payment-method-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-4);
+}
+
+.payment-method-card {
+    position: relative;
+}
+
+.payment-method-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.payment-card-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-6) var(--spacing-4);
+    background: rgba(0, 47, 63, 0.4);
+    border: 2px solid rgba(255, 206, 0, 0.3);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 110px;
+    text-align: center;
+}
+
+.payment-card-label:hover {
+    background: rgba(0, 47, 63, 0.6);
+    border-color: rgba(255, 206, 0, 0.5);
+    transform: translateY(-2px);
+}
+
+.payment-method-card input[type="radio"]:checked + .payment-card-label {
+    background: rgba(0, 47, 63, 0.7);
+    border-color: var(--color-accent);
+    border-width: 3px;
+    box-shadow: 0 0 0 4px rgba(255, 206, 0, 0.15);
+}
+
+.payment-method-card.cash-card input[type="radio"]:checked + .payment-card-label {
+    position: relative;
+}
+
+.payment-method-card.cash-card input[type="radio"]:checked + .payment-card-label::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #002f3f;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.payment-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 206, 0, 0.15);
+    border-radius: var(--radius-lg);
+    flex-shrink: 0;
+}
+
+.payment-icon i {
+    font-size: 24px;
+    color: var(--color-accent);
+}
+
+.payment-details {
+    flex: 1;
+}
+
+.payment-details h3 {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin: 0 0 2px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.payment-details p {
+    font-size: var(--font-size-xs);
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Payment Instructions Box */
+.payment-instructions-box {
+    background: rgba(0, 47, 63, 0.6);
+    border: 2px solid rgba(255, 206, 0, 0.4);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-5);
+    margin-top: var(--spacing-5);
+    display: none;
+}
+
+.payment-instructions-box.active {
+    display: block;
+}
+
+.instruction-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.instruction-header i {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 206, 0, 0.2);
+    border-radius: 50%;
+    color: var(--color-accent);
+    font-size: 16px;
+}
+
+.instruction-header h4 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.instruction-content p {
+    font-size: var(--font-size-sm);
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+    margin: 0 0 var(--spacing-3) 0;
+}
+
+.instruction-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.instruction-content ul li {
+    padding: var(--spacing-2) 0;
+    padding-left: var(--spacing-5);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: var(--font-size-sm);
+    position: relative;
+}
+
+.instruction-content ul li::before {
+    content: '•';
+    position: absolute;
+    left: var(--spacing-3);
+    color: var(--color-accent);
+    font-weight: bold;
+}
+
+/* Mobile responsiveness for payment methods */
+@media (max-width: 768px) {
+    .payment-method-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-3);
+    }
+    
+    .payment-card-label {
+        min-height: 75px;
+        padding: var(--spacing-4);
+    }
+    
+    .payment-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .payment-icon i {
+        font-size: 20px;
+    }
+
+    /* Stack modal columns on mobile */
+    .modal-two-column {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-6);
+    }
+
+    .modal-right {
+        position: static;
+    }
+
+    .receipt-modal {
+        width: 95%;
+        max-width: 500px;
+    }
+
+    .modal-qr-section .qr-code {
+        width: 180px;
+        height: 180px;
+    }
+
+    .modal-instruction {
+        text-align: center;
     }
 }

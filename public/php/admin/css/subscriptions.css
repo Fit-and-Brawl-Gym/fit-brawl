@@ -2,6 +2,87 @@
 /* SUBSCRIPTIONS PAGE STYLES   */
 /* =========================== */
 
+/* Cash Payments Section - Highlighted */
+.cash-section {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.cash-section h2 {
+    color: #e65100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cash-section h2::before {
+    content: '';
+    width: 4px;
+    height: 28px;
+    background: #ff9800;
+    border-radius: 2px;
+}
+
+.cash-section .muted {
+    color: #795548;
+    font-style: italic;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-paid {
+    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+    color: #1b5e20;
+    border: 1px solid #81c784;
+}
+
+.status-paid::before {
+    background: #2e7d32;
+}
+
+.status-unpaid {
+    background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
+    color: #e65100;
+    border: 1px solid #ffb74d;
+}
+
+.status-unpaid::before {
+    background: #f57c00;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
 .subscriptions-section {
     background: var(--admin-bg-white);
     border-radius: var(--admin-radius-lg);
@@ -14,6 +95,17 @@
     font-size: var(--admin-font-size-2xl);
     color: #222;
     margin-bottom: var(--admin-gap-sm);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.subscriptions-section h2::before {
+    content: '';
+    width: 4px;
+    height: 28px;
+    background: #ff9800;
+    border-radius: 2px;
 }
 
 .subscriptions-section .muted {
@@ -91,22 +183,70 @@
 /* Action buttons */
 .btn-approve,
 .btn-reject {
-    padding: 6px var(--admin-gap-sm);
+    padding: 8px 18px;
     border: none;
-    border-radius: var(--admin-radius-sm);
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: var(--admin-font-weight-semibold);
-    font-size: var(--admin-font-size-base);
-    color: var(--admin-text-white);
+    font-weight: 600;
+    font-size: 13px;
+    color: #fff;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-approve::before,
+.btn-reject::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.btn-approve:hover::before,
+.btn-reject:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn-approve {
-    background: #0b8454;
-    margin-right: 6px;
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    margin-right: 8px;
+}
+
+.btn-approve:hover {
+    background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+.btn-approve:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);
 }
 
 .btn-reject {
-    background: #c0392b;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.btn-reject:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.btn-reject:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
 .btn-approve:hover,

@@ -194,11 +194,19 @@ require_once __DIR__ . '/../../includes/header.php';
                 <div class="transaction-content">
                     <!-- Left Column -->
                     <div class="transaction-left">
+                        <!-- Personal Information Section -->
+                        <div class="form-section-title">Personal Information</div>
+                        
                         <div class="form-group">
                             <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
                         </div>
 
+                        <div class="form-section-divider"></div>
+
+                        <!-- Location Section -->
+                        <div class="form-section-title">Location Details</div>
+                        
                         <div class="form-group">
                             <label for="country">Country</label>
                             <select id="country" name="country" required>
@@ -352,11 +360,37 @@ require_once __DIR__ . '/../../includes/header.php';
                                 placeholder="123 Rizal Street, Barangay San Isidro, Quezon City" required>
                         </div>
 
-                        <div class="payment-qr-section">
-                            <div class="qr-code-container">
-                                <img src="../../images/qr-code.webp" alt="InstaPay QR Code" class="qr-code">
+                        <div class="form-section-divider"></div>
+
+                        <!-- Payment Method Selection -->
+                        <div class="form-section-title">Payment Method</div>
+                        <div class="form-group payment-method-section">
+                            <div class="payment-method-grid">
+                                <div class="payment-method-card">
+                                    <input type="radio" id="onlinePayment" name="payment_method" value="online" checked>
+                                    <label for="onlinePayment" class="payment-card-label">
+                                        <div class="payment-icon">
+                                            <i class="fas fa-qrcode"></i>
+                                        </div>
+                                        <div class="payment-details">
+                                            <h3>Online Payment</h3>
+                                            <p>Pay now via QR code</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="payment-method-card cash-card">
+                                    <input type="radio" id="cashPayment" name="payment_method" value="cash">
+                                    <label for="cashPayment" class="payment-card-label">
+                                        <div class="payment-icon">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
+                                        <div class="payment-details">
+                                            <h3>Pay at Gym</h3>
+                                            <p>Visit us to complete payment</p>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
-                            <p class="qr-instruction">KINDLY SCAN TO PROCEED WITH YOUR PAYMENT</p>
                         </div>
                     </div>
 
@@ -430,7 +464,10 @@ require_once __DIR__ . '/../../includes/header.php';
                         <!-- Action Buttons - Moved here -->
                         <div class="transaction-actions">
                             <button type="button" class="confirm-payment-btn" id="confirmPaymentBtn">
-                                CONFIRM PAYMENT
+                                PROCEED TO PAYMENT
+                            </button>
+                            <button type="button" class="submit-cash-btn" id="submitCashBtn" style="display: none;">
+                                SUBMIT REQUEST
                             </button>
                             <button type="button" class="cancel-btn" onclick="window.location.href='membership.php'">
                                 Cancel
@@ -454,37 +491,69 @@ require_once __DIR__ . '/../../includes/header.php';
 <div class="modal-overlay" id="receiptModalOverlay"></div>
 <div class="receipt-modal" id="receiptModal">
     <div class="modal-header">
-        <h2>Submit Payment Receipt</h2>
+        <h2 id="modalTitle">Submit Payment Receipt</h2>
         <button class="modal-close-btn" id="closeReceiptModal">&times;</button>
     </div>
     <div class="modal-body">
-        <p class="modal-instruction">Please upload a screenshot or photo of your payment receipt to complete your
-            subscription.</p>
+        <div class="modal-two-column">
+            <!-- Left Column - File Upload -->
+            <div class="modal-left">
+                <p class="modal-instruction">Please upload a screenshot or photo of your payment receipt to complete your
+                    subscription.</p>
 
-        <div class="file-upload-area" id="fileUploadArea">
-            <input type="file" id="receiptFile" name="receipt" accept="image/png,image/jpeg,image/jpg">
-            <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
-                <path
-                    d="M7 18C4.23858 18 2 15.7614 2 13C2 10.2386 4.23858 8 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8C19.7614 8 22 10.2386 22 13C22 15.7614 19.7614 18 17 18M12 13V21M12 13L9 16M12 13L15 16"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            <p class="upload-text">Click to upload or drag and drop</p>
-            <p class="upload-subtext">PNG, JPG, PDF up to 10MB</p>
-        </div>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <input type="file" id="receiptFile" name="receipt" accept="image/png,image/jpeg,image/jpg">
+                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M7 18C4.23858 18 2 15.7614 2 13C2 10.2386 4.23858 8 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8C19.7614 8 22 10.2386 22 13C22 15.7614 19.7614 18 17 18M12 13V21M12 13L9 16M12 13L15 16"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-subtext">PNG, JPG, PDF up to 10MB</p>
+                </div>
 
-        <div class="file-preview" id="filePreview" style="display: none;">
-            <img id="previewImage" src="" alt="Receipt preview">
-            <p id="fileName"></p>
-            <button type="button" class="remove-file-btn" id="removeFile">Remove</button>
-        </div>
+                <div class="file-preview" id="filePreview" style="display: none;">
+                    <img id="previewImage" src="" alt="Receipt preview">
+                    <p id="fileName"></p>
+                    <button type="button" class="remove-file-btn" id="removeFile">Remove</button>
+                </div>
 
-        <div class="modal-actions">
-            <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
-                SUBMIT RECEIPT
-            </button>
-            <button type="button" class="modal-cancel-btn" id="cancelReceiptBtn">
-                Cancel
-            </button>
+                <div class="modal-actions">
+                    <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
+                        SUBMIT RECEIPT
+                    </button>
+                    <button type="button" class="modal-cancel-btn" id="cancelReceiptBtn">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column - QR Code / Instructions -->
+            <div class="modal-right">
+                <!-- QR Payment Section (only for online payment) -->
+                <div class="modal-qr-section" id="modalQrSection">
+                    <div class="qr-code-container">
+                        <img src="../../images/qr-code.webp" alt="InstaPay QR Code" class="qr-code">
+                    </div>
+                    <p class="qr-instruction">KINDLY SCAN TO PROCEED WITH YOUR PAYMENT</p>
+                </div>
+
+                <!-- Cash Payment Notice (only for cash payment) -->
+                <div class="modal-cash-instructions" id="modalCashInstructions" style="display: none;">
+                    <div class="instruction-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h4>Payment Instructions</h4>
+                    </div>
+                    <div class="instruction-content">
+                        <p>Please visit our gym to complete your payment. Your membership will be activated once payment is confirmed by our staff.</p>
+                        <ul>
+                            <li>Bring a valid ID</li>
+                            <li>Payment accepted: Cash only</li>
+                            <li>Operating hours: 6:00 AM - 10:00 PM daily</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

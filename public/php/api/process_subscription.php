@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $user_id = $_SESSION['user_id'];
 $plan = isset($_POST['plan']) ? strtolower(trim($_POST['plan'])) : '';
 $billing = isset($_POST['billing']) ? $_POST['billing'] : 'monthly';
+$payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : 'online';
 $name = trim($_POST['name'] ?? '');
 $country = trim($_POST['country'] ?? '');
 $address = trim($_POST['address'] ?? '');
@@ -41,11 +42,20 @@ if (empty($plan) || empty($name) || empty($country) || empty($address)) {
     exit;
 }
 
-// Validate and upload file securely
-if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
+// Validate payment method
+if (!in_array($payment_method, ['online', 'cash'])) {
+    echo json_encode(['success' => false, 'message' => 'Invalid payment method']);
     exit;
 }
+
+// Handle file upload - only required for online payments
+$filename = null;
+if ($payment_method === 'online') {
+    // Validate and upload file securely
+    if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
+        echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
+        exit;
+    }
 
 $uploadDir = __DIR__ . '/../../../uploads/receipts/';
 
@@ -93,6 +103,10 @@ if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists
         exit;
     }
 }
+} else {
+    // Cash payment - no receipt needed, will be marked as unpaid
+    $filename = null;
+}
 
 // Plan mapping
 $planMapping = [
@@ -139,9 +153,21 @@ $check_existing->bind_param("s", $user_id);
 $check_existing->execute();
 $existing = $check_existing->get_result()->fetch_assoc();
 
+// Only block if there's a pending ONLINE payment (not cash payments which are handled separately)
 if ($existing && $existing['request_status'] === 'pending') {
-    echo json_encode(['success' => false, 'message' => 'Upgrade or membership request already pending approval.']);
-    exit;
+    // Allow if it's a cash payment that hasn't been paid yet (user might be resubmitting)
+    $payment_method_col_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'payment_method'");
+    $has_payment_method = $payment_method_col_check->num_rows > 0;
+    
+    if ($has_payment_method && $existing['payment_method'] === 'online') {
+        echo json_encode(['success' => false, 'message' => 'Your online payment is still pending approval.']);
+        exit;
+    } elseif (!$has_payment_method) {
+        // Old schema without payment_method column
+        echo json_encode(['success' => false, 'message' => 'Upgrade or membership request already pending approval.']);
+        exit;
+    }
+    // If it's a cash payment that's pending, allow new submission (will be treated as upgrade/new)
 }
 
 // Calculate dates based on billing type
@@ -164,7 +190,96 @@ if ($existing && $existing['membership_status'] === 'active') {
     $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'source_table'");
     $has_source_columns = $columns_check->num_rows > 0;
 
-    if ($has_source_columns) {
+    // Check if payment_method column exists
+    $payment_columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'payment_method'");
+    $has_payment_columns = $payment_columns_check->num_rows > 0;
+
+    if ($has_source_columns && $has_payment_columns) {
+        $update_query = "
+        UPDATE user_memberships
+        SET
+            plan_id = ?,
+            name = ?,
+            country = ?,
+            permanent_address = ?,
+            plan_name = ?,
+            qr_proof = ?,
+            start_date = ?,
+            end_date = ?,
+            billing_type = ?,
+            payment_method = ?,
+            cash_payment_status = ?,
+            membership_status = 'active',
+            request_status = 'pending',
+            duration = ?,
+            source_table = ?,
+            source_id = ?
+        WHERE user_id = ? AND id = ?
+        ";
+
+        $cash_status = ($payment_method === 'cash') ? 'unpaid' : null;
+        $stmt = $conn->prepare($update_query);
+        $stmt->bind_param(
+            "issssssssssisisi",
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $payment_method,
+            $cash_status,
+            $duration,
+            $source_table,
+            $source_id,
+            $user_id,
+            $existing['id']
+        );
+    } elseif ($has_payment_columns) {
+        $update_query = "
+        UPDATE user_memberships
+        SET
+            plan_id = ?,
+            name = ?,
+            country = ?,
+            permanent_address = ?,
+            plan_name = ?,
+            qr_proof = ?,
+            start_date = ?,
+            end_date = ?,
+            billing_type = ?,
+            payment_method = ?,
+            cash_payment_status = ?,
+            membership_status = 'active',
+            request_status = 'pending',
+            duration = ?
+        WHERE user_id = ? AND id = ?
+        ";
+
+        $cash_status = ($payment_method === 'cash') ? 'unpaid' : null;
+        $stmt = $conn->prepare($update_query);
+        $stmt->bind_param(
+            "issssssssssis",
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $payment_method,
+            $cash_status,
+            $duration,
+            $user_id,
+            $existing['id']
+        );
+    } elseif ($has_source_columns) {
+        // Update with source columns but no payment columns
         $update_query = "
         UPDATE user_memberships
         SET
@@ -204,6 +319,7 @@ if ($existing && $existing['membership_status'] === 'active') {
             $existing['id']
         );
     } else {
+        // Fallback for tables without payment columns
         $update_query = "
         UPDATE user_memberships
         SET
@@ -246,8 +362,69 @@ if ($existing && $existing['membership_status'] === 'active') {
     $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'source_table'");
     $has_source_columns = $columns_check->num_rows > 0;
 
-    if ($has_source_columns) {
-        // Insert into user_memberships with source columns
+    // Check if payment_method column exists
+    $payment_columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'payment_method'");
+    $has_payment_columns = $payment_columns_check->num_rows > 0;
+
+    error_log("Cash payment debug - has_source_columns: " . ($has_source_columns ? 'true' : 'false') . ", has_payment_columns: " . ($has_payment_columns ? 'true' : 'false'));
+
+    if ($has_source_columns && $has_payment_columns) {
+        error_log("Using branch: source AND payment columns");
+        // Insert into user_memberships with source and payment columns
+        $insert_query = "
+        INSERT INTO user_memberships
+        (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, payment_method, cash_payment_status, membership_status, request_status, duration, source_table, source_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)
+        ";
+
+        $cash_status = ($payment_method === 'cash') ? 'unpaid' : null;
+        $stmt = $conn->prepare($insert_query);
+        $stmt->bind_param(
+            "sississsssssiss",
+            $user_id,
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $payment_method,
+            $cash_status,
+            $duration,
+            $source_table,
+            $source_id
+        );
+    } elseif ($has_payment_columns) {
+        // Insert into user_memberships with payment columns only
+        $insert_query = "
+        INSERT INTO user_memberships
+        (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, payment_method, cash_payment_status, membership_status, request_status, duration)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?)
+        ";
+
+        $cash_status = ($payment_method === 'cash') ? 'unpaid' : null;
+        $stmt = $conn->prepare($insert_query);
+        $stmt->bind_param(
+            "sissssssssssi",
+            $user_id,
+            $plan_id,
+            $name,
+            $country,
+            $address,
+            $membership['plan_name'],
+            $filename,
+            $start_date,
+            $end_date,
+            $billing,
+            $payment_method,
+            $cash_status,
+            $duration
+        );
+    } elseif ($has_source_columns) {
+        // Insert into user_memberships with source columns but no payment columns
         $insert_query = "
         INSERT INTO user_memberships
         (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
@@ -272,7 +449,7 @@ if ($existing && $existing['membership_status'] === 'active') {
             $source_id
         );
     } else {
-        // Insert into user_memberships without source columns
+        // Fallback: Insert into user_memberships without source or payment columns
         $insert_query = "
         INSERT INTO user_memberships
         (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration)

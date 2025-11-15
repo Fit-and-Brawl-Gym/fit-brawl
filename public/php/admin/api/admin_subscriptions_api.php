@@ -196,9 +196,111 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
     exit;
 }
 
+// MARK CASH PAYMENT AS PAID
+if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'mark_cash_paid') {
+    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+    if ($id <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+        exit;
+    }
+
+    // Check if payment_method column exists
+    $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'payment_method'");
+    if ($columns_check->num_rows === 0) {
+        echo json_encode(['success' => false, 'message' => 'Payment method column not found. Please update database.']);
+        exit;
+    }
+
+    $admin_id = $_SESSION['user_id'];
+    $payment_date = date('Y-m-d H:i:s');
+
+    // Verify this is a cash payment that's unpaid
+    $stmt = $conn->prepare("SELECT id, user_id, name, plan_name FROM user_memberships WHERE id = ? AND payment_method = 'cash' AND cash_payment_status = 'unpaid'");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $subscription = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$subscription) {
+        echo json_encode(['success' => false, 'message' => 'Cash payment not found or already marked as paid']);
+        exit;
+    }
+
+    // Get subscription details for calculating dates
+    $detailsStmt = $conn->prepare("SELECT duration FROM user_memberships WHERE id = ?");
+    $detailsStmt->bind_param('i', $id);
+    $detailsStmt->execute();
+    $details = $detailsStmt->get_result()->fetch_assoc();
+    $detailsStmt->close();
+
+    // Calculate start and end dates
+    $start_date = date('Y-m-d');
+    $end_date = null;
+    if (!empty($details['duration'])) {
+        $end_date = date('Y-m-d', strtotime("+{$details['duration']} days"));
+    }
+
+    // Update cash payment status AND approve membership
+    $stmt = $conn->prepare("UPDATE user_memberships SET 
+        cash_payment_status = 'paid', 
+        cash_payment_date = ?,
+        cash_received_by = ?,
+        request_status = 'approved',
+        membership_status = 'active',
+        admin_id = ?,
+        date_approved = ?,
+        start_date = ?,
+        end_date = ?,
+        source_table = 'user_memberships',
+        source_id = id
+        WHERE id = ?");
+    $stmt->bind_param('ssssssi', $payment_date, $admin_id, $admin_id, $payment_date, $start_date, $end_date, $id);
+
+    if ($stmt->execute()) {
+        // Log the activity
+        ActivityLogger::log(
+            'cash_payment_received',
+            $subscription['name'],
+            $id,
+            "Received cash payment and approved {$subscription['plan_name']} membership for {$subscription['name']}"
+        );
+
+        // Try to send approval email
+        try {
+            $emailStmt = $conn->prepare("SELECT u.email, u.username FROM user_memberships um LEFT JOIN users u ON um.user_id = u.id WHERE um.id = ? LIMIT 1");
+            if ($emailStmt) {
+                $emailStmt->bind_param('i', $id);
+                $emailStmt->execute();
+                $emailRow = $emailStmt->get_result()->fetch_assoc();
+                $emailStmt->close();
+
+                if ($emailRow && !empty($emailRow['email'])) {
+                    sendMembershipDecisionEmail($emailRow['email'], $emailRow['username'] ?? $subscription['name'], $subscription['plan_name'], true, $start_date, $end_date, null, []);
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Failed to send membership approval email: ' . $e->getMessage());
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Cash payment received and membership approved']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to update payment status: ' . $stmt->error]);
+    }
+    $stmt->close();
+    exit;
+}
+
 // FETCH subscriptions
 if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'fetch') {
     $type = $_GET['type'] ?? 'processing';
+
+    // Check if payment_method column exists
+    $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'payment_method'");
+    $has_payment_method = $columns_check->num_rows > 0;
+
+    $payment_columns = $has_payment_method ? ", um.payment_method, um.cash_payment_status, um.cash_payment_date" : "";
 
     $sql = "SELECT 
                 um.id,
@@ -213,6 +315,7 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'fetch') 
                 um.start_date,
                 um.end_date,
                 um.membership_status
+                {$payment_columns}
             FROM user_memberships um
             LEFT JOIN users u ON um.user_id = u.id
             LEFT JOIN memberships m ON um.plan_id = m.id

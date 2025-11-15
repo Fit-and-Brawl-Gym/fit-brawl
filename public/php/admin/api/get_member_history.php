@@ -15,9 +15,20 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 require_once '../../../../includes/db_connect.php';
 
-$userId = (int) ($_GET['user_id'] ?? 0);
+$userIdParam = $_GET['user_id'] ?? '';
 
-if (!$userId) {
+// Handle both integer and string user IDs
+if (is_numeric($userIdParam)) {
+    $userId = (int) $userIdParam;
+} else if (preg_match('/MBR-\d{2}-(\d+)/', $userIdParam, $matches)) {
+    // Extract numeric ID from format like "MBR-25-0005"
+    $userId = (int) $matches[1];
+} else {
+    echo json_encode(['success' => false, 'message' => 'Invalid user ID format. Received: ' . $userIdParam]);
+    exit;
+}
+
+if (!$userId || $userId <= 0) {
     echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
     exit;
 }
