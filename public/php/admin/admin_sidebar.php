@@ -49,7 +49,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainer-schedules.php" class="<?= $current_page == 'trainer-schedules.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-calendar-xmark"></i>
-            <span>Schedule Blocks</span>
+            <span>Trainer Schedules</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-calendar-check"></i>

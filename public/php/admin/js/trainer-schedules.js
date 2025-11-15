@@ -41,7 +41,7 @@ addBlockForm.addEventListener('submit', async (e) => {
 
     const submitBtn = addBlockForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Blocking...';
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Marking unavailable...';
 
     try {
         const response = await fetch('trainer-schedules.php?ajax=1', {
@@ -52,19 +52,19 @@ addBlockForm.addEventListener('submit', async (e) => {
         const result = await response.json();
 
         if (result.success) {
-            showToast('Schedule blocked successfully', 'success');
+            showToast('Trainer marked unavailable successfully', 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            showToast(result.message || 'Failed to block schedule', 'error');
+            showToast(result.message || 'Failed to mark unavailable', 'error');
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Block Schedule';
+            submitBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Mark Unavailable';
         }
     } catch (error) {
         console.error('Error:', error);
 
         showToast('An error occurred', 'error');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Block Schedule';
+        submitBtn.innerHTML = '<i class="fa-solid fa-ban"></i> Mark Unavailable';
     }
 });
 
@@ -123,7 +123,7 @@ document.querySelector('.bulk-actions .btn-delete')?.addEventListener('click', a
 
     if (selected.length === 0) return;
 
-    if (!confirm(`Are you sure you want to delete ${selected.length} schedule block(s)?`)) {
+    if (!confirm(`Are you sure you want to remove ${selected.length} unavailability entries?`)) {
         return;
     }
 
@@ -140,10 +140,10 @@ document.querySelector('.bulk-actions .btn-delete')?.addEventListener('click', a
         const result = await response.json();
 
         if (result.success) {
-            showToast('Schedule blocks deleted successfully', 'success');
+            showToast('Unavailability entries removed successfully', 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            showToast('Failed to delete schedule blocks', 'error');
+            showToast('Failed to remove unavailability entries', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -157,7 +157,7 @@ document.querySelectorAll('.btn-delete-single').forEach(btn => {
         e.stopPropagation();
         const blockId = btn.dataset.id;
 
-        if (!confirm('Are you sure you want to remove this schedule block?')) {
+        if (!confirm('Are you sure you want to remove this unavailability entry?')) {
             return;
         }
 
@@ -177,10 +177,10 @@ document.querySelectorAll('.btn-delete-single').forEach(btn => {
             const result = await response.json();
 
             if (result.success) {
-                showToast('Schedule block removed successfully', 'success');
+                showToast('Unavailability entry removed successfully', 'success');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                showToast('Failed to remove schedule block', 'error');
+                showToast('Failed to remove unavailability entry', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-trash"></i>';
             }

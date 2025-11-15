@@ -264,7 +264,7 @@ require_once '../../includes/header.php';
 <main>
     <!-- Page Header -->
     <div class="feedback-header">
-        <h1 class="feedback-title">Member Testimonials</h1>
+        <h1 class="feedback-title">Member Feedback</h1>
         <p class="feedback-subtitle">See what our community has to say about their Fit X Brawl experience</p>
         <div class="header-underline"></div>
     </div>

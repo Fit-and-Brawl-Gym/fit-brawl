@@ -60,8 +60,15 @@
     margin: 0 auto;
 }
 
-.fas.fa-calendar-check {
-    padding-bottom: 3px;
+.fas.fa-calendar-alt {
+    padding-bottom: 5px;
+}
+.fas.fa-user-check {
+    padding-right: 10px;
+}
+
+.fas.fa-user-check {
+    padding-right: 10px;
 }
 
 .info-badge {

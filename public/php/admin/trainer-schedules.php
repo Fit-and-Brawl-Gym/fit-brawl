@@ -58,23 +58,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             $trainer_query->execute();
             $trainer_name = $trainer_query->get_result()->fetch_assoc()['name'];
 
-            // Log the block
-            $log_msg = "Blocked schedule for $trainer_name on $date ($session_time)" . ($reason ? " - Reason: $reason" : "");
-            ActivityLogger::log('schedule_blocked', $trainer_name, $trainer_id, $log_msg);
+            // Log the unavailability
+            $log_msg = "Marked $trainer_name as unavailable on $date ($session_time)" . ($reason ? " - Reason: $reason" : "");
+            ActivityLogger::log('schedule_marked_unavailable', $trainer_name, $trainer_id, $log_msg);
 
             // ===============================
             // Cancel reservations and notify members
             // ===============================
             if ($session_time === 'All Day') {
                 $cancel_stmt = $conn->prepare("
-                    UPDATE user_reservations 
+                    UPDATE user_reservations
                     SET booking_status = 'cancelled', cancelled_at = NOW()
                     WHERE trainer_id = ? AND booking_date = ? AND booking_status = 'confirmed'
                 ");
                 $cancel_stmt->bind_param('is', $trainer_id, $date);
             } else {
                 $cancel_stmt = $conn->prepare("
-                    UPDATE user_reservations 
+                    UPDATE user_reservations
                     SET booking_status = 'cancelled', cancelled_at = NOW()
                     WHERE trainer_id = ? AND booking_date = ? AND session_time = ? AND booking_status = 'confirmed'
                 ");
@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
                         'reservations_cancelled',
                         $trainer_name,
                         $trainer_id,
-                        "Cancelled $cancelled_count reservation(s) due to schedule block on $date ($session_time)" . ($reason ? " - Reason: $reason" : "")
+                        "Cancelled $cancelled_count reservation(s) due to trainer unavailability on $date ($session_time)" . ($reason ? " - Reason: $reason" : "")
                     );
                 }
             }
@@ -146,9 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
     if ($block_id) {
         // Get block info for logging
         $info_query = $conn->prepare("
-            SELECT tab.*, t.name as trainer_name 
-            FROM trainer_availability_blocks tab 
-            JOIN trainers t ON tab.trainer_id = t.id 
+            SELECT tab.*, t.name as trainer_name
+            FROM trainer_availability_blocks tab
+            JOIN trainers t ON tab.trainer_id = t.id
             WHERE tab.id = ?
         ");
         $info_query->bind_param('i', $block_id);
@@ -160,8 +160,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
         $success = $stmt->execute();
 
         if ($success && $block_info) {
-            $log_msg = "Unblocked schedule for {$block_info['trainer_name']} on {$block_info['date']} ({$block_info['session_time']})";
-            ActivityLogger::log('schedule_unblocked', $block_info['trainer_name'], $block_info['trainer_id'], $log_msg);
+            $log_msg = "Removed unavailability for {$block_info['trainer_name']} on {$block_info['date']} ({$block_info['session_time']})";
+            ActivityLogger::log('schedule_availability_restored', $block_info['trainer_name'], $block_info['trainer_id'], $log_msg);
 
             // ===============================
             // Restore cancelled reservations
@@ -169,16 +169,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             if ($block_info['session_time'] === 'All Day') {
                 // Restore all sessions for that day
                 $restore_stmt = $conn->prepare("
-                    UPDATE user_reservations 
-                    SET booking_status = 'confirmed', cancelled_at = NULL 
+                    UPDATE user_reservations
+                    SET booking_status = 'confirmed', cancelled_at = NULL
                     WHERE trainer_id = ? AND booking_date = ? AND booking_status = 'cancelled'
                 ");
                 $restore_stmt->bind_param('is', $block_info['trainer_id'], $block_info['date']);
             } else {
                 // Restore only the specific session
                 $restore_stmt = $conn->prepare("
-                    UPDATE user_reservations 
-                    SET booking_status = 'confirmed', cancelled_at = NULL 
+                    UPDATE user_reservations
+                    SET booking_status = 'confirmed', cancelled_at = NULL
                     WHERE trainer_id = ? AND booking_date = ? AND session_time = ? AND booking_status = 'cancelled'
                 ");
                 $restore_stmt->bind_param('iss', $block_info['trainer_id'], $block_info['date'], $block_info['session_time']);
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
                     'reservations_restored',
                     $block_info['trainer_name'],
                     $block_info['trainer_id'],
-                    "Restored $restored_count reservation(s) after unblocking schedule on {$block_info['date']} ({$block_info['session_time']})"
+                    "Restored $restored_count reservation(s) after removing unavailability on {$block_info['date']} ({$block_info['session_time']})"
                 );
             }
         }
@@ -211,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             $success = $stmt->execute();
 
             if ($success) {
-                ActivityLogger::log('schedule_bulk_unblocked', null, null, "Bulk unblocked " . count($ids) . " schedule blocks");
+                ActivityLogger::log('schedule_bulk_availability_restored', null, null, "Bulk removed " . count($ids) . " unavailability entries");
             }
 
             echo json_encode(['success' => $success]);
@@ -234,7 +234,7 @@ $query = "
     SELECT tab.id, tab.trainer_id, tab.date, tab.session_time, tab.reason,
            tab.block_status, tab.created_at,
            t.name as trainer_name, t.specialization,
-           u.username as blocked_by_name
+           u.username as marked_by_name
     FROM trainer_availability_blocks tab
     JOIN trainers t ON tab.trainer_id = t.id
     LEFT JOIN users u ON tab.blocked_by = u.id
@@ -315,10 +315,10 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         <header class="page-header">
             <div>
                 <h1>Trainer Schedule Management</h1>
-                <p class="subtitle">Block trainer availability for vacations, meetings, and other events</p>
+                <p class="subtitle">Mark trainer unavailability for vacations, meetings, and other events</p>
             </div>
             <button class="btn-primary" id="btnAddBlock">
-                <i class="fa-solid fa-calendar-xmark"></i> Block Schedule
+                <i class="fa-solid fa-calendar-xmark"></i> Mark Unavailable
             </button>
         </header>
 
@@ -330,7 +330,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 </div>
                 <div class="stat-info">
                     <h3><?php echo $stats['total_blocks']; ?></h3>
-                    <p>Total Blocks</p>
+                    <p>Total Unavailabilities</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -339,7 +339,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 </div>
                 <div class="stat-info">
                     <h3><?php echo $stats['blocked_trainers']; ?></h3>
-                    <p>Trainers with Blocks</p>
+                    <p>Trainers with Time Off</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -348,7 +348,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 </div>
                 <div class="stat-info">
                     <h3><?php echo $stats['upcoming_blocks']; ?></h3>
-                    <p>Upcoming Blocks</p>
+                    <p>Upcoming Time Off</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -357,7 +357,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 </div>
                 <div class="stat-info">
                     <h3><?php echo $stats['past_blocks']; ?></h3>
-                    <p>Past Blocks</p>
+                    <p>Past Time Off</p>
                 </div>
             </div>
         </div>
@@ -404,7 +404,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                         <th>Date</th>
                         <th>Session</th>
                         <th>Reason</th>
-                        <th>Blocked By</th>
+                        <th>Marked By</th>
                         <th width="100">Actions</th>
                     </tr>
                 </thead>
@@ -414,7 +414,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                             <td colspan="7" class="no-results">
                                 <i class="fa-solid fa-calendar-check"
                                     style="font-size: 48px; color: #ccc; margin-bottom: 12px;"></i>
-                                <p>No schedule blocks found</p>
+                                <p>No unavailable schedules found</p>
                             </td>
                         </tr>
                     <?php else: ?>
@@ -457,10 +457,10 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                 <td>
                                     <?php echo $block['reason'] ? htmlspecialchars($block['reason']) : '<em style="color: #999;">No reason provided</em>'; ?>
                                 </td>
-                                <td><?php echo htmlspecialchars($block['blocked_by_name'] ?? 'Unknown'); ?></td>
+                                <td><?php echo htmlspecialchars($block['marked_by_name'] ?? 'Unknown'); ?></td>
                                 <td>
                                     <button class="btn-icon btn-delete-single" data-id="<?php echo $block['id']; ?>"
-                                        title="Remove block">
+                                        title="Remove time off">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </td>
@@ -476,7 +476,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     <div class="modal-overlay" id="addBlockModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Block Trainer Schedule</h2>
+                <h2>Mark Trainer Unavailable</h2>
                 <button class="modal-close" id="closeModal">
                     <i class="fa-solid fa-times"></i>
                 </button>
@@ -518,7 +518,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" id="cancelModal">Cancel</button>
                     <button type="submit" class="btn-primary">
-                        <i class="fa-solid fa-ban"></i> Block Schedule
+                        <i class="fa-solid fa-ban"></i> Mark Unavailable
                     </button>
                 </div>
             </form>

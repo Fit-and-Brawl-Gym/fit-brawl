@@ -94,14 +94,18 @@
     border-bottom: 2px solid var(--admin-table-border);
 }
 
+.products-table thead {
+    background: #f7f8fa;
+    border-bottom: 2px solid #e5e7eb;
+}
+
 .products-table th {
-    padding: 14px 16px;
+    padding: 16px;
     text-align: left;
-    font-weight: var(--admin-font-weight-bold);
-    color: var(--admin-text-secondary);
-    font-size: var(--admin-font-size-base);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: #222;
+    font-size: 14px;
+    white-space: nowrap;
 }
 
 .products-table tbody tr {
@@ -110,12 +114,29 @@
 }
 
 .products-table tbody tr:hover {
-    background: var(--admin-table-row-hover);
+    background: #f7f8fa;
 }
 
 .products-table td {
-    padding: 12px 16px;
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--admin-gap-xs);
+    justify-content: flex-start;
     vertical-align: middle;
+    margin: 20px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: var(--admin-font-size-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 /* Product thumbnail */
@@ -182,10 +203,16 @@
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: opacity 0.2s;
+    position: relative;
+}
+
+.btn-icon i {
+    display: block;
+    line-height: 1;
 }
 
 .btn-icon.btn-edit {
@@ -353,23 +380,36 @@
 
 /* View Toggle */
 .view-toggle {
-    display: flex;
+    display: inline-flex;
     gap: 0;
     border: 1px solid var(--admin-input-border);
     border-radius: var(--admin-input-radius);
     overflow: hidden;
-    margin-bottom: var(--admin-section-margin-sm);
+    background: var(--admin-bg-white);
+    height: var(--admin-btn-height);
+    align-self: center;
 }
 
 .view-btn {
-    padding: 10px 16px;
+    height: 100%;
+    padding: 0 16px;
     border: none;
-    background: var(--admin-bg-white);
+    background: transparent;
     cursor: pointer;
     font-size: var(--admin-font-size-md);
     color: var(--admin-text-muted);
     transition: var(--admin-transition-all);
     font-weight: var(--admin-font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    white-space: nowrap;
+}
+
+.view-btn i {
+    display: block;
+    line-height: 1;
 }
 
 .view-btn:not(:last-child) {
@@ -438,22 +478,6 @@
 
 .data-table tbody tr:hover {
     background: #f7f8fa;
-}
-
-.action-buttons {
-    display: flex;
-    gap: var(--admin-gap-xs);
-    vertical-align: middle;
-    align-items: center;
-    text-align: center;
-}
-
-.btn-small {
-    padding: 6px 12px;
-    font-size: var(--admin-font-size-sm);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
 }
 
 /* Products Cards Grid */

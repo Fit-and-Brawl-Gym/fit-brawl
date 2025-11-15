@@ -394,23 +394,36 @@
 
 /* View Toggle Styles */
 .view-toggle {
-    display: flex;
+    display: inline-flex;
     gap: 0;
     border: 1px solid var(--admin-input-border);
     border-radius: var(--admin-input-radius);
     overflow: hidden;
-    margin-bottom: var(--admin-section-margin-sm);
+    background: var(--admin-bg-white);
+    height: var(--admin-btn-height);
+    align-self: center;
 }
 
 .view-btn {
-    padding: 10px 16px;
+    height: 100%;
+    padding: 0 16px;
     border: none;
-    background: var(--admin-bg-white);
+    background: transparent;
     cursor: pointer;
     font-size: var(--admin-font-size-md);
     color: var(--admin-text-muted);
     transition: var(--admin-transition-all);
     font-weight: var(--admin-font-weight-medium);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    white-space: nowrap;
+}
+
+.view-btn i {
+    display: block;
+    line-height: 1;
 }
 
 .view-btn:not(:last-child) {

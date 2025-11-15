@@ -115,6 +115,9 @@
 
     --admin-btn-logout-bg: #e74c3c;
     --admin-btn-logout-hover: #c0392b;
+    --admin-btn-height: 44px;
+    --admin-btn-padding: 0 20px;
+    --admin-btn-gap: 8px;
 
     /* ===========================
      ADMIN BORDERS & DIVIDERS
@@ -149,6 +152,8 @@
     --admin-gap-md: 12px;
     --admin-gap-sm: 10px;
     --admin-gap-xs: 6px;
+    --admin-container-max-width: 1200px;
+    --admin-container-gutter: 32px;
 
     /* ===========================
      ADMIN BORDER RADIUS
