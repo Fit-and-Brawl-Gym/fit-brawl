@@ -102,13 +102,17 @@ CREATE TABLE `equipment` (
   `name` varchar(100) NOT NULL,
   `category` enum('Cardio','Flexibility','Core','Strength Training','Functional Training') NOT NULL,
   `status` enum('Available','Maintenance','Out of Order') DEFAULT 'Available',
+  `maintenance_start_date` date DEFAULT NULL,
+  `maintenance_end_date` date DEFAULT NULL,
+  `maintenance_reason` text DEFAULT NULL,
   `description` text DEFAULT NULL,
   `image_path` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_category` (`category`),
-  KEY `idx_status` (`status`)
+  KEY `idx_status` (`status`),
+  KEY `idx_maintenance_dates` (`maintenance_start_date`,`maintenance_end_date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

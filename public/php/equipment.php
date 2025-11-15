@@ -7,7 +7,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     include __DIR__ . '/../../includes/db_connect.php';
 
     try {
-        $sql = "SELECT id, name, category, status, description, image_path FROM equipment";
+        $sql = "SELECT id, name, category, status, description, image_path,
+                       maintenance_start_date, maintenance_end_date, maintenance_reason
+                FROM equipment";
         $result = $conn->query($sql);
 
         if (!$result) {

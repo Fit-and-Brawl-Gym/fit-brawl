@@ -152,7 +152,7 @@
     --admin-gap-md: 12px;
     --admin-gap-sm: 10px;
     --admin-gap-xs: 6px;
-    --admin-container-max-width: 1200px;
+    --admin-container-max-width: 1600px; /* Increased from 1200px for wider screens */
     --admin-container-gutter: 32px;
 
     /* ===========================

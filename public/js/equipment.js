@@ -16,7 +16,7 @@ function capitalize(s) {
 
 function renderEquipment(items) {
   FILTERED_DATA = items;
-  
+
   if (!items || items.length === 0) {
     container.innerHTML = '<div class="no-equipment">No equipment found</div>';
     if (paginationContainer) paginationContainer.style.display = 'none';
@@ -32,7 +32,8 @@ function renderEquipment(items) {
   container.innerHTML = paginatedItems.map(item => {
     const categories = item.category ? item.category.split(',').map(c => c.trim()) : [];
     const statusClass = (item.status || '').toLowerCase().replace(/\s+/g, '-');
-    
+    const isMaintenance = item.status === 'Maintenance';
+
     // Use image if available, otherwise use emoji
     let imageContent;
     if (item.image_path && item.image_path.trim() !== '') {
@@ -47,8 +48,31 @@ function renderEquipment(items) {
       imageContent = `<span class="equipment-emoji">🥊</span>`;
     }
 
+    // Format maintenance dates if in maintenance
+    let maintenanceInfo = '';
+    if (isMaintenance && item.maintenance_start_date && item.maintenance_end_date) {
+      const startDate = new Date(item.maintenance_start_date);
+      const endDate = new Date(item.maintenance_end_date);
+      const startFormatted = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const endFormatted = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      maintenanceInfo = `
+        <div class="maintenance-banner">
+          <div class="maintenance-icon">🔧</div>
+          <div class="maintenance-details">
+            <div class="maintenance-title">Under Maintenance</div>
+            <div class="maintenance-dates">
+              <i class="fas fa-calendar"></i>
+              ${startFormatted} - ${endFormatted}
+            </div>
+            ${item.maintenance_reason ? `<div class="maintenance-reason">${escapeHtml(item.maintenance_reason)}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
     return `
-      <div class="equipment-card" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
+      <div class="equipment-card ${isMaintenance ? 'maintenance-mode' : ''}" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
         <div class="equipment-image-container">
           ${imageContent}
         </div>
@@ -65,6 +89,8 @@ function renderEquipment(items) {
               <span class="status-text">${escapeHtml(item.status)}</span>
             </div>
           </div>
+
+          ${maintenanceInfo}
 
           <div class="equipment-desc">${escapeHtml(item.description || 'No description available.')}</div>
         </div>

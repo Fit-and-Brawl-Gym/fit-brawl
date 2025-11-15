@@ -113,11 +113,40 @@ function openSidePanel() {
     document.getElementById('equipmentForm').reset();
     resetImagePreview();
     document.getElementById('equipmentId').value = '';
+    toggleMaintenanceFields(); // Reset maintenance fields visibility
     document.getElementById('sidePanel').classList.add('active');
 }
 
 function closeSidePanel() {
     document.getElementById('sidePanel').classList.remove('active');
+    // Reset maintenance fields
+    document.getElementById('maintenanceStartDate').value = '';
+    document.getElementById('maintenanceEndDate').value = '';
+    document.getElementById('maintenanceReason').value = '';
+}
+
+// ================================
+// Maintenance Fields Toggle
+// ================================
+function toggleMaintenanceFields() {
+    const status = document.getElementById('equipmentStatus').value;
+    const maintenanceFields = document.getElementById('maintenanceFields');
+    const startDateInput = document.getElementById('maintenanceStartDate');
+    const endDateInput = document.getElementById('maintenanceEndDate');
+
+    if (status === 'Maintenance') {
+        maintenanceFields.style.display = 'block';
+        startDateInput.setAttribute('required', 'required');
+        endDateInput.setAttribute('required', 'required');
+    } else {
+        maintenanceFields.style.display = 'none';
+        startDateInput.removeAttribute('required');
+        endDateInput.removeAttribute('required');
+        // Clear values when hidden
+        startDateInput.value = '';
+        endDateInput.value = '';
+        document.getElementById('maintenanceReason').value = '';
+    }
 }
 
 // ================================
@@ -174,6 +203,20 @@ function editEquipment(equipment) {
     document.getElementById('equipmentCategory').value = equipment.category;
     document.getElementById('equipmentStatus').value = equipment.status;
     document.getElementById('equipmentDescription').value = equipment.description || '';
+
+    // Set maintenance fields if applicable
+    if (equipment.maintenance_start_date) {
+        document.getElementById('maintenanceStartDate').value = equipment.maintenance_start_date;
+    }
+    if (equipment.maintenance_end_date) {
+        document.getElementById('maintenanceEndDate').value = equipment.maintenance_end_date;
+    }
+    if (equipment.maintenance_reason) {
+        document.getElementById('maintenanceReason').value = equipment.maintenance_reason;
+    }
+
+    // Show/hide maintenance fields based on status
+    toggleMaintenanceFields();
 
     // Show existing image
     if (equipment.image_path) {

@@ -703,3 +703,85 @@ select#statusFilter option {
         font-size: var(--font-size-xl);
     }
 }
+
+/* =========================== */
+/* MAINTENANCE BANNER STYLES   */
+/* =========================== */
+
+.maintenance-banner {
+    background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+}
+
+.maintenance-icon {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.maintenance-details {
+    flex: 1;
+}
+
+.maintenance-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #b8860b;
+    margin-bottom: 8px;
+    font-family: var(--font-family-display);
+}
+
+.maintenance-dates {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.maintenance-dates i {
+    color: #ff9800;
+    font-size: 14px;
+}
+
+.maintenance-reason {
+    color: #888;
+    font-size: 13px;
+    font-style: italic;
+    line-height: 1.5;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* Equipment card in maintenance mode */
+.equipment-card.maintenance-mode {
+    border: 2px solid #ffd700;
+    background: linear-gradient(135deg, rgba(255, 249, 230, 0.1) 0%, rgba(255, 251, 240, 0.05) 100%);
+}
+
+.equipment-card.maintenance-mode .equipment-image-container {
+    position: relative;
+}
+
+.equipment-card.maintenance-mode .equipment-image-container::after {
+    content: '🔧';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    background: #fff9e6;
+    padding: 6px 10px;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}

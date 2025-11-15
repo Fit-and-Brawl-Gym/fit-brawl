@@ -297,6 +297,7 @@ body {
     margin-left: auto;
     margin-right: auto;
     width: min(var(--admin-container-max-width), calc(100% - var(--admin-container-gutter)));
+    max-width: 100%; /* Allow full width when needed */
     padding: var(--admin-page-padding);
     padding-top: 90px;
     /* Space for hamburger button */

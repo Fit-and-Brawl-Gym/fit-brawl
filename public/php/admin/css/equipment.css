@@ -481,7 +481,7 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 800px;
+    min-width: 1200px; /* Increased from 800px for better spacing */
 }
 
 .data-table thead {
@@ -517,6 +517,8 @@
     display: flex;
     gap: var(--admin-gap-xs);
     justify-content: flex-start;
+    flex-wrap: nowrap; /* Prevent wrapping */
+    min-width: 200px; /* Ensure enough space for buttons */
 }
 
 .btn-small {
@@ -525,4 +527,88 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap; /* Prevent text wrapping in buttons */
+}
+
+/* =========================== */
+/* MAINTENANCE SCHEDULE STYLES */
+/* =========================== */
+
+.maintenance-section {
+    background: #fff9e6;
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.maintenance-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: #b8860b;
+}
+
+.maintenance-header i {
+    font-size: 18px;
+}
+
+.maintenance-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.maintenance-info {
+    font-size: 13px;
+}
+
+.maintenance-dates {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.maintenance-dates i {
+    color: #ff9800;
+    font-size: 14px;
+}
+
+.maintenance-reason {
+    color: #888;
+    font-size: 12px;
+    font-style: italic;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.card-maintenance-info {
+    background: #fff9e6;
+    border: 1px solid #ffd700;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 12px 0;
+}
+
+.card-maintenance-info i {
+    color: #ff9800;
+    margin-right: 6px;
+}
+
+.maintenance-schedule {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+.maintenance-reason-card {
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+    margin-top: 6px;
+    line-height: 1.3;
 }

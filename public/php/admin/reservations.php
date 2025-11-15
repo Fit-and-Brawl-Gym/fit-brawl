@@ -272,8 +272,22 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                     </option>
                 <?php endforeach; ?>
             </select>
-            <input type="date" id="dateFrom" class="filter-dropdown" value="<?php echo $date_from; ?>">
-            <input type="date" id="dateTo" class="filter-dropdown" value="<?php echo $date_to; ?>">
+            <div class="date-range-filter">
+                <label for="dateFrom" class="date-label">
+                    <i class="fa-solid fa-calendar-days"></i> From
+                </label>
+                <input type="date" id="dateFrom" class="filter-dropdown date-input"
+                       value="<?php echo $date_from; ?>"
+                       placeholder="Start date">
+            </div>
+            <div class="date-range-filter">
+                <label for="dateTo" class="date-label">
+                    <i class="fa-solid fa-calendar-days"></i> To
+                </label>
+                <input type="date" id="dateTo" class="filter-dropdown date-input"
+                       value="<?php echo $date_to; ?>"
+                       placeholder="End date">
+            </div>
         </div>
 
         <!-- Bulk Actions -->
@@ -336,14 +350,16 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                     <td><?php echo htmlspecialchars($booking['class_type']); ?></td>
                                     <td>
                                         <div class="time-info">
-                                            <?php
-                                            // Display date
-                                            if (!empty($booking['date']) && $booking['date'] != '0000-00-00') {
-                                                echo date('M d, Y', strtotime($booking['date']));
-                                            } else {
-                                                echo 'No date set';
-                                            }
-                                            ?><br>
+                                            <div class="booking-date">
+                                                <?php
+                                                // Display date
+                                                if (!empty($booking['date']) && $booking['date'] != '0000-00-00') {
+                                                    echo date('M d, Y', strtotime($booking['date']));
+                                                } else {
+                                                    echo 'No date set';
+                                                }
+                                                ?>
+                                            </div>
                                             <?php
                                             // Display session time
                                             if (!empty($booking['session_time'])) {
@@ -352,11 +368,10 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                                     'Afternoon' => '1:00 PM - 5:00 PM',
                                                     'Evening' => '6:00 PM - 10:00 PM'
                                                 ];
-                                                echo '<strong>' . htmlspecialchars($booking['session_time']) . '</strong><br>';
-                                                echo '<span style="font-size: 0.85em; color: #999;">' .
-                                                    ($session_hours[$booking['session_time']] ?? 'Time not set') . '</span>';
+                                                echo '<div class="session-label">' . htmlspecialchars($booking['session_time']) . '</div>';
+                                                echo '<div class="session-hours">' . ($session_hours[$booking['session_time']] ?? 'Time not set') . '</div>';
                                             } else {
-                                                echo 'No time set';
+                                                echo '<div class="session-label">No time set</div>';
                                             }
                                             ?>
                                         </div>

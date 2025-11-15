@@ -23,7 +23,7 @@ $result = $conn->query($sql);
 $equipment = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Normalize rows so template keys exist
-$expectedKeys = ['id', 'name', 'category', 'status', 'description'];
+$expectedKeys = ['id', 'name', 'category', 'status', 'description', 'maintenance_start_date', 'maintenance_end_date', 'maintenance_reason'];
 foreach ($equipment as &$it) {
   foreach ($expectedKeys as $k) {
     if (!array_key_exists($k, $it)) {
@@ -102,6 +102,7 @@ unset($it);
               <th>Name</th>
               <th>Category</th>
               <th>Status</th>
+              <th>Maintenance Schedule</th>
               <th>Description</th>
               <th>Actions</th>
             </tr>
@@ -109,7 +110,7 @@ unset($it);
           <tbody>
             <?php if (empty($equipment)): ?>
               <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
+                <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
                   <i class="fa-solid fa-dumbbell" style="font-size: 48px; margin-bottom: 12px; display: block;"></i>
                   No Equipment Found
                 </td>
@@ -164,6 +165,22 @@ unset($it);
                     <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $item['status'])) ?>">
                       <?= htmlspecialchars($item['status']) ?>
                     </span>
+                  </td>
+                  <td>
+                    <?php if ($item['status'] === 'Maintenance' && !empty($item['maintenance_start_date'])): ?>
+                      <div class="maintenance-info">
+                        <div class="maintenance-dates">
+                          <i class="fa-solid fa-calendar"></i>
+                          <?= date('M d', strtotime($item['maintenance_start_date'])) ?> -
+                          <?= date('M d, Y', strtotime($item['maintenance_end_date'])) ?>
+                        </div>
+                        <?php if (!empty($item['maintenance_reason'])): ?>
+                          <div class="maintenance-reason"><?= htmlspecialchars($item['maintenance_reason']) ?></div>
+                        <?php endif; ?>
+                      </div>
+                    <?php else: ?>
+                      <span style="color: #999;">-</span>
+                    <?php endif; ?>
                   </td>
                   <td><?= htmlspecialchars($item['description'] ?: 'N/A') ?></td>
                   <td>
@@ -246,6 +263,21 @@ unset($it);
             </div>
             <h3 class="equipment-name"><?= htmlspecialchars($item['name']) ?></h3>
             <p class="equipment-category"><?= htmlspecialchars($item['category']) ?></p>
+
+            <?php if ($item['status'] === 'Maintenance' && !empty($item['maintenance_start_date'])): ?>
+              <div class="card-maintenance-info">
+                <i class="fa-solid fa-wrench"></i>
+                <div class="maintenance-schedule">
+                  <strong>Maintenance:</strong>
+                  <?= date('M d', strtotime($item['maintenance_start_date'])) ?> -
+                  <?= date('M d, Y', strtotime($item['maintenance_end_date'])) ?>
+                </div>
+                <?php if (!empty($item['maintenance_reason'])): ?>
+                  <div class="maintenance-reason-card"><?= htmlspecialchars($item['maintenance_reason']) ?></div>
+                <?php endif; ?>
+              </div>
+            <?php endif; ?>
+
             <?php if (!empty($item['description'])): ?>
               <p class="equipment-desc"><?= htmlspecialchars($item['description']) ?></p>
             <?php endif; ?>
@@ -315,11 +347,37 @@ unset($it);
 
         <div class="form-group">
           <label for="equipmentStatus">Status *</label>
-          <select id="equipmentStatus" name="status" required>
+          <select id="equipmentStatus" name="status" required onchange="toggleMaintenanceFields()">
             <option value="Available">✅ Available</option>
             <option value="Maintenance">🔧 Maintenance</option>
             <option value="Out of Order">❌ Out of Order</option>
           </select>
+        </div>
+
+        <!-- Maintenance Schedule Fields (shown only when status is Maintenance) -->
+        <div id="maintenanceFields" class="maintenance-section" style="display: none;">
+          <div class="maintenance-header">
+            <i class="fa-solid fa-wrench"></i>
+            <h4>Maintenance Schedule</h4>
+          </div>
+
+          <div class="form-group">
+            <label for="maintenanceStartDate">Maintenance Start Date *</label>
+            <input type="date" id="maintenanceStartDate" name="maintenance_start_date"
+                   min="<?= date('Y-m-d') ?>">
+          </div>
+
+          <div class="form-group">
+            <label for="maintenanceEndDate">Expected End Date *</label>
+            <input type="date" id="maintenanceEndDate" name="maintenance_end_date"
+                   min="<?= date('Y-m-d') ?>">
+          </div>
+
+          <div class="form-group">
+            <label for="maintenanceReason">Maintenance Reason</label>
+            <textarea id="maintenanceReason" name="maintenance_reason" rows="3"
+              placeholder="E.g., Routine maintenance, Repair broken part, Safety inspection..."></textarea>
+          </div>
         </div>
 
         <div class="form-group">

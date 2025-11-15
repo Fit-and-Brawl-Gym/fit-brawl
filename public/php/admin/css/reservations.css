@@ -137,6 +137,64 @@
     border-color: var(--admin-border-focus);
 }
 
+/* Date Range Filter Styling */
+.date-range-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--admin-bg-white);
+    border: 1px solid var(--admin-input-border);
+    border-radius: var(--admin-input-radius);
+    padding: 0 12px;
+    min-width: 200px;
+    transition: border-color var(--admin-transition-fast);
+}
+
+.date-range-filter:focus-within {
+    border-color: var(--admin-border-focus);
+    box-shadow: var(--admin-shadow-focus);
+}
+
+.date-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--admin-font-size-sm);
+    font-weight: var(--admin-font-weight-semibold);
+    color: var(--admin-text-muted);
+    white-space: nowrap;
+    margin: 0;
+}
+
+.date-label i {
+    font-size: 14px;
+    color: var(--admin-primary);
+}
+
+.date-input {
+    border: none !important;
+    padding: 10px 0 !important;
+    min-width: 140px !important;
+    background: transparent !important;
+    cursor: pointer;
+    flex: 1;
+}
+
+.date-input:focus {
+    outline: none;
+    box-shadow: none !important;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
 /* View Toggle - Match admin theme */
 .view-toggle {
     display: flex;
@@ -435,8 +493,52 @@
     font-family: var(--admin-font-family);
     font-weight: var(--admin-font-weight-semibold);
     color: var(--admin-text-primary);
-    line-height: 1.6;
+    line-height: 1.8;
     font-size: var(--admin-font-size-base);
+}
+
+.time-info strong {
+    display: block;
+    color: var(--admin-bg-dark);
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.time-info span {
+    display: block !important;
+    color: #666 !important;
+    font-size: 0.85em !important;
+    font-weight: 400 !important;
+    margin-top: 2px;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.booking-date {
+    font-weight: 600;
+    color: var(--admin-bg-dark);
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.session-label {
+    font-weight: 700;
+    color: var(--admin-primary);
+    margin-top: 4px;
+    margin-bottom: 2px;
+    font-size: 13px;
+}
+
+.session-hours {
+    color: #666;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    background: #f5f5f5;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 2px;
 }
 
 .no-results {
