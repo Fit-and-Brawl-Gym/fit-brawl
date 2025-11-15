@@ -38,10 +38,10 @@ try {
                 WHEN ur.booking_date = CURDATE() THEN 'today'
                 ELSE 'upcoming'
             END AS booking_period,
-            CASE 
-                WHEN ur.booking_date = CURDATE() AND ur.session_time = 'Evening' 
+            CASE
+                WHEN ur.booking_date = CURDATE() AND ur.session_time = 'Evening'
                 AND HOUR(NOW()) BETWEEN 18 AND 22 THEN 'ongoing'
-                ELSE ur.booking_status 
+                ELSE ur.booking_status
             END AS session_status
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
@@ -83,7 +83,7 @@ try {
             'id' => $row['booking_id'],
             'trainer_id' => $row['trainer_id'],
             'trainer_name' => $row['trainer_name'],
-            'trainer_photo' => $row['trainer_photo'] ?? 'default-trainer.jpg',
+            'trainer_photo' => !empty($row['trainer_photo']) ? $row['trainer_photo'] : 'account-icon.svg',
             'class_type' => $row['class_type'],
             'date' => $row['booking_date'],
             'date_formatted' => date('F j, Y', strtotime($row['booking_date'])),

@@ -264,7 +264,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group">
                         <label for="photo">Profile Photo</label>
-                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/jpg">
+                        <div class="photo-preview">
+                            <img src="../../../images/account-icon.svg"
+                                alt="Default Profile Icon"
+                                class="default-icon"
+                                id="photoPreview">
+                            <div class="photo-preview-info">
+                                <h4 id="photoPreviewTitle">No Photo Selected</h4>
+                                <p id="photoPreviewText">Upload an image to set profile photo</p>
+                            </div>
+                        </div>
+                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/jpg" onchange="previewPhoto(this)">
                         <span class="form-hint">Accepted formats: JPG, JPEG, PNG</span>
                     </div>
                 </div>
@@ -391,6 +401,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Initialize count
             updateDayOffCount();
         });
+
+        // Photo preview function
+        function previewPhoto(input) {
+            const preview = document.getElementById('photoPreview');
+            const title = document.getElementById('photoPreviewTitle');
+            const text = document.getElementById('photoPreviewText');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('default-icon');
+                    title.textContent = 'Photo Selected';
+                    text.textContent = input.files[0].name;
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = '../../../images/account-icon.svg';
+                preview.classList.add('default-icon');
+                title.textContent = 'No Photo Selected';
+                text.textContent = 'Upload an image to set profile photo';
+            }
+        }
     </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>

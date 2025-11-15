@@ -1075,8 +1075,10 @@ document.addEventListener('DOMContentLoaded', function () {
         trainersGrid.innerHTML = trainers.map(trainer => {
             // Escape HTML to prevent attribute breaking with quotes
             const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
-            // Always use account icon for trainer avatars
-            const photoSrc = `../../images/account-icon.svg`;
+            // Use uploaded photo if available, otherwise use default account icon
+            const photoSrc = trainer.photo && trainer.photo !== 'account-icon.svg'
+                ? `../../uploads/trainers/${trainer.photo}`
+                : `../../images/account-icon.svg`;
             return `
             <div class="trainer-card ${trainer.status}"
                  data-trainer-id="${trainer.id}"
@@ -1086,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="trainer-status-badge ${trainer.status}">${trainer.status}</span>
                 <img src="${photoSrc}"
                      alt="${escapedName}"
-                     class="trainer-photo default-icon"
+                     class="trainer-photo ${trainer.photo && trainer.photo !== 'account-icon.svg' ? '' : 'default-icon'}"
                      onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
                 <h3 class="trainer-name">${trainer.name}</h3>
                 <p class="trainer-specialty">${trainer.specialization}</p>

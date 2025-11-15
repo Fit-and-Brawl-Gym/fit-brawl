@@ -349,7 +349,12 @@ if (!$stats) {
                                 <tr data-trainer-id="<?= $trainer['id'] ?>">
                                     <td>
                                         <div class="trainer-info">
-                                            <img src="../../../images/account-icon.svg"
+                                            <?php
+                                            $trainerPhoto = !empty($trainer['photo']) && file_exists('../../../uploads/trainers/' . $trainer['photo'])
+                                                ? '../../../uploads/trainers/' . htmlspecialchars($trainer['photo'])
+                                                : '../../../images/account-icon.svg';
+                                            ?>
+                                            <img src="<?= $trainerPhoto ?>"
                                                 alt="<?= htmlspecialchars($trainer['name']) ?>" class="trainer-avatar">
                                             <span><?= htmlspecialchars($trainer['name']) ?></span>
                                         </div>
@@ -424,7 +429,12 @@ if (!$stats) {
                     <?php while ($trainer = $trainers_result->fetch_assoc()): ?>
                         <div class="trainer-card" data-trainer-id="<?= $trainer['id'] ?>">
                             <div class="card-header">
-                                <img src="../../../images/account-icon.svg"
+                                <?php
+                                $trainerPhoto = !empty($trainer['photo']) && file_exists('../../../uploads/trainers/' . $trainer['photo'])
+                                    ? '../../../uploads/trainers/' . htmlspecialchars($trainer['photo'])
+                                    : '../../../images/account-icon.svg';
+                                ?>
+                                <img src="<?= $trainerPhoto ?>"
                                     alt="<?= htmlspecialchars($trainer['name']) ?>" class="card-avatar">
                                 <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $trainer['status'])) ?>"
                                     onclick="toggleStatus(<?= $trainer['id'] ?>)" style="cursor: pointer;"

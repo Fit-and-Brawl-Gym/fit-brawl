@@ -138,22 +138,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Update day-off schedule
                     $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-                    // First, set all days as working days
-                    $update_all_days = "UPDATE trainer_day_offs SET is_day_off = FALSE WHERE trainer_id = ?";
-                    $stmt = $conn->prepare($update_all_days);
-                    $stmt->bind_param("i", $trainer_id);
-                    $stmt->execute();
+                    // Ensure all 7 days exist in the table for this trainer
+                    // Use INSERT ... ON DUPLICATE KEY UPDATE for better compatibility
+                    foreach ($days as $day) {
+                        $upsert_day = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off)
+                                      VALUES (?, ?, FALSE)
+                                      ON DUPLICATE KEY UPDATE is_day_off = FALSE";
+                        $stmt = $conn->prepare($upsert_day);
+                        $stmt->bind_param("is", $trainer_id, $day);
+                        $stmt->execute();
+                    }
 
                     // Then mark selected days as day-offs
                     if (!empty($day_offs)) {
-                        $placeholders = implode(',', array_fill(0, count($day_offs), '?'));
-                        $update_days = "UPDATE trainer_day_offs SET is_day_off = TRUE
-                                       WHERE trainer_id = ? AND day_of_week IN ($placeholders)";
-                        $stmt = $conn->prepare($update_days);
-                        $types = str_repeat('s', count($day_offs));
-                        $params = array_merge([$trainer_id], $day_offs);
-                        $stmt->bind_param("i$types", ...$params);
-                        $stmt->execute();
+                        foreach ($day_offs as $day_off) {
+                            $update_day = "UPDATE trainer_day_offs SET is_day_off = TRUE
+                                          WHERE trainer_id = ? AND day_of_week = ?";
+                            $stmt = $conn->prepare($update_day);
+                            $stmt->bind_param("is", $trainer_id, $day_off);
+                            $stmt->execute();
+                        }
                     }
 
                     // Log activity
@@ -264,17 +268,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group">
                         <label for="photo">Profile Photo</label>
-                        <?php if (!empty($trainer['photo'])): ?>
-                            <div class="photo-preview">
-                                <img src="../../../uploads/trainers/<?= htmlspecialchars($trainer['photo']) ?>"
-                                    alt="Current Photo">
-                                <div class="photo-preview-info">
-                                    <h4>Current Photo</h4>
-                                    <p>Upload a new image to replace</p>
-                                </div>
+                        <div class="photo-preview">
+                            <?php
+                            $currentPhoto = !empty($trainer['photo']) && file_exists('../../../uploads/trainers/' . $trainer['photo'])
+                                ? '../../../uploads/trainers/' . htmlspecialchars($trainer['photo'])
+                                : '../../../images/account-icon.svg';
+                            $isDefaultIcon = $currentPhoto === '../../../images/account-icon.svg';
+                            ?>
+                            <img src="<?= $currentPhoto ?>"
+                                alt="<?= $isDefaultIcon ? 'Default Profile Icon' : 'Current Photo' ?>"
+                                class="<?= $isDefaultIcon ? 'default-icon' : '' ?>"
+                                id="photoPreview">
+                            <div class="photo-preview-info">
+                                <h4 id="photoPreviewTitle"><?= $isDefaultIcon ? 'No Photo Uploaded' : 'Current Photo' ?></h4>
+                                <p id="photoPreviewText"><?= $isDefaultIcon ? 'Upload an image to set profile photo' : 'Upload a new image to replace' ?></p>
                             </div>
-                        <?php endif; ?>
-                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/jpg">
+                        </div>
+                        <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/jpg" onchange="previewPhoto(this)">
                         <span class="form-hint">Accepted formats: JPG, JPEG, PNG</span>
                     </div>
                 </div>
@@ -402,6 +412,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Initialize count
             updateDayOffCount();
         });
+
+        // Photo preview function
+        function previewPhoto(input) {
+            const preview = document.getElementById('photoPreview');
+            const title = document.getElementById('photoPreviewTitle');
+            const text = document.getElementById('photoPreviewText');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('default-icon');
+                    title.textContent = 'New Photo Selected';
+                    text.textContent = input.files[0].name;
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
     </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>

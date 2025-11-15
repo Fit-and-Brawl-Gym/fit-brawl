@@ -111,7 +111,12 @@ $log_result = $stmt->get_result();
             <div class="trainer-profile-section">
                 <div class="profile-card">
                     <div class="profile-header">
-                        <img src="../../../images/account-icon.svg"
+                        <?php
+                        $trainerPhoto = !empty($trainer['photo']) && file_exists('../../../uploads/trainers/' . $trainer['photo'])
+                            ? '../../../uploads/trainers/' . htmlspecialchars($trainer['photo'])
+                            : '../../../images/account-icon.svg';
+                        ?>
+                        <img src="<?= $trainerPhoto ?>"
                             alt="<?= htmlspecialchars($trainer['name']) ?>" class="profile-avatar">
                         <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $trainer['status'])) ?>">
                             <?= htmlspecialchars($trainer['status']) ?>

@@ -52,7 +52,7 @@ if (isset($_SESSION['email'])) {
             $password_changed = (bool) $row['password_changed'];
         }
         $stmt->close();
-        
+
     }
 
     // Calculate next payout (example: 1st of next month)
