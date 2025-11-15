@@ -3,7 +3,10 @@
     border-radius: var(--admin-radius-xl);
     padding: 32px;
     box-shadow: var(--admin-shadow-card);
-    max-width: 900px;
+    max-width: 980px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto 48px;
 }
 
 .trainer-form {
@@ -222,6 +225,7 @@ select option {
 .day-checkbox {
     position: relative;
     cursor: pointer;
+    -webkit-user-select: none;
     user-select: none;
     transition: transform 0.2s ease;
 }
@@ -407,6 +411,12 @@ select option {
     }
 }
 
+@media (max-width: 1200px) {
+    .days-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .form-container {
@@ -435,9 +445,20 @@ select option {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+    .form-container {
+        padding: 18px;
+    }
+
     .days-grid {
         grid-template-columns: repeat(3, 1fr);
+        gap: var(--admin-gap-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .days-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .day-checkbox .day-label {

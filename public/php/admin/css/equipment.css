@@ -399,32 +399,32 @@
     border: 1px solid var(--admin-input-border);
     border-radius: var(--admin-input-radius);
     overflow: hidden;
-    background: var(--admin-bg-light);
+    margin-bottom: var(--admin-section-margin-sm);
 }
 
 .view-btn {
     padding: 10px 16px;
     border: none;
-    background: transparent;
-    color: var(--admin-secondary-color);
+    background: var(--admin-bg-white);
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 16px;
+    font-size: var(--admin-font-size-md);
+    color: var(--admin-text-muted);
+    transition: var(--admin-transition-all);
+    font-weight: var(--admin-font-weight-medium);
+}
+
+.view-btn:not(:last-child) {
+    border-right: 1px solid var(--admin-input-border);
 }
 
 .view-btn:hover {
-    background: var(--admin-bg-white);
-    color: var(--admin-text-dark);
+    background: var(--admin-bg-main);
+    color: var(--admin-bg-dark);
 }
 
 .view-btn.active {
-    background: var(--admin-btn-primary-bg);
-    color: var(--admin-btn-primary-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.view-btn + .view-btn {
-    border-left: 1px solid var(--admin-input-border);
+    background: var(--admin-bg-dark);
+    color: var(--admin-text-white);
 }
 
 /* Table View Styles */
@@ -448,13 +448,27 @@
     background: var(--admin-bg-white);
     border-radius: var(--admin-card-radius);
     box-shadow: var(--admin-shadow-card);
-    overflow: hidden;
+    overflow-x: auto;
+}
+
+.table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Consistent table styling (borrowed from trainers) */
 .data-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 800px;
 }
 
 .data-table thead {

@@ -43,6 +43,21 @@
 /* Table wrapper */
 .table-wrap {
     overflow-x: auto;
+    border-radius: var(--admin-radius-md);
+    margin-top: var(--admin-gap-md);
+}
+
+.table-wrap::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrap::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+}
+
+.table-wrap::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Subscription tables */
@@ -50,6 +65,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: var(--admin-font-size-md);
+    min-width: 800px;
 }
 
 .subs-table thead {
@@ -212,4 +228,78 @@
 #confirmOk {
     background: #002f3f;
     color: #fff;
+}
+
+/* ========================= */
+/* RESPONSIVE STYLES         */
+/* ========================= */
+
+@media (max-width: 768px) {
+    .subscriptions-section {
+        padding: var(--admin-gap-md);
+    }
+
+    .subscriptions-section h2 {
+        font-size: var(--admin-font-size-xl);
+    }
+
+    .controls {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .controls button {
+        width: 100%;
+    }
+
+    .table-wrap {
+        margin-left: calc(-1 * var(--admin-gap-md));
+        margin-right: calc(-1 * var(--admin-gap-md));
+        border-radius: 0;
+    }
+
+    .subs-table {
+        min-width: 700px;
+    }
+
+    .subs-table th,
+    .subs-table td {
+        padding: var(--admin-gap-xs);
+        font-size: var(--admin-font-size-sm);
+    }
+
+    .btn-approve,
+    .btn-reject {
+        padding: 4px 8px;
+        font-size: var(--admin-font-size-xs);
+    }
+}
+
+@media (max-width: 600px) {
+    .subscriptions-section {
+        padding: var(--admin-gap-sm);
+    }
+
+    .table-wrap {
+        margin-left: calc(-1 * var(--admin-gap-sm));
+        margin-right: calc(-1 * var(--admin-gap-sm));
+    }
+
+    .subs-table {
+        min-width: 600px;
+    }
+
+    .modal-card {
+        padding: 16px;
+    }
+
+    #confirmTitle {
+        font-size: var(--admin-font-size-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .subs-table {
+        min-width: 550px;
+    }
 }

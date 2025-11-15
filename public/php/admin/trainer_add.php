@@ -29,7 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bio = trim($_POST['bio']);
     $emergency_contact_name = trim($_POST['emergency_contact_name']);
     $emergency_contact_phone = trim($_POST['emergency_contact_phone']);
-    $status = 'Active'; // Default status is always Active
+    $status = isset($_POST['status']) ? $_POST['status'] : 'Active';
+    $allowed_statuses = ['Active', 'Inactive', 'On Leave'];
+    if (!in_array($status, $allowed_statuses, true)) {
+        $status = 'Active';
+    }
 
     // Get day-offs from form
     $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
@@ -72,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 try {
                     // Generate formatted user ID (TRN-25-XXXX) BEFORE inserting trainer
                     $user_id = generateFormattedUserId($conn, 'trainer');
-                    
+
                     // Generate username from name (e.g., "John Doe" -> "john.doe")
                     $username_base = strtolower(str_replace(' ', '.', trim($name)));
                     $username_base = preg_replace('/[^a-z0-9._]/', '', $username_base); // Remove special chars
@@ -115,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!$stmt->execute()) {
                         throw new Exception('Failed to create user account.');
                     }
-                    
+
                     // Insert trainer with user_id reference
                     $insert_query = "INSERT INTO trainers (user_id, name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, status, password_changed)
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
@@ -281,6 +285,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 placeholder="+63-917-XXX-XXXX"
                                 value="<?= isset($_POST['emergency_contact_phone']) ? htmlspecialchars($_POST['emergency_contact_phone']) : '' ?>">
                         </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Status</h3>
+
+                    <div class="form-group">
+                        <label for="status">Status <span class="required">*</span></label>
+                        <select id="status" name="status" required>
+                            <option value="Active" <?= (!isset($_POST['status']) || $_POST['status'] === 'Active') ? 'selected' : '' ?>>Active</option>
+                            <option value="Inactive" <?= (isset($_POST['status']) && $_POST['status'] === 'Inactive') ? 'selected' : '' ?>>Inactive</option>
+                            <option value="On Leave" <?= (isset($_POST['status']) && $_POST['status'] === 'On Leave') ? 'selected' : '' ?>>On Leave</option>
+                        </select>
                     </div>
                 </div>
 

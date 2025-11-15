@@ -69,6 +69,7 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Fit & Brawl Gym</title>
   <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
   <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">

@@ -9,8 +9,14 @@
     margin-bottom: var(--admin-section-margin);
 }
 
-/* Responsive: stack on smaller screens */
+/* Responsive: reduce columns on smaller screens */
 @media (max-width: 1400px) {
+    .cards {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
     .cards {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -19,12 +25,28 @@
 @media (max-width: 900px) {
     .cards {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--admin-gap-md);
+    }
+}
+
+@media (max-width: 768px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--admin-gap-sm);
     }
 }
 
 @media (max-width: 600px) {
     .cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: var(--admin-gap-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .cards {
+        grid-template-columns: 1fr !important;
+        gap: var(--admin-gap-sm);
     }
 }
 
@@ -40,6 +62,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+    min-width: 140px;
 }
 
 .card:hover {
@@ -48,7 +71,7 @@
 }
 
 .card h2 {
-    font-size: var(--admin-font-size-5xl);
+    font-size: var(--admin-stat-number-size-lg);
     color: var(--admin-color-accent);
     margin-bottom: var(--admin-gap-xs);
 }
@@ -60,9 +83,9 @@
 
 /* Card Icons */
 .card-icon {
-    font-size: 2.5rem;
+    font-size: var(--admin-stat-icon-size-sm);
     color: var(--admin-color-accent);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     opacity: 0.8;
     transition: all 0.3s ease;
 }
@@ -141,11 +164,26 @@
     padding: var(--admin-gap-lg);
     border-radius: var(--admin-radius-lg);
     box-shadow: var(--admin-shadow-md);
+    overflow-x: auto;
+}
+
+.logs::-webkit-scrollbar {
+    height: 8px;
+}
+
+.logs::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+}
+
+.logs::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .logs table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 700px;
 }
 
 .logs th,

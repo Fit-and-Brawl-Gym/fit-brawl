@@ -137,18 +137,18 @@
     --admin-sidebar-padding: 20px;
 
     /* Page Spacing */
-    --admin-page-padding: 30px;
-    --admin-page-padding-mobile: 20px;
+    --admin-page-padding: 24px;
+    --admin-page-padding-mobile: 16px;
 
     /* Component Spacing */
-    --admin-card-padding: 24px;
-    --admin-card-padding-sm: 20px;
-    --admin-section-margin: 30px;
-    --admin-section-margin-sm: 24px;
-    --admin-gap-lg: 20px;
-    --admin-gap-md: 16px;
-    --admin-gap-sm: 12px;
-    --admin-gap-xs: 8px;
+    --admin-card-padding: 20px;
+    --admin-card-padding-sm: 16px;
+    --admin-section-margin: 24px;
+    --admin-section-margin-sm: 18px;
+    --admin-gap-lg: 16px;
+    --admin-gap-md: 12px;
+    --admin-gap-sm: 10px;
+    --admin-gap-xs: 6px;
 
     /* ===========================
      ADMIN BORDER RADIUS
@@ -187,11 +187,11 @@
     --admin-font-size-base: 13px;
     --admin-font-size-md: 14px;
     --admin-font-size-lg: 15px;
-    --admin-font-size-xl: 18px;
-    --admin-font-size-2xl: 20px;
-    --admin-font-size-3xl: 28px;
-    --admin-font-size-4xl: 32px;
-    --admin-font-size-5xl: 36px;
+    --admin-font-size-xl: 17px;
+    --admin-font-size-2xl: 19px;
+    --admin-font-size-3xl: 24px;
+    --admin-font-size-4xl: 28px;
+    --admin-font-size-5xl: 32px;
 
     /* Font Weights */
     --admin-font-weight-normal: 400;
@@ -253,12 +253,12 @@
      ADMIN STAT CARD
      =========================== */
 
-    --admin-stat-icon-size: 56px;
-    --admin-stat-icon-size-sm: 32px;
-    --admin-stat-icon-font-size: 24px;
-    --admin-stat-icon-font-size-sm: 16px;
-    --admin-stat-number-size: 28px;
-    --admin-stat-number-size-lg: 36px;
+    --admin-stat-icon-size: 48px;
+    --admin-stat-icon-size-sm: 28px;
+    --admin-stat-icon-font-size: 20px;
+    --admin-stat-icon-font-size-sm: 15px;
+    --admin-stat-number-size: 24px;
+    --admin-stat-number-size-lg: 30px;
 
     /* ===========================
      ADMIN SCROLLBAR

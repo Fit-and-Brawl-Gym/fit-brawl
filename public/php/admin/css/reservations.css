@@ -229,14 +229,28 @@
 .table-container {
     background: #fff;
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     margin-bottom: 24px;
+}
+
+.table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .reservations-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 900px;
 }
 
 .reservations-table thead {
@@ -709,6 +723,30 @@
 @media (max-width: 768px) {
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        align-items: flex-start;
+        padding: var(--admin-gap-md);
+    }
+
+    .stat-icon {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .stat-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stat-info h3 {
+        font-size: var(--admin-font-size-2xl);
+        line-height: 1.2;
+    }
+
+    .stat-info p {
+        font-size: var(--admin-font-size-sm);
     }
 
     .toolbar {

@@ -30,20 +30,19 @@ body {
     top: 20px;
     left: 20px;
     z-index: 10001 !important;
-    /* Above everything including modals */
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     background: var(--admin-gradient-primary);
     border: none;
-    border-radius: var(--admin-radius-lg);
+    border-radius: calc(var(--admin-radius-lg) + 4px);
     cursor: pointer;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 6px;
-    padding: 10px;
-    box-shadow: var(--admin-shadow-card);
+    gap: 7px;
+    padding: 12px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
     transition: var(--admin-transition-all);
     pointer-events: auto;
     opacity: 1;
@@ -69,10 +68,10 @@ body {
 
 .hamburger-btn span {
     display: block;
-    width: 25px;
-    height: 3px;
+    width: 30px;
+    height: 4px;
     background: var(--admin-text-white);
-    border-radius: 2px;
+    border-radius: 999px;
     transition: var(--admin-transition-all);
 }
 
@@ -101,7 +100,8 @@ body {
     position: fixed;
     top: 0;
     left: -100%;
-    width: var(--admin-sidebar-width);
+    width: min(var(--admin-sidebar-width), 90vw);
+    max-width: 360px;
     height: 100vh;
     background: var(--admin-bg-sidebar);
     z-index: var(--admin-z-sidebar);
@@ -205,6 +205,8 @@ body {
     text-decoration: none;
     transition: var(--admin-transition-all);
     border-left: 3px solid transparent;
+    line-height: 1.3;
+    white-space: normal;
 }
 
 .sidebar nav a:hover {
@@ -516,6 +518,48 @@ header p {
     font-size: var(--admin-font-size-md);
 }
 
+/* Table responsiveness */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: var(--admin-radius-xl);
+    background: var(--admin-bg-white);
+    box-shadow: var(--admin-shadow-card);
+}
+
+.table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 14px 16px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mobile-table-hint {
+    display: none;
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-text-muted);
+    margin-bottom: var(--admin-gap-sm);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .form-row {
@@ -524,17 +568,60 @@ header p {
 
     .toolbar {
         flex-wrap: wrap;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .toolbar > * {
+        width: 100%;
     }
 
     .search-box {
         min-width: 100%;
     }
 
+    .page-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--admin-gap-sm);
+    }
+
+    .page-header > div {
+        width: 100%;
+    }
+
+    .page-header .btn-primary,
+    .page-header .btn-secondary {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .cards-grid,
+    .stats-grid {
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .table-container {
+        margin-bottom: var(--admin-gap-lg);
+    }
+
+    .mobile-table-hint {
+        display: block;
+    }
+
     .hamburger-btn {
-        width: 45px;
-        height: 45px;
-        top: 15px;
-        left: 15px;
+        width: 54px;
+        height: 54px;
+        top: 16px;
+        left: 16px;
     }
 
     .admin-main {
@@ -544,17 +631,37 @@ header p {
     }
 }
 
+@media (max-width: 600px) {
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .data-table {
+        min-width: 520px;
+    }
+
+    .toolbar {
+        gap: var(--admin-gap-sm);
+    }
+}
+
 @media (max-width: 480px) {
     .hamburger-btn {
-        width: 40px;
-        height: 40px;
-        top: 10px;
-        left: 10px;
+        width: 48px;
+        height: 48px;
+        top: 12px;
+        left: 12px;
     }
 
     .hamburger-btn span {
-        width: 20px;
-        height: 2px;
+        width: 24px;
+        height: 3px;
     }
 
     .admin-main {
