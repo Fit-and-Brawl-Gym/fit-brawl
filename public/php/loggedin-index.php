@@ -305,10 +305,10 @@ $sessionHours = [
 
         <!-- Dashboard Grid -->
         <div class="dashboard-grid">
-            <!-- Upcoming Sessions Card -->
+            <!-- Booked Sessions Card -->
             <div class="dashboard-card upcoming-card">
                 <div class="card-header">
-                    <h3><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h3>
+                    <h3><i class="fas fa-calendar-alt"></i> Booked Sessions</h3>
                     <?php if (!empty($upcomingBookings)): ?>
                         <a href="reservations.php" class="view-all">View All</a>
                     <?php endif; ?>
@@ -335,7 +335,7 @@ $sessionHours = [
                     <?php else: ?>
                         <div class="empty-state">
                             <i class="fas fa-calendar-times"></i>
-                            <p>No upcoming sessions</p>
+                            <p>No booked sessions</p>
                             <a href="<?= htmlspecialchars($membershipLink) ?>" class="empty-cta">Book your first session</a>
                         </div>
                     <?php endif; ?>

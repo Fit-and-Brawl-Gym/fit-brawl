@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!upcomingList || upcomingList.length === 0) {
             if (upcomingClassEl) upcomingClassEl.textContent = '-';
-            if (upcomingDateEl) upcomingDateEl.textContent = 'No upcoming sessions';
+            if (upcomingDateEl) upcomingDateEl.textContent = 'No booked sessions';
             if (upcomingTrainerEl) upcomingTrainerEl.textContent = '-';
             if (trainerSubtextEl) trainerSubtextEl.textContent = '-';
             return;

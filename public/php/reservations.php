@@ -191,9 +191,9 @@ require_once __DIR__ . '/../../includes/header.php';
                         <i class="fas fa-bell"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-label">Upcoming Class:</div>
+                        <div class="stat-label">Next Booked Class:</div>
                         <div class="stat-value" id="upcomingClass">-</div>
-                        <div class="stat-subtext" id="upcomingDate">No upcoming sessions</div>
+                        <div class="stat-subtext" id="upcomingDate">No booked sessions</div>
                     </div>
                 </div>
 
@@ -527,7 +527,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         </div>
                         <div class="bookings-tabs">
                             <button class="tab-btn active" data-tab="upcoming">
-                                Upcoming
+                                Booked
                                 <span class="tab-count" id="upcomingCount">0</span>
                             </button>
                             <button class="tab-btn" data-tab="past">
