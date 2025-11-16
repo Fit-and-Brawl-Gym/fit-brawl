@@ -211,9 +211,26 @@ require_once '../../../includes/trainer_header.php';
                             <span class="booking-value"><?= date('M j, Y', strtotime($b['booking_date'])) ?></span>
                         </div>
                         <div class="booking-row">
-                            <span class="booking-label"><i class="fas fa-clock"></i> Session:</span>
+                            <span class="booking-label"><i class="fas fa-clock"></i> Time:</span>
                             <span class="booking-value">
-                                <?= htmlspecialchars($b['session_time'] . ' (' . ($sessionRanges[$b['session_time']] ?? 'N/A') . ')') ?>
+                                <?php
+                                // Check if time-based booking (start_time and end_time)
+                                if (!empty($b['start_time']) && !empty($b['end_time'])) {
+                                    $start = new DateTime($b['start_time']);
+                                    $end = new DateTime($b['end_time']);
+                                    $interval = $start->diff($end);
+                                    $duration_hours = $interval->h;
+                                    $duration_minutes = $interval->i;
+                                    
+                                    echo htmlspecialchars($start->format('g:i A') . ' - ' . $end->format('g:i A'));
+                                    echo ' <span class="duration-badge">(' . 
+                                         ($duration_hours > 0 ? $duration_hours . 'h ' : '') . 
+                                         ($duration_minutes > 0 ? $duration_minutes . 'm' : '') . ')</span>';
+                                } else {
+                                    // Legacy session-based booking
+                                    echo htmlspecialchars($b['session_time'] . ' (' . ($sessionRanges[$b['session_time']] ?? 'N/A') . ')');
+                                }
+                                ?>
                             </span>
                         </div>
                         <div class="booking-row">
@@ -242,9 +259,25 @@ require_once '../../../includes/trainer_header.php';
                             <span class="booking-value"><?= date('M j, Y', strtotime($b['booking_date'])) ?></span>
                         </div>
                         <div class="booking-row">
-                            <span class="booking-label"><i class="fas fa-clock"></i> Session:</span>
+                            <span class="booking-label"><i class="fas fa-clock"></i> Time:</span>
                             <span class="booking-value">
-                                <?= htmlspecialchars($b['session_time'] . ' (' . ($sessionRanges[$b['session_time']] ?? 'N/A') . ')') ?>
+                                <?php
+                                // Check if time-based booking
+                                if (!empty($b['start_time']) && !empty($b['end_time'])) {
+                                    $start = new DateTime($b['start_time']);
+                                    $end = new DateTime($b['end_time']);
+                                    $interval = $start->diff($end);
+                                    $duration_hours = $interval->h;
+                                    $duration_minutes = $interval->i;
+                                    
+                                    echo htmlspecialchars($start->format('g:i A') . ' - ' . $end->format('g:i A'));
+                                    echo ' <span class="duration-badge">(' . 
+                                         ($duration_hours > 0 ? $duration_hours . 'h ' : '') . 
+                                         ($duration_minutes > 0 ? $duration_minutes . 'm' : '') . ')</span>';
+                                } else {
+                                    echo htmlspecialchars($b['session_time'] . ' (' . ($sessionRanges[$b['session_time']] ?? 'N/A') . ')');
+                                }
+                                ?>
                             </span>
                         </div>
                         <div class="booking-row">
@@ -273,9 +306,25 @@ require_once '../../../includes/trainer_header.php';
                             <span class="booking-value"><?= date('M j, Y', strtotime($b['booking_date'])) ?></span>
                         </div>
                         <div class="booking-row">
-                            <span class="booking-label"><i class="fas fa-clock"></i> Session:</span>
+                            <span class="booking-label"><i class="fas fa-clock"></i> Time:</span>
                             <span class="booking-value">
-                                <?= htmlspecialchars($b['session_time'] . ' (' . ($sessionRanges[$b['session_time']] ?? 'N/A') . ')') ?>
+                                <?php
+                                // Check if time-based booking
+                                if (!empty($b['start_time']) && !empty($b['end_time'])) {
+                                    $start = new DateTime($b['start_time']);
+                                    $end = new DateTime($b['end_time']);
+                                    $interval = $start->diff($end);
+                                    $duration_hours = $interval->h;
+                                    $duration_minutes = $interval->i;
+                                    
+                                    echo htmlspecialchars($start->format('g:i A') . ' - ' . $end->format('g:i A'));
+                                    echo ' <span class="duration-badge">(' . 
+                                         ($duration_hours > 0 ? $duration_hours . 'h ' : '') . 
+                                         ($duration_minutes > 0 ? $duration_minutes . 'm' : '') . ')</span>';
+                                } else {
+                                    echo htmlspecialchars($b['session_time'] . ' (' . ($sessionRanges[$b['session_time']] ?? 'N/A') . ')');
+                                }
+                                ?>
                             </span>
                         </div> 
                         <div class="booking-row">

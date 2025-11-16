@@ -311,10 +311,38 @@ function showDayBookings(date, day, monthName, year) {
             </div>
         `;
     } else {
-        list.innerHTML = dayBookings.map(booking => `
+        list.innerHTML = dayBookings.map(booking => {
+            // Format time display - prioritize start_time/end_time
+            let timeDisplay = '';
+            
+            if (booking.start_time && booking.end_time) {
+                // Time-based booking
+                const startTime = new Date(booking.start_time);
+                const endTime = new Date(booking.end_time);
+                
+                const startFormatted = startTime.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    hour12: true 
+                });
+                const endFormatted = endTime.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    hour12: true 
+                });
+                
+                timeDisplay = `${startFormatted} - ${endFormatted}`;
+            } else if (booking.session_time) {
+                // Legacy session-based booking
+                timeDisplay = booking.session_time;
+            } else {
+                timeDisplay = 'Time Not Set';
+            }
+            
+            return `
             <div class="day-booking-item">
                 <div class="day-booking-time">
-                    ${booking.session_time || 'Session Not Set'}
+                    ${timeDisplay}
                 </div>
                 <div class="day-booking-info">
                     <div class="day-booking-client">${escapeHtml(booking.username)}</div>
@@ -327,7 +355,8 @@ function showDayBookings(date, day, monthName, year) {
                     ${capitalize(booking.status)}
                 </span>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     // Show modal

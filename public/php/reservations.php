@@ -67,8 +67,16 @@ if ($user_id) {
 
 $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
-$additionalCSS = ['../css/pages/reservations.css?v=2.0.' . time()];
-$additionalJS = ['../js/reservations.js?v=' . time() . mt_rand()];
+$additionalCSS = [
+    '../css/pages/reservations.css?v=2.0.' . time(),
+    '../css/components/time-selection-v2.css?v=' . time(),
+    'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'
+];
+$additionalJS = [
+    'https://cdn.jsdelivr.net/npm/flatpickr',
+    '../js/time-selection-modern-v2.js?v=' . time(),
+    '../js/reservations.js?v=' . time() . mt_rand()
+];
 
 require_once __DIR__ . '/../../includes/header.php';
 ?>
@@ -174,13 +182,13 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="stats-section" id="statsSection">
                 <div class="stat-card">
                     <div class="stat-icon">
-                        <i class="fas fa-calendar-week"></i>
+                        <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-label">Weekly Bookings</div>
+                        <div class="stat-label">Weekly Hours Used</div>
                         <div class="stat-value">
-                            <span id="weeklyBookingsCount">-</span>
-                            <span class="counter-max">/12</span>
+                            <span id="weeklyHoursUsed">-</span>
+                            <span class="counter-max" id="weeklyHoursMax">/48h</span>
                         </div>
                         <div class="stat-subtext" id="weeklyProgressText">Loading...</div>
                     </div>
@@ -287,76 +295,10 @@ require_once __DIR__ . '/../../includes/header.php';
                         </div>
                     </div>
 
-                    <!-- Step 2: Select Session Time -->
+                    <!-- Step 2: Select Class Type -->
                     <div class="wizard-step" id="step2" data-step="2">
                         <div class="step-header">
                             <div class="step-number">2</div>
-                            <div class="step-info">
-                                <div class="step-text">
-                                    <h2 class="step-title">Select Session Time</h2>
-                                    <p class="step-subtitle">Choose your preferred time block</p>
-                                </div>
-                                <div class="wizard-navigation">
-                                    <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
-                                        <i class="fas fa-arrow-left"></i>
-                                        Back
-                                    </button>
-                                    <button class="btn-wizard btn-next" id="btnNext" disabled>
-                                        Next
-                                        <i class="fas fa-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="step-content">
-                            <div class="session-blocks">
-                                <div class="session-block" data-session="Morning">
-                                    <div class="session-icon">
-                                        <i class="fas fa-sun"></i>
-                                    </div>
-                                    <div class="session-info">
-                                        <h3 class="session-name">Morning</h3>
-                                        <p class="session-time">7:00 AM - 11:00 AM</p>
-                                        <p class="session-note">Arrive anytime during this window</p>
-                                    </div>
-                                    <div class="session-action">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </div>
-                                </div>
-                                <div class="session-block" data-session="Afternoon">
-                                    <div class="session-icon">
-                                        <i class="fas fa-cloud-sun"></i>
-                                    </div>
-                                    <div class="session-info">
-                                        <h3 class="session-name">Afternoon</h3>
-                                        <p class="session-time">1:00 PM - 5:00 PM</p>
-                                        <p class="session-note">Arrive anytime during this window</p>
-                                    </div>
-                                    <div class="session-action">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </div>
-                                </div>
-                                <div class="session-block" data-session="Evening">
-                                    <div class="session-icon">
-                                        <i class="fas fa-moon"></i>
-                                    </div>
-                                    <div class="session-info">
-                                        <h3 class="session-name">Evening</h3>
-                                        <p class="session-time">6:00 PM - 10:00 PM</p>
-                                        <p class="session-note">Arrive anytime during this window</p>
-                                    </div>
-                                    <div class="session-action">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Select Class Type -->
-                    <div class="wizard-step" id="step3" data-step="3">
-                        <div class="step-header">
-                            <div class="step-number">3</div>
                             <div class="step-info">
                                 <div class="step-text">
                                     <h2 class="step-title">Select Class Type</h2>
@@ -412,10 +354,10 @@ require_once __DIR__ . '/../../includes/header.php';
                         </div>
                     </div>
 
-                    <!-- Step 4: Select Trainer -->
-                    <div class="wizard-step" id="step4" data-step="4">
+                    <!-- Step 3: Select Trainer -->
+                    <div class="wizard-step" id="step3" data-step="3">
                         <div class="step-header">
-                            <div class="step-number">4</div>
+                            <div class="step-number">3</div>
                             <div class="step-info">
                                 <div class="step-text">
                                     <h2 class="step-title">Select Trainer</h2>
@@ -434,12 +376,133 @@ require_once __DIR__ . '/../../includes/header.php';
                             </div>
                         </div>
                         <div class="step-content">
-                            <div class="facility-capacity-info" id="facilityCapacityInfo">
-                                <i class="fas fa-info-circle"></i>
-                                <span>Checking trainer availability...</span>
-                            </div>
                             <div class="trainers-grid" id="trainersGrid">
                                 <!-- Trainers populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Select Time -->
+                    <div class="wizard-step" id="step4" data-step="4">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <div class="step-info">
+                                <div class="step-text">
+                                    <h2 class="step-title">Select Time</h2>
+                                    <p class="step-subtitle">Pick your preferred start time and duration</p>
+                                </div>
+                                <div class="wizard-navigation">
+                                    <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
+                                        <i class="fas fa-arrow-left"></i>
+                                        Back
+                                    </button>
+                                    <button class="btn-wizard btn-next" id="btnNext" disabled>
+                                        Next
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-content">
+                            <!-- Trainer Availability Banner -->
+                            <div class="availability-banner" id="availabilityBanner">
+                                <div class="banner-loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>Loading trainer availability...</span>
+                                </div>
+                            </div>
+
+                            <!-- Time Selection Layout (Two Columns) -->
+                            <div class="time-selection-layout" id="timeSelectionLayout" style="display: none;">
+                                <!-- Left Column: Time Slot Selectors -->
+                                <div class="time-pickers-column">
+                                    <h3 class="section-title">
+                                        <i class="fas fa-clock"></i>
+                                        Select Your Training Time
+                                    </h3>
+
+                                    <!-- Start Time Selection -->
+                                    <div class="time-slot-selector">
+                                        <label class="time-picker-label">
+                                            <i class="fas fa-play-circle"></i>
+                                            Start Time
+                                        </label>
+                                        <select class="time-select-dropdown" id="startTimeSelect">
+                                            <option value="">Select start time</option>
+                                            <!-- Populated by JavaScript -->
+                                        </select>
+                                        <small class="time-picker-hint">Select when you want to begin</small>
+                                    </div>
+
+                                    <!-- End Time Selection -->
+                                    <div class="time-slot-selector" id="endTimeSelector">
+                                        <label class="time-picker-label">
+                                            <i class="fas fa-stop-circle"></i>
+                                            End Time
+                                        </label>
+                                        <select class="time-select-dropdown" id="endTimeSelect" disabled>
+                                            <option value="">Select start time first</option>
+                                            <!-- Populated by JavaScript -->
+                                        </select>
+                                        <small class="time-picker-hint">Select when you want to finish</small>
+                                    </div>
+
+                                    <!-- Duration Display -->
+                                    <div class="duration-display" id="durationDisplay" style="display: none;">
+                                        <div class="duration-icon">
+                                            <i class="fas fa-hourglass-half"></i>
+                                        </div>
+                                        <div class="duration-info">
+                                            <span class="duration-label">Total Duration</span>
+                                            <span class="duration-value" id="durationValue">0 minutes</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Weekly Usage Info -->
+                                    <div class="weekly-usage-info" id="weeklyUsageInfo" style="display: none;">
+                                        <i class="fas fa-chart-line"></i>
+                                        <span id="weeklyUsageText"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column: Availability Sidebar -->
+                                <div class="availability-sidebar">
+                                    <h3 class="sidebar-title">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        Trainer Availability
+                                    </h3>
+                                    <div class="availability-timeline" id="availabilityTimeline">
+                                        <!-- Populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selected Time Summary -->
+                            <div class="time-summary" id="timeSummary" style="display: none;">
+                                <div class="summary-card">
+                                    <div class="summary-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="summary-details">
+                                        <div class="summary-label">Selected Time</div>
+                                        <div class="summary-time" id="step4SummaryTime">-</div>
+                                        <div class="summary-duration" id="step4SummaryDuration">-</div>
+                                    </div>
+                                    <button class="btn-change" id="btnChangeTime">
+                                        <i class="fas fa-edit"></i>
+                                        Change
+                                    </button>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="info-row">
+                                        <i class="fas fa-calendar-week"></i>
+                                        <span>Weekly usage: <strong id="weeklyUsageDisplay">-</strong> / 48 hours</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>10-minute buffer added automatically</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -476,9 +539,15 @@ require_once __DIR__ . '/../../includes/header.php';
                                     </div>
                                     <div class="summary-row">
                                         <span class="summary-label">
-                                            <i class="fas fa-clock"></i> Session
+                                            <i class="fas fa-clock"></i> Time
                                         </span>
-                                        <span class="summary-value" id="summarySession">-</span>
+                                        <span class="summary-value" id="summaryTime">-</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span class="summary-label">
+                                            <i class="fas fa-hourglass-half"></i> Duration
+                                        </span>
+                                        <span class="summary-value" id="summaryDuration">-</span>
                                     </div>
                                     <div class="summary-row">
                                         <span class="summary-label">
