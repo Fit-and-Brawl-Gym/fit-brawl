@@ -680,12 +680,6 @@ require_once __DIR__ . '/../../includes/header.php';
     window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
 </script>
 
-<!-- DSA Utilities -->
-<script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
-
 <script src="<?= PUBLIC_PATH ?>/js/membership.js?=v1"></script>
-
-<!-- DSA Integration -->
-<script src="<?= PUBLIC_PATH ?>/js/dsa/membership-dsa-integration.js?v=<?= time() ?>"></script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
