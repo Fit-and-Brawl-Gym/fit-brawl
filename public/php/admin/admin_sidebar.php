@@ -3,22 +3,13 @@
 // Just get the current page for active menu highlighting
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
-<!-- Hamburger Menu Button -->
-<button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle Menu">
-    <span></span>
-    <span></span>
-    <span></span>
-</button>
-
-<!-- Sidebar Overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar" id="adminSidebar">
     <div class="sidebar-header">
         <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FitXBrawl" class="logo-title"
             style="width: 220px !important; height: auto !important; max-width: 220px !important;">
         <button class="sidebar-close" id="sidebarClose" aria-label="Close Menu">
-            <i class="fas fa-times"></i>
+            <i class="fa-solid fa-chevron-left"></i>
         </button>
     </div>
     <nav>
@@ -78,7 +69,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span>Announcements</span>
         </a> -->
         <a href="<?= PUBLIC_PATH ?>/php/admin/contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-address-book"></i>
+            <i class="fa-solid fa-envelope"></i>
             <span>Contacts</span>
         </a>
 

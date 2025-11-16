@@ -83,48 +83,53 @@ if (class_exists('SessionManager')) {
 <body>
     <!--Header-->
     <header>
-        <div class="wrapper">
-            <button class="hamburger-menu" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-            </button>
             <div class="title">
                 <a href="index.php">
-                    <img src="../../../images/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
+                    <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
                 <a href="index.php">
-                    <img src="../../../images/header-title.svg" alt="FITXBRAWL" class="logo-title">
+                    <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
-            <nav class="nav-bar trainer-nav">
-                <ul>
-
-                    <li>
-                        <a href="schedule.php" <?= $currentPage === 'schedule' ? 'class="active"' : '' ?> title="Schedule">
-                            <i class="fas fa-calendar-alt"></i>
+                
+            <button class="hamburger-menu" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <nav class="nav-bar">
+                <ul class="nav-links">
+                    <li class="member-nav">
+                        <a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
+                            <i class="fas fa-home"></i>
+                            Home
                         </a>
                     </li>
-                    <li>
+                    <li class="member-nav">
+                        <a href="schedule.php" <?= $currentPage === 'schedule' ? 'class="active"' : '' ?> title="Schedule">
+                            <i class="fas fa-calendar-alt"></i>
+                            Schedule
+                        </a>
+                    </li>
+                    <li class="member-nav">
                         <a href="feedback.php" <?= $currentPage === 'feedback' ? 'class="active"' : '' ?> title="Feedback">
                             <i class="fas fa-comments"></i>
+                            Feedbacks
                         </a>
                     </li>
                 </ul>
-            </nav>
-            <?php if (isset($_SESSION['email'])): ?>
-                <!-- Logged-in dropdown -->
-                <div class="account-dropdown">
-                    <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
-                    <div class="dropdown-menu">
-                        <a href="profile.php">Profile</a>
-                        <a href="../logout.php">Logout</a>
+                <?php if (isset($_SESSION['email'])): ?>
+                    <!-- Logged-in dropdown -->
+                    <div class="account-dropdown">
+                        <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
+                        <div class="dropdown-menu">
+                            <a href="profile.php">Profile</a>
+                            <a href="../logout.php">Logout</a>
+                        </div>
                     </div>
-                </div>
-            <?php else: ?>
-                <!-- Not logged-in -->
-                <a href="../login.php" class="account-link">
-                    <img src="../../../images/account-icon-white.svg" alt="Account" class="account-icon default-icon">
-                </a>
-            <?php endif; ?>
-        </div>
+                <?php else: ?>
+                    <!-- Not logged-in -->
+                    <a href="../login.php" class="account-link">
+                        <img src="../../../images/account-icon-white.svg" alt="Account" class="account-icon default-icon">
+                    </a>
+                <?php endif; ?>
+            </nav>
     </header>

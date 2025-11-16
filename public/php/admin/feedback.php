@@ -21,9 +21,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 </head>
 
 <body>
+<main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <main class="admin-main">
+
+    <div class="admin-main">
         <!-- Header Section -->
         <header class="page-header">
             <div>
@@ -82,7 +84,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 <p>Member feedback will appear here</p>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/feedback.js"></script>

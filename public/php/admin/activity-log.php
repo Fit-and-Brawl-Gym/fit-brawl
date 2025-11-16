@@ -62,9 +62,10 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
 </head>
 
 <body>
+<main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <main class="admin-main">
+    <div class="admin-main">
         <header class="page-header">
             <div>
                 <h1>Activity Log</h1>
@@ -158,7 +159,8 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
                 </tbody>
             </table>
         </section>
-    </main>
+    </div>
+</main>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 

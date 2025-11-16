@@ -423,7 +423,6 @@ body::before {
 
 .confirm-yes:hover {
     background: var(--color-accent-hover);
-    transform: scale(1.05);
 }
 
 .confirm-no {
@@ -2554,8 +2553,8 @@ body::before {
 }
 
 .session-icon {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     background: linear-gradient(135deg, var(--color-accent) 0%, rgba(213, 186, 43, 0.8) 100%);
     border-radius: 50%;
     display: flex;
@@ -2575,18 +2574,20 @@ body::before {
     font-weight: var(--font-weight-bold);
     color: var(--color-text-light);
     margin-bottom: 2px;
+    margin: 0;
 }
 
 .session-time {
     font-size: var(--font-size-base);
     color: var(--color-accent);
     font-weight: var(--font-weight-semibold);
-    margin-bottom: 2px;
+    margin: 0;
 }
 
 .session-note {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+    margin: 0;
 }
 
 .session-action {

@@ -20,10 +20,11 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
 </head>
 
 <body>
+<main>
 
   <?php include 'admin_sidebar.php'; ?>
 
-  <main class="admin-main">
+  <div class="admin-main">
     <header>
       <h1>Manage Subscriptions</h1>
       <p>Approve or reject membership payments.</p>
@@ -83,7 +84,8 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
       </div>
     </section>
 
-  </main>
+    </div>
+</main>
 
   <!-- Confirmation Modal -->
   <div id="confirmModal" class="modal-overlay" style="display:none;">

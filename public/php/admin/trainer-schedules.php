@@ -185,9 +185,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
 </head>
 
 <body>
+
+<main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <main class="admin-main">
+    <div class="admin-main">
         <!-- Header Section -->
         <header class="page-header">
             <div>
@@ -347,8 +349,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 </tbody>
             </table>
         </div>
-    </main>
-
+    </div>
+</main>
     <!-- Add Block Modal -->
     <div class="modal-overlay" id="addBlockModal">
         <div class="modal-content">

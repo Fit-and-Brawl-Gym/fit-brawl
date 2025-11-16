@@ -185,11 +185,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <!-- Sidebar -->
+<main>
+<!-- Sidebar -->
     <?php include 'admin_sidebar.php'; ?>
 
     <!-- Main Content -->
-    <main class="admin-main">
+    <div class="admin-main">
         <div class="page-header">
             <div>
                 <h1>Add New Trainer</h1>
@@ -319,7 +320,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </form>
         </div>
-    </main>
+    </div>
+</main>
 
     <script>
         // Day-off selection handling

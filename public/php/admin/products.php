@@ -76,9 +76,11 @@ unset($p);
 </head>
 
 <body>
+<main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <main class="admin-main">
+
+    <div class="admin-main">
         <!-- Header Section -->
         <header class="page-header">
             <div>
@@ -187,8 +189,8 @@ unset($p);
                 </table>
             <?php endif; ?>
         </div>
-    </main>
-
+    </div>
+</main>
     <!-- Side Panel -->
     <div id="sidePanel" class="side-panel">
         <div class="side-panel-overlay" onclick="closeSidePanel()"></div>

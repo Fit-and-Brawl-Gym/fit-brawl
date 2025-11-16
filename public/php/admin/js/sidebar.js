@@ -1,11 +1,10 @@
 // Admin Sidebar Hamburger Menu
+
 document.addEventListener('DOMContentLoaded', function () {
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const sidebar = document.getElementById('adminSidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const sidebarClose = document.getElementById('sidebarClose');
-
-    console.log('Sidebar initialized successfully');
 
     // Toggle sidebar
     function toggleSidebar() {

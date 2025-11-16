@@ -27,6 +27,7 @@
 
   /* Background Colors */
   --color-bg-dark: #010d17;
+  --color-bg-darker: #01080e;
   --color-bg-overlay: rgba(10, 31, 36, 0.8);
   --color-card-bg: rgba(26, 74, 82, 0.9);
   --color-modal-bg: rgba(0, 0, 0, 0.7);

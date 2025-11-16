@@ -20,7 +20,7 @@ if (SessionManager::isLoggedIn()) {
         header("Location: admin/admin.php");
         exit;
     } elseif ($role === 'trainer') {
-        header("Location: trainer/schedule.php");
+        header("Location: trainer/index.php");
         exit;
     } else {
         header("Location: loggedin-index.php");
@@ -85,7 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     if ($user['role'] === 'admin') {
                         header("Location: admin/admin.php");
                     } elseif ($user['role'] === 'trainer') {
-                        header("Location: trainer/schedule.php");
+                        header("Location: trainer/index.php");
                     } else {
                         header("Location: loggedin-index.php");
                     }
@@ -134,7 +134,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
         <div class="login-modal">
             <div class="modal-header">
-                <h2>Sign in to your account</h2>
+                <h2>Log in to your account</h2>
             </div>
 
             <form method="post" class="login-form" id="loginForm">
@@ -143,13 +143,9 @@ require_once __DIR__ . '/../../includes/header.php';
                 <?php endif; ?>
 
                 <div class="input-container">
-                    <i class="fas fa-envelope"></i>
                     <input type="text" name="email" placeholder="Username or Email"
                         value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
 
-                    <div class="icon-left">
-                        <i class="fas fa-key"></i>
-                    </div>
                     <input type="password" name="password" id="password" placeholder="Password" required>
 
                 </div>

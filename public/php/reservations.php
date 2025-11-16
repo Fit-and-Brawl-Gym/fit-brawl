@@ -1,28 +1,32 @@
 <?php
-require_once __DIR__ . '/../../includes/db_connect.php';
-require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . "/../../includes/db_connect.php";
+require_once __DIR__ . "/../../includes/session_manager.php";
 
 // Initialize session manager
 SessionManager::initialize();
 
 // Check if user is logged in
 if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
+    header("Location: login.php");
+    exit();
 }
 
 $isLoggedIn = true;
-$userName = $_SESSION['username'] ?? '';
-$user_id = $_SESSION['user_id'];
+$userName = $_SESSION["username"] ?? "";
+$user_id = $_SESSION["user_id"];
 
 // Check membership status
-require_once '../../includes/membership_check.php';
+require_once "../../includes/membership_check.php";
 
 // Determine avatar source
-$avatarSrc = '../../images/account-icon.svg';
-if (isset($_SESSION['avatar'])) {
-    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
+$avatarSrc = "../../images/account-icon.svg";
+if (isset($_SESSION["avatar"])) {
+    $hasCustomAvatar =
+        $_SESSION["avatar"] !== "default-avatar.png" &&
+        !empty($_SESSION["avatar"]);
+    $avatarSrc = $hasCustomAvatar
+        ? "../../uploads/avatars/" . htmlspecialchars($_SESSION["avatar"])
+        : "../../images/account-icon.svg";
 }
 
 // Fetch user's active membership
@@ -46,9 +50,11 @@ if ($user_id) {
     if ($row = $result->fetch_assoc()) {
         $activeMembership = $row;
         // Parse class types from membership
-        if (!empty($row['class_type'])) {
-            $classTypes = preg_split('/\s*(?:,|and)\s*/i', $row['class_type']);
-            $membershipClassTypes = array_filter(array_map('trim', $classTypes));
+        if (!empty($row["class_type"])) {
+            $classTypes = preg_split("/\s*(?:,|and)\s*/i", $row["class_type"]);
+            $membershipClassTypes = array_filter(
+                array_map("trim", $classTypes),
+            );
         }
     }
     $stmt->close();
@@ -56,10 +62,10 @@ if ($user_id) {
 
 $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
-$additionalCSS = ['../css/pages/reservations.css?v=2.0.' . time()];
-$additionalJS = ['../js/reservations.js?v=' . time() . mt_rand()];
+$additionalCSS = ["../css/pages/reservations.css?v=2.0." . time()];
+$additionalJS = ["../js/reservations.js?v=" . time() . mt_rand()];
 
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . "/../../includes/header.php";
 ?>
 
 <!--Main Content-->
@@ -70,7 +76,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php if ($activeMembership): ?>
         <?php
         // Check if membership is expiring soon (within 7 days including grace period)
-        $endDate = new DateTime($activeMembership['end_date']);
+        $endDate = new DateTime($activeMembership["end_date"]);
         $today = new DateTime();
         $today->setTime(0, 0, 0); // Reset to midnight for accurate day counting
         $endDate->setTime(0, 0, 0);
@@ -91,7 +97,8 @@ require_once __DIR__ . '/../../includes/header.php';
             $daysUntilGraceEnd = -$daysUntilGraceEnd;
         }
 
-        $showExpirationWarning = $daysUntilGraceEnd <= 7 && $daysUntilGraceEnd > 0;
+        $showExpirationWarning =
+            $daysUntilGraceEnd <= 7 && $daysUntilGraceEnd > 0;
         ?>
 
         <!-- Page Header -->
@@ -343,30 +350,45 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="step-content">
                             <div class="class-types">
                                 <?php if (!empty($membershipClassTypes)): ?>
-                                    <?php foreach ($membershipClassTypes as $classType): ?>
+                                    <?php foreach (
+                                        $membershipClassTypes
+                                        as $classType
+                                    ): ?>
                                         <?php
                                         $icons = [
-                                            'Boxing' => 'fa-hand-fist',
-                                            'MMA' => 'fa-shield-halved',
-                                            'Muay Thai' => 'fa-hand-back-fist',
-                                            'Gym' => 'fa-dumbbell'
+                                            "Boxing" => "fa-hand-fist",
+                                            "MMA" => "fa-shield-halved",
+                                            "Muay Thai" => "fa-hand-back-fist",
+                                            "Gym" => "fa-dumbbell",
                                         ];
-                                        $icon = $icons[$classType] ?? 'fa-dumbbell';
+                                        $icon =
+                                            $icons[$classType] ?? "fa-dumbbell";
                                         ?>
-                                        <div class="class-card" data-class="<?= htmlspecialchars($classType) ?>">
+                                        <div class="class-card" data-class="<?= htmlspecialchars(
+                                            $classType,
+                                        ) ?>">
                                             <div class="class-icon">
                                                 <i class="fas <?= $icon ?>"></i>
                                             </div>
-                                            <h3 class="class-name"><?= htmlspecialchars($classType) ?></h3>
+                                            <h3 class="class-name"><?= htmlspecialchars(
+                                                $classType,
+                                            ) ?></h3>
                                             <p class="class-description">
                                                 <?php
                                                 $descriptions = [
-                                                    'Boxing' => 'Improve technique, footwork, and conditioning',
-                                                    'MMA' => 'Mixed martial arts training and sparring',
-                                                    'Muay Thai' => 'Master the art of eight limbs',
-                                                    'Gym' => 'Strength training and fitness conditioning'
+                                                    "Boxing" =>
+                                                        "Improve technique, footwork, and conditioning",
+                                                    "MMA" =>
+                                                        "Mixed martial arts training and sparring",
+                                                    "Muay Thai" =>
+                                                        "Master the art of eight limbs",
+                                                    "Gym" =>
+                                                        "Strength training and fitness conditioning",
                                                 ];
-                                                echo $descriptions[$classType] ?? 'Professional training session';
+                                                echo $descriptions[
+                                                    $classType
+                                                ] ??
+                                                    "Professional training session";
                                                 ?>
                                             </p>
                                         </div>
@@ -415,16 +437,21 @@ require_once __DIR__ . '/../../includes/header.php';
                             </div>
                         </div>
 
-                        <!-- Step 5: Confirmation -->
-                        <div class="wizard-step" id="step5" data-step="5">
-                            <div class="step-header">
-
-                                <div class="step-number">5</div>
-                                <div class="step-info">
+                       
+                    </div>
+                     <!-- Step 5: Confirmation -->
+                    <div class="wizard-step" id="step5" data-step="5">
+                        <div class="step-header">
+                            <div class="step-header-box">
+                                <div class="step-header-box-title">
+                                    <div class="step-number">5</div>
                                     <div class="step-text">
                                         <h2 class="step-title">Confirm Booking</h2>
                                         <p class="step-subtitle">Review your session details</p>
                                     </div>
+                                </div>
+
+                                <div class="step-info">
                                     <div class="wizard-navigation">
                                         <button class="btn-wizard btn-back" id="btnBack" style="display: none;">
                                             <i class="fas fa-arrow-left"></i>
@@ -437,39 +464,39 @@ require_once __DIR__ . '/../../includes/header.php';
                                     </div>
                                 </div>
                             </div>
-                            <div class="step-content">
-                                <div class="booking-summary">
-                                    <div class="summary-card">
-                                        <div class="summary-row">
-                                            <span class="summary-label">
-                                                <i class="fas fa-calendar"></i> Date
-                                            </span>
-                                            <span class="summary-value" id="summaryDate">-</span>
-                                        </div>
-                                        <div class="summary-row">
-                                            <span class="summary-label">
-                                                <i class="fas fa-clock"></i> Session
-                                            </span>
-                                            <span class="summary-value" id="summarySession">-</span>
-                                        </div>
-                                        <div class="summary-row">
-                                            <span class="summary-label">
-                                                <i class="fas fa-dumbbell"></i> Class Type
-                                            </span>
-                                            <span class="summary-value" id="summaryClass">-</span>
-                                        </div>
-                                        <div class="summary-row">
-                                            <span class="summary-label">
-                                                <i class="fas fa-user"></i> Trainer
-                                            </span>
-                                            <span class="summary-value" id="summaryTrainer">-</span>
-                                        </div>
+                        </div>
+                        <div class="step-content">
+                            <div class="booking-summary">
+                                <div class="summary-card">
+                                    <div class="summary-row">
+                                        <span class="summary-label">
+                                            <i class="fas fa-calendar"></i> Date
+                                        </span>
+                                        <span class="summary-value" id="summaryDate">-</span>
                                     </div>
-                                    <button class="btn-confirm-booking" id="btnConfirmBooking">
-                                        <i class="fas fa-check-circle"></i>
-                                        Confirm Booking
-                                    </button>
+                                    <div class="summary-row">
+                                        <span class="summary-label">
+                                            <i class="fas fa-clock"></i> Session
+                                        </span>
+                                        <span class="summary-value" id="summarySession">-</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span class="summary-label">
+                                            <i class="fas fa-dumbbell"></i> Class Type
+                                        </span>
+                                        <span class="summary-value" id="summaryClass">-</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span class="summary-label">
+                                            <i class="fas fa-user"></i> Trainer
+                                        </span>
+                                        <span class="summary-value" id="summaryTrainer">-</span>
+                                    </div>
                                 </div>
+                                <button class="btn-confirm-booking" id="btnConfirmBooking">
+                                    <i class="fas fa-check-circle"></i>
+                                    Confirm Booking
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -490,9 +517,16 @@ require_once __DIR__ . '/../../includes/header.php';
                                 </label>
                                 <select id="classFilter" class="class-filter-dropdown">
                                     <option value="all">All Classes</option>
-                                    <?php foreach ($membershipClassTypes as $classType): ?>
-                                        <option value="<?php echo htmlspecialchars($classType); ?>">
-                                            <?php echo htmlspecialchars($classType); ?>
+                                    <?php foreach (
+                                        $membershipClassTypes
+                                        as $classType
+                                    ): ?>
+                                        <option value="<?php echo htmlspecialchars(
+                                            $classType,
+                                        ); ?>">
+                                            <?php echo htmlspecialchars(
+                                                $classType,
+                                            ); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -545,12 +579,14 @@ require_once __DIR__ . '/../../includes/header.php';
 <script>
     // Pass membership expiration data to JavaScript
     <?php if ($activeMembership): ?>
-        window.membershipEndDate = '<?= $activeMembership['end_date'] ?>';
+        window.membershipEndDate = '<?= $activeMembership["end_date"] ?>';
         window.membershipGracePeriodDays = 3;
-        window.membershipPlanName = '<?= htmlspecialchars($activeMembership['plan_name']) ?>';
+        window.membershipPlanName = '<?= htmlspecialchars(
+            $activeMembership["plan_name"],
+        ) ?>';
 
         // Calculate max booking date (end_date + grace period)
-        const endDate = new Date('<?= $activeMembership['end_date'] ?>');
+        const endDate = new Date('<?= $activeMembership["end_date"] ?>');
         const maxBookingDate = new Date(endDate);
         maxBookingDate.setDate(maxBookingDate.getDate() + 3);
         window.maxBookingDate = maxBookingDate.toISOString().split('T')[0];

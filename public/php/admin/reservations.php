@@ -175,9 +175,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
 </head>
 
 <body>
+<main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <main class="admin-main">
+
+    <div class="admin-main">
         <!-- Header Section - Match products.php exactly -->
         <header class="page-header">
             <div>
@@ -374,8 +376,8 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 <div class="calendar-grid" id="calendarGrid"></div>
             </div>
         </div>
-    </main>
-
+    </div>
+</main>
     <!-- Day Bookings Modal -->
     <div class="day-modal-overlay" id="dayModalOverlay">
         <div class="day-modal" id="dayModal">

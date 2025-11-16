@@ -29,7 +29,7 @@ main {
 /* Page Header */
 .feedback-header {
     text-align: center;
-    padding: var(--spacing-16) var(--spacing-4) var(--spacing-8);
+    padding: 2rem;
     position: relative;
 }
 
@@ -38,9 +38,9 @@ main {
     font-size: var(--font-size-6xl);
     color: var(--color-white);
     text-transform: uppercase;
-    margin-bottom: var(--spacing-2);
     letter-spacing: 2px;
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    margin: 0;
 }
 
 .feedback-title .highlight {

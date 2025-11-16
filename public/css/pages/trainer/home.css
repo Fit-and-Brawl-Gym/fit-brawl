@@ -2,16 +2,14 @@
 
 /* Upcoming Section - Integrated Design */
 .upcoming-section {
-    background: linear-gradient(
-        to bottom,
-        var(--color-bg-dark) 0%,
-        rgba(0, 20, 30, 0.95) 50%,
-        var(--color-bg-dark) 100%
-    );
+    background: linear-gradient(to bottom,
+            var(--color-bg-dark) 0%,
+            rgba(0, 20, 30, 0.95) 50%,
+            var(--color-bg-dark) 100%);
     padding: var(--spacing-10) 0 var(--spacing-12) 0;
-    position: relative;
-    margin-top: calc(var(--spacing-10) * -1);
+    /* position: relative; */
     z-index: 3;
+    height: 100%;
 }
 
 .upcoming-section::before {
@@ -36,12 +34,10 @@
     transform: translateX(-50%);
     width: 80%;
     height: 4px;
-    background: linear-gradient(
-        to right,
-        transparent,
-        var(--color-accent),
-        transparent
-    );
+    background: linear-gradient(to right,
+            transparent,
+            var(--color-accent),
+            transparent);
     z-index: 2;
 }
 
@@ -86,11 +82,9 @@
 }
 
 .upcoming-card {
-    background: linear-gradient(
-        135deg,
-        rgba(0, 0, 0, 0.6) 0%,
-        rgba(26, 74, 82, 0.4) 100%
-    );
+    background: linear-gradient(135deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(26, 74, 82, 0.4) 100%);
     border: 2px solid rgba(213, 186, 43, 0.3);
     border-radius: var(--radius-lg);
     padding: var(--spacing-4);
@@ -109,34 +103,28 @@
     right: 0;
     width: 50px;
     height: 50px;
-    background: linear-gradient(
-        135deg,
-        transparent 50%,
-        rgba(213, 186, 43, 0.1) 50%
-    );
+    background: linear-gradient(135deg,
+            transparent 50%,
+            rgba(213, 186, 43, 0.1) 50%);
     transition: all 0.3s ease;
 }
 
 .upcoming-card:hover {
-    background: linear-gradient(
-        135deg,
-        rgba(0, 0, 0, 0.8) 0%,
-        rgba(26, 74, 82, 0.6) 100%
-    );
+    background: linear-gradient(135deg,
+            rgba(0, 0, 0, 0.8) 0%,
+            rgba(26, 74, 82, 0.6) 100%);
     border-color: var(--color-accent);
     transform: translateY(-5px);
     box-shadow: 0 8px 24px rgba(213, 186, 43, 0.3),
-                0 0 40px rgba(213, 186, 43, 0.1);
+        0 0 40px rgba(213, 186, 43, 0.1);
 }
 
 .upcoming-card:hover::before {
     width: 80px;
     height: 80px;
-    background: linear-gradient(
-        135deg,
-        transparent 50%,
-        rgba(213, 186, 43, 0.2) 50%
-    );
+    background: linear-gradient(135deg,
+            transparent 50%,
+            rgba(213, 186, 43, 0.2) 50%);
 }
 
 .card-header {
