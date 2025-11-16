@@ -439,8 +439,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     <script>
         window.bookingsData = <?php echo json_encode($bookings); ?>;
     </script>
+    <!-- Load DSA utilities first -->
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/reservations.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/admin-reservations-dsa-integration.js?v=<?= time() ?>"></script>
 </body>
 
 </html>
