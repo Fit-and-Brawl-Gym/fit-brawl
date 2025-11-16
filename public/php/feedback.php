@@ -407,8 +407,16 @@ require_once "../../includes/header.php";
     </div>
 </div>
 
+
 <!--Footer-->
-<?php require_once __DIR__ . "/../../includes/footer.php"; ?>
+<?php 
+   if (!isset($_SESSION["user_id"])) {
+    require_once __DIR__ . "/../../includes/footer.php";
+
+}
+   else {
+   }
+ ?>
 
 <script>
     const IMAGES_PATH = "<?= IMAGES_PATH ?>";

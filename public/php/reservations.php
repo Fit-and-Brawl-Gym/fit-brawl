@@ -110,13 +110,8 @@ require_once __DIR__ . '/../../includes/header.php';
                         <span>Renew Membership</span>
                     </a>
                 <?php endif; ?>
-            </div>
-        </div>
-        </div>
 
-        <div class="reservations-container">
-
-            <!-- Stats Cards -->
+                  <!-- Stats Cards -->
             <div class="stats-section" id="statsSection">
                 <div class="stat-card">
                     <div class="stat-icon">
@@ -154,6 +149,12 @@ require_once __DIR__ . '/../../includes/header.php';
                     </div>
                 </div>
             </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="reservations-container">
+
 
             <!-- Main Scheduling Section -->
             <div class="booking-wizard-section">

@@ -163,9 +163,6 @@ require_once __DIR__ . '/../../includes/header.php';
 <!--Main-->
 <main>
     <!-- Equipment Heading - Full Width -->
-    <div class="panel-header">
-        <h2>Equipment Availability</h2>
-    </div>
 
     <!-- Equipment Wrapper - Contains Sidebar and Grid -->
     <div class="equipment-wrapper">
@@ -175,7 +172,6 @@ require_once __DIR__ . '/../../includes/header.php';
 
             <!-- Search Section -->
             <div class="filter-section search-section">
-                <label for="equipmentSearch">Search</label>
                 <input type="search" id="equipmentSearch" placeholder="Search Equipment...">
             </div>
 
@@ -220,6 +216,9 @@ require_once __DIR__ . '/../../includes/header.php';
         <!-- Main Content Area -->
         <div class="equipment-content">
             <!-- equipment list -->
+             <div class="equipment-content-header">
+                <h1>Equipments</h1>
+             </div>
             <div id="equipment-container">
                 <!-- JS will render equipment cards here -->
             </div>

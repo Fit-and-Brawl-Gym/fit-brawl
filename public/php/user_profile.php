@@ -209,8 +209,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
         <!-- Edit Profile Section (Initially Hidden) -->
         <section class="edit-profile-section" id="editProfileSection">
-            <h3
-                style="color: #d5ba2b; font-family: 'zuume-rough-bold', sans-serif; font-size: 2rem; margin-bottom: 30px; text-transform: uppercase;">
+            <h3>
                 Edit Profile
             </h3>
             <form method="POST" action="update_profile.php" enctype="multipart/form-data" class="edit-profile-form">
@@ -316,8 +315,6 @@ require_once __DIR__ . '/../../includes/header.php';
             </form>
         </section>
     </main>
-
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 
     <script src="../js/header-dropdown.js"></script>
     <script src="../js/user-profile.js"></script>

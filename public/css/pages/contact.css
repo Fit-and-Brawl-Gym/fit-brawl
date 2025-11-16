@@ -40,8 +40,8 @@
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-white);
-  margin-bottom: var(--spacing-2);
   letter-spacing: -0.5px;
+  margin: 0;
 }
 
 .page-title .highlight {
@@ -124,13 +124,14 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-white);
-  margin-bottom: var(--spacing-2);
+  margin: 0;
 }
 
 .info-content p {
   font-size: var(--font-size-sm);
   color: rgba(255, 255, 255, 0.7);
   line-height: var(--line-height-relaxed);
+  margin: 0;
 }
 
 /* ===================================
@@ -161,12 +162,13 @@
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-white);
-  margin-bottom: var(--spacing-2);
+  margin: 0;
 }
 
 .form-header p {
   font-size: var(--font-size-base);
   color: rgba(255, 255, 255, 0.7);
+  margin: 0;
 }
 
 .welcome-text {
@@ -223,7 +225,7 @@
 .contact-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-5);
+  gap: var(--spacing-6);
 }
 
 .form-row {
@@ -265,7 +267,7 @@
 
 input,
 textarea {
-  width: 100%;
+  width: 90%;
   padding: var(--spacing-3) var(--spacing-4);
   font-size: var(--font-size-base);
   font-family: var(--font-family-primary);
