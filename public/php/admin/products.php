@@ -406,8 +406,15 @@ unset($p);
         // Pass PHP environment paths to JavaScript
         window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
     </script>
+    
+    <!-- DSA Utilities -->
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
+    
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
-    <script src="<?= PUBLIC_PATH ?>/php/admin/js/products.js?v=<?= time() ?>"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/products.js"></script>
+    
+    <!-- DSA Integration -->
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/products-dsa-integration.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

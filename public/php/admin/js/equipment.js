@@ -45,7 +45,14 @@ async function loadEquipment() {
 
     list.innerHTML = '';
     if (data.length === 0) {
-        list.innerHTML = '<p>No equipment found.</p>';
+        list.innerHTML = `
+            <div class="no-results-container admin-no-results">
+                <div class="no-results-icon">📦</div>
+                <h3 class="no-results-title">No Equipment Found</h3>
+                <p class="no-results-message">Get started by adding your first equipment item.</p>
+                <button class="btn-primary" onclick="document.getElementById('equipmentModal').style.display='flex'; document.getElementById('modalTitle').textContent='Add New Equipment'; document.getElementById('equipmentForm').reset(); document.getElementById('equipmentId').value='';">Add Equipment</button>
+            </div>
+        `;
         return;
     }
 
@@ -297,30 +304,82 @@ function filterEquipment() {
     const selectedCategory = document.getElementById('categoryFilter').value;
     const statusFilter = (document.getElementById('statusFilter') && document.getElementById('statusFilter').value) || 'all';
 
-    // Filter cards
-    const cards = document.querySelectorAll('.equipment-card');
-    cards.forEach(card => {
-        const name = card.querySelector('.equipment-name').textContent.toLowerCase();
-    const category = (card.dataset.category || '').toString();
-    const status = (card.dataset.status || '').toString();
-        const matchesSearch = name.includes(searchTerm);
-    const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesStatus = statusFilter === 'all' || status.toLowerCase() === statusFilter.toLowerCase();
-    card.style.display = (matchesSearch && matchesCategory && matchesStatus) ? 'block' : 'none';
-    });
+    // Use DSA utilities if available, fallback to basic filtering
+    const useDSA = window.DSA || window.DSAUtils;
+    
+    if (useDSA) {
+        // DSA-POWERED FILTERING (Fast O(n) with early exit optimization)
+        const fuzzySearch = useDSA.FuzzySearch;
+        const filterBuilder = new useDSA.FilterBuilder();
+        
+        // Build filter conditions
+        if (selectedCategory !== 'all') {
+            filterBuilder.where('category', '===', selectedCategory);
+        }
+        if (statusFilter !== 'all') {
+            filterBuilder.where('status', '===', statusFilter);
+        }
+        
+        // Filter cards with DSA
+        const cards = document.querySelectorAll('.equipment-card');
+        cards.forEach(card => {
+            const name = card.querySelector('.equipment-name').textContent;
+            const category = (card.dataset.category || '').toString();
+            const status = (card.dataset.status || '').toString();
+            
+            const equipmentData = { name, category, status };
+            
+            // Apply DSA filter
+            const passesFilter = filterBuilder.test(equipmentData);
+            
+            // Apply fuzzy search (more forgiving than includes())
+            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
+            
+            card.style.display = (matchesSearch && passesFilter) ? 'block' : 'none';
+        });
 
-    // Filter table rows
-    const rows = document.querySelectorAll('#tableView tbody tr[data-category]');
-    rows.forEach(row => {
-        const nameEl = row.querySelector('strong');
-        const name = nameEl ? nameEl.textContent.toLowerCase() : '';
-        const category = (row.dataset.category || '').toString();
-        const status = (row.dataset.status || '').toString();
-        const matchesSearch = name.includes(searchTerm);
-        const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
-        const matchesStatus = statusFilter === 'all' || status.toLowerCase() === statusFilter.toLowerCase();
-        row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
-    });
+        // Filter table rows with DSA
+        const rows = document.querySelectorAll('#tableView tbody tr[data-category]');
+        rows.forEach(row => {
+            const nameEl = row.querySelector('strong');
+            const name = nameEl ? nameEl.textContent : '';
+            const category = (row.dataset.category || '').toString();
+            const status = (row.dataset.status || '').toString();
+            
+            const equipmentData = { name, category, status };
+            
+            const passesFilter = filterBuilder.test(equipmentData);
+            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
+            
+            row.style.display = (matchesSearch && passesFilter) ? '' : 'none';
+        });
+        
+        console.log('✅ DSA filtering applied (O(n) with fuzzy search)');
+    } else {
+        // FALLBACK: Basic filtering
+        const cards = document.querySelectorAll('.equipment-card');
+        cards.forEach(card => {
+            const name = card.querySelector('.equipment-name').textContent.toLowerCase();
+            const category = (card.dataset.category || '').toString();
+            const status = (card.dataset.status || '').toString();
+            const matchesSearch = name.includes(searchTerm);
+            const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
+            const matchesStatus = statusFilter === 'all' || status.toLowerCase() === statusFilter.toLowerCase();
+            card.style.display = (matchesSearch && matchesCategory && matchesStatus) ? 'block' : 'none';
+        });
+
+        const rows = document.querySelectorAll('#tableView tbody tr[data-category]');
+        rows.forEach(row => {
+            const nameEl = row.querySelector('strong');
+            const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+            const category = (row.dataset.category || '').toString();
+            const status = (row.dataset.status || '').toString();
+            const matchesSearch = name.includes(searchTerm);
+            const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
+            const matchesStatus = statusFilter === 'all' || status.toLowerCase() === statusFilter.toLowerCase();
+            row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
+        });
+    }
 }
 
 // ================================

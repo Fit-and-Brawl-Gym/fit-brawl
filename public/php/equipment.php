@@ -275,4 +275,10 @@ require_once __DIR__ . '/../../includes/header.php';
         <i class="fas fa-chevron-up"></i>
     </button>
 
+    <!-- DSA Utilities -->
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
+    
+    <!-- DSA Integration -->
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/user-equipment-dsa-integration.js?v=<?= time() ?>"></script>
+
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
