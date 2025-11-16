@@ -1,18 +1,37 @@
+body {
+    overflow: hidden;
+}
+
 .login-main {
     background: var(--color-bg-dark) url('../../../images/login-bg.webp') no-repeat center center / cover;
     position: relative;
     height: fit-content;
+    min-height: 100vh;
+}
+
+.login-main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-bg-dark);
+    opacity: 0.8;
+    z-index: 1;
+    pointer-events: none;
+    height: 100%;
 }
 
 .login-hero {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0rem 8rem;
+    padding: 6rem 8rem;
     gap: var(--spacing-12);
     position: relative;
     z-index: 2;
-    height: 100dvh;
+    /* height: 100vh; */
 }
 
 .hero-content {
@@ -68,10 +87,14 @@
 
 .login-modal {
     flex: 0 0 400px;
-    background: rgba(255, 255, 255, 0.95);
+    position: relative;
+    width: 30%;
     border-radius: var(--radius-2xl);
     padding: var(--spacing-8);
     position: relative;
+    background-color: var(--color-bg-dark);
+    color: white;
+    box-shadow: var(--shadow-2xl);
 }
 
 .modal-header h2 {
@@ -126,15 +149,19 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 1rem;
+    gap: 2rem;
 }
 
 input {
     padding: var(--spacing-3) var(--spacing-4);
-    border: 2px solid #ddd;
-    border-radius: var(--radius-2xl);
+    border-radius: 12px;
     font-size: var(--font-size-base);
     background: var(--color-text-light);
     transition: var(--transition-base);
+    background-color: var(--color-primary);
+    color: white;
+    outline: none;
+    border: none;
 }
 
 .input-group input:focus {
@@ -154,7 +181,7 @@ input {
     display: flex;
     align-items: center;
     cursor: pointer;
-    color: var(--color-text-dark);
+    color: white;
 }
 
 .checkbox-container input {
@@ -198,7 +225,7 @@ input {
 }
 
 .signup-link a {
-    color: var(--color-text-dark);
+    color: white;
     text-decoration: underline;
     font-weight: var(--font-weight-semibold);
 }

@@ -75,23 +75,11 @@ $currentPage = "home";
 $additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css", PUBLIC_PATH . "/css/pages/trainer/home.css"];
 
 // Include header
-require_once '../../../includes/trainer_header.php';
 ?>
 
     <!--Main-->
     <main>
-        <section class="homepage-hero">
-            <div class="hero-content">
-                <div class="hero-underline top-line"></div>
-                <h1>
-                    BUILD A <span class="yellow">BODY</span> THAT<span class="apostrophe">&#39;</span>S<br>
-                    BUILT FOR <span class="yellow">BATTLE</span>
-                </h1>
-                <p class="hero-sub"><span class="sub-underline">Ready to train champions?</span></p>
-                <a href="schedule.php" class="hero-btn">View Schedule</a>
-            </div>
-        </section>
-
+        <?php require_once '../../../includes/trainer_header.php';?>
         <!-- Upcoming Section -->
         <section class="upcoming-section">
             <div class="container">
@@ -132,5 +120,3 @@ require_once '../../../includes/trainer_header.php';
             </div>
         </section>
     </main>
-
-<?php require_once '../../../includes/trainer_footer.php'; ?>

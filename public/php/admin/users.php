@@ -1,10 +1,10 @@
 <?php
-include_once('../../../includes/init.php');
+include_once '../../../includes/init.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../login.php");
-    exit();
+  header('Location: ../login.php');
+  exit();
 }
 ?>
 <!DOCTYPE html>
@@ -21,9 +21,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 </head>
 
 <body>
+    <main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <main class="admin-main">
+    <div class="admin-main">
         <!-- Header Section -->
         <header class="page-header">
             <div>
@@ -64,8 +65,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 </div>
             </div>
         </div>
-    </main>
-
+    </div>
+</main>
     <!-- History Side Panel -->
     <div id="historyPanel" class="side-panel">
         <div class="side-panel-overlay" onclick="closeHistoryPanel()"></div>

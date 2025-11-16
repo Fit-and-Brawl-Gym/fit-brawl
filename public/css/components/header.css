@@ -30,8 +30,8 @@ header {
     gap: 2rem;
 }
 
-.member-nav:hover a {
-    color: var(--color-accent);
+.member-nav a:hover {
+    color: var(--color-accent) !important;
     text-decoration: none;
     font-weight: 500;
 }
@@ -44,14 +44,16 @@ header {
     font-weight: 600;
 }
 
+.nav-btn:hover a {
+    color: var(--color-text-dark) !important;
+    text-decoration: none;
+    font-weight: 700;
+}
+
 .nav-links li a {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-}
-
-.nav-links li a:hover {
-    color: var(--color-accent);
 }
 
 .nav-links li a.active {
@@ -132,4 +134,32 @@ header {
 
 .account-link.active .account-icon {
     filter: invert(60%) sepia(75%) saturate(700%) hue-rotate(1deg) brightness(200%) contrast(90%);
+}
+
+.hamburger-menu {
+    background: none;
+    border: none;
+    color: white;
+}
+
+@media screen and (max-width: 468px) {
+    header {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+    }
+
+    .nav-bar {
+        display: none;
+    }
+
+    .hamburger-menu {
+        display: block;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .nav-bar {
+        display: none;
+    }
 }

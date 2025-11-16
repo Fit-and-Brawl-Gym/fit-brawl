@@ -323,7 +323,7 @@ $sessionHours = [
             <!-- Upcoming Sessions Card -->
             <div class="dashboard-card upcoming-card">
                 <div class="card-header">
-                    <h3><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h3>
+                    <h3><i class="fas fa-calendar-alt"></i> Booked Sessions</h3>
                     <?php if (!empty($upcomingBookings)): ?>
                         <a href="reservations.php" class="view-all">View All</a>
                     <?php endif; ?>

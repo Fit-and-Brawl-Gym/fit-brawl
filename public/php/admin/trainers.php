@@ -221,10 +221,11 @@ if (!$stats) {
 
 <body>
     <!-- Sidebar -->
+    <main>
     <?php include 'admin_sidebar.php'; ?>
 
     <!-- Main Content -->
-    <main class="admin-main">
+    <div class="admin-main">
         <div class="page-header">
             <div>
                 <h1>Trainers Management</h1>
@@ -484,8 +485,8 @@ if (!$stats) {
                 <?php endif; ?>
             </div>
         </div>
-    </main>
-
+    </div>
+</main> 
     <!--            Delete Confirmation Modal -->
     <div class="modal" id="deleteModal">
         <div class="modal-overlay">

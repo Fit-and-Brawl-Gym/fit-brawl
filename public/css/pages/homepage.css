@@ -571,6 +571,7 @@ main {
     background-position: left -350px top -100px;
     background-size: auto 800px;
     min-height: 500px;
+    padding: 4rem 2rem;
   }
 
   .hero-content {
@@ -622,6 +623,14 @@ main {
     font-size: var(--font-size-base);
   }
 
+  .overview-container {
+    padding: 0rem;
+  }
+
+  .overview-contents {
+    padding: 0rem 2rem;
+  }
+
   .feature-icon {
     width: 90px;
     height: 90px;
@@ -629,6 +638,10 @@ main {
 
   .feature-title {
     font-size: var(--font-size-xl);
+  }
+
+  .footer-contents {
+    flex-direction: column;
   }
 }
 

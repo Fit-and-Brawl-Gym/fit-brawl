@@ -48,9 +48,10 @@ unset($it);
 </head>
 
 <body>
-  <?php include 'admin_sidebar.php'; ?>
+<main>
+    <?php include 'admin_sidebar.php'; ?>
 
-  <main class="admin-main">
+  <div class="admin-main">
     <!-- Header Section -->
     <header class="page-header">
       <div>
@@ -135,7 +136,8 @@ unset($it);
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
-  </main>
+  </div>
+</main>
 
   <!-- Side Panel -->
   <div id="sidePanel" class="side-panel">

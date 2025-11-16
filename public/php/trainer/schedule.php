@@ -312,4 +312,3 @@ tabBtns.forEach(btn => {
     });
 });
 </script>
-<?php require_once '../../../includes/trainer_footer.php'; ?>

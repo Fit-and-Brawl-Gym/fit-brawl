@@ -21,9 +21,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 </head>
 
 <body>
+<main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <main class="admin-main">
+    <div class="admin-main">
         <!-- Header Section -->
         <header class="page-header">
             <div>
@@ -64,8 +65,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 </div>
             </div>
         </div>
-    </main>
-
+    </div>
+</main>
     <!-- Reply Modal -->
     <div id="replyModal" class="modal">
         <div class="modal-overlay" onclick="closeReplyModal()"></div>

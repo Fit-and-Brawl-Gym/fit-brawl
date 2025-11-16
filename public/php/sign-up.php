@@ -134,8 +134,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["signup"])) {
         // For production: https://domain.com/php/verify-email.php (DocumentRoot is /public)
         $protocol =
             !empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "off"
-            ? "https"
-            : "http";
+                ? "https"
+                : "http";
         $host = $_SERVER["HTTP_HOST"];
 
         // On production, PUBLIC_PATH is empty (DocumentRoot is already /public)
@@ -281,14 +281,23 @@ require_once __DIR__ . "/../../includes/header.php";
                     <?php endif; ?>
                 </div>
                 <div class="input-container">
-
-                    <input type="text" name="name" placeholder="Name" required>
-
-                    <input type="email" name="email" placeholder="Email" required>
-
-                    <input type="password" id="passwordInput" name="password" placeholder="Password" required>
-                    <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
-
+                                
+                    <span class="input-group">
+                        <i class="fas fa-user" class="input-icon"></i>
+                        <input type="text" name="name" placeholder="Name" required>
+                    </span>
+                    
+                    <span class="input-group">
+                        <i class="fas fa-envelope" class="input-icon"></i>
+                        <input type="email" name="email" placeholder="Email" required>
+                    </span>
+                    
+                    <div class="password-container input-group">
+                        <i class="fa-solid fa-key" class="input-icon"></i>
+                        <input type="password" id="passwordInput" name="password" placeholder="Password" required>
+                        <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
+                    </div>
+            
                     <!-- Password Requirements Modal -->
                     <div class="password-requirements-modal" id="passwordRequirementsModal">
                         <div class="password-requirements-header">
@@ -325,10 +334,13 @@ require_once __DIR__ . "/../../includes/header.php";
                             <span class="strength-text" id="strengthText">Strength: Weak</span>
                         </div>
                     </div>
-
-                    <input type="password" id="confirmPasswordInput" name="confirm_password"
+                    
+                    <div class="confirmpassword-container input-group">
+                        <i class="fa-solid fa-key" class="input-icon"></i>
+                        <input type="password" id="confirmPasswordInput" name="confirm_password"
                         placeholder="Confirm Password" required>
-                    <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
+                        <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
+                    </div>
 
                 </div>
 
@@ -338,9 +350,10 @@ require_once __DIR__ . "/../../includes/header.php";
 
                 <div class="form-options">
                     <label class="checkbox-container">
-                        <input type="checkbox" id="terms-checkbox" name="terms" required>
-                        <span class="checkmark"></span>
-                        Agree to&nbsp;<a href="#" class="terms-link" id="terms-link">Terms and Conditions</a>
+                        <input style="width: auto;" type="checkbox" id="terms-checkbox" name="terms" required>
+                        <span>
+                            Agree to&nbsp;<a href="#" class="terms-link" id="terms-link">Terms and Conditions</a>
+                        </span>
                     </label>
                 </div>
 

@@ -1,16 +1,40 @@
+html {
+    scrollbar-width: none;
+}
+
+body {
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
 .signup-main {
-    min-height: 0;
-    height: auto;
     background: var(--color-bg-dark) url('../../../images/sign-up_bg.webp') no-repeat center top / cover;
     position: relative;
+    min-height: 100vh;
+    height: fit-content;
+}
+
+.signup-main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-bg-dark);
+    opacity: 0.8;
+    z-index: 1;
+    pointer-events: none;
+    height: 100%;
 }
 
 .signup-hero {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-20);
-    min-height: 70vh;
+    /* padding: var(--spacing-20); */
+    padding: 3rem 8rem;
+    z-index: 99;
     gap: var(--spacing-12);
     position: relative;
 }
@@ -67,10 +91,12 @@
 
 .signup-modal {
     width: 30%;
-    background: rgba(255, 255, 255, 0.95);
     border-radius: var(--radius-2xl);
     padding: var(--spacing-8);
     position: relative;
+    background-color: var(--color-bg-dark);
+    color: white;
+    box-shadow: var(--shadow-2xl);
 }
 
 .modal-header h2 {
@@ -186,10 +212,6 @@
     line-height: var(--line-height-normal);
 }
 
-.input-group {
-    position: relative;
-}
-
 .input-group.password-input-group {
     position: relative;
 }
@@ -239,20 +261,39 @@
 
 .input-group input {
     padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 50px;
-    border: 2px solid #ddd;
-    border-radius: var(--radius-2xl);
-    font-size: var(--font-size-base);
-    background: var(--color-text-light);
-    transition: var(--transition-base);
 }
 
 input {
     padding: var(--spacing-3) var(--spacing-4);
-    border: 2px solid #ddd;
-    border-radius: var(--radius-2xl);
+    border-radius: 12px;
     font-size: var(--font-size-base);
     background: var(--color-text-light);
     transition: var(--transition-base);
+    background-color: var(--color-primary);
+    color: white;
+    outline: none;
+    border: none;
+    width: 90%;
+}
+
+.password-container {
+    position: relative;
+}
+
+.confirmpassword-container {
+    position: relative;
+}
+
+#togglePassword {
+    position: absolute;
+    right: 26px;
+    top: 40%;
+}
+
+#toggleConfirmPassword {
+    position: absolute;
+    right: 26px;
+    top: 40%;
 }
 
 
@@ -301,22 +342,23 @@ input {
 
 /* Password Match Message */
 .password-match-message {
-    min-height: 24px;
-    margin-top: -12px;
+    /* min-height: 24px; */
+    /* margin-top: -12px; */
     margin-bottom: 12px;
-    padding: 8px 12px;
+    margin: 12px 0rem;
+    padding: 8px;
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
     text-align: center;
     opacity: 0;
-    visibility: hidden;
+    display: none;
     transition: all 0.3s ease;
 }
 
 .password-match-message.show {
     opacity: 1;
-    visibility: visible;
+    display: block;
 }
 
 .password-match-message.match {
@@ -329,6 +371,10 @@ input {
     background-color: rgba(220, 53, 69, 0.1);
     color: #dc3545;
     border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+#passwordInput {
+    position: relative;
 }
 
 #confirmPasswordInput {
@@ -363,6 +409,18 @@ input {
 
 .icon-right:hover {
     color: var(--color-accent);
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    color: white;
+    z-index: 10;
 }
 
 .password-group input {
@@ -400,19 +458,16 @@ input {
 .form-options {
     display: flex;
     justify-content: flex-start;
-    margin-bottom: var(--spacing-8);
     font-size: var(--font-size-sm);
+    padding: 1rem 0rem;
 }
 
 .checkbox-container {
     display: flex;
     align-items: center;
     cursor: pointer;
-    color: var(--color-text-dark);
-}
-
-.checkbox-container input {
-    margin-right: var(--spacing-2);
+    color: white;
+    gap: 0.5rem;
 }
 
 .signup-btn {
@@ -442,7 +497,7 @@ input {
 }
 
 .login-link a {
-    color: var(--color-text-dark);
+    color: white;
     text-decoration: underline;
     font-weight: var(--font-weight-semibold);
 }

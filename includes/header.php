@@ -279,11 +279,7 @@ if (!isset($ogImage)) {
 <body>
     <!--Header-->
     <header>
-        <button class="hamburger-menu" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+  
         <div class="title">
             <a href="index.php">
                 <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
@@ -292,6 +288,10 @@ if (!isset($ogImage)) {
                 <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
             </a>
         </div>
+
+        <button class="hamburger-menu" aria-label="Toggle menu">
+           <i class="fa-solid fa-bars"></i>
+        </button>
         <?php if (isset($_SESSION["email"])): ?>
             <!-- Logged-in dropdown -->
             <nav class="nav-bar">

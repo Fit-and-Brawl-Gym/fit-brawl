@@ -97,7 +97,7 @@ require_once '../../../includes/trainer_header.php';
     <main>
         <!-- Page Header -->
         <div class="feedback-header">
-            <h1 class="feedback-title">Member Testimonials</h1>
+            <h1 class="feedback-title">Feedbacks</h1>
             <p class="feedback-subtitle">See what our community has to say about their Fit X Brawl experience</p>
             <div class="header-underline"></div>
         </div>
@@ -168,4 +168,3 @@ require_once '../../../includes/trainer_header.php';
 </script>
 <script src="<?= PUBLIC_PATH ?>/js/feedback.js?v=<?= time() ?>"></script>
 
-<?php require_once '../../../includes/trainer_footer.php'; ?>
