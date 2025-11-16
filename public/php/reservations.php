@@ -74,8 +74,10 @@ $additionalCSS = [
 ];
 $additionalJS = [
     'https://cdn.jsdelivr.net/npm/flatpickr',
+    '../js/dsa/dsa-utils.js?v=' . time(), // DSA Core Library
     '../js/time-selection-modern-v2.js?v=' . time(),
-    '../js/reservations.js?v=' . time() . mt_rand()
+    '../js/reservations.js?v=' . time() . mt_rand(),
+    '../js/dsa/reservations-dsa-integration.js?v=' . time() // DSA Integration Layer
 ];
 
 require_once __DIR__ . '/../../includes/header.php';

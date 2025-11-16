@@ -408,8 +408,14 @@ unset($it);
     </div>
   </div>
 
+  <!-- DSA Utilities -->
+  <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
+  
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/equipment.js?=v1"></script>
+  
+  <!-- DSA Integration -->
+  <script src="<?= PUBLIC_PATH ?>/js/dsa/equipment-dsa-integration.js?v=<?= time() ?>"></script>
 </body>
 
 </html>
