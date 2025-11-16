@@ -56,11 +56,13 @@ if ($rendererUrl) {
 }
 
 // Local rendering fallback using Node (works when Node is in the same container)
+// SECURITY: Command injection prevention - all inputs are validated and escaped
 $projectRoot = realpath(__DIR__ . '/../../');
 $wrapper = $projectRoot . DIRECTORY_SEPARATOR . 'server-renderer' . DIRECTORY_SEPARATOR . 'render-wrapper.js';
-$node = 'node';
+$node = 'node'; // Hardcoded, not from user input
 
-if (!file_exists($wrapper)) {
+// Validate wrapper file exists and is within project root (path traversal prevention)
+if (!file_exists($wrapper) || strpos(realpath($wrapper), $projectRoot) !== 0) {
     header('Location: receipt_fallback.php?type=' . urlencode($type) . '&id=' . urlencode($id));
     exit;
 }
@@ -77,7 +79,9 @@ if ($tmpFile === false) {
 }
 $outFile = $tmpFile . $ext;
 
-// Build command
+// Build command with proper escaping to prevent command injection
+// SECURITY: All user inputs ($receiptUrl, $format) are validated above and escaped here
+// $node is hardcoded, $wrapper is validated file path, $outFile is from tempnam()
 $cmd = escapeshellcmd($node) . ' ' . escapeshellarg($wrapper) .
     ' --url=' . escapeshellarg($receiptUrl) .
     ' --format=' . escapeshellarg($format) .

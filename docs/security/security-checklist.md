@@ -54,7 +54,7 @@ Comprehensive security checklist tracking all security measures, their implement
 | Absolute timeout | Critical | ✅ | 10-hour absolute timeout (36000 seconds). Maximum session duration regardless of activity. |
 | Session fixation prevention | Critical | ✅ | Session ID regenerated on login. |
 | Concurrent session management | Medium | ❌ | No limit on concurrent sessions per user. |
-| Single sign-out / session revocation | High | ❌ | No UI/API for device/session revocation. Users cannot see or revoke active sessions. |
+| Single sign-out / session revocation | High | ✅ | `SessionTracker` class tracks active sessions in `active_sessions` table. Users can view and revoke sessions via `/sessions.php` page. API endpoints: `get_sessions.php` (list sessions), `revoke_session.php` (revoke specific or all sessions). Sessions automatically checked on activity update - revoked sessions are logged out immediately. Integrated into `SessionManager` for automatic tracking. |
 | Session hijacking detection | Medium | ❌ | No IP address or user-agent validation (intentionally skipped due to false positives). |
 | Session storage security | High | ✅ | Sessions stored server-side, not in cookies. Only session ID in cookie. |
 
@@ -98,7 +98,7 @@ Comprehensive security checklist tracking all security measures, their implement
 | Failed login attempt logging | High | ✅ | Failed attempts logged in `login_attempts` table. |
 | Audit log retention | Medium | ❌ | No automated log retention policy. |
 | Audit log tampering prevention | High | ❌ | No cryptographic signing of audit logs. |
-| Audit log access control | High | 🟡 | Admin logs viewable in admin interface, but access control needs verification. |
+| Audit log access control | High | ✅ | Admin activity log page (`activity-log.php`) enforces admin role check before access. Filter parameters (action, date, limit) are validated with whitelists to prevent injection. Limit capped at 500 to prevent excessive queries. All output properly escaped with `htmlspecialchars()`. Only admins can view audit logs. |
 
 ---
 
@@ -118,7 +118,7 @@ Comprehensive security checklist tracking all security measures, their implement
 | CSRF protection | Critical | ✅ | `CSRFProtection` tokens enforced on login/signup flows, all admin APIs (subscriptions, equipment, products, feedback, users, contact actions, send reply), and all user-facing APIs (service booking, subscription, feedback voting, feedback submission, book session, cancel booking). All endpoints use `ApiSecurityMiddleware::requireCSRF()`. JavaScript updated to send CSRF tokens in all API requests. |
 | Open redirect prevention | High | ✅ | `RedirectValidator` class provides centralized validation for redirect URLs. Applied to login and index redirects. |
 | Path traversal prevention | High | ✅ | Secure file naming prevents directory traversal. File paths validated. |
-| Command injection prevention | High | 🟡 | No direct shell command execution found, but needs audit. |
+| Command injection prevention | High | ✅ | Audited: Only one instance of shell command execution in `receipt_render.php` using `proc_open()`. All inputs validated (type, id, format whitelisted), hardcoded executable ('node'), file paths validated with `realpath()` and path traversal checks, all parameters escaped with `escapeshellcmd()` and `escapeshellarg()`, working directory restricted to project root. No user input directly passed to shell. |
 | LDAP injection prevention | Low | ❌ | Not applicable (no LDAP). |
 | XML injection prevention | Low | ❌ | Not applicable (no XML parsing). |
 
@@ -283,7 +283,7 @@ Comprehensive security checklist tracking all security measures, their implement
 ### Monitoring & Alerting
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Security event alerting | High | ❌ | No automated alerts for security events. |
+| Security event alerting | High | ✅ | `SecurityAlerter` class provides automated email alerts for critical/high/medium severity security events. Configurable thresholds (critical: immediate, high: 3 events/5min, medium: 10 events/5min). 10-minute cooldown prevents alert spam. Integrated into `SecurityEventLogger` for automatic alerting. Admin emails configured via `ADMIN_EMAIL` environment variable. Documented in `docs/security/security-alerting-setup.md`. |
 | Error rate monitoring | Medium | ❌ | No monitoring system. |
 | Uptime monitoring | Medium | ❌ | Not implemented. |
 | SIEM integration | Low | ❌ | Not implemented. |
@@ -372,7 +372,7 @@ Comprehensive security checklist tracking all security measures, their implement
 ### Dependency Management
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Dependency vulnerability scanning | High | ❌ | No automated scanning (e.g., `composer audit`). |
+| Dependency vulnerability scanning | High | ✅ | Automated scanning script created: `scripts/security-check-dependencies.sh`. Scans PHP dependencies (`composer audit`) and Node.js dependencies (`npm audit`). Checks for outdated packages. Documented in `docs/security/third-party-scripts-review.md`. |
 | Regular dependency updates | High | ❌ | No automated update process. |
 | Pin dependency versions | High | ✅ | `composer.lock` file exists. |
 | Review third-party code | Medium | ❌ | Not systematically reviewed. |
@@ -450,7 +450,7 @@ Comprehensive security checklist tracking all security measures, their implement
 ### Integration Security
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Third-party script review | High | ❌ | CDN scripts (Cloudflare, jsDelivr) used but not systematically reviewed. |
+| Third-party script review | High | ✅ | Comprehensive review document created: `docs/security/third-party-scripts-review.md`. Documents all CDN scripts (Font Awesome 6.5.1), PHP dependencies (PHPMailer, TCPDF, PHP QR Code), and Node.js dependencies (Puppeteer, Express). Includes security status, version tracking, scanning processes, and review checklist. Font Awesome version standardized to 6.5.1 across all pages. |
 | Scoped API credentials | High | ❌ | Not applicable yet. |
 | Third-party monitoring | Medium | ❌ | Not implemented. |
 | Vendor security assessment | Medium | ❌ | Not performed. |
@@ -477,8 +477,8 @@ All payment-related security measures are deferred until a real payment processo
 ## Summary Statistics
 
 - **Total Controls**: ~150
-- **✅ Implemented**: ~53 (35%)
-- **🟡 Partial**: ~17 (11%)
+- **✅ Implemented**: ~59 (39%)
+- **🟡 Partial**: ~12 (8%)
 - **⏸️ Deferred**: ~15 (10%)
 - **❌ Not Implemented**: ~65 (43%)
 
@@ -577,6 +577,29 @@ All payment-related security measures are deferred until a real payment processo
 - Logs feedback management (delete, toggle visibility)
 - Logs contact inquiry management (mark read, delete, reply, archive)
 - All logs include admin ID, target user, action type, and detailed context
+
+**Session Management:**
+- `SessionTracker` class tracks all active user sessions in database
+- Users can view active sessions via `/sessions.php` page
+- Users can revoke individual or all other sessions via API
+- Revoked sessions are immediately invalidated on next activity check
+- Session activity automatically updated on each request
+- Expired sessions automatically cleaned up (10+ hours old)
+
+**Dependency Security:**
+- Automated dependency scanning script (`scripts/security-check-dependencies.sh`)
+- Scans PHP dependencies via `composer audit`
+- Scans Node.js dependencies via `npm audit`
+- Third-party scripts review document tracks all external dependencies
+- Font Awesome version standardized to 6.5.1 across all pages
+
+**Security Event Alerting:**
+- `SecurityAlerter` class provides automated email alerts for security events
+- Configurable thresholds: critical (immediate), high (3 events/5min), medium (10 events/5min)
+- 10-minute cooldown prevents alert spam
+- Integrated into `SecurityEventLogger` for automatic alerting
+- Admin emails configured via `ADMIN_EMAIL` environment variable
+- Comprehensive setup documentation provided
 
 ---
 

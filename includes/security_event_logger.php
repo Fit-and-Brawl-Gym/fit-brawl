@@ -102,6 +102,25 @@ class SecurityEventLogger {
         }
 
         $stmt->close();
+
+        // Trigger alerting for high/critical events
+        if (in_array($severity, ['high', 'critical', 'medium'])) {
+            if (file_exists(__DIR__ . '/security_alerter.php')) {
+                require_once __DIR__ . '/security_alerter.php';
+                global $conn;
+                if (isset($conn) && $conn instanceof mysqli) {
+                    // Initialize alerter if not already done
+                    SecurityAlerter::init($conn);
+                    SecurityAlerter::checkAndAlert($eventType, $severity, [
+                        'user_id' => $userId,
+                        'username' => $username,
+                        'ip_address' => $ipAddress,
+                        'endpoint' => $endpoint,
+                        'details' => $context['details'] ?? null
+                    ]);
+                }
+            }
+        }
     }
 
     /**

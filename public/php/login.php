@@ -119,6 +119,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         $_SESSION['role'] = $user['role'];
                         $_SESSION['avatar'] = $user['avatar'];
 
+                        // Register session in tracker (after user_id is set)
+                        if (file_exists(__DIR__ . '/../../includes/session_tracker.php')) {
+                            require_once __DIR__ . '/../../includes/session_tracker.php';
+                            SessionTracker::init($conn);
+                            SessionTracker::registerSession($user['id'], session_id());
+                        }
+
                         clearLoginAttempts($conn, $rateLimitIdentifier);
 
                         // Remember Me
