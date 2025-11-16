@@ -156,10 +156,6 @@ require_once __DIR__ . '/../../includes/header.php';
 ?>
 <!--Main-->
 <main class="container">
-    <!-- Products Heading - Full Width -->
-    <div class="panel-header">
-        <h2>Products</h2>
-    </div>
 
     <!-- Products Wrapper - Contains Sidebar and Grid -->
     <div class="products-wrapper">
@@ -169,7 +165,6 @@ require_once __DIR__ . '/../../includes/header.php';
 
             <!-- Search Section -->
             <div class="filter-section search-section">
-                <label for="q">Search</label>
                 <input type="search" id="q" placeholder="Search products..." aria-label="Search products">
             </div>
 
@@ -214,6 +209,9 @@ require_once __DIR__ . '/../../includes/header.php';
 
         <!-- Main Content Area -->
         <div class="products-content">
+            <div class="products-content-header">
+                <h1>Products</h1>
+             </div>
             <div class="products-panel">
                 <!-- Grid -->
                 <div id="grid" class="grid"></div>

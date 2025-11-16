@@ -1,34 +1,34 @@
 <?php
-require_once __DIR__ . '/../../includes/db_connect.php';
-require_once __DIR__ . '/../../includes/session_manager.php';
-require_once __DIR__ . '/../../includes/config.php';
+require_once __DIR__ . "/../../includes/db_connect.php";
+require_once __DIR__ . "/../../includes/session_manager.php";
+require_once __DIR__ . "/../../includes/config.php";
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 
 // Check if user is logged in
 if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
+    header("Location: login.php");
+    exit();
 }
 
-if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
-    $token = $_SESSION['remember_password'];
+if (!isset($_SESSION["email"]) && isset($_SESSION["remember_password"])) {
+    $token = $_SESSION["remember_password"];
 
     $result = $conn->query("SELECT * FROM remember_password");
     while ($row = $result->fetch_assoc()) {
-        if (password_verify($token, $row['token_hash'])) {
+        if (password_verify($token, $row["token_hash"])) {
             $stmtUser = $conn->prepare("SELECT * FROM users WHERE id = ?");
-            $stmtUser->bind_param("i", $row['user_id']);
+            $stmtUser->bind_param("i", $row["user_id"]);
             $stmtUser->execute();
             $user = $stmtUser->get_result()->fetch_assoc();
 
             if ($user) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['name'] = $user['username'];
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['avatar'] = $user['avatar'];
+                $_SESSION["user_id"] = $user["id"];
+                $_SESSION["name"] = $user["username"];
+                $_SESSION["email"] = $user["email"];
+                $_SESSION["role"] = $user["role"];
+                $_SESSION["avatar"] = $user["avatar"];
             }
             break;
         }
@@ -36,9 +36,9 @@ if (!isset($_SESSION['email']) && isset($_SESSION['remember_password'])) {
 }
 
 // Redirect non-logged-in users
-if (!isset($_SESSION['email'])) {
+if (!isset($_SESSION["email"])) {
     header("Location: index.php");
-    exit;
+    exit();
 }
 
 $hasActiveMembership = false;
@@ -49,9 +49,9 @@ $weeklyBookings = 0;
 $upcomingBookings = [];
 $favoriteTrainer = null;
 
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-    $today = date('Y-m-d');
+if (isset($_SESSION["user_id"])) {
+    $user_id = $_SESSION["user_id"];
+    $today = date("Y-m-d");
 
     // Check user_memberships table and get full membership details
     if ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
@@ -70,14 +70,17 @@ if (isset($_SESSION['user_id'])) {
             $result = $stmt->get_result();
 
             if ($row = $result->fetch_assoc()) {
-                $requestStatus = $row['request_status'] ?? null;
-                $membershipStatus = $row['membership_status'] ?? null;
-                $endDate = $row['end_date'] ?? null;
+                $requestStatus = $row["request_status"] ?? null;
+                $membershipStatus = $row["membership_status"] ?? null;
+                $endDate = $row["end_date"] ?? null;
 
                 $hasAnyRequest = true;
 
-                if ($requestStatus === 'approved' && $endDate) {
-                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+                if ($requestStatus === "approved" && $endDate) {
+                    $expiryWithGrace = date(
+                        "Y-m-d",
+                        strtotime($endDate . " +$gracePeriodDays days"),
+                    );
 
                     if ($expiryWithGrace >= $today) {
                         $hasActiveMembership = true;
@@ -92,7 +95,10 @@ if (isset($_SESSION['user_id'])) {
     }
 
     // If no membership found in user_memberships, check subscriptions table
-    if (!$hasActiveMembership && $conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
+    if (
+        !$hasActiveMembership &&
+        $conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows
+    ) {
         $stmt = $conn->prepare("
             SELECT s.*, m.plan_name, m.class_type
             FROM subscriptions s
@@ -107,23 +113,26 @@ if (isset($_SESSION['user_id'])) {
             $result = $stmt->get_result();
 
             if ($row = $result->fetch_assoc()) {
-                $status = strtolower($row['status']);
-                $endDate = $row['end_date'] ?? null;
+                $status = strtolower($row["status"]);
+                $endDate = $row["end_date"] ?? null;
                 $hasAnyRequest = true;
 
-                if ($status === 'approved' && $endDate) {
-                    $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+                if ($status === "approved" && $endDate) {
+                    $expiryWithGrace = date(
+                        "Y-m-d",
+                        strtotime($endDate . " +$gracePeriodDays days"),
+                    );
 
                     if ($expiryWithGrace >= $today) {
                         $hasActiveMembership = true;
                         $hasAnyRequest = false;
                         // Create activeMembership array with subscription data
                         $activeMembership = [
-                            'plan_name' => $row['plan_name'] ?? 'Subscription',
-                            'class_type' => $row['class_type'] ?? 'All Classes',
-                            'end_date' => $endDate,
-                            'request_status' => 'approved',
-                            'membership_status' => 'active'
+                            "plan_name" => $row["plan_name"] ?? "Subscription",
+                            "class_type" => $row["class_type"] ?? "All Classes",
+                            "end_date" => $endDate,
+                            "request_status" => "approved",
+                            "membership_status" => "active",
                         ];
                     }
                 }
@@ -135,10 +144,10 @@ if (isset($_SESSION['user_id'])) {
 
     // Get weekly bookings count (current week: Monday to Sunday)
     // Calculate the start of the week (Monday)
-    $currentDayOfWeek = date('N'); // 1 (Monday) to 7 (Sunday)
+    $currentDayOfWeek = date("N"); // 1 (Monday) to 7 (Sunday)
     $daysSinceMonday = $currentDayOfWeek - 1;
-    $weekStart = date('Y-m-d', strtotime("-{$daysSinceMonday} days"));
-    $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+    $weekStart = date("Y-m-d", strtotime("-{$daysSinceMonday} days"));
+    $weekEnd = date("Y-m-d", strtotime($weekStart . " +6 days"));
 
     $stmt = $conn->prepare("
         SELECT COUNT(*) as count 
@@ -152,7 +161,7 @@ if (isset($_SESSION['user_id'])) {
         $stmt->execute();
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
-            $weeklyBookings = $row['count'];
+            $weeklyBookings = $row["count"];
         }
         $stmt->close();
     }
@@ -201,19 +210,22 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 
-
 if ($hasActiveMembership) {
-    $membershipLink = 'reservations.php';
+    $membershipLink = "reservations.php";
 } elseif ($hasAnyRequest) {
-    $membershipLink = 'membership-status.php';
+    $membershipLink = "membership-status.php";
 } else {
-    $membershipLink = 'membership.php';
+    $membershipLink = "membership.php";
 }
 // Set avatar source
-$avatarSrc = '../../images/account-icon.svg';
-if (isset($_SESSION['avatar'])) {
-    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
+$avatarSrc = "../../images/account-icon.svg";
+if (isset($_SESSION["avatar"])) {
+    $hasCustomAvatar =
+        $_SESSION["avatar"] !== "default-avatar.png" &&
+        !empty($_SESSION["avatar"]);
+    $avatarSrc = $hasCustomAvatar
+        ? "../../uploads/avatars/" . htmlspecialchars($_SESSION["avatar"])
+        : "../../images/account-icon.svg";
 }
 
 // Set variables for header
@@ -222,17 +234,22 @@ $currentPage = "home";
 $additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css?v=" . time()];
 
 // Include header
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . "/../../includes/header.php";
 
 // Time-based greeting
-$hour = date('G');
-$greeting = $hour < 12 ? 'Good Morning' : ($hour < 18 ? 'Good Afternoon' : 'Good Evening');
-$userName = $_SESSION['name'] ?? 'Member';
+$hour = date("G");
+$greeting =
+    $hour < 12
+        ? "Good Morning"
+        : ($hour < 18
+            ? "Good Afternoon"
+            : "Good Evening");
+$userName = $_SESSION["name"] ?? "Member";
 
 // Calculate days remaining in membership
 $daysRemaining = 0;
-if ($activeMembership && isset($activeMembership['end_date'])) {
-    $endDate = new DateTime($activeMembership['end_date']);
+if ($activeMembership && isset($activeMembership["end_date"])) {
+    $endDate = new DateTime($activeMembership["end_date"]);
     $currentDate = new DateTime();
     $interval = $currentDate->diff($endDate);
     $daysRemaining = $interval->days;
@@ -240,9 +257,9 @@ if ($activeMembership && isset($activeMembership['end_date'])) {
 
 // Session time mapping
 $sessionHours = [
-    'Morning' => '7:00 AM - 11:00 AM',
-    'Afternoon' => '1:00 PM - 5:00 PM',
-    'Evening' => '6:00 PM - 10:00 PM'
+    "Morning" => "7:00 AM - 11:00 AM",
+    "Afternoon" => "1:00 PM - 5:00 PM",
+    "Evening" => "6:00 PM - 10:00 PM",
 ];
 ?>
 
@@ -251,46 +268,55 @@ $sessionHours = [
     <!-- Welcome Header -->
     <section class="welcome-section">
         <div class="welcome-content">
-            <div class="welcome-text">
-                <h1 class="greeting"><?= htmlspecialchars($greeting) ?>, <span
-                        class="user-name"><?= htmlspecialchars($userName) ?></span></h1>
-                <p class="welcome-subtitle">Ready to push your limits today?</p>
-            </div>
-            <?php if ($hasActiveMembership): ?>
-                <div class="quick-stats-bar">
-                    <div class="stat-pill">
-                        <i class="fas fa-calendar-week"></i>
-                        <span><?= $weeklyBookings ?>/12 sessions</span>
-                    </div>
-                    <div class="stat-pill">
-                        <i class="fas fa-clock"></i>
-                        <span><?= $daysRemaining ?> days left</span>
-                    </div>
-                    <?php if ($favoriteTrainer): ?>
-                        <div class="stat-pill">
-                            <i class="fas fa-star"></i>
-                            <span><?= htmlspecialchars($favoriteTrainer['name']) ?></span>
-                        </div>
-                    <?php endif; ?>
+            <div>
+                <div class="welcome-text">
+                                <h1 class="greeting"><?= htmlspecialchars(
+                                    $greeting,
+                                ) ?>, <span class="user-name"><?= htmlspecialchars(
+                    $userName,
+                ) ?></span></h1>
+                    <p class="welcome-subtitle">Ready to push your limits today?</p>
                 </div>
-            <?php endif; ?>
-        </div>
+                <?php if ($hasActiveMembership): ?>
+                    <div class="quick-stats-bar">
+                        <div class="stat-pill">
+                            <i class="fas fa-calendar-week"></i>
+                            <span><?= $weeklyBookings ?>/12 sessions</span>
+                        </div>
+                        <div class="stat-pill">
+                            <i class="fas fa-clock"></i>
+                            <span><?= $daysRemaining ?> days left</span>
+                        </div>
+                        <?php if ($favoriteTrainer): ?>
+                            <div class="stat-pill">
+                                <i class="fas fa-star"></i>
+                                <span><?= htmlspecialchars($favoriteTrainer["name"]) ?></span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+           
+            <div class="action-card primary-action">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Book a Session</h2>
+                    <p>Schedule your next training session</p>
+                </div>
+                     <a href="<?= htmlspecialchars($membershipLink) ?>" class="card-btn">
+                        Book Now <i class="fas fa-arrow-right"></i>
+                    </a>
+                    </div>
+            </div>
+   
+       
     </section>
 
     <div class="dashboard-container">
         <!-- Main Action Card - Book Session -->
-        <div class="action-card primary-action">
-            <div class="card-icon">
-                <i class="fas fa-calendar-plus"></i>
-            </div>
-            <div class="card-content">
-                <h2>Book a Session</h2>
-                <p>Schedule your next training session</p>
-            </div>
-            <a href="<?= htmlspecialchars($membershipLink) ?>" class="card-btn">
-                Book Now <i class="fas fa-arrow-right"></i>
-            </a>
-        </div>
+   
 
         <!-- Dashboard Grid -->
         <div class="dashboard-grid">
@@ -307,16 +333,28 @@ $sessionHours = [
                         <?php foreach ($upcomingBookings as $booking): ?>
                             <div class="booking-preview">
                                 <div class="booking-date-badge">
-                                    <div class="badge-day"><?= date('d', strtotime($booking['booking_date'])) ?></div>
-                                    <div class="badge-month"><?= date('M', strtotime($booking['booking_date'])) ?></div>
+                                    <div class="badge-day"><?= date(
+                                        "d",
+                                        strtotime($booking["booking_date"]),
+                                    ) ?></div>
+                                    <div class="badge-month"><?= date(
+                                        "M",
+                                        strtotime($booking["booking_date"]),
+                                    ) ?></div>
                                 </div>
                                 <div class="booking-info">
-                                    <h4><?= htmlspecialchars($booking['class_type']) ?></h4>
+                                    <h4><?= htmlspecialchars(
+                                        $booking["class_type"],
+                                    ) ?></h4>
                                     <p class="booking-details">
                                         <span><i class="fas fa-clock"></i>
-                                            <?= htmlspecialchars($booking['session_time']) ?></span>
+                                            <?= htmlspecialchars(
+                                                $booking["session_time"],
+                                            ) ?></span>
                                         <span><i class="fas fa-user"></i>
-                                            <?= htmlspecialchars($booking['trainer_name']) ?></span>
+                                            <?= htmlspecialchars(
+                                                $booking["trainer_name"],
+                                            ) ?></span>
                                     </p>
                                 </div>
                             </div>
@@ -325,7 +363,9 @@ $sessionHours = [
                         <div class="empty-state">
                             <i class="fas fa-calendar-times"></i>
                             <p>No upcoming sessions</p>
-                            <a href="<?= htmlspecialchars($membershipLink) ?>" class="empty-cta">Book your first session</a>
+                            <a href="<?= htmlspecialchars(
+                                $membershipLink,
+                            ) ?>" class="empty-cta">Book your first session</a>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -345,9 +385,13 @@ $sessionHours = [
                         <div class="progress-bar-container">
                             <div class="progress-bar">
                                 <div class="progress-fill"
-                                    style="width: <?= min(100, ($weeklyBookings / 12) * 100) ?>%"></div>
+                                    style="width: <?= min(
+                                        100,
+                                        ($weeklyBookings / 12) * 100,
+                                    ) ?>%"></div>
                             </div>
-                            <p class="progress-label"><?= 12 - $weeklyBookings ?> sessions remaining this week</p>
+                            <p class="progress-label"><?= 12 -
+                                $weeklyBookings ?> sessions remaining this week</p>
                         </div>
                     </div>
                     <?php if ($weeklyBookings > 0): ?>
@@ -375,17 +419,26 @@ $sessionHours = [
                             <div class="membership-badge active">
                                 <i class="fas fa-check-circle"></i> Active
                             </div>
-                            <h4 class="plan-name"><?= htmlspecialchars($activeMembership['plan_name']) ?> Plan</h4>
+                            <h4 class="plan-name"><?= htmlspecialchars(
+                                $activeMembership["plan_name"],
+                            ) ?> Plan</h4>
                             <div class="membership-details">
                                 <div class="detail-row">
                                     <span class="detail-label">Classes:</span>
                                     <span
-                                        class="detail-value"><?= htmlspecialchars($activeMembership['class_type']) ?></span>
+                                        class="detail-value"><?= htmlspecialchars(
+                                            $activeMembership["class_type"],
+                                        ) ?></span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Expires:</span>
                                     <span
-                                        class="detail-value"><?= date('M d, Y', strtotime($activeMembership['end_date'])) ?></span>
+                                        class="detail-value"><?= date(
+                                            "M d, Y",
+                                            strtotime(
+                                                $activeMembership["end_date"],
+                                            ),
+                                        ) ?></span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Days Left:</span>
