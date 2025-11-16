@@ -59,11 +59,11 @@ try {
     $validation = $validator->validateCancellation($booking_id, $user_id);
 
     if (!$validation['valid']) {
-        echo json_encode([
+        ApiSecurityMiddleware::sendJsonResponse([
             'success' => false,
             'message' => $validation['message'],
             'hours_remaining' => $validation['hours_remaining'] ?? null
-        ]);
+        ], 400);
         exit;
     }
 

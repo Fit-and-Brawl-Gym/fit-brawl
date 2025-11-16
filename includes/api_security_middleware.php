@@ -12,6 +12,7 @@ class ApiSecurityMiddleware {
      */
     public static function requireAuth($options = []) {
         if (!isset($_SESSION['user_id'])) {
+            self::logSecurityEvent('unauthorized_access', 'high', ['reason' => 'not_authenticated']);
             self::sendUnauthorized($options['return_json'] ?? true);
             return false;
         }
@@ -23,6 +24,11 @@ class ApiSecurityMiddleware {
         if (isset($options['role'])) {
             $allowedRoles = is_array($options['role']) ? $options['role'] : [$options['role']];
             if (!in_array($role, $allowedRoles, true)) {
+                self::logSecurityEvent('unauthorized_access', 'high', [
+                    'reason' => 'insufficient_permissions',
+                    'required_role' => $options['role'],
+                    'user_role' => $role
+                ]);
                 self::sendForbidden($options['return_json'] ?? true);
                 return false;
             }
@@ -54,6 +60,8 @@ class ApiSecurityMiddleware {
         }
 
         if (!CSRFProtection::validateToken($csrfToken)) {
+            // Log CSRF failure
+            self::logSecurityEvent('csrf_failure', 'high');
             self::sendCSRFFailed($returnJson);
             return false;
         }
@@ -165,6 +173,13 @@ class ApiSecurityMiddleware {
         header('X-RateLimit-Reset: ' . (time() + $rateCheck['retry_after']));
 
         if ($rateCheck['blocked']) {
+            // Log rate limit violation
+            self::logSecurityEvent('rate_limit_exceeded', 'medium', [
+                'identifier' => $identifier,
+                'max_requests' => $maxRequests,
+                'window_seconds' => $windowSeconds
+            ]);
+
             http_response_code(429);
             header('Retry-After: ' . $rateCheck['retry_after']);
 
@@ -242,6 +257,34 @@ class ApiSecurityMiddleware {
             echo 'Method not allowed. Allowed methods: ' . implode(', ', $allowedMethods);
         }
         exit;
+    }
+
+    /**
+     * Log a security event
+     *
+     * @param string $eventType Event type
+     * @param string $severity Severity level
+     * @param array $context Additional context
+     */
+    private static function logSecurityEvent($eventType, $severity = 'medium', $context = []) {
+        // Try to initialize security event logger if available
+        if (file_exists(__DIR__ . '/security_event_logger.php')) {
+            require_once __DIR__ . '/security_event_logger.php';
+
+            // Try to get database connection from global scope or session
+            global $conn;
+            if (isset($conn) && $conn instanceof mysqli) {
+                SecurityEventLogger::init($conn);
+                $context['endpoint'] = $_SERVER['REQUEST_URI'] ?? null;
+                SecurityEventLogger::log($eventType, $severity, $context);
+            } else {
+                // Fallback to error_log
+                error_log("Security Event [{$severity}]: {$eventType} - " . json_encode($context));
+            }
+        } else {
+            // Fallback to error_log
+            error_log("Security Event [{$severity}]: {$eventType} - " . json_encode($context));
+        }
     }
 
     /**

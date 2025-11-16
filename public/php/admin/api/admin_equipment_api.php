@@ -7,16 +7,16 @@ require_once __DIR__ . '/../../../../includes/activity_logger.php';
 require_once __DIR__ . '/../../../../includes/file_upload_security.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
 
-header('Content-Type: application/json');
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // Only admins
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
     exit;
 }
 
@@ -28,7 +28,7 @@ if ($rateCheck['blocked']) {
     header('X-RateLimit-Limit: 20');
     header('X-RateLimit-Remaining: 0');
     header('Retry-After: ' . $rateCheck['retry_after']);
-    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
     exit;
 }
 header('X-RateLimit-Limit: 20');
@@ -42,8 +42,7 @@ if ($method === 'POST') {
     // Validate CSRF token
     $csrfToken = $_POST['csrf_token'] ?? '';
     if (!CSRFProtection::validateToken($csrfToken)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
         exit;
     }
 
@@ -58,18 +57,18 @@ if ($method === 'POST') {
     $imagePath = null;
 
     if (empty($name) || empty($category)) {
-        echo json_encode(['success' => false, 'message' => 'Name and category are required']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Name and category are required'], 400);
         exit;
     }
 
     // Validate maintenance fields if status is Maintenance
     if ($status === 'Maintenance') {
         if (empty($maintenanceStartDate) || empty($maintenanceEndDate)) {
-            echo json_encode(['success' => false, 'message' => 'Maintenance dates are required when status is Maintenance']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Maintenance dates are required when status is Maintenance'], 400);
             exit;
         }
         if (strtotime($maintenanceEndDate) < strtotime($maintenanceStartDate)) {
-            echo json_encode(['success' => false, 'message' => 'End date must be after start date']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'End date must be after start date'], 400);
             exit;
         }
     } else {
@@ -89,7 +88,7 @@ if ($method === 'POST') {
         if ($result['success']) {
             $imagePath = '../../uploads/equipment/' . $result['filename'];
         } else {
-            echo json_encode(['success' => false, 'message' => $result['message']]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $result['message']], 400);
             exit;
         }
     }
@@ -144,9 +143,9 @@ if ($method === 'POST') {
             );
         }
 
-        echo json_encode(['success' => true]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => true], 200);
     } else {
-        echo json_encode(['success' => false, 'message' => $stmt->error]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $stmt->error], 500);
     }
     exit;
 }
@@ -156,15 +155,14 @@ if ($method === 'DELETE') {
     // Validate CSRF token (from query string for DELETE requests)
     $csrfToken = $_GET['csrf_token'] ?? '';
     if (!CSRFProtection::validateToken($csrfToken)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
         exit;
     }
 
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
     if ($id <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid ID'], 400);
         exit;
     }
 
@@ -190,14 +188,13 @@ if ($method === 'DELETE') {
             );
         }
 
-        echo json_encode(['success' => true]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => true], 200);
     } else {
-        echo json_encode(['success' => false, 'message' => $stmt->error]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $stmt->error], 500);
     }
     $stmt->close();
     exit;
 }
 
-http_response_code(405);
-echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Method not allowed'], 405);
 

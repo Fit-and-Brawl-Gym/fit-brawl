@@ -4,21 +4,21 @@
 // Handles admin actions for managing subscriptions
 // ==============================================
 
-// Allow JSON responses
-header('Content-Type: application/json');
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
 // mailer for membership notifications
 include_once __DIR__ . '/../../../../includes/membership_mailer.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
 
+ApiSecurityMiddleware::setSecurityHeaders();
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
     exit;
 }
 
@@ -30,7 +30,7 @@ if ($rateCheck['blocked']) {
     header('X-RateLimit-Limit: 20');
     header('X-RateLimit-Remaining: 0');
     header('Retry-After: ' . $rateCheck['retry_after']);
-    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
     exit;
 }
 header('X-RateLimit-Limit: 20');
@@ -44,15 +44,14 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
     // Validate CSRF token
     $csrfToken = $_POST['csrf_token'] ?? '';
     if (!CSRFProtection::validateToken($csrfToken)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
         exit;
     }
 
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
     if ($id <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid ID'], 400);
         exit;
     }
 
@@ -68,7 +67,7 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
     $stmt->close();
 
     if (!$subscription) {
-        echo json_encode(['success' => false, 'message' => 'Subscription not found or already processed']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Subscription not found or already processed'], 404);
         exit;
     }
 
@@ -134,9 +133,9 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
             error_log("Could not fetch subscription data for logging");
         }
 
-        echo json_encode(['success' => true, 'message' => 'Subscription approved successfully']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Subscription approved successfully'], 200);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to approve: ' . $stmt->error]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Failed to approve: ' . $stmt->error], 500);
     }
     $stmt->close();
     exit;
@@ -147,8 +146,7 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
     // Validate CSRF token
     $csrfToken = $_POST['csrf_token'] ?? '';
     if (!CSRFProtection::validateToken($csrfToken)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
         exit;
     }
 
@@ -156,12 +154,12 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
     $remarks = trim($_POST['remarks'] ?? '');
 
     if ($id <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid ID'], 400);
         exit;
     }
 
     if (empty($remarks)) {
-        echo json_encode(['success' => false, 'message' => 'Rejection reason is required']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Rejection reason is required'], 400);
         exit;
     }
 
@@ -218,12 +216,12 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
                 error_log("Could not fetch subscription data for logging");
             }
 
-            echo json_encode(['success' => true, 'message' => 'Subscription rejected successfully']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Subscription rejected successfully'], 200);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Subscription not found or already processed']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Subscription not found or already processed'], 404);
         }
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to reject: ' . $stmt->error]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Failed to reject: ' . $stmt->error], 500);
     }
     $stmt->close();
     exit;
@@ -234,22 +232,21 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'mark_ca
     // Validate CSRF token
     $csrfToken = $_POST['csrf_token'] ?? '';
     if (!CSRFProtection::validateToken($csrfToken)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
         exit;
     }
 
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
     if ($id <= 0) {
-        echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid ID'], 400);
         exit;
     }
 
     // Check if payment_method column exists
     $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'payment_method'");
     if ($columns_check->num_rows === 0) {
-        echo json_encode(['success' => false, 'message' => 'Payment method column not found. Please update database.']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Payment method column not found. Please update database.'], 500);
         exit;
     }
 
@@ -265,7 +262,7 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'mark_ca
     $stmt->close();
 
     if (!$subscription) {
-        echo json_encode(['success' => false, 'message' => 'Cash payment not found or already marked as paid']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Cash payment not found or already marked as paid'], 404);
         exit;
     }
 
@@ -325,9 +322,9 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'mark_ca
             error_log('Failed to send membership approval email: ' . $e->getMessage());
         }
 
-        echo json_encode(['success' => true, 'message' => 'Cash payment received and membership approved']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Cash payment received and membership approved'], 200);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to update payment status: ' . $stmt->error]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Failed to update payment status: ' . $stmt->error], 500);
     }
     $stmt->close();
     exit;
@@ -382,13 +379,12 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'fetch') 
 
     if ($result) {
         $subscriptions = $result->fetch_all(MYSQLI_ASSOC);
-        echo json_encode(['success' => true, 'data' => $subscriptions]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'data' => $subscriptions], 200);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to fetch subscriptions']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Failed to fetch subscriptions'], 500);
     }
     exit;
 }
 
-http_response_code(405);
-echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Method not allowed'], 405);
 ?>

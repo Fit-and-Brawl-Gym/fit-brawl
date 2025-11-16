@@ -109,13 +109,13 @@ try {
 
         if ($booking_date_obj > $max_booking_date) {
             $membership_check->close();
-            echo json_encode([
+            ApiSecurityMiddleware::sendJsonResponse([
                 'success' => false,
                 'message' => "Cannot book beyond your membership expiration. Your {$plan_name} plan expires on " .
                     $end_date_obj->format('F d, Y') . " (booking allowed until " .
                     $max_booking_date->format('F d, Y') . " with grace period). Please visit the gym to renew or upgrade your membership.",
                 'failed_check' => 'membership_expiration'
-            ]);
+            ], 400);
             exit;
         }
     }

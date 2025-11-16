@@ -1,18 +1,19 @@
 <?php
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\api\admin_products_api.php
-header('Content-Type: application/json');
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
 require_once __DIR__ . '/../../../../includes/file_upload_security.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
 
+ApiSecurityMiddleware::setSecurityHeaders();
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
     exit;
 }
 
@@ -24,7 +25,7 @@ if ($rateCheck['blocked']) {
     header('X-RateLimit-Limit: 20');
     header('X-RateLimit-Remaining: 0');
     header('Retry-After: ' . $rateCheck['retry_after']);
-    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
     exit;
 }
 header('X-RateLimit-Limit: 20');
@@ -39,8 +40,7 @@ try {
         // Validate CSRF token
         $csrfToken = $_POST['csrf_token'] ?? '';
         if (!CSRFProtection::validateToken($csrfToken)) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
             exit;
         }
 
@@ -66,7 +66,7 @@ try {
             if ($result['success']) {
                 $imagePath = '../../uploads/products/' . $result['filename'];
             } else {
-                echo json_encode(['success' => false, 'message' => $result['message']]);
+                ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $result['message']], 400);
                 exit;
             }
         }
@@ -103,9 +103,9 @@ try {
                 );
             }
 
-            echo json_encode(['success' => true]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => true], 200);
         } else {
-            echo json_encode(['success' => false, 'message' => $stmt->error]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $stmt->error], 500);
         }
     } elseif ($method === 'DELETE') {
         // Validate CSRF token (from query string or request body for DELETE requests)
@@ -115,8 +115,7 @@ try {
             $csrfToken = $input['csrf_token'] ?? '';
         }
         if (!CSRFProtection::validateToken($csrfToken)) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
             exit;
         }
 
@@ -162,18 +161,18 @@ try {
                     );
                 }
 
-                echo json_encode(['success' => true]);
+                ApiSecurityMiddleware::sendJsonResponse(['success' => true], 200);
             } else {
-                echo json_encode(['success' => false, 'message' => $stmt->error]);
+                ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $stmt->error], 500);
             }
         } else {
-            echo json_encode(['success' => false, 'message' => 'No IDs provided']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'No IDs provided'], 400);
         }
     } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid request method'], 405);
     }
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
 }
 
 function test_input($data)

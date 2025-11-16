@@ -24,11 +24,11 @@ try {
 
     // Validate year and month
     if ($year < 2020 || $year > 2100) {
-        echo json_encode(['success' => false, 'message' => 'Invalid year']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid year'], 400);
         exit;
     }
     if ($month < 1 || $month > 12) {
-        echo json_encode(['success' => false, 'message' => 'Invalid month']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid month'], 400);
         exit;
     }
 

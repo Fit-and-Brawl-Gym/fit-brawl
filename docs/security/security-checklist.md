@@ -183,7 +183,7 @@ Comprehensive security checklist tracking all security measures, their implement
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
 | Secure filename generation | Critical | ✅ | Random 32-character hex filenames (`bin2hex(random_bytes(16))`). |
-| Upload directory outside web root | High | 🟡 | Uploads in `/uploads/` directory. Needs verification that it's not web-accessible or has proper `.htaccess`. |
+| Upload directory outside web root | High | ✅ | Uploads in `/uploads/` directory. Comprehensive `.htaccess` protection: blocks PHP/script execution, prevents directory listing, disables SSI/CGI, allows only safe file types (images, PDFs), blocks hidden/config files, sets security headers. |
 | Prevent PHP execution in uploads | Critical | ✅ | `.htaccess` in uploads directory with `php_flag engine off`. |
 | File permissions | High | ✅ | Files set to 0664, owned by www-data. |
 | Directory listing prevention | Medium | ✅ | `.htaccess` prevents directory listing. |
@@ -276,7 +276,7 @@ Comprehensive security checklist tracking all security measures, their implement
 | Structured logging | Medium | ❌ | Plain text logs only. |
 | Log rotation | Medium | ❌ | No automated log rotation. |
 | Log retention policy | Medium | ❌ | Not defined. |
-| Security event logging | High | 🟡 | Some security events logged (failed logins, CSRF failures). Needs comprehensive coverage. |
+| Security event logging | High | ✅ | `SecurityEventLogger` class provides comprehensive security event logging. Logs CSRF failures, rate limit violations, unauthorized access attempts, authentication failures, suspicious activity, and file upload events. Events stored in `security_events` table with severity levels, user context, IP addresses, and endpoint information. Integrated into `ApiSecurityMiddleware` for automatic logging of security violations. |
 | Access logging | Medium | ❌ | No web server access logs configured. |
 | Audit log integrity | High | ❌ | No cryptographic signing of audit logs. |
 
@@ -477,8 +477,8 @@ All payment-related security measures are deferred until a real payment processo
 ## Summary Statistics
 
 - **Total Controls**: ~150
-- **✅ Implemented**: ~50 (33%)
-- **🟡 Partial**: ~20 (13%)
+- **✅ Implemented**: ~52 (35%)
+- **🟡 Partial**: ~18 (12%)
 - **⏸️ Deferred**: ~15 (10%)
 - **❌ Not Implemented**: ~65 (43%)
 
@@ -555,6 +555,19 @@ All payment-related security measures are deferred until a real payment processo
 - Read endpoints: 30-60 requests / minute
 - Admin APIs: 20 requests / minute
 - Admin read endpoints: 30 requests / minute
+
+**Security Event Logging:**
+- Comprehensive `SecurityEventLogger` class
+- Logs CSRF failures, rate limit violations, unauthorized access attempts
+- Stores events in `security_events` table with severity levels
+- Integrated into `ApiSecurityMiddleware` for automatic logging
+- Includes user context, IP addresses, endpoints, and detailed context
+
+**File Upload Security:**
+- Enhanced `.htaccess` protection in uploads directory
+- Blocks PHP/script execution, prevents directory listing
+- Disables SSI/CGI, allows only safe file types
+- Blocks hidden/config files, sets security headers
 
 ---
 

@@ -2,12 +2,13 @@
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
-header('Content-Type: application/json');
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // Only admins can access this API
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
     exit;
 }
 
@@ -19,7 +20,7 @@ if ($rateCheck['blocked']) {
     header('X-RateLimit-Limit: 20');
     header('X-RateLimit-Remaining: 0');
     header('Retry-After: ' . $rateCheck['retry_after']);
-    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
     exit;
 }
 header('X-RateLimit-Limit: 20');
@@ -43,9 +44,9 @@ switch ($action) {
                 $data[] = $row;
             }
             $stmt->close();
-            echo json_encode(['success' => true, 'data' => $data]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'data' => $data], 200);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Database error']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Database error'], 500);
         }
         break;
 
@@ -53,8 +54,7 @@ switch ($action) {
         // Validate CSRF token
         $csrfToken = $_POST['csrf_token'] ?? '';
         if (!CSRFProtection::validateToken($csrfToken)) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
             exit;
         }
 
@@ -63,17 +63,16 @@ switch ($action) {
             $stmt = $conn->prepare("DELETE FROM feedback WHERE id=?");
             $stmt->bind_param('i', $id);
             if ($stmt->execute()) {
-                echo json_encode(['success' => true, 'message' => 'Feedback deleted']);
+                ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Feedback deleted'], 200);
             } else {
-                echo json_encode(['success' => false, 'message' => 'Delete failed']);
+                ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Delete failed'], 500);
             }
             $stmt->close();
         } else {
-            echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid ID'], 400);
         }
         break;
 
     default:
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid action'], 400);
 }

@@ -1,24 +1,24 @@
 <?php
 session_start();
-header('Content-Type: application/json');
 
 // Disable HTML error output
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
+require_once '../../../../includes/db_connect.php';
+require_once '../../../../includes/csrf_protection.php';
+require_once '../../../../includes/api_security_middleware.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
     exit;
 }
 
-require_once '../../../../includes/db_connect.php';
-require_once '../../../../includes/csrf_protection.php';
-
 $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
 if (!CSRFProtection::validateToken($csrfToken)) {
-    http_response_code(419);
-    echo json_encode(['success' => false, 'message' => 'Invalid or missing CSRF token']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid or missing CSRF token'], 419);
     exit;
 }
 
@@ -99,17 +99,16 @@ try {
     $log_stmt->bind_param("ssis", $admin_id, $admin_name, $id, $details);
     $log_stmt->execute();
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'message' => ucfirst($action) . ' completed successfully'
-    ]);
+    ], 200);
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => $e->getMessage()
-    ]);
+    ], 500);
 }
 
 if (isset($conn)) {

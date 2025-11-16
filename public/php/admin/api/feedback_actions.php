@@ -1,18 +1,19 @@
 <?php
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\api\feedback_actions.php
 session_start();
-header('Content-Type: application/json');
-
-// Check admin authentication
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
-}
 
 require_once '../../../../includes/db_connect.php';
 require_once '../../../../includes/csrf_protection.php';
 require_once '../../../../includes/api_rate_limiter.php';
+require_once '../../../../includes/api_security_middleware.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
+
+// Check admin authentication
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
+    exit;
+}
 
 // Rate limiting for admin APIs - 20 requests per minute per admin
 $adminId = $_SESSION['user_id'] ?? 'unknown';
@@ -22,7 +23,7 @@ if ($rateCheck['blocked']) {
     header('X-RateLimit-Limit: 20');
     header('X-RateLimit-Remaining: 0');
     header('Retry-After: ' . $rateCheck['retry_after']);
-    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
     exit;
 }
 header('X-RateLimit-Limit: 20');
@@ -37,8 +38,7 @@ $id = (int) ($input['id'] ?? 0);
 // Validate CSRF token
 $csrfToken = $input['csrf_token'] ?? '';
 if (!CSRFProtection::validateToken($csrfToken)) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'CSRF token validation failed'], 403);
     exit;
 }
 
@@ -46,7 +46,7 @@ if (!CSRFProtection::validateToken($csrfToken)) {
 error_log("Feedback action: $action, ID: $id, Input: " . json_encode($input));
 
 if (!$id) {
-    echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid ID'], 400);
     exit;
 }
 
@@ -86,7 +86,7 @@ switch ($action) {
         $checkResult = $checkStmt->get_result();
 
         if ($checkResult->num_rows == 0) {
-            echo json_encode(['success' => false, 'message' => "No feedback found with $primaryKey = $id"]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => "No feedback found with $primaryKey = $id"], 404);
             $checkStmt->close();
             break;
         }
@@ -96,7 +96,7 @@ switch ($action) {
         $stmt = $conn->prepare("UPDATE feedback SET is_visible = ? WHERE $primaryKey = ?");
 
         if (!$stmt) {
-            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Prepare failed: ' . $conn->error], 500);
             break;
         }
 
@@ -104,9 +104,9 @@ switch ($action) {
 
         if ($stmt->execute()) {
             // Success even if no rows changed (already had that visibility value)
-            echo json_encode(['success' => true, 'message' => 'Visibility updated']);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Visibility updated'], 200);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Execute failed: ' . $stmt->error], 500);
         }
         $stmt->close();
         break;
@@ -115,7 +115,7 @@ switch ($action) {
         $stmt = $conn->prepare("DELETE FROM feedback WHERE $primaryKey = ?");
 
         if (!$stmt) {
-            echo json_encode(['success' => false, 'message' => 'Prepare failed: ' . $conn->error]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Prepare failed: ' . $conn->error], 500);
             break;
         }
 
@@ -123,18 +123,18 @@ switch ($action) {
 
         if ($stmt->execute()) {
             if ($stmt->affected_rows > 0) {
-                echo json_encode(['success' => true, 'message' => 'Feedback deleted']);
+                ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Feedback deleted'], 200);
             } else {
-                echo json_encode(['success' => false, 'message' => "No rows deleted for $primaryKey = $id"]);
+                ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => "No rows deleted for $primaryKey = $id"], 404);
             }
         } else {
-            echo json_encode(['success' => false, 'message' => 'Execute failed: ' . $stmt->error]);
+            ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Execute failed: ' . $stmt->error], 500);
         }
         $stmt->close();
         break;
 
     default:
-        echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid action'], 400);
 }
 
 $conn->close();

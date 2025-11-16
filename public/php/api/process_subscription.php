@@ -98,7 +98,7 @@ $filename = null;
 if ($payment_method === 'online') {
     // Validate and upload file securely
     if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
-        echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Please upload a payment receipt'], 400);
         exit;
     }
 
@@ -116,7 +116,7 @@ if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists
     $result = $uploadHandler->uploadFile($_FILES['receipt']);
 
     if (!$result['success']) {
-        echo json_encode(['success' => false, 'message' => $result['message']]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $result['message']], 400);
         exit;
     }
 
@@ -130,12 +130,12 @@ if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists
     $fileSize = $_FILES['receipt']['size'];
 
     if (!in_array($fileType, $allowedTypes)) {
-        echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, and PDF are allowed.']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, and PDF are allowed.'], 400);
         exit;
     }
 
     if ($fileSize > 10 * 1024 * 1024) {
-        echo json_encode(['success' => false, 'message' => 'File size must be less than 10MB']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'File size must be less than 10MB'], 400);
         exit;
     }
 
@@ -144,7 +144,7 @@ if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists
     $uploadPath = $uploadDir . $filename;
 
     if (!move_uploaded_file($_FILES['receipt']['tmp_name'], $uploadPath)) {
-        echo json_encode(['success' => false, 'message' => 'Failed to upload file']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Failed to upload file'], 500);
         exit;
     }
 }
@@ -164,7 +164,7 @@ $planMapping = [
 ];
 
 if (!isset($planMapping[$plan])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid membership plan: ' . htmlspecialchars($plan)]);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid membership plan: ' . htmlspecialchars($plan)], 400);
     exit;
 }
 
@@ -183,7 +183,7 @@ if (!$membership) {
     } elseif ($plan === 'resolution-regular') {
         $membership = ['plan_name' => 'Resolution Regular'];
     } else {
-        echo json_encode(['success' => false, 'message' => 'Membership plan not found']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Membership plan not found'], 404);
         exit;
     }
 }
@@ -205,11 +205,11 @@ if ($existing && $existing['request_status'] === 'pending') {
     $has_payment_method = $payment_method_col_check->num_rows > 0;
 
     if ($has_payment_method && $existing['payment_method'] === 'online') {
-        echo json_encode(['success' => false, 'message' => 'Your online payment is still pending approval.']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Your online payment is still pending approval.'], 400);
         exit;
     } elseif (!$has_payment_method) {
         // Old schema without payment_method column
-        echo json_encode(['success' => false, 'message' => 'Upgrade or membership request already pending approval.']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Upgrade or membership request already pending approval.'], 400);
         exit;
     }
     // If it's a cash payment that's pending, allow new submission (will be treated as upgrade/new)
