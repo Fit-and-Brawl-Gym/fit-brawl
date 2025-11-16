@@ -1,7 +1,11 @@
 <?php
 // Check if this is an API request
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../includes/config.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -675,7 +679,7 @@ require_once __DIR__ . '/../../includes/header.php';
     <?php endif; // End of membership plans display (show for non-members or grace period) ?>
 </main>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     // Pass login status to JavaScript
     window.userLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
 </script>

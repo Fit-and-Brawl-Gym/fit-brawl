@@ -4,6 +4,7 @@ require_once __DIR__ . '/../../includes/config.php';  // Add config for BASE_PAT
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/user_id_generator.php'; // Add ID generator
 require_once __DIR__ . '/../../includes/password_policy.php';
+require_once __DIR__ . '/../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/rate_limiter.php';
 include_once __DIR__ . '/../../includes/env_loader.php';
@@ -14,6 +15,9 @@ require __DIR__ . '/../../vendor/autoload.php';
 require '../../vendor/autoload.php';
 // Email template helper (adds header/footer and AltBody)
 require_once __DIR__ . '/../../includes/email_template.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $csrfToken = $_POST['csrf_token'] ?? '';

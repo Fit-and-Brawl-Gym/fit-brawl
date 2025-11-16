@@ -1,7 +1,11 @@
 <?php
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Initialize session manager
 SessionManager::initialize();
@@ -85,7 +89,7 @@ $additionalJS = [
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
 </script>
 
@@ -648,7 +652,7 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
 </main>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     // Pass membership expiration data to JavaScript
     <?php if ($activeMembership): ?>
         window.membershipEndDate = '<?= $activeMembership['end_date'] ?>';

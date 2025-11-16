@@ -2,7 +2,11 @@
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\products.php
 include_once('../../../includes/init.php');
 require_once '../../../includes/config.php';
+require_once __DIR__ . '/../../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../../includes/csrf_protection.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -406,13 +410,13 @@ unset($p);
         // Pass PHP environment paths to JavaScript
         window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
     </script>
-    
+
     <!-- DSA Utilities -->
     <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
-    
+
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/products.js"></script>
-    
+
     <!-- DSA Integration -->
     <script src="<?= PUBLIC_PATH ?>/js/dsa/products-dsa-integration.js?v=<?= time() ?>"></script>
 </body>

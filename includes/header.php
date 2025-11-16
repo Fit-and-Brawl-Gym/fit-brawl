@@ -262,7 +262,7 @@ if (!isset($ogImage)) {
             <nav class="nav-bar member-nav">
                 <ul>
                     <li>
-                        <a href="loggedin-index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
+                        <a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
                             <i class="fas fa-home"></i>
                         </a>
                     </li>

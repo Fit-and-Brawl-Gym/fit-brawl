@@ -1,7 +1,11 @@
 <?php
 require_once '../../includes/db_connect.php';
 require_once '../../includes/session_manager.php';
+require_once '../../includes/csp_nonce.php';
 require_once '../../includes/csrf_protection.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -152,7 +156,7 @@ $pageCsrfToken = CSRFProtection::generateToken();
 require_once '../../includes/header.php';
 ?>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
 </script>
 
@@ -241,7 +245,7 @@ require_once '../../includes/header.php';
         </div>
     </main>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     // Initialize Flatpickr date picker for service date after DOM and scripts load
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof flatpickr !== 'undefined') {

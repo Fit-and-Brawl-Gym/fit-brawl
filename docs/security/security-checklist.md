@@ -155,7 +155,7 @@ Comprehensive security checklist tracking all security measures, their implement
 | Permissions-Policy | High | ✅ | Restricts camera, microphone, geolocation via `security_headers.php`. |
 | Cross-Origin-Opener-Policy | High | ✅ | Set to `same-origin` via `security_headers.php`. |
 | Content-Security-Policy (CSP) | High | ✅ | Baseline CSP applied site-wide via `security_headers.php`. Allows CDN scripts/styles. |
-| CSP nonce support | Medium | ❌ | CSP uses `unsafe-inline` for scripts. Nonce-based CSP would be more secure. |
+| CSP nonce support | Medium | ✅ | `CSPNonce` class generates unique nonces per request. `applyGlobalSecurityHeaders(true)` enables nonce-based CSP without unsafe-inline. Helper methods `getScriptNonceAttr()` and `getStyleNonceAttr()` for easy integration. Pages can opt-in to stronger CSP by using nonces on inline scripts/styles. Documented in `docs/security/csp-nonce-implementation.md`. |
 
 ### Network Security
 | Control | Priority | Status | Implementation Details |
@@ -178,7 +178,7 @@ Comprehensive security checklist tracking all security measures, their implement
 | MIME-extension matching | Critical | ✅ | Validates that MIME type matches file extension. |
 | File size limits | Critical | ✅ | Configurable max size (2MB for images, 10MB for receipts). |
 | File content scanning | Medium | ❌ | No antivirus scanning. |
-| Image reprocessing | High | ❌ | No image reprocessing to strip metadata and validate image integrity. |
+| Image reprocessing | High | ✅ | GD library reprocesses images to strip EXIF metadata and validate integrity. Prevents decompression bombs with dimension checks (max 5000x5000). Images resaved with quality settings (JPEG 90%, PNG level 6). Gracefully handles GD unavailability. |
 
 ### File Storage Security
 | Control | Priority | Status | Implementation Details |
@@ -264,19 +264,19 @@ Comprehensive security checklist tracking all security measures, their implement
 ### Error Handling
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Generic error messages to users | Critical | ✅ | `error_config.php` sets `display_errors = 0`. Generic messages shown to users. |
+| Generic error messages to users | Critical | ✅ | `error_config.php` sets `display_errors = 0`. Generic messages shown to users. Custom error pages created for 404 and 500 errors. |
 | Detailed error logging | Critical | ✅ | Errors logged to `logs/php_errors.log` via `error_log()`. |
 | Error message sanitization | Critical | ✅ | No sensitive information exposed in user-facing errors. |
 | Stack trace hiding | Critical | ✅ | Stack traces not shown to users. |
-| Error page customization | Medium | ❌ | No custom error pages (500, 404, etc.). |
+| Error page customization | Medium | ✅ | Custom branded 404 and 500 error pages created (`public/php/error/404.php` and `500.php`). Pages styled with `public/css/pages/error.css`. Error pages use CSP nonces and don't expose system information. Configured via `.htaccess`. |
 
 ### Logging
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
 | Centralized logging | High | ✅ | `CentralizedLogger` class provides unified logging system. Aggregates logs from multiple sources (security, activity, application, database, email, system) into `unified_logs` table. Supports structured logging with JSON context, flexible querying by level/source/category/user/IP/date, statistics aggregation, and automatic cleanup. Integrated with `SecurityEventLogger` and `ActivityLogger` for automatic forwarding. Documented in `docs/security/centralized-logging-setup.md`. |
 | Structured logging | Medium | ✅ | `CentralizedLogger` supports structured logging with JSON context. All logs include structured fields (level, source, category, user_id, username, ip_address, endpoint, context JSON). Security and activity loggers forward structured data to centralized logger. |
-| Log rotation | Medium | ❌ | No automated log rotation. |
-| Log retention policy | Medium | ❌ | Not defined. |
+| Log rotation | Medium | ✅ | Automated log rotation implemented with three options: Bash script (`scripts/rotate-logs.sh`), Windows batch (`scripts/rotate-logs.bat`), and PHP script (`scripts/rotate_logs.php`). Rotates logs when they exceed 10MB, keeps 10 rotations, deletes logs older than 30 days. Can be scheduled via cron or Windows Task Scheduler. |
+| Log retention policy | Medium | ✅ | 30-day retention policy implemented in rotation scripts. Old logs automatically deleted. |
 | Security event logging | High | ✅ | `SecurityEventLogger` class provides comprehensive security event logging. Logs CSRF failures, rate limit violations, unauthorized access attempts, authentication failures, suspicious activity, and file upload events. Events stored in `security_events` table with severity levels, user context, IP addresses, and endpoint information. Integrated into `ApiSecurityMiddleware` for automatic logging of security violations. |
 | Access logging | Medium | ❌ | No web server access logs configured. |
 | Audit log integrity | High | ❌ | No cryptographic signing of audit logs. |

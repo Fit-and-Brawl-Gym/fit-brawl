@@ -1,6 +1,10 @@
 <?php
 include_once('../../../includes/init.php');
+require_once __DIR__ . '/../../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../../includes/csrf_protection.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -415,10 +419,10 @@ unset($it);
 
   <!-- DSA Utilities -->
   <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
-  
+
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/equipment.js?=v1"></script>
-  
+
   <!-- DSA Integration -->
   <script src="<?= PUBLIC_PATH ?>/js/dsa/equipment-dsa-integration.js?v=<?= time() ?>"></script>
 </body>

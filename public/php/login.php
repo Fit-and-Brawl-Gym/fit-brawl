@@ -9,10 +9,14 @@ header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
 require_once __DIR__ . '/../../includes/config.php';
+require_once __DIR__ . '/../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../includes/security_headers.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/rate_limiter.php';
 require_once __DIR__ . '/../../includes/mail_config.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -317,7 +321,7 @@ require_once __DIR__ . '/../../includes/header.php';
     </section>
 </main>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     (function () {
         const retryInput = document.getElementById('loginRetryAfter');
         if (!retryInput) return;
