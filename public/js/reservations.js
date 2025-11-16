@@ -1,19 +1,21 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Booking state
+    // Booking state - updated for time-based booking
     const bookingState = {
         date: null,
-        session: null,
         classType: null,
         trainerId: null,
         trainerName: null,
+        startTime: null,
+        endTime: null,
+        duration: null,
         currentStep: 1,
-        facilityFull: false,
-        hasAvailableTrainers: false,
-        weeklyLimit: 12,
-        currentWeekCount: 0,
-        currentWeekRemaining: 12,
-        selectedWeekCount: 0,
-        selectedWeekFull: false
+        weeklyLimit: 48, // 48 hours in hours
+        weeklyLimitMinutes: 2880, // 48 hours in minutes
+        currentWeekUsage: 0, // in hours
+        currentWeekUsageMinutes: 0, // in minutes
+        selectedWeekUsage: 0,
+        trainerShiftInfo: null,
+        availableSlots: []
     };
 
     const rateLimitCountdowns = new Map();
@@ -175,6 +177,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return token;
     }
+    // Flatpickr instances
+    let startTimePicker = null;
+    let endTimePicker = null;
 
     // Initialize
     init();
@@ -184,6 +189,9 @@ document.addEventListener('DOMContentLoaded', function () {
         loadUserBookings();
         renderCalendar();
         setupEventListeners();
+        setupClassSelection();
+        setupTrainerSelection();
+        updateWizardStep(); // Show step 1 on page load
     }
 
     // ===================================
@@ -218,37 +226,52 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ===================================
-    // LOAD WEEKLY BOOKINGS COUNT
+    // LOAD WEEKLY BOOKINGS COUNT (TIME-BASED)
     // ===================================
     function loadWeeklyBookings() {
         fetch('api/get_user_bookings.php')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const count = data.summary.weekly_count;
-                    const remaining = data.summary.weekly_remaining;
-                    const limit = data.summary.weekly_limit || 12;
+                    // Get weekly usage from API response
+                    const weeklyUsage = data.weekly_usage || {};
+                    const totalMinutes = weeklyUsage.total_minutes || 0;
+                    const limitHours = weeklyUsage.limit_hours || 48;
+                    const remainingMinutes = weeklyUsage.remaining_minutes || 0;
+
+                    // Convert to hours and minutes for display
+                    const usedHours = Math.floor(totalMinutes / 60);
+                    const usedMinutes = totalMinutes % 60;
+                    const remainingHours = Math.floor(remainingMinutes / 60);
+                    const remainingMins = remainingMinutes % 60;
 
                     // Store current week data
-                    bookingState.currentWeekCount = count;
-                    bookingState.currentWeekRemaining = remaining;
-                    bookingState.weeklyLimit = limit;
+                    bookingState.currentWeekUsage = usedHours + (usedMinutes / 60);
+                    bookingState.currentWeekUsageMinutes = totalMinutes;
+                    bookingState.weeklyLimit = limitHours;
 
-                    // Store all bookings for per-week calculations
+                    // Store all bookings for calculations
                     allBookingsData.all = data.bookings || [];
 
-                    const weeklyCountEl = document.getElementById('weeklyBookingsCount');
+                    const weeklyCountEl = document.getElementById('weeklyHoursUsed');
+                    const weeklyMaxEl = document.getElementById('weeklyHoursMax');
                     const weeklyTextEl = document.getElementById('weeklyProgressText');
 
                     if (weeklyCountEl) {
-                        weeklyCountEl.textContent = count;
+                        weeklyCountEl.textContent = usedMinutes > 0 ? `${usedHours}h ${usedMinutes}m` : `${usedHours}h`;
+                    }
+                    if (weeklyMaxEl) {
+                        weeklyMaxEl.textContent = `/${limitHours}h`;
                     }
                     if (weeklyTextEl) {
-                        if (remaining === 0) {
-                            weeklyTextEl.textContent = `This week's limit reached (${limit} max)`;
+                        if (remainingMinutes <= 0) {
+                            weeklyTextEl.textContent = `This week's limit reached (${limitHours}h max)`;
                             weeklyTextEl.style.color = '#ff9800';
                         } else {
-                            weeklyTextEl.textContent = `${remaining} bookings remaining this week`;
+                            const remainingText = remainingMins > 0 ? 
+                                `${remainingHours}h ${remainingMins}m remaining this week` : 
+                                `${remainingHours}h remaining this week`;
+                            weeklyTextEl.textContent = remainingText;
                             weeklyTextEl.style.color = '';
                         }
                     }
@@ -551,15 +574,14 @@ document.addEventListener('DOMContentLoaded', function () {
             // If booking is today, check if session hasn't ended yet
             if (bookingDate.getTime() === today.getTime()) {
                 const currentHour = now.getHours();
-                const sessionEnd = {
-                    'Morning': 11,
-                    'Afternoon': 17,
-                    'Evening': 22
-                };
-
-                if (currentHour < (sessionEnd[booking.session_time] || 24)) {
-                    nextBooking = booking;
-                    break;
+                
+                // Check if time-based booking
+                if (booking.start_time && booking.end_time) {
+                    const endTime = new Date(booking.end_time);
+                    if (now < endTime) {
+                        nextBooking = booking;
+                        break;
+                    }
                 }
             }
         }
@@ -591,12 +613,26 @@ document.addEventListener('DOMContentLoaded', function () {
         // Update date info
         if (upcomingDateEl) {
             let dateText = '';
-            if (isToday) {
-                dateText = `Today, ${nextBooking.session_time}`;
-            } else if (isTomorrow) {
-                dateText = `Tomorrow, ${nextBooking.session_time}`;
+            let timeInfo = '';
+            
+            // Check if time-based booking
+            if (nextBooking.start_time && nextBooking.end_time) {
+                const startTime = new Date(nextBooking.start_time);
+                const endTime = new Date(nextBooking.end_time);
+                const startFormatted = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                const endFormatted = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                timeInfo = `${startFormatted} - ${endFormatted}`;
             } else {
-                dateText = `${bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${nextBooking.session_time}`;
+                // Legacy session-based
+                timeInfo = nextBooking.session_time;
+            }
+            
+            if (isToday) {
+                dateText = `Today, ${timeInfo}`;
+            } else if (isTomorrow) {
+                dateText = `Tomorrow, ${timeInfo}`;
+            } else {
+                dateText = `${bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeInfo}`;
             }
             upcomingDateEl.textContent = dateText;
         }
@@ -607,7 +643,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (trainerSubtextEl) {
-            trainerSubtextEl.textContent = nextBooking.session_hours || nextBooking.session_time;
+            // Show duration for time-based bookings
+            if (nextBooking.start_time && nextBooking.end_time) {
+                const startTime = new Date(nextBooking.start_time);
+                const endTime = new Date(nextBooking.end_time);
+                const durationMinutes = (endTime - startTime) / 1000 / 60;
+                const hours = Math.floor(durationMinutes / 60);
+                const minutes = durationMinutes % 60;
+                const durationDisplay = hours > 0 
+                    ? (minutes > 0 ? `${hours}h ${minutes}m session` : `${hours}h session`)
+                    : `${minutes}m session`;
+                trainerSubtextEl.textContent = durationDisplay;
+            } else {
+                trainerSubtextEl.textContent = '-';
+            }
         }
     }
 
@@ -626,29 +675,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const today = new Date(now);
         today.setHours(0, 0, 0, 0);
 
-        const sessionStartTimes = {
-            'Morning': 7,    // 7 AM
-            'Afternoon': 12, // 12 PM
-            'Evening': 17    // 5 PM
-        };
-
-        const sessionEndTimes = {
-            'Morning': 11,
-            'Afternoon': 17,
-            'Evening': 22
-        };
-
-        container.innerHTML = bookings.map(booking => {
+        container.innerHTML = `
+            <table class="bookings-table">
+                <tbody>
+                    ${bookings.map(booking => {
             // Determine if this booking can actually be cancelled based on current time and 12-hour policy
             const bookingDate = new Date(booking.date + 'T00:00:00');
-            const sessionStartHour = sessionStartTimes[booking.session_time] || 7;
-
-            // Create datetime for session start
-            const sessionStartDateTime = new Date(booking.date + 'T00:00:00');
-            sessionStartDateTime.setHours(sessionStartHour, 0, 0, 0);
-
+            
             // Calculate hours until session starts
-            const hoursUntilSession = (sessionStartDateTime - now) / (1000 * 60 * 60);
+            let hoursUntilSession = 0;
+            if (booking.start_time) {
+                const sessionStartDateTime = new Date(booking.start_time);
+                hoursUntilSession = (sessionStartDateTime - now) / (1000 * 60 * 60);
+            }
 
             let canActuallyCancelNow = false;
             let isWithinCancellationWindow = false;
@@ -658,18 +697,19 @@ document.addEventListener('DOMContentLoaded', function () {
             const todayStr = now.toISOString().split('T')[0];
             const isToday = booking.date === todayStr;
 
-            const isOngoing = isToday && booking.status !== 'cancelled' && (
-                (booking.session_time === 'Morning' && currentHour >= 7 && currentHour < 11) ||
-                (booking.session_time === 'Afternoon' && currentHour >= 13 && currentHour < 17) ||
-                (booking.session_time === 'Evening' && currentHour >= 18 && currentHour < 22)
-            );
+            let isOngoing = false;
+            if (isToday && booking.status !== 'cancelled' && booking.start_time && booking.end_time) {
+                const startTime = new Date(booking.start_time);
+                const endTime = new Date(booking.end_time);
+                isOngoing = now >= startTime && now < endTime;
+            }
 
             // Check if session has ended for today
-            const hasSessionEnded = isToday && (
-                (booking.session_time === 'Morning' && currentHour >= 11) ||
-                (booking.session_time === 'Afternoon' && currentHour >= 17) ||
-                (booking.session_time === 'Evening' && currentHour >= 22)
-            );
+            let hasSessionEnded = false;
+            if (isToday && booking.end_time) {
+                const endTime = new Date(booking.end_time);
+                hasSessionEnded = now >= endTime;
+            }
 
             if (booking.status === 'cancelled') {
                 canActuallyCancelNow = false;
@@ -697,21 +737,53 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
+            // Format time display - check if time-based or legacy
+            let timeDisplay = '';
+            let durationDisplay = '';
+            
+            if (booking.start_time && booking.end_time) {
+                // Time-based booking
+                const startTime = new Date(booking.start_time);
+                const endTime = new Date(booking.end_time);
+                const startFormatted = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                const endFormatted = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                timeDisplay = `${startFormatted} - ${endFormatted}`;
+                
+                // Calculate duration
+                const durationMinutes = (endTime - startTime) / 1000 / 60;
+                const hours = Math.floor(durationMinutes / 60);
+                const minutes = durationMinutes % 60;
+                durationDisplay = hours > 0 
+                    ? (minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`)
+                    : `${minutes}m`;
+            } else {
+                // Legacy session-based booking (fallback for old data)
+                timeDisplay = booking.session_time || '-';
+                durationDisplay = '-';
+            }
+
             return `
-                <div class="booking-item ${booking.status === 'cancelled' ? 'cancelled' : ''}">
-                    <div class="booking-date-badge">
-                        <div class="booking-day">${new Date(booking.date).getDate()}</div>
-                        <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
-                    </div>
-                    <div class="booking-details">
-                        <div class="booking-class">${booking.class_type}</div>
-                        <div class="booking-info">
-                            <span><i class="fas fa-clock"></i> ${booking.session_time} (${booking.session_hours})</span>
-                            <span><i class="fas fa-user"></i> ${booking.trainer_name}</span>
-                            <span><i class="fas fa-calendar"></i> ${booking.day_of_week}</span>
+                <tr class="booking-row ${booking.status === 'cancelled' ? 'cancelled' : ''}">
+                    <td class="booking-date-cell">
+                        <div class="booking-date-badge">
+                            <div class="booking-day">${new Date(booking.date).getDate()}</div>
+                            <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
                         </div>
-                    </div>
-                    <div class="booking-actions">
+                    </td>
+                    <td class="booking-class-cell">${booking.class_type}</td>
+                    <td class="booking-time-cell">
+                        <i class="fas fa-clock"></i> ${timeDisplay}
+                    </td>
+                    <td class="booking-duration-cell">
+                        <span class="duration-badge"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</span>
+                    </td>
+                    <td class="booking-trainer-cell">
+                        <i class="fas fa-user"></i> ${booking.trainer_name}
+                    </td>
+                    <td class="booking-day-cell">
+                        <i class="fas fa-calendar"></i> ${booking.day_of_week}
+                    </td>
+                    <td class="booking-actions-cell">
                         ${(() => {
                     if (isOngoing) {
                         return `
@@ -749,10 +821,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         `;
                     }
                 })()}
-                    </div>
-                </div>
+                    </td>
+                </tr>
             `;
-        }).join('');
+        }).join('')}
+                </tbody>
+            </table>
+        `;
     }
 
     // ===================================
@@ -899,12 +974,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const todayYear = today.getFullYear();
 
         let html = '';
+        let weekDays = [];
+        let dayCount = 0;
 
         // Previous month days (inactive)
         for (let i = firstDay - 1; i >= 0; i--) {
-            html += `<div class="schedule-day inactive">
-                <span class="day-number">${daysInPrevMonth - i}</span>
-            </div>`;
+            weekDays.push({
+                html: `<div class="schedule-day inactive">
+                    <span class="day-number">${daysInPrevMonth - i}</span>
+                </div>`,
+                isPast: true,
+                isInactive: true
+            });
+            dayCount++;
         }
 
         // Current month days
@@ -941,9 +1023,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const clickable = !isPast && !isTooFar && !allSessionsUnavailable && !isPastMembershipExpiration;
             const onClick = clickable ? `onclick="selectDate('${dateStr}')"` : '';
 
-            html += `<div class="${classes.join(' ')}" data-date="${dateStr}" ${onClick}>
-                <span class="day-number">${day}</span>
-            </div>`;
+            weekDays.push({
+                html: `<div class="${classes.join(' ')}" data-date="${dateStr}" ${onClick}>
+                    <span class="day-number">${day}</span>
+                </div>`,
+                isPast: isPast,
+                isInactive: false
+            });
+            dayCount++;
+
+            // Check if we completed a week (7 days)
+            if (dayCount % 7 === 0) {
+                // Check if all days in this week are past or inactive
+                const allPastOrInactive = weekDays.every(d => d.isPast || d.isInactive);
+                
+                // Only add the week if not all days are past/inactive
+                if (!allPastOrInactive) {
+                    html += weekDays.map(d => d.html).join('');
+                }
+                
+                weekDays = [];
+            }
         }
 
         // Next month days (inactive)
@@ -951,9 +1051,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const remainingCells = 7 - (totalCells % 7);
         if (remainingCells < 7) {
             for (let day = 1; day <= remainingCells; day++) {
-                html += `<div class="schedule-day inactive">
-                    <span class="day-number">${day}</span>
-                </div>`;
+                weekDays.push({
+                    html: `<div class="schedule-day inactive">
+                        <span class="day-number">${day}</span>
+                    </div>`,
+                    isPast: true,
+                    isInactive: true
+                });
+                dayCount++;
+            }
+        }
+
+        // Add remaining week if it has any non-past days
+        if (weekDays.length > 0) {
+            const allPastOrInactive = weekDays.every(d => d.isPast || d.isInactive);
+            if (!allPastOrInactive) {
+                html += weekDays.map(d => d.html).join('');
             }
         }
 
@@ -1227,16 +1340,37 @@ document.addEventListener('DOMContentLoaded', function () {
     // STEP 4: LOAD TRAINERS
     // ===================================
     function loadTrainers() {
-        const { date, session, classType } = bookingState;
+        const { date, classType } = bookingState;
         const trainersGrid = document.getElementById('trainersGrid');
         const capacityInfo = document.getElementById('facilityCapacityInfo');
 
+        if (!trainersGrid) {
+            console.error('trainersGrid element not found');
+            return;
+        }
+
+        // Validate required data
+        if (!date || !classType) {
+            console.error('Missing required booking data:', { date, classType });
+            trainersGrid.innerHTML = '<p class="empty-message">Please select a date and class type first</p>';
+            return;
+        }
+
+        // For time-based booking, we just need to check trainer availability for the day
+        // Use "Morning" as default to check general availability (actual time validation happens in step 4)
+        const session = 'Morning';
+
         trainersGrid.innerHTML = '<p class="loading-text">Loading trainers...</p>';
-        capacityInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Checking availability...</span>';
+        if (capacityInfo) {
+            capacityInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Checking availability...</span>';
+        }
+
+        console.log('Loading trainers with:', { date, session, classType });
 
         fetch(`api/get_available_trainers.php?date=${date}&session=${session}&class=${encodeURIComponent(classType)}`)
             .then(response => response.json())
             .then(data => {
+                console.log('Trainer API response:', data);
                 if (data.success) {
                     renderTrainers(data.trainers);
                     updateCapacityInfo(data);
@@ -1293,6 +1427,13 @@ document.addEventListener('DOMContentLoaded', function () {
         bookingState.facilityFull = used >= max;
         bookingState.hasAvailableTrainers = available > 0;
 
+        // Only update UI if element exists
+        if (!capacityInfo) {
+            console.log('facilityCapacityInfo element not found, skipping UI update');
+            updateWizardStep();
+            return;
+        }
+
         if (used >= max) {
             capacityInfo.innerHTML = `
                 <i class="fas fa-exclamation-triangle"></i>
@@ -1342,23 +1483,76 @@ document.addEventListener('DOMContentLoaded', function () {
     // STEP 5: UPDATE SUMMARY
     // ===================================
     function updateSummary() {
-        const { date, session, classType, trainerName } = bookingState;
+        const { date, startTime, endTime, classType, trainerName, duration } = bookingState;
 
-        const sessionHours = {
-            'Morning': '7:00 AM - 11:00 AM',
-            'Afternoon': '1:00 PM - 5:00 PM',
-            'Evening': '6:00 PM - 10:00 PM'
-        };
+        const summaryDateEl = document.getElementById('summaryDate');
+        const summaryTimeEl = document.getElementById('summaryTime');
+        const summaryDurationEl = document.getElementById('summaryDuration');
+        const summaryClassEl = document.getElementById('summaryClass');
+        const summaryTrainerEl = document.getElementById('summaryTrainer');
 
-        document.getElementById('summaryDate').textContent = new Date(date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        document.getElementById('summarySession').textContent = `${session} (${sessionHours[session]})`;
-        document.getElementById('summaryClass').textContent = classType;
-        document.getElementById('summaryTrainer').textContent = trainerName;
+        if (summaryDateEl) {
+            const dateText = date ? new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) : '-';
+            summaryDateEl.innerHTML = dateText;
+        }
+        
+        // Convert 24-hour format to 12-hour format for display
+        const formattedStartTime = startTime ? formatTimeTo12Hour(startTime) : '';
+        const formattedEndTime = endTime ? formatTimeTo12Hour(endTime) : '';
+        const timeText = (formattedStartTime && formattedEndTime) ? `${formattedStartTime} - ${formattedEndTime}` : '-';
+        
+        if (summaryTimeEl) {
+            summaryTimeEl.innerHTML = timeText;
+        }
+        
+        const durationMinutes = duration || 0;
+        let durationText = '';
+        if (durationMinutes === 0) {
+            durationText = '-';
+        } else if (durationMinutes < 60) {
+            durationText = `${durationMinutes} minutes`;
+        } else {
+            const hours = Math.floor(durationMinutes / 60);
+            const mins = durationMinutes % 60;
+            if (mins === 0) {
+                durationText = `${hours} hour${hours > 1 ? 's' : ''}`;
+            } else {
+                durationText = `${hours} hour${hours > 1 ? 's' : ''} ${mins} minutes`;
+            }
+        }
+        if (summaryDurationEl) {
+            summaryDurationEl.innerHTML = durationText;
+        }
+        
+        if (summaryClassEl) {
+            summaryClassEl.innerHTML = classType || '-';
+        }
+        if (summaryTrainerEl) {
+            summaryTrainerEl.innerHTML = trainerName || '-';
+        }
+    }
+    
+    // Helper function to format 24-hour time to 12-hour
+    function formatTimeTo12Hour(time24) {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
+    }
+    
+    // Helper function to format 24-hour time to 12-hour
+    function formatTimeTo12Hour(time24) {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
     }
 
     // ===================================
@@ -1371,13 +1565,19 @@ document.addEventListener('DOMContentLoaded', function () {
     if (confirmBtn && !confirmBtn.hasAttribute('data-listener-attached')) {
         confirmBtn.setAttribute('data-listener-attached', 'true');
         confirmBtn.addEventListener('click', function handleBookingConfirm(e) {
-            e.preventDefault(); // Prevent any default behavior
+            e.preventDefault();
 
-            const { trainerId, classType, date, session } = bookingState;
+            const { trainerId, classType, date, startTime, endTime } = bookingState;
             const button = this;
 
             // Prevent double-clicking
             if (button.disabled) {
+                return;
+            }
+
+            // Validate required fields
+            if (!trainerId || !classType || !date || !startTime || !endTime) {
+                showToast('Please complete all booking fields', 'error');
                 return;
             }
 
@@ -1390,6 +1590,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
                 return;
             }
+            // Convert time strings to full datetime
+            const startDateTime = convertToDateTime(date, startTime);
+            const endDateTime = convertToDateTime(date, endTime);
 
             const formData = new URLSearchParams();
             formData.append('trainer_id', trainerId);
@@ -1397,6 +1600,9 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('booking_date', date);
             formData.append('session_time', session);
             formData.append('csrf_token', csrfToken);
+            formData.append('start_time', startDateTime);
+            formData.append('end_time', endDateTime);
+            formData.append('csrf_token', getCsrfToken());
 
             fetch('api/book_session.php', {
                 method: 'POST',
@@ -1410,46 +1616,36 @@ document.addEventListener('DOMContentLoaded', function () {
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Booking response:', data); // Debug log
                     if (data.success) {
                         dismissRateLimitBanner('booking');
                         console.log('Booking successful, showing toast'); // Debug log
                         showToast('Session booked successfully!', 'success');
 
-                        // Show updated weekly count for the booked week
-                        if (data.details && data.details.user_weekly_bookings !== undefined) {
-                            const bookedDate = new Date(bookingState.date + 'T00:00:00');
-                            const weekBounds = getWeekBoundaries(bookingState.date);
-                            const weekStart = new Date(weekBounds.start + 'T00:00:00');
-                            const weekEnd = new Date(weekBounds.end + 'T00:00:00');
-
+                        // Show weekly usage update
+                        if (data.data && data.data.weekly_usage_hours !== undefined) {
                             setTimeout(() => {
                                 showToast(
-                                    `You now have ${data.details.user_weekly_bookings}/12 bookings for the week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+                                    `Weekly usage: ${data.data.weekly_usage_hours.toFixed(1)}h / ${data.data.weekly_limit_hours}h`,
                                     'info',
                                     4000
                                 );
                             }, 1000);
                         }
 
-                        // Reset button state BEFORE resetting wizard
+                        // Reset button state
                         button.disabled = false;
                         button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
 
-                        console.log('Reloading bookings data'); // Debug log
-                        // Reload data first
+                        // Reload data
                         loadWeeklyBookings();
                         loadUserBookings();
 
-                        console.log('Attempting to reset wizard'); // Debug log
-                        // Reset wizard after a short delay to allow data to load
+                        // Reset wizard
                         setTimeout(() => {
                             try {
                                 resetWizard();
-                                console.log('Wizard reset successful'); // Debug log
                             } catch (err) {
                                 console.error('Error resetting wizard:', err);
-                                // Fallback: just reload the page
                                 setTimeout(() => {
                                     window.location.reload();
                                 }, 1000);
@@ -1476,6 +1672,350 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ===================================
+    // TIME PICKER INITIALIZATION
+    // ===================================
+    function initializeTimePickers() {
+        console.log('Initializing time pickers');
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+
+        console.log('Time input elements:', { startTimeInput, endTimeInput });
+
+        if (!startTimeInput || !endTimeInput) {
+            console.error('Time picker inputs not found');
+            return;
+        }
+
+        // Generate 30-minute interval times from 7:00 AM to 10:00 PM
+        const timeSlots = generateTimeSlots();
+
+        // Initialize start time picker
+        startTimePicker = flatpickr(startTimeInput, {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "h:i K",
+            time_24hr: false,
+            minuteIncrement: 30,
+            minTime: "07:00",
+            maxTime: "22:00",
+            defaultHour: 8,
+            defaultMinute: 0,
+            onChange: function(selectedDates, dateStr, instance) {
+                bookingState.startTime = dateStr;
+                
+                // Update end time picker minimum
+                if (endTimePicker) {
+                    const startDate = selectedDates[0];
+                    if (startDate) {
+                        const minEndDate = new Date(startDate);
+                        minEndDate.setMinutes(minEndDate.getMinutes() + 30);
+                        endTimePicker.set('minTime', formatTime(minEndDate));
+                    }
+                }
+                
+                updateDurationDisplay();
+                updateNextButton();
+            }
+        });
+
+        // Initialize end time picker
+        endTimePicker = flatpickr(endTimeInput, {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "h:i K",
+            time_24hr: false,
+            minuteIncrement: 30,
+            minTime: "07:30",
+            maxTime: "22:00",
+            defaultHour: 9,
+            defaultMinute: 30,
+            onChange: function(selectedDates, dateStr, instance) {
+                bookingState.endTime = dateStr;
+                updateDurationDisplay();
+                updateNextButton();
+            }
+        });
+    }
+
+    function generateTimeSlots() {
+        const slots = [];
+        const start = new Date();
+        start.setHours(7, 0, 0, 0);
+        const end = new Date();
+        end.setHours(22, 0, 0, 0);
+
+        while (start <= end) {
+            slots.push(formatTime(start));
+            start.setMinutes(start.getMinutes() + 30);
+        }
+
+        return slots;
+    }
+
+    function formatTime(date) {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    }
+
+    // ===================================
+    // LOAD TRAINER AVAILABILITY
+    // ===================================
+    function loadTrainerAvailability() {
+        console.log('Loading trainer availability:', { trainerId: bookingState.trainerId, date: bookingState.date });
+        if (!bookingState.trainerId || !bookingState.date) {
+            console.error('Missing trainer ID or date');
+            return;
+        }
+
+        const shiftInfo = document.getElementById('trainerShiftInfo');
+        if (shiftInfo) {
+            shiftInfo.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading availability...</div>';
+        }
+
+        const formData = new FormData();
+        formData.append('trainer_id', bookingState.trainerId);
+        formData.append('date', bookingState.date);
+        formData.append('class_type', bookingState.classType);
+
+        fetch('api/get_trainer_availability.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Trainer availability response:', data);
+            if (data.success) {
+                bookingState.availableSlots = data.available_slots || [];
+                bookingState.trainerShiftInfo = data.shift_info;
+                
+                displayShiftInfo(data.shift_info);
+                displayAvailableSlots(data.available_slots);
+            } else {
+                showToast(data.message || 'Failed to load availability', 'error');
+                displayShiftInfo(null);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading availability:', error);
+            showToast('Error loading trainer availability', 'error');
+        });
+    }
+
+    function displayShiftInfo(shiftInfo) {
+        const container = document.getElementById('trainerShiftInfo');
+        if (!container) return;
+
+        if (!shiftInfo) {
+            container.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Trainer not available on this date</div>';
+            return;
+        }
+
+        const shiftTypeEl = document.getElementById('shiftType');
+        const shiftHoursEl = document.getElementById('shiftHours');
+        const breakTimeEl = document.getElementById('breakTime');
+
+        if (shiftTypeEl) {
+            const shiftIcons = {
+                'morning': 'fa-sun',
+                'afternoon': 'fa-cloud-sun',
+                'night': 'fa-moon'
+            };
+            const icon = shiftIcons[shiftInfo.shift_type] || 'fa-clock';
+            shiftTypeEl.innerHTML = `<i class="fas ${icon}"></i> ${shiftInfo.shift_type.charAt(0).toUpperCase() + shiftInfo.shift_type.slice(1)} Shift`;
+        }
+
+        if (shiftHoursEl) {
+            shiftHoursEl.textContent = `${shiftInfo.start_time_formatted} - ${shiftInfo.end_time_formatted}`;
+        }
+
+        if (breakTimeEl && shiftInfo.break_formatted) {
+            breakTimeEl.innerHTML = `<i class="fas fa-coffee"></i> Break: ${shiftInfo.break_formatted}`;
+        }
+    }
+
+    function displayAvailableSlots(slots) {
+        const preview = document.getElementById('availableSlotsPreview');
+        const grid = document.getElementById('slotsGrid');
+
+        if (!preview || !grid || !slots || slots.length === 0) {
+            if (preview) preview.style.display = 'none';
+            return;
+        }
+
+        preview.style.display = 'block';
+        grid.innerHTML = '';
+
+        slots.forEach(slot => {
+            const slotBtn = document.createElement('button');
+            slotBtn.className = 'slot-button';
+            slotBtn.textContent = slot.formatted_time;
+            slotBtn.title = `${slot.start_time} - ${slot.end_time}`;
+            
+            slotBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                selectTimeSlot(slot);
+            });
+
+            grid.appendChild(slotBtn);
+        });
+    }
+
+    function selectTimeSlot(slot) {
+        // Extract time from formatted slot (e.g., "8:00 AM - 8:30 AM")
+        const times = slot.formatted_time.split(' - ');
+        if (times.length === 2) {
+            if (startTimePicker) {
+                startTimePicker.setDate(times[0], true);
+            }
+            if (endTimePicker) {
+                endTimePicker.setDate(times[1], true);
+            }
+        }
+    }
+
+    // ===================================
+    // DURATION AND WEEKLY USAGE
+    // ===================================
+    function updateDurationDisplay() {
+        const durationDisplay = document.getElementById('durationDisplay');
+        const weeklyUsageDisplay = document.getElementById('weeklyUsageDisplay');
+        const bookingInfo = document.getElementById('bookingInfo');
+
+        if (!bookingState.startTime || !bookingState.endTime) {
+            if (bookingInfo) bookingInfo.style.display = 'none';
+            return;
+        }
+
+        // Parse times
+        const start = parseTime(bookingState.startTime);
+        const end = parseTime(bookingState.endTime);
+
+        if (!start || !end || end <= start) {
+            if (bookingInfo) bookingInfo.style.display = 'none';
+            return;
+        }
+
+        // Calculate duration in minutes
+        const durationMinutes = (end - start) / (1000 * 60);
+        const durationHours = durationMinutes / 60;
+
+        bookingState.duration = durationMinutes;
+
+        // Display duration
+        if (durationDisplay) {
+            if (durationHours < 1) {
+                durationDisplay.textContent = `${durationMinutes} minutes`;
+            } else {
+                durationDisplay.textContent = `${durationHours.toFixed(1)} hours`;
+            }
+        }
+
+        // Calculate weekly usage
+        const newWeeklyUsage = bookingState.currentWeekUsageMinutes + durationMinutes;
+        const newWeeklyUsageHours = newWeeklyUsage / 60;
+        const remaining = bookingState.weeklyLimitMinutes - newWeeklyUsage;
+        const remainingHours = remaining / 60;
+
+        if (weeklyUsageDisplay) {
+            if (remaining < 0) {
+                weeklyUsageDisplay.innerHTML = `<span style="color: #f44336;">${newWeeklyUsageHours.toFixed(1)}h (Exceeds limit!)</span>`;
+            } else {
+                weeklyUsageDisplay.textContent = `${newWeeklyUsageHours.toFixed(1)}h`;
+            }
+        }
+
+        if (bookingInfo) bookingInfo.style.display = 'flex';
+    }
+
+    function parseTime(timeStr) {
+        // Parse "h:mm AM/PM" format
+        const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!match) return null;
+
+        let hours = parseInt(match[1]);
+        const minutes = parseInt(match[2]);
+        const meridiem = match[3].toUpperCase();
+
+        if (meridiem === 'PM' && hours !== 12) {
+            hours += 12;
+        } else if (meridiem === 'AM' && hours === 12) {
+            hours = 0;
+        }
+
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        return date;
+    }
+
+    function updateNextButton() {
+        const currentStepEl = document.querySelector('.wizard-step.active');
+        if (!currentStepEl) return;
+
+        const nextBtn = currentStepEl.querySelector('.btn-next');
+        if (nextBtn) {
+            nextBtn.disabled = !canProceedFromStep(bookingState.currentStep);
+            console.log('Next button state updated:', { 
+                step: bookingState.currentStep, 
+                disabled: nextBtn.disabled,
+                startTime: bookingState.startTime,
+                endTime: bookingState.endTime,
+                duration: bookingState.duration
+            });
+        }
+    }
+    
+    // Expose updateNextButton globally for time-selection module
+    window.updateNextButton = updateNextButton;
+
+    // ===================================
+    // CLASS SELECTION (STEP 2)
+    // ===================================
+    function setupClassSelection() {
+        document.addEventListener('click', (e) => {
+            const classCard = e.target.closest('.class-card');
+            if (classCard && bookingState.currentStep === 2) {
+                // Remove previous selection
+                document.querySelectorAll('.class-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                // Add new selection
+                classCard.classList.add('selected');
+                bookingState.classType = classCard.dataset.class;
+
+                // Enable next button
+                updateNextButton();
+            }
+        });
+    }
+
+    // ===================================
+    // TRAINER SELECTION (STEP 3)
+    // ===================================
+    function setupTrainerSelection() {
+        document.addEventListener('click', (e) => {
+            const trainerCard = e.target.closest('.trainer-card');
+            if (trainerCard && bookingState.currentStep === 3) {
+                // Remove previous selection
+                document.querySelectorAll('.trainer-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                // Add new selection
+                trainerCard.classList.add('selected');
+                bookingState.trainerId = trainerCard.dataset.trainerId;
+                bookingState.trainerName = trainerCard.dataset.trainerName;
+
+                // Enable next button
+                updateNextButton();
+            }
+        });
+    }
+
+    // ===================================
     // WIZARD NAVIGATION
     // ===================================
     function setupEventListeners() {
@@ -1497,16 +2037,27 @@ document.addEventListener('DOMContentLoaded', function () {
     function nextStep() {
         if (bookingState.currentStep < 5) {
             bookingState.currentStep++;
-            updateWizardStep();
-
-            // Load trainers when entering step 4
-            if (bookingState.currentStep === 4) {
+            
+            // Load trainers when entering step 3 (trainer selection)
+            if (bookingState.currentStep === 3) {
                 loadTrainers();
             }
 
-            // Update summary when entering step 5
+            // Initialize time picker when entering step 4 (time selection)
+            if (bookingState.currentStep === 4) {
+                initializeModernTimeSelection();
+                loadModernTrainerAvailability(bookingState);
+            }
+
+            // Update wizard UI
+            updateWizardStep();
+
+            // Update summary AFTER wizard step updates when entering step 5 (confirmation)
             if (bookingState.currentStep === 5) {
-                updateSummary();
+                // Use setTimeout to ensure DOM is ready after updateWizardStep
+                setTimeout(() => {
+                    updateSummary();
+                }, 0);
             }
         }
     }
@@ -1541,20 +2092,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function canProceedFromStep(step) {
-        // Check if selected week is full (only if date is selected)
-        if (bookingState.date && bookingState.selectedWeekFull) {
-            return false;
-        }
-
         switch (step) {
             case 1: return bookingState.date !== null;
-            case 2: return bookingState.session !== null;
-            case 3:
-                // Can proceed only if class is selected AND facility is not full
-                if (bookingState.classType === null) return false;
-                if (bookingState.facilityFull) return false;
-                return true;
-            case 4: return bookingState.trainerId !== null;
+            case 2: return bookingState.classType !== null;
+            case 3: return bookingState.trainerId !== null;
+            case 4: 
+                return bookingState.startTime !== null && 
+                       bookingState.endTime !== null &&
+                       bookingState.duration !== null;
             case 5: return true;
             default: return false;
         }
@@ -1562,17 +2107,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function resetWizard() {
         bookingState.date = null;
-        bookingState.session = null;
         bookingState.classType = null;
         bookingState.trainerId = null;
         bookingState.trainerName = null;
+        bookingState.startTime = null;
+        bookingState.endTime = null;
+        bookingState.duration = null;
         bookingState.currentStep = 1;
+        bookingState.trainerShiftInfo = null;
+        bookingState.availableSlots = [];
 
         document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
 
         const selectedDateDisplay = document.getElementById('selectedDateDisplay');
         if (selectedDateDisplay) {
             selectedDateDisplay.style.display = 'none';
+        }
+
+        // Destroy flatpickr instances
+        if (startTimePicker) {
+            startTimePicker.destroy();
+            startTimePicker = null;
+        }
+        if (endTimePicker) {
+            endTimePicker.destroy();
+            endTimePicker = null;
         }
 
         updateWizardStep();
@@ -1587,5 +2146,39 @@ document.addEventListener('DOMContentLoaded', function () {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    function convertToDateTime(dateStr, timeStr) {
+        // Handle 24-hour format (HH:MM) - from new time pickers
+        if (timeStr.match(/^\d{2}:\d{2}$/)) {
+            return `${dateStr} ${timeStr}:00`;
+        }
+        
+        // Handle 12-hour format (h:mm AM/PM) - legacy format
+        const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!match) return null;
+
+        let hours = parseInt(match[1]);
+        const minutes = match[2];
+        const meridiem = match[3].toUpperCase();
+
+        if (meridiem === 'PM' && hours !== 12) {
+            hours += 12;
+        } else if (meridiem === 'AM' && hours === 12) {
+            hours = 0;
+        }
+
+        const hours24 = String(hours).padStart(2, '0');
+        return `${dateStr} ${hours24}:${minutes}:00`;
+    }
+
+    function getCsrfToken() {
+        // Try to get CSRF token from meta tag or generate a temporary one
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        if (metaTag) {
+            return metaTag.getAttribute('content');
+        }
+        // Generate a simple token for now (in production, this should come from server)
+        return 'csrf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 });

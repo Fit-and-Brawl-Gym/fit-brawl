@@ -539,6 +539,24 @@
     border-radius: 4px;
     display: inline-block;
     margin-top: 2px;
+    margin-right: 6px;
+}
+
+.duration-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #000;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+}
+
+.duration-badge i {
+    margin-right: 4px;
+    font-size: 10px;
 }
 
 .no-results {
@@ -747,8 +765,20 @@
     border-radius: var(--admin-radius-md);
     font-weight: var(--admin-font-weight-semibold);
     font-size: var(--admin-font-size-sm);
-    min-width: 100px;
+    min-width: 140px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.day-booking-time .duration-badge {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    padding: 3px 8px;
+    font-size: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
 }
 
 .day-booking-info {

@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             // Get booking details before update (for logging)
             if ($new_status === 'cancelled') {
                 $info_query = "SELECT ur.id, u.username, t.name as trainer_name, ur.class_type,
-                               ur.booking_date as date, ur.session_time
+                               ur.booking_date as date, ur.session_time, ur.start_time, ur.end_time
                                FROM user_reservations ur
                                JOIN users u ON ur.user_id = u.id
                                JOIN trainers t ON ur.trainer_id = t.id
@@ -42,9 +42,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
 
             // Log cancellation
             if ($success && $new_status === 'cancelled' && isset($booking_info)) {
-                $session_hours = $booking_info['session_time'] === 'Morning' ? '7-11 AM' :
-                    ($booking_info['session_time'] === 'Afternoon' ? '1-5 PM' : '6-10 PM');
-                $log_msg = "Reservation #$booking_id cancelled - Client: {$booking_info['username']}, Trainer: {$booking_info['trainer_name']}, Class: {$booking_info['class_type']}, Date: {$booking_info['date']} at {$booking_info['session_time']} ($session_hours)";
+                // Format time info for log
+                if (!empty($booking_info['start_time']) && !empty($booking_info['end_time'])) {
+                    $startTime = new DateTime($booking_info['start_time']);
+                    $endTime = new DateTime($booking_info['end_time']);
+                    $time_info = $startTime->format('g:i A') . ' - ' . $endTime->format('g:i A');
+                } else {
+                    $session_hours = $booking_info['session_time'] === 'Morning' ? '7-11 AM' :
+                        ($booking_info['session_time'] === 'Afternoon' ? '1-5 PM' : '6-10 PM');
+                    $time_info = "{$booking_info['session_time']} ($session_hours)";
+                }
+                $log_msg = "Reservation #$booking_id cancelled - Client: {$booking_info['username']}, Trainer: {$booking_info['trainer_name']}, Class: {$booking_info['class_type']}, Date: {$booking_info['date']} at $time_info";
                 ActivityLogger::log('reservation_cancelled', $booking_info['username'], $booking_id, $log_msg);
             }
 
@@ -99,10 +107,11 @@ $trainer_filter = $_GET['trainer'] ?? 'all';
 $date_from = $_GET['date_from'] ?? '';
 $date_to = $_GET['date_to'] ?? '';
 
-// Build query - Updated for V2 schema (no reservations table)
+// Build query - Time-based booking system
 $query = "
     SELECT ur.id, ur.user_id, ur.class_type, ur.booking_date as date,
-           ur.session_time, ur.booking_status as status, ur.booked_at,
+           ur.session_time, ur.start_time, ur.end_time,
+           ur.booking_status as status, ur.booked_at,
            u.username, u.email, u.avatar,
            t.id as trainer_id, t.name as trainer_name, t.specialization
     FROM user_reservations ur
@@ -361,8 +370,17 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                                 ?>
                                             </div>
                                             <?php
-                                            // Display session time
-                                            if (!empty($booking['session_time'])) {
+                                            // Display time - prioritize start_time/end_time if available
+                                            if (!empty($booking['start_time']) && !empty($booking['end_time'])) {
+                                                // Time-based booking
+                                                $startTime = new DateTime($booking['start_time']);
+                                                $endTime = new DateTime($booking['end_time']);
+                                                $startFormatted = $startTime->format('g:i A');
+                                                $endFormatted = $endTime->format('g:i A');
+                                                
+                                                echo '<div class="session-hours">' . $startFormatted . ' - ' . $endFormatted . '</div>';
+                                            } elseif (!empty($booking['session_time'])) {
+                                                // Legacy session-based booking (fallback)
                                                 $session_hours = [
                                                     'Morning' => '7:00 AM - 11:00 AM',
                                                     'Afternoon' => '1:00 PM - 5:00 PM',

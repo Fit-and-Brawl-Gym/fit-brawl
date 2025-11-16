@@ -682,6 +682,18 @@
     flex: 1;
 }
 
+/* Duration badge for time-based bookings */
+.duration-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(255, 206, 0, 0.2);
+    color: var(--color-accent);
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
 .no-bookings {
     text-align: center;
     color: var(--color-text-muted);
