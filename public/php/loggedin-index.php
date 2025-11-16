@@ -415,7 +415,6 @@ $sessionHours = [
                                 <div class="progress-fill"
                                     style="width: <?= min(100, ($totalMinutes / ($weeklyHourLimit * 60)) * 100) ?>%"></div>
                             </div>
-                            <p class="progress-label"><?= 12 - $weeklyBookings ?> sessions remaining this week</p>
                         </div>
                     </div>
                     <?php if ($weeklyBookings > 0): ?>
