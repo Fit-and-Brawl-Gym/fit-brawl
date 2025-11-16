@@ -17,16 +17,46 @@ if ($action === 'fetch') {
 }
 
 if ($action === 'mark_read') {
-    $id = $_POST['id'] ?? 0;
-    $conn->query("UPDATE inquiries SET status='Read' WHERE id=$id");
-    echo json_encode(['success' => true]);
+    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+    if ($id <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid inquiry ID']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("UPDATE inquiries SET status = 'Read' WHERE id = ?");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Prepare failed']);
+        exit;
+    }
+
+    $stmt->bind_param('i', $id);
+    $success = $stmt->execute();
+    $stmt->close();
+
+    echo json_encode(['success' => $success]);
     exit;
 }
 
 if ($action === 'delete') {
-    $id = $_POST['id'] ?? 0;
-    $conn->query("DELETE FROM inquiries WHERE id=$id");
-    echo json_encode(['success' => true]);
+    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+    if ($id <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid inquiry ID']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("DELETE FROM inquiries WHERE id = ?");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Prepare failed']);
+        exit;
+    }
+
+    $stmt->bind_param('i', $id);
+    $success = $stmt->execute();
+    $stmt->close();
+
+    echo json_encode(['success' => $success]);
     exit;
 }
 

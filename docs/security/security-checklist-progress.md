@@ -15,7 +15,7 @@ Status of every checklist item based on the current Fit & Brawl codebase and the
 | Password hashing | Critical | ✅ | Uses PHP `password_hash`/bcrypt everywhere credentials are stored. |
 | Rate-limit login attempts | Critical | ✅ | 5 attempts / 15 minutes with automatic lockout messaging. |
 | Multi-Factor Authentication (MFA) | Critical | ⏸️ | Deferred until after demo approval. |
-| Account lockout & notification | High | 🟡 | Lockouts exist via rate limiter; notifications still pending. |
+| Account lockout & notification | High | ✅ | Lockouts surface inline countdown/alert messaging and now send email alerts via `sendAccountLockNotification()`. |
 | Session management | Critical | ✅ | `SessionManager` enforces secure, HttpOnly cookies and idle/absolute timeouts. |
 | Single sign-out / revoke tokens | High | ❌ | No UI/API for device/session revocation yet. |
 | Email verification on signup | High | ✅ | Verification token required before access. |
@@ -46,9 +46,9 @@ All payment-gateway tasks are ⏸️ until a real processor is approved: gateway
 | Control | Priority | Status | Notes |
 | --- | --- | --- | --- |
 | Server-side validation & sanitization | Critical | 🟡 | Core forms validate (signup, profile updates, payments); still need global middleware for all inputs. |
-| Prevent SQL injection | Critical | 🟡 | Majority of queries use prepared statements; audit remaining legacy queries. |
+| Prevent SQL injection | Critical | 🟡 | Majority of queries use prepared statements; admin contact API now parameterized, remaining legacy endpoints queued. |
 | Prevent XSS | Critical | 🟡 | CSP + `htmlspecialchars` in key templates; additional output contexts need review. |
-| CSRF protection | Critical | 🟡 | Tokens on login, signup, forgot-password, change-password, profile updates, and booking/cancellation APIs; extend to admin workflows next. |
+| CSRF protection | Critical | 🟡 | Tokens on auth/member flows plus admin contact actions (mark/read/delete/reply); extend to other admin APIs next. |
 | Avoid open redirects | High | ❌ | No centralized validation yet. |
 | Prevent clickjacking | High | ✅ | `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'`. |
 
@@ -56,7 +56,8 @@ All payment-gateway tasks are ⏸️ until a real processor is approved: gateway
 | Control | Priority | Status | Notes |
 | --- | --- | --- | --- |
 | Authentication on APIs | Critical | 🟡 | Session-based checks on PHP endpoints; no tokenized API yet. |
-| Scope & rate limits | High | 🟡 | Login plus booking/cancellation APIs enforce per-user rate limits; expand to admin APIs next. |
+| Scope & rate limits | High | 🟡 | Login plus booking/cancellation APIs enforce per-user limits with shared countdown UX; expand to admin APIs next. |
+| Rate limit headers | Medium | 🟡 | Booking/cancellation APIs now emit `X-RateLimit-*` and `Retry-After`; extend to remaining endpoints. |
 | API keys for internal services | Medium | ❌ | Not applicable yet. |
 | Input validation & output encoding | Critical | 🟡 | Mirrors web validation; needs systematic middleware. |
 | Versioning & deprecation policy | Low | ❌ | Single-version API only. |

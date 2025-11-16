@@ -34,16 +34,28 @@ try {
     }
 
     $user_id = $_SESSION['user_id'];
-        $rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'book_session:' . $user_id, 8, 60);
-        if ($rateCheck['blocked']) {
-            $minutes = ceil($rateCheck['retry_after'] / 60);
-            echo json_encode([
-                'success' => false,
-                'message' => "Too many booking attempts. Please wait {$minutes} minute(s) and try again.",
-                'failed_check' => 'rate_limit'
-            ]);
-            exit;
-        }
+    $bookingRateLimitMax = 8;
+    $bookingRateLimitWindow = 60;
+    $rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'book_session:' . $user_id, $bookingRateLimitMax, $bookingRateLimitWindow);
+
+    header('X-RateLimit-Limit: ' . $bookingRateLimitMax);
+    header('X-RateLimit-Remaining: ' . max(0, (int) ($rateCheck['remaining'] ?? 0)));
+    $resetTimestamp = time() + ($rateCheck['blocked'] ? (int) ($rateCheck['retry_after'] ?? $bookingRateLimitWindow) : $bookingRateLimitWindow);
+    header('X-RateLimit-Reset: ' . $resetTimestamp);
+    if (!empty($rateCheck['retry_after'])) {
+        header('Retry-After: ' . (int) $rateCheck['retry_after']);
+    }
+    if ($rateCheck['blocked']) {
+        $minutes = ceil($rateCheck['retry_after'] / 60);
+        echo json_encode([
+            'success' => false,
+            'message' => "Too many booking attempts. Please wait {$minutes} minute(s) and try again.",
+            'failed_check' => 'rate_limit',
+            'retry_after' => $rateCheck['retry_after'],
+            'limit_remaining' => $rateCheck['remaining']
+        ]);
+        exit;
+    }
     $trainer_id = isset($_POST['trainer_id']) ? intval($_POST['trainer_id']) : 0;
     $class_type = $_POST['class_type'] ?? '';
     $booking_date = $_POST['booking_date'] ?? '';

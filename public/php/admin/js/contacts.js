@@ -2,6 +2,10 @@ let allContacts = [];
 let currentFilter = 'all';
 let refreshInterval;
 
+const csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
+const csrfToken = csrfMetaTag ? csrfMetaTag.getAttribute('content') : '';
+const csrfHeaders = csrfToken ? { 'X-CSRF-Token': csrfToken } : {};
+
 // Load contacts on page load
 document.addEventListener('DOMContentLoaded', function () {
     loadContacts();
@@ -33,7 +37,11 @@ function setupEventListeners() {
 // Load contacts from API
 async function loadContacts() {
     try {
-        const response = await fetch('api/get_contacts.php');
+        const response = await fetch('api/get_contacts.php', {
+            headers: {
+                ...csrfHeaders
+            }
+        });
         const text = await response.text();
         console.log('Raw response:', text);
 
@@ -190,7 +198,10 @@ async function markAsRead(id) {
     try {
         const response = await fetch('api/contact_actions.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...csrfHeaders
+            },
             body: JSON.stringify({ action: 'mark_read', id })
         });
 
@@ -218,7 +229,10 @@ async function markAsUnread(id) {
     try {
         const response = await fetch('api/contact_actions.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...csrfHeaders
+            },
             body: JSON.stringify({ action: 'mark_unread', id })
         });
 
@@ -248,7 +262,10 @@ async function archiveContact(id) {
     try {
         const response = await fetch('api/contact_actions.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...csrfHeaders
+            },
             body: JSON.stringify({ action: 'archive', id })
         });
 
@@ -277,7 +294,10 @@ async function deleteContact(id) {
     try {
         const response = await fetch('api/contact_actions.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...csrfHeaders
+            },
             body: JSON.stringify({ action: 'delete', id })
         });
 
@@ -364,7 +384,10 @@ async function handleReplySubmit(e) {
         try {
             response = await fetch('api/send_reply.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...csrfHeaders
+                },
                 body: JSON.stringify({
                     contact_id: contactId,
                     to,

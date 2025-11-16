@@ -17,6 +17,44 @@ include_once __DIR__ . '/email_template.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+function sendAccountLockNotification($email, $retryAfterSeconds, $ipAddress = 'unknown', $maxAttempts = 5)
+{
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = getenv('EMAIL_HOST');
+        $mail->SMTPAuth = true;
+        $mail->Username = getenv('EMAIL_USER');
+        $mail->Password = getenv('EMAIL_PASS');
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = getenv('EMAIL_PORT');
+
+        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Security alert: login temporarily locked';
+
+        $minutes = max(1, ceil($retryAfterSeconds / 60));
+        $formattedIp = htmlspecialchars((string) $ipAddress, ENT_QUOTES, 'UTF-8');
+        $innerHtml = "<h2>We detected multiple failed login attempts.</h2>";
+        $innerHtml .= "<p>Your Fit & Brawl account has been temporarily locked after {$maxAttempts} unsuccessful attempts.";
+        $innerHtml .= " The lockout will automatically clear in approximately {$minutes} minute" . ($minutes === 1 ? '' : 's') . ".</p>";
+        $innerHtml .= "<p><strong>Recent IP address:</strong> {$formattedIp}</p>";
+        $innerHtml .= '<p>If this was not you, we recommend resetting your password and contacting support immediately.</p>';
+        $innerHtml .= '<p>You do not need to take any action if you initiated the attempts—simply wait for the cooldown and try again.</p>';
+
+        applyEmailTemplate($mail, $innerHtml);
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log('Failed to send account lock notification: ' . $e->getMessage());
+        return false;
+    }
+}
+
 function sendOTPEmail($email, $otp)
 {
     $mail = new PHPMailer(true);

@@ -68,7 +68,10 @@ if ($user_id) {
 
 $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
-$additionalCSS = ['../css/pages/reservations.css?v=2.0.' . time()];
+$additionalCSS = [
+    '../css/components/alert.css?v=' . time(),
+    '../css/pages/reservations.css?v=2.0.' . time()
+];
 $additionalJS = ['../js/reservations.js?v=' . time() . mt_rand()];
 $pageCsrfToken = CSRFProtection::generateToken();
 
@@ -83,6 +86,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <main class="reservations-page">
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
+    <div id="rateLimitPortal" class="rate-limit-portal" aria-live="polite"></div>
 
     <?php if ($activeMembership): ?>
         <?php

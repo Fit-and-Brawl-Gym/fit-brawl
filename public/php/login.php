@@ -12,6 +12,7 @@ require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/security_headers.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/rate_limiter.php';
+require_once __DIR__ . '/../../includes/mail_config.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -68,7 +69,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $minutes = max(1, ceil($retryAfterSeconds / 60));
                 $errorMessage = [
                     'title' => 'Too many attempts. Login temporarily locked.',
+                    'body' => "Please wait {$minutes} minute" . ($minutes === 1 ? '' : 's') . ' before trying again.'
                 ];
+
+                $lockoutIdentifier = hash('sha256', $rateLimitIdentifier);
+                if (!isset($_SESSION['lockout_notified'])) {
+                    $_SESSION['lockout_notified'] = [];
+                }
+
+                $lastNotified = $_SESSION['lockout_notified'][$lockoutIdentifier] ?? 0;
+                $shouldNotify = time() - $lastNotified >= max(60, $retryAfterSeconds / 2);
+
+                if ($shouldNotify && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    if (function_exists('sendAccountLockNotification')) {
+                        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+                        sendAccountLockNotification($email, $retryAfterSeconds, $ip, LOGIN_MAX_ATTEMPTS);
+                    }
+                    $_SESSION['lockout_notified'][$lockoutIdentifier] = time();
+                }
             } else {
                 // Fetch user by email OR username
                 $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? OR username = ?");

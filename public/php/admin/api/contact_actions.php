@@ -13,6 +13,14 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 require_once '../../../../includes/db_connect.php';
+require_once '../../../../includes/csrf_protection.php';
+
+$csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+if (!CSRFProtection::validateToken($csrfToken)) {
+    http_response_code(419);
+    echo json_encode(['success' => false, 'message' => 'Invalid or missing CSRF token']);
+    exit;
+}
 
 try {
     // Get JSON input
@@ -85,7 +93,7 @@ try {
     $log_action = ucfirst(str_replace('_', ' ', $action));
     $details = "Contact ID: $id - Action: $log_action";
 
-    $log_sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_id, details) 
+    $log_sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_id, details)
                 VALUES (?, ?, 'contact_management', ?, ?)";
     $log_stmt = $conn->prepare($log_sql);
     $log_stmt->bind_param("ssis", $admin_id, $admin_name, $id, $details);
