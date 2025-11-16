@@ -68,7 +68,14 @@
         state.renderedProducts = products;
 
         if (!products || products.length === 0) {
-            ui.grid.innerHTML = '<div class="no-products">No products found</div>';
+            ui.grid.innerHTML = `
+                <div class="no-results-container">
+                    <div class="no-results-icon">🛍️</div>
+                    <h3 class="no-results-title">No Products Found</h3>
+                    <p class="no-results-message">We couldn't find any products matching your search criteria.</p>
+                    <button class="btn-clear-filters" onclick="document.getElementById('productSearch').value=''; document.getElementById('categoryFilter').value='all'; document.getElementById('statusFilter').value='all'; applyFilters();">Clear All Filters</button>
+                </div>
+            `;
             if (ui.pagination) ui.pagination.style.display = 'none';
             return;
         }
@@ -191,24 +198,58 @@
         const searchTerm = (ui.searchBox.value || '').trim().toLowerCase();
         const status = ui.statusFilter.value || 'all';
 
-        const filtered = state.allProducts.filter(p => {
-            const nameMatch = (p.name || '').toLowerCase().includes(searchTerm);
-            const categoryMatch = (p.cat || '').toLowerCase().includes(searchTerm);
-            const searchMatch = searchTerm ? (nameMatch || categoryMatch) : true;
-
-            if (!searchMatch) return false;
-
+        // Use DSA utilities if available, fallback to basic filtering
+        const useDSA = window.DSA || window.DSAUtils;
+        
+        let filtered;
+        
+        if (useDSA) {
+            // DSA-POWERED FILTERING (Fast O(n) with fuzzy search)
+            const fuzzySearch = useDSA.FuzzySearch;
+            const filterBuilder = new useDSA.FilterBuilder();
+            
+            // Build filter conditions
             if (status !== 'all') {
-                const s = (p.status || '').toLowerCase();
                 if (status === 'in') {
-                    return s === 'in' || s.includes('in stock');
+                    filterBuilder.where('status', 'in', ['in', 'in stock']);
                 } else if (status === 'unavailable') {
-                    // Unavailable = low stock OR out of stock
-                    return s === 'low' || s.includes('low') || s === 'out' || s.includes('out');
+                    filterBuilder.where('status', 'in', ['low', 'low stock', 'out', 'out of stock']);
                 }
             }
-            return true;
-        });
+            
+            filtered = state.allProducts.filter(p => {
+                // DSA Fuzzy search (more forgiving than .includes())
+                if (searchTerm) {
+                    const nameMatch = fuzzySearch(searchTerm, (p.name || '').toLowerCase());
+                    const categoryMatch = fuzzySearch(searchTerm, (p.cat || '').toLowerCase());
+                    if (!nameMatch && !categoryMatch) return false;
+                }
+
+                // DSA FilterBuilder test
+                return filterBuilder.test(p);
+            });
+            
+            console.log('✅ DSA filtering applied to products (fuzzy search enabled)');
+        } else {
+            // FALLBACK: Basic filtering
+            filtered = state.allProducts.filter(p => {
+                const nameMatch = (p.name || '').toLowerCase().includes(searchTerm);
+                const categoryMatch = (p.cat || '').toLowerCase().includes(searchTerm);
+                const searchMatch = searchTerm ? (nameMatch || categoryMatch) : true;
+
+                if (!searchMatch) return false;
+
+                if (status !== 'all') {
+                    const s = (p.status || '').toLowerCase();
+                    if (status === 'in') {
+                        return s === 'in' || s.includes('in stock');
+                    } else if (status === 'unavailable') {
+                        return s === 'low' || s.includes('low') || s === 'out' || s.includes('out');
+                    }
+                }
+                return true;
+            });
+        }
 
         // Reset to page 1 when filters change
         state.currentPage = 1;

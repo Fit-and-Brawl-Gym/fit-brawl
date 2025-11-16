@@ -258,33 +258,81 @@ function filterProducts() {
     const selectedCategory = document.getElementById('categoryFilter').value;
     const selectedStatus = document.getElementById('statusFilter').value;
 
-    // Filter table rows
-    const rows = document.querySelectorAll('#productsTableBody tr');
-    rows.forEach(row => {
-        const name = (row.querySelector('.product-name') && row.querySelector('.product-name').textContent.toLowerCase()) || '';
-        const category = (row.dataset.category || '').toString();
-        const status = (row.dataset.status || '').toString();
+    // Use DSA utilities if available, fallback to basic filtering
+    const useDSA = window.DSA || window.DSAUtils;
+    
+    if (useDSA) {
+        // DSA-POWERED FILTERING (Fast O(n) with fuzzy search)
+        const fuzzySearch = useDSA.FuzzySearch;
+        const filterBuilder = new useDSA.FilterBuilder();
+        
+        // Build filter conditions
+        if (selectedCategory !== 'all') {
+            filterBuilder.where('category', '===', selectedCategory);
+        }
+        if (selectedStatus !== 'all') {
+            filterBuilder.where('status', '===', selectedStatus);
+        }
 
-        const matchesSearch = name.includes(searchTerm);
-    const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesStatus = selectedStatus === 'all' || status.toLowerCase() === selectedStatus.toLowerCase();
+        // Filter table rows with DSA
+        const rows = document.querySelectorAll('#productsTableBody tr');
+        rows.forEach(row => {
+            const name = (row.querySelector('.product-name') && row.querySelector('.product-name').textContent) || '';
+            const category = (row.dataset.category || '').toString();
+            const status = (row.dataset.status || '').toString();
+            
+            const productData = { name, category, status };
+            
+            const passesFilter = filterBuilder.test(productData);
+            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
 
-        row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
-    });
+            row.style.display = (matchesSearch && passesFilter) ? '' : 'none';
+        });
 
-    // Filter card view
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach(card => {
-        const name = (card.querySelector('.product-name') && card.querySelector('.product-name').textContent.toLowerCase()) || '';
-        const category = (card.dataset.category || '').toString();
-        const status = (card.dataset.status || '').toString();
+        // Filter card view with DSA
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            const name = (card.querySelector('.product-name') && card.querySelector('.product-name').textContent) || '';
+            const category = (card.dataset.category || '').toString();
+            const status = (card.dataset.status || '').toString();
+            
+            const productData = { name, category, status };
+            
+            const passesFilter = filterBuilder.test(productData);
+            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
 
-        const matchesSearch = name.includes(searchTerm);
-    const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesStatus = selectedStatus === 'all' || status.toLowerCase() === selectedStatus.toLowerCase();
+            card.style.display = (matchesSearch && passesFilter) ? '' : 'none';
+        });
+        
+        console.log('✅ DSA filtering applied (O(n) with fuzzy search)');
+    } else {
+        // FALLBACK: Basic filtering
+        const rows = document.querySelectorAll('#productsTableBody tr');
+        rows.forEach(row => {
+            const name = (row.querySelector('.product-name') && row.querySelector('.product-name').textContent.toLowerCase()) || '';
+            const category = (row.dataset.category || '').toString();
+            const status = (row.dataset.status || '').toString();
 
-        card.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
-    });
+            const matchesSearch = name.includes(searchTerm);
+            const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
+            const matchesStatus = selectedStatus === 'all' || status.toLowerCase() === selectedStatus.toLowerCase();
+
+            row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
+        });
+
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            const name = (card.querySelector('.product-name') && card.querySelector('.product-name').textContent.toLowerCase()) || '';
+            const category = (card.dataset.category || '').toString();
+            const status = (card.dataset.status || '').toString();
+
+            const matchesSearch = name.includes(searchTerm);
+            const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
+            const matchesStatus = selectedStatus === 'all' || status.toLowerCase() === selectedStatus.toLowerCase();
+
+            card.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
+        });
+    }
 }
 
 // View Toggle (Table vs Cards)
