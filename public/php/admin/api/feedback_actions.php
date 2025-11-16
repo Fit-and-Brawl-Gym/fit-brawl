@@ -11,11 +11,36 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 require_once '../../../../includes/db_connect.php';
+require_once '../../../../includes/csrf_protection.php';
+require_once '../../../../includes/api_rate_limiter.php';
+
+// Rate limiting for admin APIs - 20 requests per minute per admin
+$adminId = $_SESSION['user_id'] ?? 'unknown';
+$rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'admin_api:' . $adminId, 20, 60);
+if ($rateCheck['blocked']) {
+    http_response_code(429);
+    header('X-RateLimit-Limit: 20');
+    header('X-RateLimit-Remaining: 0');
+    header('Retry-After: ' . $rateCheck['retry_after']);
+    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    exit;
+}
+header('X-RateLimit-Limit: 20');
+header('X-RateLimit-Remaining: ' . $rateCheck['remaining']);
+header('X-RateLimit-Reset: ' . (time() + $rateCheck['retry_after']));
 
 // Get JSON input
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? '';
 $id = (int) ($input['id'] ?? 0);
+
+// Validate CSRF token
+$csrfToken = $input['csrf_token'] ?? '';
+if (!CSRFProtection::validateToken($csrfToken)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+    exit;
+}
 
 // Log the request for debugging
 error_log("Feedback action: $action, ID: $id, Input: " . json_encode($input));
@@ -26,18 +51,26 @@ if (!$id) {
 }
 
 // Check if is_visible column exists, if not create it
-$checkColumn = $conn->query("SHOW COLUMNS FROM feedback LIKE 'is_visible'");
-if ($checkColumn->num_rows == 0) {
-    $conn->query("ALTER TABLE feedback ADD COLUMN is_visible TINYINT(1) DEFAULT 1 AFTER message");
+$checkColumn = $conn->prepare("SHOW COLUMNS FROM feedback LIKE 'is_visible'");
+if ($checkColumn) {
+    $checkColumn->execute();
+    $checkResult = $checkColumn->get_result();
+    if ($checkResult->num_rows == 0) {
+        // Safe to use query for DDL statements (no user input)
+        $conn->query("ALTER TABLE feedback ADD COLUMN is_visible TINYINT(1) DEFAULT 1 AFTER message");
+    }
+    $checkColumn->close();
 }
 
-// Check what columns exist in feedback table
+// Check what columns exist in feedback table (safe - no user input)
 $columns = $conn->query("SHOW COLUMNS FROM feedback");
 $columnNames = [];
-while ($col = $columns->fetch_assoc()) {
-    $columnNames[] = $col['Field'];
+if ($columns) {
+    while ($col = $columns->fetch_assoc()) {
+        $columnNames[] = $col['Field'];
+    }
+    error_log("Feedback table columns: " . json_encode($columnNames));
 }
-error_log("Feedback table columns: " . json_encode($columnNames));
 
 // Determine primary key column
 $primaryKey = in_array('id', $columnNames) ? 'id' : 'user_id';

@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updatePaymentMethodUI() {
         const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'online';
-        
+
         if (selectedMethod === 'cash') {
             confirmPaymentBtn.style.display = 'none';
             submitCashBtn.style.display = 'inline-block';
@@ -148,10 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
             subscriptionForm.reportValidity();
             return;
         }
-        
+
         // Update modal content based on payment method
         const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'online';
-        
+
         if (selectedMethod === 'cash') {
             modalTitle.textContent = 'Submit Cash Payment Receipt';
             modalQrSection.style.display = 'none';
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modalQrSection.style.display = 'block';
             modalCashInstructions.style.display = 'none';
         }
-        
+
         receiptModal.classList.add('active');
         receiptModalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -238,6 +238,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(subscriptionForm);
         formData.append('plan', basePlan);
         formData.append('billing', urlParams.get('billing') || 'monthly');
+
+        // Get CSRF token and add to form data
+        const csrfToken = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+        if (!csrfToken) {
+            alert('Your session expired. Please refresh the page.');
+            submitReceiptBtn.disabled = false;
+            submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
+            return;
+        }
+        formData.append('csrf_token', csrfToken);
 
         if (selectedFile) {
             formData.append('receipt', selectedFile);

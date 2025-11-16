@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -174,15 +175,16 @@ $pageTitle = "Transaction - Fit and Brawl";
 $currentPage = "transaction";
 $additionalCSS = ['../css/pages/transaction.css?v=' . time()];
 $additionalJS = ['../js/transaction.js'];
+$pageCsrfToken = CSRFProtection::generateToken();
+
+// Include header
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 <script>
     const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
     const quarterlyPrice = <?php echo json_encode($quarterlyPrice); ?>;
+    window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
 </script>
-<?php
-// Include header
-require_once __DIR__ . '/../../includes/header.php';
-?>
 
 <!--Main-->
 <main class="transaction-page">

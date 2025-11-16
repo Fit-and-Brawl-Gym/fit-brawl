@@ -3,9 +3,9 @@
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
 require_once __DIR__ . '/../../includes/config.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 
 // Initialize session manager (handles session_start internally)
-SessionManager::initialize();
 SessionManager::initialize();
 
 // Redirect admin and trainer to their respective dashboards
@@ -256,10 +256,17 @@ if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
 $pageTitle = "Feedback - Fit and Brawl";
 $currentPage = "feedback";
 $additionalCSS = [PUBLIC_PATH . "/css/pages/feedback.css?=v2"];
+$additionalJS = ['../js/feedback.js'];
+$pageCsrfToken = CSRFProtection::generateToken();
 
 // Include header
 require_once '../../includes/header.php';
 ?>
+
+<script>
+    window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
+</script>
+
 <!--Main-->
 <main>
     <!-- Page Header -->

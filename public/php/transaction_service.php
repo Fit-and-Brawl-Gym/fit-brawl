@@ -1,6 +1,7 @@
 <?php
 require_once '../../includes/db_connect.php';
 require_once '../../includes/session_manager.php';
+require_once '../../includes/csrf_protection.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -145,9 +146,16 @@ $additionalJS = [
     '../js/transaction-service.js'
 ];
 
+$pageCsrfToken = CSRFProtection::generateToken();
+
 // Include header
 require_once '../../includes/header.php';
 ?>
+
+<script>
+    window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
+</script>
+<?php
 
     <!--Main-->
     <main class="transaction-page">

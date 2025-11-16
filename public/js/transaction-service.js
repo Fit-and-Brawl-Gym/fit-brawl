@@ -13,6 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = 'GENERATING...';
         btn.disabled = true;
 
+        // Get CSRF token and add to form data
+        const csrfToken = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+        if (!csrfToken) {
+            alert('Your session expired. Please refresh the page.');
+            btn.textContent = originalText;
+            btn.disabled = false;
+            return;
+        }
+        formData.append('csrf_token', csrfToken);
+
         fetch('api/process_service_booking.php', {
             method: 'POST',
             body: formData

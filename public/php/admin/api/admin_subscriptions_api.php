@@ -8,6 +8,8 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
+require_once __DIR__ . '/../../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 // mailer for membership notifications
 include_once __DIR__ . '/../../../../includes/membership_mailer.php';
 
@@ -20,10 +22,33 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
+// Rate limiting for admin APIs - 20 requests per minute per admin
+$adminId = $_SESSION['user_id'] ?? 'unknown';
+$rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'admin_api:' . $adminId, 20, 60);
+if ($rateCheck['blocked']) {
+    http_response_code(429);
+    header('X-RateLimit-Limit: 20');
+    header('X-RateLimit-Remaining: 0');
+    header('Retry-After: ' . $rateCheck['retry_after']);
+    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    exit;
+}
+header('X-RateLimit-Limit: 20');
+header('X-RateLimit-Remaining: ' . $rateCheck['remaining']);
+header('X-RateLimit-Reset: ' . (time() + $rateCheck['retry_after']));
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 // APPROVE subscription
 if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve') {
+    // Validate CSRF token
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        exit;
+    }
+
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
     if ($id <= 0) {
@@ -55,10 +80,10 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
     }
 
     // Update subscription
-    $stmt = $conn->prepare("UPDATE user_memberships SET 
-        request_status = 'approved', 
+    $stmt = $conn->prepare("UPDATE user_memberships SET
+        request_status = 'approved',
         membership_status = 'active',
-        admin_id = ?, 
+        admin_id = ?,
         date_approved = ?,
         start_date = ?,
         end_date = ?,
@@ -119,6 +144,14 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve
 
 // REJECT subscription
 if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject') {
+    // Validate CSRF token
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        exit;
+    }
+
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
     $remarks = trim($_POST['remarks'] ?? '');
 
@@ -134,10 +167,10 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
 
     $admin_id = $_SESSION['user_id'];
 
-    $stmt = $conn->prepare("UPDATE user_memberships SET 
-        request_status = 'rejected', 
+    $stmt = $conn->prepare("UPDATE user_memberships SET
+        request_status = 'rejected',
         membership_status = 'cancelled',
-        admin_id = ?, 
+        admin_id = ?,
         remarks = ?,
         source_table = 'user_memberships',
         source_id = id
@@ -198,6 +231,14 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'reject'
 
 // MARK CASH PAYMENT AS PAID
 if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'mark_cash_paid') {
+    // Validate CSRF token
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        exit;
+    }
+
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
     if ($id <= 0) {
@@ -243,8 +284,8 @@ if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'mark_ca
     }
 
     // Update cash payment status AND approve membership
-    $stmt = $conn->prepare("UPDATE user_memberships SET 
-        cash_payment_status = 'paid', 
+    $stmt = $conn->prepare("UPDATE user_memberships SET
+        cash_payment_status = 'paid',
         cash_payment_date = ?,
         cash_received_by = ?,
         request_status = 'approved',
@@ -302,7 +343,7 @@ if ($method === 'GET' && isset($_GET['action']) && $_GET['action'] === 'fetch') 
 
     $payment_columns = $has_payment_method ? ", um.payment_method, um.cash_payment_status, um.cash_payment_date" : "";
 
-    $sql = "SELECT 
+    $sql = "SELECT
                 um.id,
                 um.user_id,
                 u.username AS member,

@@ -5,8 +5,9 @@ require_once '../../includes/mail_config.php';
 
 // Redirect if no reset email in session
 if(!isset($_SESSION['reset_email'])) {
-    header("Location: forgot-password.php");
-    exit;
+    require_once __DIR__ . '/../../includes/redirect_validator.php';
+    RedirectValidator::init();
+    RedirectValidator::redirect('forgot-password.php');
 }
 
 $alertMessage = null;
@@ -54,8 +55,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Set flag to clear session storage after redirect
             $_SESSION['clear_otp_timer'] = true;
 
-            header("Location: change-password.php");
-            exit;
+            require_once __DIR__ . '/../../includes/redirect_validator.php';
+            RedirectValidator::init();
+            RedirectValidator::redirect('change-password.php');
         } else {
             $alertMessage = [
                 'type' => 'error',

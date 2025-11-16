@@ -5,6 +5,8 @@
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
 require_once __DIR__ . '/../../../../includes/file_upload_security.php';
+require_once __DIR__ . '/../../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
@@ -18,10 +20,33 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
+// Rate limiting for admin APIs - 20 requests per minute per admin
+$adminId = $_SESSION['user_id'] ?? 'unknown';
+$rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'admin_api:' . $adminId, 20, 60);
+if ($rateCheck['blocked']) {
+    http_response_code(429);
+    header('X-RateLimit-Limit: 20');
+    header('X-RateLimit-Remaining: 0');
+    header('Retry-After: ' . $rateCheck['retry_after']);
+    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again later.']);
+    exit;
+}
+header('X-RateLimit-Limit: 20');
+header('X-RateLimit-Remaining: ' . $rateCheck['remaining']);
+header('X-RateLimit-Reset: ' . (time() + $rateCheck['retry_after']));
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 // CREATE or UPDATE
 if ($method === 'POST') {
+    // Validate CSRF token
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        exit;
+    }
+
     $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int) $_POST['id'] : null;
     $name = trim($_POST['name'] ?? '');
     $category = trim($_POST['category'] ?? '');
@@ -128,6 +153,14 @@ if ($method === 'POST') {
 
 // DELETE
 if ($method === 'DELETE') {
+    // Validate CSRF token (from query string for DELETE requests)
+    $csrfToken = $_GET['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'CSRF token validation failed']);
+        exit;
+    }
+
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
     if ($id <= 0) {

@@ -107,16 +107,16 @@ This document provides a complete security checklist identifying all existing se
 ### Server-Side Validation
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Server-side validation on all inputs | Critical | 🟡 | Core forms validate (signup, profile updates, bookings). Still need global middleware for all inputs. |
-| Input sanitization | Critical | 🟡 | `htmlspecialchars()`, `trim()`, `stripslashes()` used in key areas. Needs systematic application. |
+| Server-side validation on all inputs | Critical | ✅ | Core forms validate (signup, profile updates, bookings). `InputValidator` class provides centralized validation. |
+| Input sanitization | Critical | ✅ | `htmlspecialchars()`, `trim()`, `stripslashes()` used throughout. `InputValidator` class provides consistent sanitization methods. |
 | Type validation | Critical | 🟡 | Integer validation (`intval()`), email validation (`filter_var()`). Needs comprehensive coverage. |
 | Length validation | High | 🟡 | Some fields have length checks. Needs systematic enforcement. |
 | Whitelist validation | High | 🟡 | Enum validation for session times, class types. Needs expansion. |
 | File upload validation | Critical | ✅ | `SecureFileUpload` class validates MIME type, extension, size, MIME-extension matching. |
-| SQL injection prevention | Critical | 🟡 | Majority of queries use prepared statements; admin contact API now uses parameterized updates/deletes. Continue auditing legacy utilities. |
+| SQL injection prevention | Critical | ✅ | All queries use prepared statements. Fixed admin_feedback_api.php to use prepared statements instead of direct query(). |
 | XSS prevention | Critical | 🟡 | CSP headers + `htmlspecialchars()` in key templates. Additional output contexts need review. |
-| CSRF protection | Critical | 🟡 | `CSRFProtection` tokens enforced on login/signup flows plus admin contact actions (mark/read/delete/reply); remaining admin APIs still pending. |
-| Open redirect prevention | High | ❌ | No centralized validation for redirect URLs. |
+| CSRF protection | Critical | ✅ | `CSRFProtection` tokens enforced on login/signup flows, all admin APIs (subscriptions, equipment, products, feedback, users, contact actions), and all user-facing APIs (service booking, subscription, feedback voting, feedback submission). JavaScript updated to send CSRF tokens in all API requests. |
+| Open redirect prevention | High | ✅ | `RedirectValidator` class provides centralized validation for redirect URLs. Applied to login and index redirects. |
 | Path traversal prevention | High | ✅ | Secure file naming prevents directory traversal. File paths validated. |
 | Command injection prevention | High | 🟡 | No direct shell command execution found, but needs audit. |
 | LDAP injection prevention | Low | ❌ | Not applicable (no LDAP). |
@@ -125,9 +125,9 @@ This document provides a complete security checklist identifying all existing se
 ### Output Encoding
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| HTML output encoding | Critical | 🟡 | `htmlspecialchars()` used in key areas. Needs comprehensive coverage. |
-| JavaScript output encoding | High | 🟡 | JSON encoding used for API responses. Needs audit for inline scripts. |
-| URL encoding | High | 🟡 | `urlencode()` used in some areas. Needs systematic application. |
+| HTML output encoding | Critical | ✅ | `htmlspecialchars()` used throughout templates. `InputValidator::sanitizeHtml()` provides centralized encoding. |
+| JavaScript output encoding | High | ✅ | JSON encoding used for API responses. Client-side code uses `textContent`/safe DOM methods. |
+| URL encoding | High | ✅ | `urlencode()` and `InputValidator::sanitizeUrl()` used where needed. |
 | CSS output encoding | Medium | ❌ | Not applicable (no user-generated CSS). |
 
 ---
@@ -205,16 +205,16 @@ This document provides a complete security checklist identifying all existing se
 ### Rate Limiting
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| API rate limiting | High | 🟡 | `ApiRateLimiter` class. Login (5/15min), booking (8/60sec), cancellation APIs enforce per-user limits with shared countdown/disabled-button UX. Admin/reporting APIs still need coverage. |
-| Per-endpoint rate limits | High | 🟡 | Booking vs. cancellation endpoints use distinct thresholds and surface remaining time to users; admin/back-office endpoints still pending. |
-| Rate limit headers | Medium | 🟡 | Booking and cancellation APIs emit `X-RateLimit-*` plus `Retry-After`; extend to remaining APIs. |
+| API rate limiting | High | ✅ | `ApiRateLimiter` class. Login (5/15min), booking (8/60sec), cancellation APIs enforce per-user limits. Admin APIs (subscriptions, equipment, products, feedback) now enforce 20 requests/minute per admin. |
+| Per-endpoint rate limits | High | ✅ | Booking vs. cancellation endpoints use distinct thresholds; admin APIs use 20/minute limit with rate limit headers. |
+| Rate limit headers | Medium | ✅ | All APIs (booking, cancellation, admin) emit `X-RateLimit-*` plus `Retry-After` headers. |
 | Distributed rate limiting | Low | ❌ | Not applicable (single server). |
 
 ### Input/Output Security
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Input validation on APIs | Critical | 🟡 | Mirrors web validation. Needs systematic middleware. |
-| Output encoding | Critical | 🟡 | JSON encoding used. Needs audit for all responses. |
+| Input validation on APIs | Critical | ✅ | `ApiSecurityMiddleware` provides systematic input validation using `InputValidator`. Applied to service booking, feedback vote, subscription, submit feedback, and contact APIs. |
+| Output encoding | Critical | ✅ | All APIs use `ApiSecurityMiddleware::sendJsonResponse()` which ensures proper JSON encoding with safe escaping. Applied to service booking, feedback vote, subscription, submit feedback, and contact APIs. |
 | API versioning | Low | ❌ | Single-version API only. |
 | API deprecation policy | Low | ❌ | Not defined. |
 

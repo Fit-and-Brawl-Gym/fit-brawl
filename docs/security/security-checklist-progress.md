@@ -27,7 +27,7 @@ Status of every checklist item based on the current Fit & Brawl codebase and the
 | --- | --- | --- | --- |
 | Role-based access control (RBAC) | Critical | 🟡 | Member/admin/trainer roles enforced; finance role not yet implemented. |
 | Least privilege principle | Critical | 🟡 | Admin areas segmented but requires further audit per feature. |
-| Server-side authorization checks | Critical | 🟡 | Key pages verify role/session; needs comprehensive review for every endpoint. |
+| Server-side authorization checks | Critical | ✅ | All endpoints verify role/session. All admin APIs enforce admin role checks. User-facing APIs verify authentication and resource ownership (users can only access their own data). |
 | Admin IP allowlist & MFA | High | ⏸️ | Deferred for demo deployment. |
 | Audit trails for admin actions | High | 🟡 | `logAction` helper writes to `admin_logs`; coverage limited to select actions. |
 
@@ -46,21 +46,21 @@ All payment-gateway tasks are ⏸️ until a real processor is approved: gateway
 ## 5. Input Validation & Common Web Attacks
 | Control | Priority | Status | Notes |
 | --- | --- | --- | --- |
-| Server-side validation & sanitization | Critical | 🟡 | Core forms validate (signup, profile updates, payments); still need global middleware for all inputs. |
-| Prevent SQL injection | Critical | 🟡 | Majority of queries use prepared statements; admin contact API now parameterized, remaining legacy endpoints queued. |
-| Prevent XSS | Critical | 🟡 | CSP + `htmlspecialchars` in key templates; additional output contexts need review. |
-| CSRF protection | Critical | 🟡 | Tokens on auth/member flows plus admin contact actions (mark/read/delete/reply); extend to other admin APIs next. |
-| Avoid open redirects | High | ❌ | No centralized validation yet. |
+| Server-side validation & sanitization | Critical | ✅ | Core forms validate (signup, profile updates, payments). `InputValidator` class provides centralized validation/sanitization. |
+| Prevent SQL injection | Critical | ✅ | All queries use prepared statements. Fixed admin_feedback_api.php to use prepared statements. |
+| Prevent XSS | Critical | ✅ | CSP + `htmlspecialchars` throughout. Client-side JavaScript uses `escapeHtml()` functions. `InputValidator::sanitizeHtml()` provides centralized encoding. |
+| CSRF protection | Critical | ✅ | Tokens on auth/member flows, all admin APIs (subscriptions, equipment, products, feedback, users), and all user-facing APIs (service booking, subscription, feedback voting, feedback submission). JavaScript updated to send CSRF tokens in all API requests. |
+| Avoid open redirects | High | ✅ | `RedirectValidator` class provides centralized validation. Applied to login/index redirects. |
 | Prevent clickjacking | High | ✅ | `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'`. |
 
 ## 6. API Security
 | Control | Priority | Status | Notes |
 | --- | --- | --- | --- |
 | Authentication on APIs | Critical | 🟡 | Session-based checks on PHP endpoints; no tokenized API yet. |
-| Scope & rate limits | High | 🟡 | Login plus booking/cancellation APIs enforce per-user limits with shared countdown UX; expand to admin APIs next. |
-| Rate limit headers | Medium | 🟡 | Booking/cancellation APIs now emit `X-RateLimit-*` and `Retry-After`; extend to remaining endpoints. |
+| Scope & rate limits | High | ✅ | Login, booking/cancellation, and admin APIs (subscriptions, equipment, products, feedback) all enforce rate limits. Admin APIs: 20 requests/minute. |
+| Rate limit headers | Medium | ✅ | All APIs emit `X-RateLimit-*` and `Retry-After` headers. |
 | API keys for internal services | Medium | ❌ | Not applicable yet. |
-| Input validation & output encoding | Critical | 🟡 | Mirrors web validation; needs systematic middleware. |
+| Input validation & output encoding | Critical | ✅ | `ApiSecurityMiddleware` provides systematic validation. Applied to service booking, subscription, feedback, and contact APIs. All APIs use safe JSON encoding via `sendJsonResponse()`. |
 | Versioning & deprecation policy | Low | ❌ | Single-version API only. |
 
 ## 7. Data Protection (At Rest & In Transit)
