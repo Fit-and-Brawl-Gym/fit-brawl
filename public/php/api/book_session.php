@@ -4,6 +4,8 @@ require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
 require_once '../../../includes/activity_logger.php';
 require_once '../../../includes/mail_config.php'; // make sure this defines sendTrainerBookingNotification()
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
@@ -25,7 +27,23 @@ try {
         exit;
     }
 
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        echo json_encode(['success' => false, 'message' => 'Your session expired. Please refresh and try again.']);
+        exit;
+    }
+
     $user_id = $_SESSION['user_id'];
+        $rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'book_session:' . $user_id, 8, 60);
+        if ($rateCheck['blocked']) {
+            $minutes = ceil($rateCheck['retry_after'] / 60);
+            echo json_encode([
+                'success' => false,
+                'message' => "Too many booking attempts. Please wait {$minutes} minute(s) and try again.",
+                'failed_check' => 'rate_limit'
+            ]);
+            exit;
+        }
     $trainer_id = isset($_POST['trainer_id']) ? intval($_POST['trainer_id']) : 0;
     $class_type = $_POST['class_type'] ?? '';
     $booking_date = $_POST['booking_date'] ?? '';
@@ -185,8 +203,8 @@ try {
 
         $count_stmt = $conn->prepare("
             SELECT COUNT(*) as booking_count
-            FROM user_reservations 
-            WHERE user_id = ? 
+            FROM user_reservations
+            WHERE user_id = ?
             AND booking_date BETWEEN ? AND ?
             AND booking_status IN ('confirmed', 'completed')
         ");

@@ -2,34 +2,13 @@
 header('Content-Type: application/json');
 require_once '../../includes/db_connect.php';
 require_once '../../includes/user_id_generator.php';
+require_once __DIR__ . '/../../includes/password_policy.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 function validatePassword($password)
 {
-    $errors = [];
-
-    if (strlen($password) < 8) {
-        $errors[] = "Password must be at least 8 characters long";
-    }
-
-    if (!preg_match('/[A-Z]/', $password)) {
-        $errors[] = "Password must contain at least one uppercase letter";
-    }
-
-    if (!preg_match('/[a-z]/', $password)) {
-        $errors[] = "Password must contain at least one lowercase letter";
-    }
-
-    if (!preg_match('/[0-9]/', $password)) {
-        $errors[] = "Password must contain at least one number";
-    }
-
-    if (!preg_match('/[?!@#$%^&*]/', $password)) {
-        $errors[] = "Password must contain at least one special character (?!@#$%^&*)";
-    }
-
-    return $errors;
+    return PasswordPolicy::validate($password);
 }
 
 // password strength (weak, medium, strong)
@@ -37,7 +16,7 @@ function getPasswordStrength($password)
 {
     $strength = 0;
 
-    if (strlen($password) >= 8)
+    if (strlen($password) >= PasswordPolicy::MIN_LENGTH)
         $strength++;
     if (preg_match('/[A-Z]/', $password))
         $strength++;

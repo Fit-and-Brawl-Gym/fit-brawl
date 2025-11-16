@@ -17,6 +17,7 @@ require_once __DIR__ . '/config.php';           // Load configuration constants 
 require_once __DIR__ . '/env_loader.php';
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/log_action.php';
+require_once __DIR__ . '/security_headers.php';
 
 // Safe session start
 if (session_status() === PHP_SESSION_NONE) {

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -69,9 +70,14 @@ $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
 $additionalCSS = ['../css/pages/reservations.css?v=2.0.' . time()];
 $additionalJS = ['../js/reservations.js?v=' . time() . mt_rand()];
+$pageCsrfToken = CSRFProtection::generateToken();
 
 require_once __DIR__ . '/../../includes/header.php';
 ?>
+
+<script>
+    window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
+</script>
 
 <!--Main Content-->
 <main class="reservations-page">

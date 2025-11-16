@@ -1,7 +1,7 @@
 # User Page Documentation: Change Password Page (change-password.php)
 
-**Page Name**: Change Password / Password Reset  
-**Who Can Access**: Users who completed OTP verification  
+**Page Name**: Change Password / Password Reset
+**Who Can Access**: Users who completed OTP verification
 **Last Updated**: November 10, 2025
 
 ---
@@ -82,7 +82,7 @@ forgot-password.php → verification.php → change-password.php (this page) →
 
 | Requirement | Pattern | Example |
 |-------------|---------|---------|
-| **At least 8 characters** | Minimum length | "Password" (8 chars) ✓ |
+| **At least 12 characters** | Minimum length | "Password1234" ✓ |
 | **One uppercase letter** | A-Z | "Password" has P ✓ |
 | **One lowercase letter** | a-z | "Password" has assword ✓ |
 | **One number** | 0-9 | "Password1" has 1 ✓ |
@@ -202,14 +202,14 @@ if ($new_password !== $confirm_password)
 - At least one special character (!@#$%^&*?)
 
 **Error Examples**:
-- "Password must be at least 8 characters long"
+- "Password must be at least 12 characters long"
 - "Password must contain at least one uppercase letter"
 - "Password must contain at least one number"
 
 **Multiple Errors**:
 - If multiple requirements fail, all errors shown
 - Separated by line breaks
-- Example: "Password must be at least 8 characters long<br>Password must contain at least one number"
+- Example: "Password must be at least 12 characters long<br>Password must contain at least one number"
 
 ---
 
@@ -310,7 +310,7 @@ UPDATE users SET password = ? WHERE email = ?
 
 ---
 
-**Error 2: "Password must be at least 8 characters long"**
+**Error 2: "Password must be at least 12 characters long"**
 
 **Cause**:
 - Password too short (7 or fewer characters)
@@ -455,8 +455,8 @@ UPDATE users SET password = ? WHERE email = ?
 
 **SQL Query**:
 ```sql
-UPDATE users 
-SET password = '$2y$10$hashed_password_here' 
+UPDATE users
+SET password = '$2y$10$hashed_password_here'
 WHERE email = 'user@example.com'
 ```
 
@@ -566,7 +566,7 @@ WHERE email = 'user@example.com'
 1. Type weak password: "pass"
    ↓
 2. Requirements panel shows:
-   - ✗ At least 8 characters (only 4)
+   - ✗ At least 12 characters (only 4)
    - ✗ One uppercase letter (none)
    - ✗ One number (none)
    - ✗ One special character (none)
@@ -891,10 +891,10 @@ WHERE email = 'user@example.com'
 
 ---
 
-**Page Status**: ✅ Fully functional  
-**Part of**: Password reset flow (final step)  
-**Required for**: Completing forgot password process  
+**Page Status**: ✅ Fully functional
+**Part of**: Password reset flow (final step)
+**Required for**: Completing forgot password process
 **Security Level**: ✅ Strong (bcrypt hashing, double validation, session control)
 
-**Documentation Version**: 1.0  
+**Documentation Version**: 1.0
 **Last Updated**: November 10, 2025

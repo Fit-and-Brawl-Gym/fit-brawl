@@ -3,6 +3,8 @@ session_start();
 require_once __DIR__ . '/../../includes/config.php';  // Add config for BASE_PATH
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/user_id_generator.php'; // Add ID generator
+require_once __DIR__ . '/../../includes/password_policy.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
@@ -13,6 +15,13 @@ require '../../vendor/autoload.php';
 require_once __DIR__ . '/../../includes/email_template.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        $_SESSION['register_error'] = "Your session expired. Please resubmit the form.";
+        header("Location: sign-up.php");
+        exit();
+    }
+
     $name = test_input($_POST['name']);
     $email = test_input($_POST['email']);
     $password_input = test_input($_POST['password'] ?? '');
@@ -40,38 +49,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         exit();
     }
 
-    // Password Validation Function
-    function validatePassword($password) {
-    $errors = [];
-
-    // must have at least 8 characters
-    if (strlen($password) < 8) {
-        $errors[] = "Password must be at least 8 characters long";
-    }
-
-    // must contain at least one uppercase letter
-    if (!preg_match('/[A-Z]/', $password)) {
-        $errors[] = "Password must contain at least one uppercase letter";
-    }
-
-    // must contain at least one lowercase letter
-    if (!preg_match('/[a-z]/', $password)) {
-        $errors[] = "Password must contain at least one lowercase letter";
-    }
-
-    // must contain at least one number
-    if (!preg_match('/[0-9]/', $password)) {
-        $errors[] = "Password must contain at least one number";
-    }
-
-    // must contain at least one special character
-    if (!preg_match('/[!@#$%^&*?]/', $password)) {
-        $errors[] = "Password must contain at least one special character (!@#$%^&*?)";
-    }
-
-    return $errors;
-}
-
     //Check password match
     if ($password_input !== $confirm_password) {
         $_SESSION['register_error'] = "Passwords do not match.";
@@ -80,9 +57,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     }
 
     // Validate password requirements
-    $passwordErrors = validatePassword($password_input);
+    $passwordErrors = PasswordPolicy::validate($password_input);
     if (!empty($passwordErrors)) {
-        $_SESSION['register_error'] = implode("<br>", $passwordErrors);
+        $_SESSION['register_error'] = implode("\n", $passwordErrors);
         header("Location: sign-up.php");
         exit();
     }
@@ -190,8 +167,8 @@ function test_input($data) {
     return $data;
 }
 
-function showError($error) {
-    return !empty($error) ? "<p class='error-message'>$error</p>" : "";
+function formatAlertText($text) {
+    return nl2br(htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8'));
 }
 
 $pageTitle = "Sign Up - Fit and Brawl";
@@ -203,6 +180,7 @@ $currentPage = "sign_up";
 $pageTitle = "Sign Up - Fit and Brawl";
 $currentPage = "signup";
 $additionalCSS = [
+    '../css/components/alert.css?v=' . time(),
     '../css/pages/sign-up.css?v=5',
     '../css/components/terms-modal.css'
 ];
@@ -212,6 +190,20 @@ $additionalJS = [
     '../js/signup-error-handler.js',
     '../js/resend-verification.js'
 ];
+
+$signupErrorMessage = $_SESSION['register_error'] ?? null;
+$signupSuccessMessage = $_SESSION['success_message'] ?? null;
+$signupVerificationEmail = $_SESSION['verification_email'] ?? null;
+
+if (isset($_SESSION['register_error'])) {
+    unset($_SESSION['register_error']);
+}
+if (isset($_SESSION['success_message'])) {
+    unset($_SESSION['success_message']);
+}
+if (isset($_SESSION['verification_email'])) {
+    unset($_SESSION['verification_email']);
+}
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
@@ -235,26 +227,40 @@ require_once __DIR__ . '/../../includes/header.php';
                 </div>
 
                 <form action="sign-up.php" method="post" class="signup-form" id="signupForm">
+                    <?= CSRFProtection::getTokenField(); ?>
                     <!-- Error/Success Messages - Displayed prominently at the top -->
                     <div id="messageContainer" class="message-container">
-                        <?php if (isset($_SESSION['register_error'])): ?>
-                        <div class="error-message-box" id="errorMessageBox">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <div class="message-text"><?= $_SESSION['register_error']; ?></div>
-                        </div>
-                        <?php unset($_SESSION['register_error']); ?>
+                        <?php if (!empty($signupErrorMessage)): ?>
+                            <div class="alert-box alert-box--error" id="errorMessageBox" role="alert">
+                                <div class="alert-icon" aria-hidden="true">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <p class="alert-title">We couldn't create your account</p>
+                                    <p class="alert-text"><?= formatAlertText($signupErrorMessage); ?></p>
+                                </div>
+                            </div>
                         <?php endif; ?>
 
-                        <?php if (isset($_SESSION['success_message'])): ?>
-                        <div class="success-message-box" id="successMessageBox">
-                            <div class="message-text"><?= $_SESSION['success_message']; ?></div>
-                            <?php if (isset($_SESSION['verification_email'])): ?>
-                            <button type="button" class="resend-verification-btn" id="resendVerificationBtn" data-email="<?= htmlspecialchars($_SESSION['verification_email']); ?>">
-                                 Resend Verification Email
-                            </button>
-                            <?php endif; ?>
-                        </div>
-                        <?php unset($_SESSION['success_message']); ?>
+                        <?php if (!empty($signupSuccessMessage)): ?>
+                            <div class="alert-box alert-box--success" id="successMessageBox" role="status">
+                                <div class="alert-icon" aria-hidden="true">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <p class="alert-title">Account created</p>
+                                    <p class="alert-text"><?= formatAlertText($signupSuccessMessage); ?></p>
+
+                                    <?php if (!empty($signupVerificationEmail)): ?>
+                                        <div class="alert-actions">
+                                            <button type="button" class="resend-verification-btn" id="resendVerificationBtn" data-email="<?= htmlspecialchars($signupVerificationEmail); ?>">
+                                                <i class="fas fa-envelope"></i>
+                                                Resend Verification Email
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         <?php endif; ?>
                     </div>
 
@@ -285,7 +291,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             <div class="password-requirements-list">
                             <div class="requirement-item" id="req-length">
                                 <span class="requirement-icon">✗</span>
-                                <span class="requirement-text">At least 8 characters</span>
+                                <span class="requirement-text">At least 12 characters</span>
                             </div>
                             <div class="requirement-item" id="req-uppercase">
                                 <span class="requirement-icon">✗</span>

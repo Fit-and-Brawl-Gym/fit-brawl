@@ -28,6 +28,16 @@ document.addEventListener('DOMContentLoaded', function () {
         all: [] // Store all bookings for week calculations
     };
 
+    const getCsrfToken = () => window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    function ensureCsrfToken() {
+        const token = getCsrfToken();
+        if (!token) {
+            showToast('Your session expired. Please refresh the page.', 'error');
+        }
+        return token;
+    }
+
     // Initialize
     init();
 
@@ -632,10 +642,19 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const csrfToken = ensureCsrfToken();
+        if (!csrfToken) {
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append('booking_id', bookingId);
+        formData.append('csrf_token', csrfToken);
+
         fetch('api/cancel_booking.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `booking_id=${bookingId}`
+            body: formData.toString()
         })
             .then(response => response.json())
             .then(data => {
@@ -1195,11 +1214,19 @@ document.addEventListener('DOMContentLoaded', function () {
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
 
+            const csrfToken = ensureCsrfToken();
+            if (!csrfToken) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                return;
+            }
+
             const formData = new URLSearchParams();
             formData.append('trainer_id', trainerId);
             formData.append('class_type', classType);
             formData.append('booking_date', date);
             formData.append('session_time', session);
+            formData.append('csrf_token', csrfToken);
 
             fetch('api/book_session.php', {
                 method: 'POST',

@@ -179,22 +179,8 @@
     border-radius: var(--radius-md);
 }
 
-.success-message {
-    background-color: rgba(0, 255, 0, 0.1);
-    color: var(--color-success);
-    padding: var(--spacing-3);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-4);
-    text-align: center;
-}
-
-.error-message {
-    background-color: rgba(255, 0, 0, 0.1);
-    color: var(--color-error);
-    padding: var(--spacing-3);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-4);
-    text-align: center;
+.verification-modal .alert-box {
+    margin-bottom: var(--spacing-5);
 }
 
 .resend-btn {

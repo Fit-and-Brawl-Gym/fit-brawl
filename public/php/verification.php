@@ -9,8 +9,7 @@ if(!isset($_SESSION['reset_email'])) {
     exit;
 }
 
-$error = '';
-$success = '';
+$alertMessage = null;
 
 // Generate and send OTP if not already sent
 if(!isset($_SESSION['otp_sent'])) {
@@ -23,7 +22,11 @@ if(!isset($_SESSION['otp_sent'])) {
     if($stmt->execute() && sendOTPEmail($_SESSION['reset_email'], $otp)) {
         $_SESSION['otp_sent'] = true;
     } else {
-        $error = "Failed to send OTP. Please try again.";
+        $alertMessage = [
+            'type' => 'error',
+            'title' => 'Unable to send code',
+            'text' => 'We couldn\'t send the verification code. Please try again.'
+        ];
     }
 }
 
@@ -54,16 +57,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: change-password.php");
             exit;
         } else {
-            $error = "OTP has expired. Please request a new one.";
+            $alertMessage = [
+                'type' => 'error',
+                'title' => 'Code expired',
+                'text' => 'Your verification code has expired. Please request a new one.'
+            ];
         }
     } else {
-        $error = "Invalid OTP. Please try again.";
+        $alertMessage = [
+            'type' => 'error',
+            'title' => 'Invalid code',
+            'text' => 'The verification code you entered is incorrect. Please try again.'
+        ];
     }
 }
 
 $pageTitle = "Verify Account - Fit and Brawl";
 $currentPage = "verification";
-$additionalCSS = ['../css/pages/verification.css'];
+$additionalCSS = [
+    '../css/components/alert.css?v=' . time(),
+    '../css/pages/verification.css'
+];
 $additionalJS = ['../js/verification.js'];
 require_once '../../includes/header.php';
 ?>
@@ -84,8 +98,16 @@ require_once '../../includes/header.php';
                     <h2>Verify Your Account</h2>
                 </div>
 
-                <?php if ($error): ?>
-                    <div class="error-message"><?php echo $error; ?></div>
+                <?php if (!empty($alertMessage)): ?>
+                    <div class="alert-box alert-box--<?= htmlspecialchars($alertMessage['type']); ?>" role="alert">
+                        <div class="alert-icon" aria-hidden="true">
+                            <i class="fas fa-<?= $alertMessage['type'] === 'error' ? 'exclamation-triangle' : 'info-circle'; ?>"></i>
+                        </div>
+                        <div class="alert-content">
+                            <p class="alert-title"><?= htmlspecialchars($alertMessage['title']); ?></p>
+                            <p class="alert-text"><?= nl2br(htmlspecialchars($alertMessage['text'])); ?></p>
+                        </div>
+                    </div>
                 <?php endif; ?>
 
                 <form class="verification-form" method="POST">

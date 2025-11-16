@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../includes/password_policy.php';
 
 // Check if user came from verification process
 if(!isset($_SESSION['reset_email'])) {
@@ -8,72 +10,73 @@ if(!isset($_SESSION['reset_email'])) {
     exit;
 }
 
-$error = '';
-$success = '';
+$alertMessage = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $new_password = test_input($_POST['new_password']);
-    $confirm_password = test_input($_POST['confirm_password']);
-    // Password Validation Function (same rules as sign-up)
-    function validatePassword($password) {
-        $errors = [];
-
-        if (strlen($password) < 8) {
-            $errors[] = "Password must be at least 8 characters long";
-        }
-        if (!preg_match('/[A-Z]/', $password)) {
-            $errors[] = "Password must contain at least one uppercase letter";
-        }
-        if (!preg_match('/[a-z]/', $password)) {
-            $errors[] = "Password must contain at least one lowercase letter";
-        }
-        if (!preg_match('/[0-9]/', $password)) {
-            $errors[] = "Password must contain at least one number";
-        }
-        if (!preg_match('/[!@#$%^&*?]/', $password)) {
-            $errors[] = "Password must contain at least one special character (!@#$%^&*?)";
-        }
-
-        return $errors;
-    }
-
-    // Check passwords match first
-    if ($new_password !== $confirm_password) {
-        $error = "Passwords do not match!";
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        $alertMessage = [
+            'type' => 'error',
+            'title' => 'Session expired',
+            'text' => 'Your session expired. Please resubmit the form.'
+        ];
     } else {
-        // Validate password requirements
-        $passwordErrors = validatePassword($new_password);
-        if (!empty($passwordErrors)) {
-            $error = implode("<br>", $passwordErrors);
+        $new_password = test_input($_POST['new_password']);
+        $confirm_password = test_input($_POST['confirm_password']);
+        // Check passwords match first
+        if ($new_password !== $confirm_password) {
+            $alertMessage = [
+                'type' => 'error',
+                'title' => 'Passwords do not match',
+                'text' => 'Make sure both password fields match exactly.'
+            ];
         } else {
-            // Ensure the new password is not the same as the current password
-            $email = $_SESSION['reset_email'];
-            $getStmt = $conn->prepare("SELECT password FROM users WHERE email = ? LIMIT 1");
-            $getStmt->bind_param("s", $email);
-            if ($getStmt->execute()) {
-                $res = $getStmt->get_result();
-                $row = $res->fetch_assoc();
-                $currentHash = $row['password'] ?? null;
+            // Validate password requirements
+            $passwordErrors = PasswordPolicy::validate($new_password);
+            if (!empty($passwordErrors)) {
+                $alertMessage = [
+                    'type' => 'error',
+                    'title' => 'Password requirements not met',
+                    'text' => implode("\n", $passwordErrors)
+                ];
             } else {
-                $currentHash = null;
-            }
-
-            if ($currentHash && password_verify($new_password, $currentHash)) {
-                $error = "New password must be different from your current password.";
-            } else {
-                $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-
-                $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-                $stmt->bind_param("ss", $hashed_password, $email);
-
-                if ($stmt->execute()) {
-                    // Clear reset email session
-                    unset($_SESSION['reset_email']);
-                    $_SESSION['password_changed'] = true;
-                    header("Location: login.php");
-                    exit;
+                // Ensure the new password is not the same as the current password
+                $email = $_SESSION['reset_email'];
+                $getStmt = $conn->prepare("SELECT password FROM users WHERE email = ? LIMIT 1");
+                $getStmt->bind_param("s", $email);
+                if ($getStmt->execute()) {
+                    $res = $getStmt->get_result();
+                    $row = $res->fetch_assoc();
+                    $currentHash = $row['password'] ?? null;
                 } else {
-                    $error = "Error updating password. Please try again.";
+                    $currentHash = null;
+                }
+
+                if ($currentHash && password_verify($new_password, $currentHash)) {
+                    $alertMessage = [
+                        'type' => 'error',
+                        'title' => 'Choose a new password',
+                        'text' => 'Your new password must be different from your current password.'
+                    ];
+                } else {
+                    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+
+                    $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+                    $stmt->bind_param("ss", $hashed_password, $email);
+
+                    if ($stmt->execute()) {
+                        // Clear reset email session
+                        unset($_SESSION['reset_email']);
+                        $_SESSION['password_changed'] = true;
+                        header("Location: login.php");
+                        exit;
+                    } else {
+                        $alertMessage = [
+                            'type' => 'error',
+                            'title' => 'Update failed',
+                            'text' => 'We could not update your password. Please try again.'
+                        ];
+                    }
                 }
             }
         }
@@ -86,6 +89,10 @@ function test_input($data) {
     return $data;
 }
 
+function formatAlertText($text) {
+    return nl2br(htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8'));
+}
+
 ?>
 
 <?php
@@ -94,6 +101,7 @@ $pageTitle = "Change Password - Fit and Brawl";
 $currentPage = "";
 // Include password validation JS to reuse the same client-side checks as sign-up
 $additionalCSS = [
+    '../css/components/alert.css?v=' . time(),
     // Keep page-specific CSS but also include the sign-up styles so the password modal matches exactly
     '../css/pages/change-password.css',
     '../css/pages/sign-up.css?v=5',
@@ -124,14 +132,19 @@ require_once '../../includes/header.php';
             </div>
 
             <form method="POST" class="change-password-form">
+                <?= CSRFProtection::getTokenField(); ?>
                 <h3>A LITTLE STEP BACK BEFORE THE BEST VERSION OF YOU!</h3>
 
-                <?php if (!empty($error)): ?>
-                    <div class="error-message"><?php echo $error; ?></div>
-                <?php endif; ?>
-
-                <?php if (!empty($success)): ?>
-                    <div class="success-message"><?php echo $success; ?></div>
+                <?php if (!empty($alertMessage)): ?>
+                    <div class="alert-box alert-box--<?= htmlspecialchars($alertMessage['type']); ?>" role="alert">
+                        <div class="alert-icon" aria-hidden="true">
+                            <i class="fas fa-<?= $alertMessage['type'] === 'error' ? 'exclamation-triangle' : 'info-circle'; ?>"></i>
+                        </div>
+                        <div class="alert-content">
+                            <p class="alert-title"><?= htmlspecialchars($alertMessage['title']); ?></p>
+                            <p class="alert-text"><?= formatAlertText($alertMessage['text']); ?></p>
+                        </div>
+                    </div>
                 <?php endif; ?>
 
                 <!-- New password -->
@@ -151,7 +164,7 @@ require_once '../../includes/header.php';
                     <div class="password-requirements-list">
                         <div class="requirement-item" id="req-length">
                             <span class="requirement-icon">✗</span>
-                            <span class="requirement-text">At least 8 characters</span>
+                            <span class="requirement-text">At least 12 characters</span>
                         </div>
                         <div class="requirement-item" id="req-uppercase">
                             <span class="requirement-icon">✗</span>

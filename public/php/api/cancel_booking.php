@@ -3,6 +3,8 @@ session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
 require_once '../../../includes/activity_logger.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -20,7 +22,23 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$csrfToken = $_POST['csrf_token'] ?? '';
+if (!CSRFProtection::validateToken($csrfToken)) {
+    echo json_encode(['success' => false, 'message' => 'Your session expired. Please refresh and try again.']);
+    exit;
+}
+
 $user_id = $_SESSION['user_id'];
+$rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'cancel_booking:' . $user_id, 6, 60);
+if ($rateCheck['blocked']) {
+    $minutes = ceil($rateCheck['retry_after'] / 60);
+    echo json_encode([
+        'success' => false,
+        'message' => "Too many cancellation attempts. Please wait {$minutes} minute(s).",
+        'failed_check' => 'rate_limit'
+    ]);
+    exit;
+}
 $booking_id = isset($_POST['booking_id']) ? intval($_POST['booking_id']) : 0;
 
 if (!$booking_id) {

@@ -2,6 +2,8 @@
 session_start();
 require_once '../../includes/db_connect.php';
 require_once '../../includes/file_upload_security.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../includes/password_policy.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['email'])) {
@@ -9,13 +11,28 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
+$profileRedirect = (isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') ? 'trainer/profile.php' : 'user_profile.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        $_SESSION['error'] = "Your session expired. Please try again.";
+        header("Location: $profileRedirect");
+        exit;
+    }
+
     $username = test_input($_POST['username']);
     $email = test_input($_POST['email']);
     $currentPassword = test_input($_POST['current_password']);
     $newPassword = test_input($_POST['new_password']);
     $confirmPassword = test_input($_POST['confirm_password']);
     $removeAvatar = isset($_POST['remove_avatar']) && $_POST['remove_avatar'] === '1';
+
+    if (empty($username) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['error'] = "Please provide a valid name and email.";
+        header("Location: $profileRedirect");
+        exit;
+    }
 
     // Get current user
     $currentEmail = $_SESSION['email'];
@@ -25,13 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Check if current password is provided
         if (empty($currentPassword)) {
             $_SESSION['error'] = "Current password is required to change your password.";
-            header("Location: user_profile.php");
+            header("Location: $profileRedirect");
             exit;
         }
 
         if ($newPassword !== $confirmPassword) {
             $_SESSION['error'] = "Passwords do not match.";
-            header("Location: user_profile.php");
+            header("Location: $profileRedirect");
+            exit;
+        }
+
+        $passwordErrors = PasswordPolicy::validate($newPassword);
+        if (!empty($passwordErrors)) {
+            $_SESSION['error'] = implode("<br>", $passwordErrors);
+            header("Location: $profileRedirect");
             exit;
         }
 
@@ -49,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!password_verify($currentPassword, $currentPasswordHash)) {
                 $_SESSION['error'] = "Current password is incorrect.";
                 $stmt->close();
-                header("Location: user_profile.php");
+                header("Location: $profileRedirect");
                 exit;
             }
 
@@ -57,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (password_verify($newPassword, $currentPasswordHash)) {
                 $_SESSION['error'] = "New password cannot be the same as your current password.";
                 $stmt->close();
-                header("Location: user_profile.php");
+                header("Location: $profileRedirect");
                 exit;
             }
         }
@@ -88,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $avatar = $result['filename'];
         } else {
             $_SESSION['error'] = $result['message'];
-            header("Location: user_profile.php");
+            header("Location: $profileRedirect");
             exit;
         }
     }
@@ -131,11 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Redirect based on role
-    if (isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') {
-        header("Location: trainer/profile.php");
-    } else {
-        header("Location: user_profile.php");
-    }
+    header("Location: $profileRedirect");
     exit;
 }
 function test_input($data)
