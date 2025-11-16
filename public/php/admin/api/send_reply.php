@@ -4,51 +4,99 @@ ob_start();
 
 session_start();
 
+require_once __DIR__ . '/../../../../includes/mail_config.php';
+require_once __DIR__ . '/../../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../../includes/input_validator.php';
+
 // Disable HTML error output and log errors instead
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
-// Set JSON header
-header('Content-Type: application/json');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+// Require admin authentication
+$user = ApiSecurityMiddleware::requireAuth(['role' => 'admin']);
+if (!$user) {
     ob_end_clean();
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+    exit; // Already sent response
 }
 
-require_once '../../../../includes/mail_config.php';
-require_once '../../../../includes/db_connect.php';
-require_once '../../../../includes/csrf_protection.php';
+// Rate limiting for admin APIs - 20 requests per minute per admin
+$adminId = $user['user_id'];
+ApiSecurityMiddleware::applyRateLimit($conn, 'admin_send_reply:' . $adminId, 20, 60);
 
-$csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+// Require POST method
+if (!ApiSecurityMiddleware::requireMethod('POST')) {
+    ob_end_clean();
+    exit; // Already sent response
+}
+
+// Get JSON body
+$input = ApiSecurityMiddleware::getJsonBody();
+
+// Get CSRF token from header or JSON body
+$csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($input['csrf_token'] ?? '');
 if (!CSRFProtection::validateToken($csrfToken)) {
     ob_end_clean();
-    http_response_code(419);
-    echo json_encode(['success' => false, 'message' => 'Invalid or missing CSRF token']);
-    exit;
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Invalid or missing CSRF token'
+    ], 403);
 }
 
 try {
-    // Get JSON input
-    $input = json_decode(file_get_contents('php://input'), true);
+    // Validate and sanitize input
+    $validation = ApiSecurityMiddleware::validateInput([
+        'contact_id' => [
+            'type' => 'integer',
+            'required' => false
+        ],
+        'to' => [
+            'type' => 'email',
+            'required' => true
+        ],
+        'subject' => [
+            'type' => 'string',
+            'required' => true,
+            'max_length' => 255
+        ],
+        'message' => [
+            'type' => 'string',
+            'required' => true,
+            'max_length' => 5000
+        ],
+        'original_message' => [
+            'type' => 'string',
+            'required' => false,
+            'max_length' => 5000
+        ],
+        'send_copy' => [
+            'type' => 'boolean',
+            'required' => false,
+            'default' => false
+        ]
+    ], $input);
 
-    if (!$input) {
-        throw new Exception('Invalid request data');
+    if (!$validation['valid']) {
+        $errors = implode(', ', $validation['errors']);
+        ob_end_clean();
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Validation failed: ' . $errors
+        ], 400);
     }
 
-    $contactId = $input['contact_id'] ?? null;
-    $to = $input['to'] ?? null;
-    $subject = $input['subject'] ?? null;
-    $replyMessage = $input['message'] ?? null;
-    $originalMessage = $input['original_message'] ?? '';
-    $sendCopy = $input['send_copy'] ?? false;
-
-    if (!$to || !$subject || !$replyMessage) {
-        throw new Exception('Missing required fields');
-    }
+    $data = $validation['data'];
+    $contactId = $data['contact_id'] ?? null;
+    $to = $data['to'];
+    $subject = $data['subject'];
+    $replyMessage = $data['message'];
+    $originalMessage = $data['original_message'] ?? '';
+    $sendCopy = $data['send_copy'] ?? false;
 
     // Send email to customer using the standard email template
     // (this will throw exception if it fails)
@@ -80,19 +128,19 @@ try {
 
     // Clear any unexpected output and send clean JSON
     ob_end_clean();
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'message' => 'Reply sent successfully'
-    ]);
+    ], 200);
 
 } catch (Exception $e) {
     // Clear any unexpected output
     ob_end_clean();
-    http_response_code(500);
-    echo json_encode([
+    error_log("Error in send_reply.php: " . $e->getMessage());
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
-        'message' => $e->getMessage()
-    ]);
+        'message' => 'An error occurred while sending the reply. Please try again.'
+    ], 500);
 }
 
 if (isset($conn)) {

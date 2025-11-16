@@ -1,21 +1,45 @@
 <?php
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\api\get_member_history.php
 session_start();
-header('Content-Type: application/json');
+require_once __DIR__ . '/../../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../../includes/input_validator.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // Disable HTML error output
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+// Require admin authentication
+$user = ApiSecurityMiddleware::requireAuth(['role' => 'admin']);
+if (!$user) {
+    exit; // Already sent response
 }
 
-require_once '../../../../includes/db_connect.php';
+// Rate limiting for admin read endpoints - 30 requests per minute per admin
+$adminId = $user['user_id'];
+ApiSecurityMiddleware::applyRateLimit($conn, 'admin_get_member_history:' . $adminId, 30, 60);
 
-$userIdParam = $_GET['user_id'] ?? '';
+// Validate and sanitize input
+$validation = ApiSecurityMiddleware::validateInput([
+    'user_id' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 50
+    ]
+], $_GET);
+
+if (!$validation['valid']) {
+    $errors = implode(', ', $validation['errors']);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Validation failed: ' . $errors
+    ], 400);
+}
+
+$userIdParam = $validation['data']['user_id'];
 
 // Handle both integer and string user IDs
 if (is_numeric($userIdParam)) {
@@ -24,13 +48,17 @@ if (is_numeric($userIdParam)) {
     // Extract numeric ID from format like "MBR-25-0005"
     $userId = (int) $matches[1];
 } else {
-    echo json_encode(['success' => false, 'message' => 'Invalid user ID format. Received: ' . $userIdParam]);
-    exit;
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Invalid user ID format'
+    ], 400);
 }
 
 if (!$userId || $userId <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
-    exit;
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Invalid user ID'
+    ], 400);
 }
 
 try {
@@ -99,19 +127,19 @@ try {
         $history[] = $row;
     }
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'history' => $history
-    ]);
+    ], 200);
 
     $stmt->close();
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
+    error_log("Error in get_member_history.php: " . $e->getMessage());
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
-        'message' => $e->getMessage()
-    ]);
+        'message' => 'An error occurred while fetching member history. Please try again.'
+    ], 500);
 }
 
 if (isset($conn)) {

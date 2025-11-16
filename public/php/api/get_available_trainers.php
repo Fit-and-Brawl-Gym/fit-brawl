@@ -2,47 +2,57 @@
 session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-// Validate request method
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+// Require GET method
+if (!ApiSecurityMiddleware::requireMethod('GET')) {
+    exit; // Already sent response
 }
+
+// Rate limiting - 60 requests per minute per IP (public endpoint, used frequently)
+$identifier = 'get_available_trainers:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 60, 60);
 
 // Get parameters
 $date = $_GET['date'] ?? '';
 $session_time = $_GET['session'] ?? '';
 $class_type = $_GET['class'] ?? '';
 
-// Validate required parameters
-if (empty($date) || empty($session_time) || empty($class_type)) {
-    echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
-    exit;
+// Validate and sanitize input
+$validation = ApiSecurityMiddleware::validateInput([
+    'date' => [
+        'type' => 'date',
+        'required' => true,
+        'format' => 'Y-m-d'
+    ],
+    'session' => [
+        'type' => 'whitelist',
+        'required' => true,
+        'allowed' => ['Morning', 'Afternoon', 'Evening']
+    ],
+    'class' => [
+        'type' => 'whitelist',
+        'required' => true,
+        'allowed' => ['Boxing', 'Muay Thai', 'MMA', 'Gym']
+    ]
+], $_GET);
+
+if (!$validation['valid']) {
+    $errors = implode(', ', $validation['errors']);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Validation failed: ' . $errors
+    ], 400);
 }
 
-// Validate session_time
-$valid_sessions = ['Morning', 'Afternoon', 'Evening'];
-if (!in_array($session_time, $valid_sessions)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid session time']);
-    exit;
-}
-
-// Validate class_type
-$valid_classes = ['Boxing', 'Muay Thai', 'MMA', 'Gym'];
-if (!in_array($class_type, $valid_classes)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid class type']);
-    exit;
-}
-
-// Validate date format
-if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid date format']);
-    exit;
-}
+$data = $validation['data'];
+$date_obj = $data['date']; // DateTime object
+$date = $date_obj instanceof DateTime ? $date_obj->format('Y-m-d') : $data['date'];
+$session_time = $data['session'];
+$class_type = $data['class'];
 
 try {
     $validator = new BookingValidator($conn);
@@ -50,8 +60,10 @@ try {
     // Check if date is valid (not past, not too far future)
     $date_check = $validator->validateBookingDate($date);
     if (!$date_check['valid']) {
-        echo json_encode(['success' => false, 'message' => $date_check['message']]);
-        exit;
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => $date_check['message']
+        ], 400);
     }
 
     // Check if session is too close to ending (within 30 minutes)
@@ -72,12 +84,11 @@ try {
         $minutes_remaining = ($end_time - $current_time) / 60;
 
         if ($minutes_remaining < 30) {
-            echo json_encode([
+            ApiSecurityMiddleware::sendJsonResponse([
                 'success' => false,
                 'message' => 'Cannot book this session. Less than 30 minutes remaining before session ends.',
                 'time_cutoff' => true
-            ]);
-            exit;
+            ], 400);
         }
     }
 
@@ -165,7 +176,7 @@ try {
         return $order[$a['status']] - $order[$b['status']];
     });
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'date' => $date,
         'day_of_week' => $day_of_week,
@@ -178,14 +189,14 @@ try {
         'trainers' => $trainers,
         'trainer_count' => count($trainers),
         'available_count' => count(array_filter($trainers, fn($t) => $t['status'] === 'available'))
-    ]);
+    ], 200);
 
 } catch (Exception $e) {
     error_log("Error in get_available_trainers.php: " . $e->getMessage());
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'An error occurred while fetching available trainers'
-    ]);
+    ], 500);
 } finally {
     if (isset($conn)) {
         $conn->close();

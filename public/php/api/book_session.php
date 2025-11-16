@@ -4,82 +4,77 @@ require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
 require_once '../../../includes/activity_logger.php';
 require_once '../../../includes/mail_config.php'; // make sure this defines sendTrainerBookingNotification()
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');
+require_once __DIR__ . '/../../../includes/input_validator.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // --- DEV: enable during development only ---
 // error_reporting(E_ALL);
 // ini_set('display_errors', 1);
 
 try {
-    // Check if user is logged in
-    if (!isset($_SESSION['user_id'])) {
-        echo json_encode(['success' => false, 'message' => 'Not logged in']);
-        exit;
+    // Require authentication
+    $user = ApiSecurityMiddleware::requireAuth();
+    if (!$user) {
+        exit; // Already sent response
     }
 
-    // Validate request method
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-        exit;
+    $user_id = $user['user_id'];
+
+    // Require POST method
+    if (!ApiSecurityMiddleware::requireMethod('POST')) {
+        exit; // Already sent response
     }
 
-    $csrfToken = $_POST['csrf_token'] ?? '';
-    if (!CSRFProtection::validateToken($csrfToken)) {
-        echo json_encode(['success' => false, 'message' => 'Your session expired. Please refresh and try again.']);
-        exit;
+    // Require CSRF token
+    if (!ApiSecurityMiddleware::requireCSRF()) {
+        exit; // Already sent response
     }
 
-    $user_id = $_SESSION['user_id'];
-    $bookingRateLimitMax = 8;
-    $bookingRateLimitWindow = 60;
-    $rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'book_session:' . $user_id, $bookingRateLimitMax, $bookingRateLimitWindow);
+    // Rate limiting - 8 requests per minute per user
+    ApiSecurityMiddleware::applyRateLimit($conn, 'book_session:' . $user_id, 8, 60);
 
-    header('X-RateLimit-Limit: ' . $bookingRateLimitMax);
-    header('X-RateLimit-Remaining: ' . max(0, (int) ($rateCheck['remaining'] ?? 0)));
-    $resetTimestamp = time() + ($rateCheck['blocked'] ? (int) ($rateCheck['retry_after'] ?? $bookingRateLimitWindow) : $bookingRateLimitWindow);
-    header('X-RateLimit-Reset: ' . $resetTimestamp);
-    if (!empty($rateCheck['retry_after'])) {
-        header('Retry-After: ' . (int) $rateCheck['retry_after']);
-    }
-    if ($rateCheck['blocked']) {
-        $minutes = ceil($rateCheck['retry_after'] / 60);
-        echo json_encode([
+    // Validate and sanitize input
+    $validation = ApiSecurityMiddleware::validateInput([
+        'trainer_id' => [
+            'type' => 'integer',
+            'required' => true,
+            'min' => 1
+        ],
+        'class_type' => [
+            'type' => 'whitelist',
+            'required' => true,
+            'allowed' => ['Boxing', 'Muay Thai', 'MMA', 'Gym']
+        ],
+        'booking_date' => [
+            'type' => 'date',
+            'required' => true,
+            'format' => 'Y-m-d'
+        ],
+        'session_time' => [
+            'type' => 'whitelist',
+            'required' => true,
+            'allowed' => ['Morning', 'Afternoon', 'Evening']
+        ]
+    ]);
+
+    if (!$validation['valid']) {
+        $errors = implode(', ', $validation['errors']);
+        ApiSecurityMiddleware::sendJsonResponse([
             'success' => false,
-            'message' => "Too many booking attempts. Please wait {$minutes} minute(s) and try again.",
-            'failed_check' => 'rate_limit',
-            'retry_after' => $rateCheck['retry_after'],
-            'limit_remaining' => $rateCheck['remaining']
-        ]);
-        exit;
-    }
-    $trainer_id = isset($_POST['trainer_id']) ? intval($_POST['trainer_id']) : 0;
-    $class_type = $_POST['class_type'] ?? '';
-    $booking_date = $_POST['booking_date'] ?? '';
-    $session_time = $_POST['session_time'] ?? '';
-
-    // Validate required fields
-    if (!$trainer_id || empty($class_type) || empty($booking_date) || empty($session_time)) {
-        echo json_encode(['success' => false, 'message' => 'Missing required fields']);
-        exit;
+            'message' => 'Validation failed: ' . $errors
+        ], 400);
     }
 
-    // Validate enums
-    $valid_sessions = ['Morning', 'Afternoon', 'Evening'];
-    $valid_classes = ['Boxing', 'Muay Thai', 'MMA', 'Gym'];
-
-    if (!in_array($session_time, $valid_sessions)) {
-        echo json_encode(['success' => false, 'message' => 'Invalid session time']);
-        exit;
-    }
-
-    if (!in_array($class_type, $valid_classes)) {
-        echo json_encode(['success' => false, 'message' => 'Invalid class type']);
-        exit;
-    }
+    $data = $validation['data'];
+    $trainer_id = $data['trainer_id'];
+    $class_type = $data['class_type'];
+    $booking_date_obj = $data['booking_date']; // DateTime object
+    $booking_date = $booking_date_obj instanceof DateTime ? $booking_date_obj->format('Y-m-d') : $booking_date_obj;
+    $session_time = $data['session_time'];
 
     // Initialize validator and activity logger
     $validator = new BookingValidator($conn);
@@ -130,12 +125,11 @@ try {
     $validation = $validator->validateBooking($user_id, $trainer_id, $class_type, $booking_date, $session_time);
 
     if (!$validation['valid']) {
-        echo json_encode([
+        ApiSecurityMiddleware::sendJsonResponse([
             'success' => false,
             'message' => $validation['message'],
             'failed_check' => $validation['failed_check'] ?? null
-        ]);
-        exit;
+        ], 400);
     }
 
     // Get trainer info for response & email (name + email)
@@ -150,8 +144,10 @@ try {
     $trainer_stmt->close();
 
     if (!$trainer_data) {
-        echo json_encode(['success' => false, 'message' => 'Trainer not found']);
-        exit;
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Trainer not found'
+        ], 404);
     }
     $trainer_name = $trainer_data['name'] ?? 'Unknown';
 
@@ -167,8 +163,10 @@ try {
     $member_stmt->close();
 
     if (!$member_data) {
-        echo json_encode(['success' => false, 'message' => 'Member not found']);
-        exit;
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Member not found'
+        ], 404);
     }
 
     // Start transaction
@@ -255,7 +253,7 @@ try {
         }
 
         // Respond success (booking done)
-        echo json_encode([
+        ApiSecurityMiddleware::sendJsonResponse([
             'success' => true,
             'booking_id' => $booking_id,
             'message' => 'Session booked successfully!',
@@ -269,8 +267,7 @@ try {
                 'weekly_limit' => 12,
                 'facility_trainers' => $validation['facility_count'] + 1
             ]
-        ]);
-        exit;
+        ], 200);
 
     } catch (Exception $e) {
         // Rollback and bubble up to outer catch
@@ -285,11 +282,10 @@ try {
     $user_id_log = $_SESSION['user_id'] ?? 'unknown';
     error_log("Booking error for user $user_id_log: " . $e->getMessage());
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'An error occurred while processing your booking. Please try again.'
-    ]);
-    exit;
+    ], 500);
 } finally {
     if (isset($conn) && $conn) {
         $conn->close();

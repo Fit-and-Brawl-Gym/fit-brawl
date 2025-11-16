@@ -4,15 +4,38 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-include '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
 
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
+ApiSecurityMiddleware::setSecurityHeaders();
+
+// Rate limiting - 60 requests per minute per IP (public endpoint, used frequently)
+$identifier = 'get_trainers:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 60, 60);
 
 try {
-    $class_type = isset($_GET['plan']) ? trim($_GET['plan']) : 'all';
+    // Validate and sanitize input
+    $validation = ApiSecurityMiddleware::validateInput([
+        'plan' => [
+            'type' => 'whitelist',
+            'required' => false,
+            'default' => 'all',
+            'allowed' => ['all', 'boxing', 'muay-thai', 'mma', 'gym']
+        ]
+    ], $_GET);
+
+    if (!$validation['valid']) {
+        $errors = implode(', ', $validation['errors']);
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Validation failed: ' . $errors
+        ], 400);
+    }
+
+    $data = $validation['data'];
+    $class_type = $data['plan'] ?? 'all';
 
     // Map class types to trainer specializations
     $class_to_spec_map = [
@@ -55,11 +78,17 @@ try {
         ];
     }
 
-    echo json_encode(['success' => true, 'trainers' => $trainers]);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => true,
+        'trainers' => $trainers
+    ], 200);
 
 } catch (Exception $e) {
     error_log("Error fetching trainers: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An error occurred while fetching trainers. Please try again.']);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'An error occurred while fetching trainers. Please try again.'
+    ], 500);
 } finally {
     if (isset($stmt) && $stmt) {
         $stmt->close();

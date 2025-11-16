@@ -1,16 +1,19 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // Don't display errors in JSON API - log them instead
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
+
+// Rate limiting - 60 requests per minute per IP (public endpoint, used frequently)
+$identifier = 'get_reservations:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 60, 60);
 
 try {
     $year = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
@@ -136,11 +139,17 @@ try {
     }
 
     error_log("Total days with reservations: " . count($reservations));
-    echo json_encode(['success' => true, 'reservations' => $reservations]);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => true,
+        'reservations' => $reservations
+    ], 200);
 
 } catch (Throwable $e) {
     error_log("Error fetching reservations: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An error occurred while fetching reservations. Please try again.']);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'An error occurred while fetching reservations. Please try again.'
+    ], 500);
 } finally {
     if (isset($stmt) && $stmt) {
         $stmt->close();

@@ -3,59 +3,52 @@ session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
 require_once '../../../includes/activity_logger.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
 
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not logged in']);
-    exit;
+// Require authentication
+$user = ApiSecurityMiddleware::requireAuth();
+if (!$user) {
+    exit; // Already sent response
 }
 
-// Validate request method
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+$user_id = $user['user_id'];
+
+// Require POST method
+if (!ApiSecurityMiddleware::requireMethod('POST')) {
+    exit; // Already sent response
 }
 
-$csrfToken = $_POST['csrf_token'] ?? '';
-if (!CSRFProtection::validateToken($csrfToken)) {
-    echo json_encode(['success' => false, 'message' => 'Your session expired. Please refresh and try again.']);
-    exit;
+// Require CSRF token
+if (!ApiSecurityMiddleware::requireCSRF()) {
+    exit; // Already sent response
 }
 
-$user_id = $_SESSION['user_id'];
-$cancelLimit = 6;
-$cancelWindow = 60;
-$rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'cancel_booking:' . $user_id, $cancelLimit, $cancelWindow);
-header('X-RateLimit-Limit: ' . $cancelLimit);
-header('X-RateLimit-Remaining: ' . max(0, (int) ($rateCheck['remaining'] ?? 0)));
-$resetTimestamp = time() + ($rateCheck['blocked'] ? (int) ($rateCheck['retry_after'] ?? $cancelWindow) : $cancelWindow);
-header('X-RateLimit-Reset: ' . $resetTimestamp);
-if (!empty($rateCheck['retry_after'])) {
-    header('Retry-After: ' . (int) $rateCheck['retry_after']);
-}
-if ($rateCheck['blocked']) {
-    $minutes = ceil($rateCheck['retry_after'] / 60);
-    echo json_encode([
+// Rate limiting - 6 requests per minute per user
+ApiSecurityMiddleware::applyRateLimit($conn, 'cancel_booking:' . $user_id, 6, 60);
+
+// Validate and sanitize input
+$validation = ApiSecurityMiddleware::validateInput([
+    'booking_id' => [
+        'type' => 'integer',
+        'required' => true,
+        'min' => 1
+    ]
+]);
+
+if (!$validation['valid']) {
+    $errors = implode(', ', $validation['errors']);
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
-        'message' => "Too many cancellation attempts. Please wait {$minutes} minute(s).",
-        'failed_check' => 'rate_limit',
-        'retry_after' => $rateCheck['retry_after'],
-        'limit_remaining' => $rateCheck['remaining']
-    ]);
-    exit;
+        'message' => 'Validation failed: ' . $errors
+    ], 400);
 }
-$booking_id = isset($_POST['booking_id']) ? intval($_POST['booking_id']) : 0;
 
-if (!$booking_id) {
-    echo json_encode(['success' => false, 'message' => 'Missing booking ID']);
-    exit;
-}
+$booking_id = $validation['data']['booking_id'];
 
 try {
     // Initialize validator and activity logger
@@ -94,12 +87,22 @@ try {
     $result = $stmt->get_result();
 
     if ($result->num_rows === 0) {
-        echo json_encode(['success' => false, 'message' => 'Booking not found']);
-        exit;
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Booking not found'
+        ], 404);
     }
 
     $booking = $result->fetch_assoc();
     $stmt->close();
+
+    // Verify booking belongs to user (additional security check)
+    if ($booking['user_id'] !== $user_id) {
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Unauthorized: This booking does not belong to you'
+        ], 403);
+    }
 
     // Start transaction
     $conn->begin_transaction();
@@ -129,7 +132,7 @@ try {
         $log_details = "Cancelled {$booking['class_type']} session with {$booking['trainer_name']} on {$booking['booking_date']} ({$booking['session_time']}: {$session_hours})";
         ActivityLogger::log('session_cancelled', $booking['username'], $booking_id, $log_details);
 
-        echo json_encode([
+        ApiSecurityMiddleware::sendJsonResponse([
             'success' => true,
             'message' => 'Booking cancelled successfully',
             'details' => [
@@ -139,7 +142,7 @@ try {
                 'date' => date('F j, Y', strtotime($booking['booking_date'])),
                 'session' => $booking['session_time']
             ]
-        ]);
+        ], 200);
 
     } catch (Exception $e) {
         $conn->rollback();
@@ -148,10 +151,10 @@ try {
 
 } catch (Exception $e) {
     error_log("Cancellation error for user $user_id: " . $e->getMessage());
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'An error occurred while cancelling your booking. Please try again.'
-    ]);
+    ], 500);
 } finally {
     if (isset($conn)) {
         $conn->close();
