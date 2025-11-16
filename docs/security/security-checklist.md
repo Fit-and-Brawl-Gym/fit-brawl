@@ -272,8 +272,8 @@ Comprehensive security checklist tracking all security measures, their implement
 ### Logging
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Centralized logging | High | ❌ | Only basic PHP error logs exist. No centralized logging system. |
-| Structured logging | Medium | ❌ | Plain text logs only. |
+| Centralized logging | High | ✅ | `CentralizedLogger` class provides unified logging system. Aggregates logs from multiple sources (security, activity, application, database, email, system) into `unified_logs` table. Supports structured logging with JSON context, flexible querying by level/source/category/user/IP/date, statistics aggregation, and automatic cleanup. Integrated with `SecurityEventLogger` and `ActivityLogger` for automatic forwarding. Documented in `docs/security/centralized-logging-setup.md`. |
+| Structured logging | Medium | ✅ | `CentralizedLogger` supports structured logging with JSON context. All logs include structured fields (level, source, category, user_id, username, ip_address, endpoint, context JSON). Security and activity loggers forward structured data to centralized logger. |
 | Log rotation | Medium | ❌ | No automated log rotation. |
 | Log retention policy | Medium | ❌ | Not defined. |
 | Security event logging | High | ✅ | `SecurityEventLogger` class provides comprehensive security event logging. Logs CSRF failures, rate limit violations, unauthorized access attempts, authentication failures, suspicious activity, and file upload events. Events stored in `security_events` table with severity levels, user context, IP addresses, and endpoint information. Integrated into `ApiSecurityMiddleware` for automatic logging of security violations. |
@@ -477,7 +477,7 @@ All payment-related security measures are deferred until a real payment processo
 ## Summary Statistics
 
 - **Total Controls**: ~150
-- **✅ Implemented**: ~59 (39%)
+- **✅ Implemented**: ~61 (41%)
 - **🟡 Partial**: ~12 (8%)
 - **⏸️ Deferred**: ~15 (10%)
 - **❌ Not Implemented**: ~65 (43%)
@@ -599,6 +599,15 @@ All payment-related security measures are deferred until a real payment processo
 - 10-minute cooldown prevents alert spam
 - Integrated into `SecurityEventLogger` for automatic alerting
 - Admin emails configured via `ADMIN_EMAIL` environment variable
+- Comprehensive setup documentation provided
+
+**Centralized Logging:**
+- `CentralizedLogger` class provides unified logging system
+- Aggregates logs from multiple sources (security, activity, application, database, email, system)
+- Structured logging with JSON context support
+- Flexible querying by level, source, category, user, IP, date range
+- Statistics aggregation and automatic cleanup
+- Integrated with existing loggers for automatic forwarding
 - Comprehensive setup documentation provided
 
 ---

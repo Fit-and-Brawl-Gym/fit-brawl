@@ -103,6 +103,24 @@ class SecurityEventLogger {
 
         $stmt->close();
 
+        // Also log to centralized logger
+        if (file_exists(__DIR__ . '/centralized_logger.php')) {
+            require_once __DIR__ . '/centralized_logger.php';
+            global $conn;
+            if (isset($conn) && $conn instanceof mysqli) {
+                CentralizedLogger::init($conn);
+                $logLevel = $severity === 'critical' ? 'critical' : ($severity === 'high' ? 'error' : 'warning');
+                CentralizedLogger::logSecurity($logLevel, "Security event: {$eventType}", [
+                    'category' => $eventType,
+                    'user_id' => $userId,
+                    'username' => $username,
+                    'ip_address' => $ipAddress,
+                    'endpoint' => $endpoint,
+                    'details' => $context['details'] ?? null
+                ]);
+            }
+        }
+
         // Trigger alerting for high/critical events
         if (in_array($severity, ['high', 'critical', 'medium'])) {
             if (file_exists(__DIR__ . '/security_alerter.php')) {

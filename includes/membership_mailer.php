@@ -34,11 +34,11 @@ function sendMembershipApplicationEmail($email, $name, $plan, $status = 'pending
     $mail->Subject = "Membership application received";
 
         $body = "<p>Hi " . htmlspecialchars($name) . ",</p>";
-        $body .= "<p>Thank you — we have received your membership application for <strong>" . htmlspecialchars($plan) . "</strong>.</p>";
+        $body .= "<p>Thank you. We have received your membership application for <strong>" . htmlspecialchars($plan) . "</strong>.</p>";
         $body .= "<p>Your application status is: <strong>" . htmlspecialchars(ucfirst($status)) . "</strong>. Please note that we will review your payment and supporting documents. An administrator will verify your payment and update your membership.</p>";
         $body .= "<p>Once the admin approves or rejects your application you will receive another email with the result and next steps.</p>";
     $body .= "<p>Thank you for choosing FitXBrawl.</p>";
-    $body .= "<p>— FitXBrawl Team</p>";
+    $body .= "<p>Regards, FitXBrawl Team</p>";
 
     // Wrap body in the standard site email template (adds header/footer and AltBody)
     applyEmailTemplate($mail, $body);

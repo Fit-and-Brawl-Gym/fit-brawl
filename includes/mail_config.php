@@ -43,7 +43,7 @@ function sendAccountLockNotification($email, $retryAfterSeconds, $ipAddress = 'u
         $innerHtml .= " The lockout will automatically clear in approximately {$minutes} minute" . ($minutes === 1 ? '' : 's') . ".</p>";
         $innerHtml .= "<p><strong>Recent IP address:</strong> {$formattedIp}</p>";
         $innerHtml .= '<p>If this was not you, we recommend resetting your password and contacting support immediately.</p>';
-        $innerHtml .= '<p>You do not need to take any action if you initiated the attempts—simply wait for the cooldown and try again.</p>';
+        $innerHtml .= '<p>You do not need to take any action if you initiated the attempts, simply wait for the cooldown and try again.</p>';
 
         applyEmailTemplate($mail, $innerHtml);
 
