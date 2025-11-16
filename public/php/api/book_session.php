@@ -4,6 +4,13 @@ require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
 require_once '../../../includes/timezone_helper.php';
 require_once '../../../includes/activity_logger.php';
+require_once '../../../includes/mail_config.php'; // make sure this defines sendTrainerBookingNotification()
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
 require_once '../../../includes/mail_config.php';
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -14,18 +21,65 @@ header('Pragma: no-cache');
 // ini_set('display_errors', 1);
 
 try {
-    // Check if user is logged in
-    if (!isset($_SESSION['user_id'])) {
-        echo json_encode(['success' => false, 'message' => 'Not logged in']);
-        exit;
+    // Require authentication
+    $user = ApiSecurityMiddleware::requireAuth();
+    if (!$user) {
+        exit; // Already sent response
     }
 
-    // Validate request method
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-        exit;
+    $user_id = $user['user_id'];
+
+    // Require POST method
+    if (!ApiSecurityMiddleware::requireMethod('POST')) {
+        exit; // Already sent response
     }
 
+    // Require CSRF token
+    if (!ApiSecurityMiddleware::requireCSRF()) {
+        exit; // Already sent response
+    }
+
+    // Rate limiting - 8 requests per minute per user
+    ApiSecurityMiddleware::applyRateLimit($conn, 'book_session:' . $user_id, 8, 60);
+
+    // Validate and sanitize input
+    $validation = ApiSecurityMiddleware::validateInput([
+        'trainer_id' => [
+            'type' => 'integer',
+            'required' => true,
+            'min' => 1
+        ],
+        'class_type' => [
+            'type' => 'whitelist',
+            'required' => true,
+            'allowed' => ['Boxing', 'Muay Thai', 'MMA', 'Gym']
+        ],
+        'booking_date' => [
+            'type' => 'date',
+            'required' => true,
+            'format' => 'Y-m-d'
+        ],
+        'session_time' => [
+            'type' => 'whitelist',
+            'required' => true,
+            'allowed' => ['Morning', 'Afternoon', 'Evening']
+        ]
+    ]);
+
+    if (!$validation['valid']) {
+        $errors = implode(', ', $validation['errors']);
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Validation failed: ' . $errors
+        ], 400);
+    }
+
+    $data = $validation['data'];
+    $trainer_id = $data['trainer_id'];
+    $class_type = $data['class_type'];
+    $booking_date_obj = $data['booking_date']; // DateTime object
+    $booking_date = $booking_date_obj instanceof DateTime ? $booking_date_obj->format('Y-m-d') : $booking_date_obj;
+    $session_time = $data['session_time'];
     // Parse JSON input if Content-Type is application/json
     $input = $_POST;
     $content_type = $_SERVER['CONTENT_TYPE'] ?? '';
@@ -40,7 +94,7 @@ try {
     // Check if admin is booking for another user
     $is_admin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     $target_user_id = null;
-    
+
     if ($is_admin && isset($input['user_id'])) {
         // Admin booking for a specific user
         $target_user_id = $input['user_id'];
@@ -52,14 +106,14 @@ try {
 
     $trainer_id = isset($input['trainer_id']) ? intval($input['trainer_id']) : 0;
     $class_type = $input['class_type'] ?? '';
-    
+
     // Admin can override weekly limit
     $override_weekly_limit = $is_admin && isset($input['override_weekly_limit']) && $input['override_weekly_limit'] === true;
-    
+
     // Time-based booking: accept start_time and end_time
     $start_time = $input['start_time'] ?? '';
     $end_time = $input['end_time'] ?? '';
-    
+
     // Legacy support: if session_time and booking_date provided instead of start_time/end_time
     $session_time = $input['session_time'] ?? '';
     $booking_date = $input['booking_date'] ?? '';
@@ -76,7 +130,7 @@ try {
 
     if (!$is_time_based && !$is_legacy) {
         echo json_encode([
-            'success' => false, 
+            'success' => false,
             'message' => 'Must provide either start_time/end_time OR session_time/booking_date'
         ]);
         exit;
@@ -93,37 +147,88 @@ try {
     $validator = new BookingValidator($conn);
     ActivityLogger::init($conn);
 
+    // Check if booking date is within membership expiration + grace period
+    $grace_period_days = 3;
+    $membership_check = $conn->prepare("
+        SELECT end_date, plan_name
+        FROM user_memberships
+        WHERE user_id = ?
+        AND request_status = 'approved'
+        AND membership_status = 'active'
+        ORDER BY end_date DESC
+        LIMIT 1
+    ");
+    $membership_check->bind_param("s", $user_id);
+    $membership_check->execute();
+    $membership_result = $membership_check->get_result();
+
+    if ($membership_result && $membership_result->num_rows > 0) {
+        $membership_data = $membership_result->fetch_assoc();
+        $end_date = $membership_data['end_date'];
+        $plan_name = $membership_data['plan_name'];
+
+        // Calculate max booking date (end_date + grace period)
+        $end_date_obj = new DateTime($end_date);
+        $max_booking_date = clone $end_date_obj;
+        $max_booking_date->modify("+{$grace_period_days} days");
+
+        $booking_date_obj = new DateTime($booking_date);
+
+        if ($booking_date_obj > $max_booking_date) {
+            $membership_check->close();
+            ApiSecurityMiddleware::sendJsonResponse([
+                'success' => false,
+                'message' => "Cannot book beyond your membership expiration. Your {$plan_name} plan expires on " .
+                    $end_date_obj->format('F d, Y') . " (booking allowed until " .
+                    $max_booking_date->format('F d, Y') . " with grace period). Please visit the gym to renew or upgrade your membership.",
+                'failed_check' => 'membership_expiration'
+            ], 400);
+            exit;
+        }
+    }
+    $membership_check->close();
+
+    // Run all validations
+    $validation = $validator->validateBooking($user_id, $trainer_id, $class_type, $booking_date, $session_time);
+
+    if (!$validation['valid']) {
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => $validation['message'],
+            'failed_check' => $validation['failed_check'] ?? null
+        ], 400);
+    }
     // Run validation based on booking type
     if ($is_time_based) {
         // Time-based booking: validate with start_time and end_time
         // Skip weekly limit check if admin override is enabled
         $validation = $validator->validateBooking(
-            $user_id, 
-            $trainer_id, 
-            $class_type, 
-            $start_time, 
-            $end_time, 
-            null, 
+            $user_id,
+            $trainer_id,
+            $class_type,
+            $start_time,
+            $end_time,
+            null,
             $override_weekly_limit
         );
-        
+
         if (!$validation['valid']) {
             $response = [
                 'success' => false,
                 'message' => $validation['message'],
                 'failed_check' => $validation['failed_check'] ?? null
             ];
-            
+
             // TODO: Add suggested_slots logic in Task 26 by calling get_trainer_availability.php
             // For now, just return the validation error
-            
+
             echo json_encode($response);
             exit;
         }
-        
+
         // Extract booking_date from start_time for display
         $booking_date = substr($start_time, 0, 10);
-        
+
     } else {
         // Legacy session-based booking: use old validation method
         $valid_sessions = ['Morning', 'Afternoon', 'Evening'];
@@ -131,9 +236,9 @@ try {
             echo json_encode(['success' => false, 'message' => 'Invalid session time']);
             exit;
         }
-        
+
         $validation = $validator->validateBookingLegacy($user_id, $trainer_id, $class_type, $booking_date, $session_time);
-        
+
         if (!$validation['valid']) {
             echo json_encode([
                 'success' => false,
@@ -156,8 +261,10 @@ try {
     $trainer_stmt->close();
 
     if (!$trainer_data) {
-        echo json_encode(['success' => false, 'message' => 'Trainer not found']);
-        exit;
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Trainer not found'
+        ], 404);
     }
     $trainer_name = $trainer_data['name'] ?? 'Unknown';
 
@@ -173,8 +280,10 @@ try {
     $member_stmt->close();
 
     if (!$member_data) {
-        echo json_encode(['success' => false, 'message' => 'Member not found']);
-        exit;
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Member not found'
+        ], 404);
     }
 
     // Start transaction
@@ -192,9 +301,9 @@ try {
             if ($insert_stmt === false) {
                 throw new Exception('Failed to prepare insert statement');
             }
-            
+
             $insert_stmt->bind_param("sissss", $user_id, $trainer_id, $class_type, $booking_date, $start_time, $end_time);
-            
+
         } else {
             // Legacy session-based booking: insert with session_time
             $insert_stmt = $conn->prepare("
@@ -255,12 +364,23 @@ try {
         $week_start = date('Y-m-d', strtotime($booking_date . ' -' . $day_of_week . ' days'));
         $week_end = date('Y-m-d', strtotime($week_start . ' +6 days'));
 
+        $count_stmt = $conn->prepare("
+            SELECT COUNT(*) as booking_count
+            FROM user_reservations
+            WHERE user_id = ?
+            AND booking_date BETWEEN ? AND ?
+            AND booking_status IN ('confirmed', 'completed')
+        ");
+        if ($count_stmt === false) {
+            throw new Exception('Failed to prepare count query');
+        }
+
         if ($is_time_based) {
             // Time-based: calculate total minutes used this week
             $count_stmt = $conn->prepare("
                 SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes
-                FROM user_reservations 
-                WHERE user_id = ? 
+                FROM user_reservations
+                WHERE user_id = ?
                 AND booking_date BETWEEN ? AND ?
                 AND booking_status IN ('confirmed', 'completed')
                 AND start_time IS NOT NULL
@@ -281,8 +401,8 @@ try {
             // Legacy: count number of bookings
             $count_stmt = $conn->prepare("
                 SELECT COUNT(*) as booking_count
-                FROM user_reservations 
-                WHERE user_id = ? 
+                FROM user_reservations
+                WHERE user_id = ?
                 AND booking_date BETWEEN ? AND ?
                 AND booking_status IN ('confirmed', 'completed')
             ");
@@ -304,7 +424,7 @@ try {
             if (function_exists('sendTrainerBookingNotification')) {
                 // For legacy bookings, use session_time; for time-based, use time_display
                 $email_time_info = $is_time_based ? $time_display : $session_time;
-                
+
                 $email_sent = sendTrainerBookingNotification(
                     $trainer_data['email'],
                     $trainer_data['name'],
@@ -341,7 +461,7 @@ try {
                 'weekly_limit' => $weekly_limit_display
             ]
         ];
-        
+
         // Add legacy fields for backwards compatibility
         if (!$is_time_based) {
             $response['details']['session'] = $session_time;
@@ -353,9 +473,8 @@ try {
                 $response['details']['facility_trainers'] = $validation['facility_count'] + 1;
             }
         }
-        
+
         echo json_encode($response);
-        exit;
 
     } catch (Exception $e) {
         // Rollback and bubble up to outer catch
@@ -370,11 +489,10 @@ try {
     $user_id_log = $_SESSION['user_id'] ?? 'unknown';
     error_log("Booking error for user $user_id_log: " . $e->getMessage());
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'An error occurred while processing your booking. Please try again.'
-    ]);
-    exit;
+    ], 500);
 } finally {
     if (isset($conn) && $conn) {
         $conn->close();

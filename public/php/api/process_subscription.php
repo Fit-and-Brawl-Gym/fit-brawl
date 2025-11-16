@@ -5,6 +5,9 @@ ob_start();
 session_start();
 
 require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
 
 // Check if file_upload_security exists, if not, skip it
 $uploadSecurityExists = file_exists('../../../includes/file_upload_security.php');
@@ -15,45 +18,87 @@ if ($uploadSecurityExists) {
 // Clear any output that might have been generated
 ob_end_clean();
 
-header('Content-Type: application/json');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Please login first']);
-    exit;
+// Require authentication
+$user = ApiSecurityMiddleware::requireAuth();
+if (!$user) {
+    exit; // Already sent response
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+$user_id = $user['user_id'];
+
+// Require POST method
+if (!ApiSecurityMiddleware::requireMethod('POST')) {
+    exit; // Already sent response
 }
 
-$user_id = $_SESSION['user_id'];
-$plan = isset($_POST['plan']) ? strtolower(trim($_POST['plan'])) : '';
-$billing = isset($_POST['billing']) ? $_POST['billing'] : 'monthly';
-$payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : 'online';
-$name = trim($_POST['name'] ?? '');
-$country = trim($_POST['country'] ?? '');
-$address = trim($_POST['address'] ?? '');
-
-// Validate required fields
-if (empty($plan) || empty($name) || empty($country) || empty($address)) {
-    echo json_encode(['success' => false, 'message' => 'All fields are required']);
-    exit;
+// Require CSRF token
+if (!ApiSecurityMiddleware::requireCSRF()) {
+    exit; // Already sent response
 }
 
-// Validate payment method
-if (!in_array($payment_method, ['online', 'cash'])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid payment method']);
-    exit;
+// Rate limiting - 5 requests per minute per user (subscriptions are important)
+ApiSecurityMiddleware::applyRateLimit($conn, 'subscription:' . $user_id, 5, 60);
+
+// Validate and sanitize input
+$validation = ApiSecurityMiddleware::validateInput([
+    'plan' => [
+        'type' => 'whitelist',
+        'required' => true,
+        'allowed' => ['gladiator', 'brawler', 'champion', 'clash', 'resolution-regular', 'resolution-student']
+    ],
+    'billing' => [
+        'type' => 'whitelist',
+        'required' => false,
+        'default' => 'monthly',
+        'allowed' => ['monthly', 'quarterly']
+    ],
+    'payment_method' => [
+        'type' => 'whitelist',
+        'required' => false,
+        'default' => 'online',
+        'allowed' => ['online', 'cash']
+    ],
+    'name' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 255
+    ],
+    'country' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 100
+    ],
+    'address' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 500
+    ]
+]);
+
+if (!$validation['valid']) {
+    $errors = implode(', ', $validation['errors']);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Validation failed: ' . $errors
+    ], 400);
 }
+
+$data = $validation['data'];
+$plan = strtolower($data['plan']);
+$billing = $data['billing'] ?? 'monthly';
+$payment_method = $data['payment_method'] ?? 'online';
+$name = $data['name'];
+$country = $data['country'];
+$address = $data['address'];
 
 // Handle file upload - only required for online payments
 $filename = null;
 if ($payment_method === 'online') {
     // Validate and upload file securely
     if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
-        echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Please upload a payment receipt'], 400);
         exit;
     }
 
@@ -71,7 +116,7 @@ if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists
     $result = $uploadHandler->uploadFile($_FILES['receipt']);
 
     if (!$result['success']) {
-        echo json_encode(['success' => false, 'message' => $result['message']]);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => $result['message']], 400);
         exit;
     }
 
@@ -85,12 +130,12 @@ if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists
     $fileSize = $_FILES['receipt']['size'];
 
     if (!in_array($fileType, $allowedTypes)) {
-        echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, and PDF are allowed.']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, and PDF are allowed.'], 400);
         exit;
     }
 
     if ($fileSize > 10 * 1024 * 1024) {
-        echo json_encode(['success' => false, 'message' => 'File size must be less than 10MB']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'File size must be less than 10MB'], 400);
         exit;
     }
 
@@ -99,7 +144,7 @@ if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists
     $uploadPath = $uploadDir . $filename;
 
     if (!move_uploaded_file($_FILES['receipt']['tmp_name'], $uploadPath)) {
-        echo json_encode(['success' => false, 'message' => 'Failed to upload file']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Failed to upload file'], 500);
         exit;
     }
 }
@@ -119,7 +164,7 @@ $planMapping = [
 ];
 
 if (!isset($planMapping[$plan])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid membership plan: ' . htmlspecialchars($plan)]);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid membership plan: ' . htmlspecialchars($plan)], 400);
     exit;
 }
 
@@ -138,7 +183,7 @@ if (!$membership) {
     } elseif ($plan === 'resolution-regular') {
         $membership = ['plan_name' => 'Resolution Regular'];
     } else {
-        echo json_encode(['success' => false, 'message' => 'Membership plan not found']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Membership plan not found'], 404);
         exit;
     }
 }
@@ -158,13 +203,13 @@ if ($existing && $existing['request_status'] === 'pending') {
     // Allow if it's a cash payment that hasn't been paid yet (user might be resubmitting)
     $payment_method_col_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'payment_method'");
     $has_payment_method = $payment_method_col_check->num_rows > 0;
-    
+
     if ($has_payment_method && $existing['payment_method'] === 'online') {
-        echo json_encode(['success' => false, 'message' => 'Your online payment is still pending approval.']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Your online payment is still pending approval.'], 400);
         exit;
     } elseif (!$has_payment_method) {
         // Old schema without payment_method column
-        echo json_encode(['success' => false, 'message' => 'Upgrade or membership request already pending approval.']);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Upgrade or membership request already pending approval.'], 400);
         exit;
     }
     // If it's a cash payment that's pending, allow new submission (will be treated as upgrade/new)
@@ -498,7 +543,7 @@ if ($stmt->execute()) {
         error_log('Failed to send membership application email: ' . $e->getMessage());
     }
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'message' => $action === 'upgrade'
             ? 'Your existing membership has been upgraded and is now pending admin approval.'
@@ -509,7 +554,11 @@ if ($stmt->execute()) {
             'billing_type' => $billing,
             'status' => 'pending'
         ]
-    ]);
+    ], 200);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+    error_log("Database error in process_subscription.php: " . $stmt->error);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Database error. Please try again.'
+    ], 500);
 }

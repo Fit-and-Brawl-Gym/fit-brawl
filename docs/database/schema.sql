@@ -125,7 +125,7 @@ DROP TABLE IF EXISTS `feedback`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `feedback` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(15) NOT NULL,
+  `user_id` varchar(15) DEFAULT NULL COMMENT 'NULL for anonymous feedback',
   `username` varchar(50) NOT NULL,
   `email` varchar(100) NOT NULL,
   `avatar` varchar(255) DEFAULT 'default-avatar.png',

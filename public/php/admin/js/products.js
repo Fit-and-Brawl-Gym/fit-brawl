@@ -1,6 +1,11 @@
 let deleteId = null;
 let deleteIds = [];
 
+// Helper to get CSRF token
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
 // Open side panel for adding
 function openSidePanel() {
     document.getElementById('panelTitle').textContent = 'Add New Product';
@@ -80,6 +85,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
+    formData.append('csrf_token', getCsrfToken());
 
     try {
         const response = await fetch('api/admin_products_api.php', {
@@ -114,7 +120,8 @@ async function saveProduct(formData) {
                 id: formData.id,
                 name: formData.name,
                 category: formData.category,
-                stock: formData.stock
+                stock: formData.stock,
+                csrf_token: getCsrfToken()
             })
         });
 
@@ -147,7 +154,8 @@ async function deleteProduct(id) {
             },
             body: JSON.stringify({
                 action: 'delete',
-                id: id
+                id: id,
+                csrf_token: getCsrfToken()
             })
         });
 

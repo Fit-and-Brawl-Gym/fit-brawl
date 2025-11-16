@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/csp_nonce.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Initialize session manager
 SessionManager::initialize();
@@ -68,6 +73,7 @@ if ($user_id) {
 $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
 $additionalCSS = [
+    '../css/components/alert.css?v=' . time(),
     '../css/pages/reservations.css?v=2.0.' . time(),
     '../css/components/time-selection-v2.css?v=' . time(),
     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'
@@ -83,10 +89,15 @@ $additionalJS = [
 require_once __DIR__ . '/../../includes/header.php';
 ?>
 
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
+    window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
+</script>
+
 <!--Main Content-->
 <main class="reservations-page">
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
+    <div id="rateLimitPortal" class="rate-limit-portal" aria-live="polite"></div>
 
     <?php if ($activeMembership): ?>
         <?php
@@ -641,7 +652,7 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
 </main>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     // Pass membership expiration data to JavaScript
     <?php if ($activeMembership): ?>
         window.membershipEndDate = '<?= $activeMembership['end_date'] ?>';

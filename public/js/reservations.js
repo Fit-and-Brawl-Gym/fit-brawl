@@ -18,6 +18,144 @@ document.addEventListener('DOMContentLoaded', function () {
         availableSlots: []
     };
 
+    const rateLimitCountdowns = new Map();
+    const buttonCountdowns = new WeakMap();
+
+    function formatDuration(seconds) {
+        const total = Math.max(0, Math.floor(seconds));
+        const mins = Math.floor(total / 60);
+        const secs = total % 60;
+        if (mins > 0) {
+            return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+        }
+        return `${secs}s`;
+    }
+
+    function getRateLimitPortal() {
+        return document.getElementById('rateLimitPortal');
+    }
+
+    function dismissRateLimitBanner(key) {
+        const portal = getRateLimitPortal();
+        if (!portal) return;
+        const alert = portal.querySelector(`[data-rate-limit-key="${key}"]`);
+        if (alert) {
+            alert.remove();
+        }
+        if (rateLimitCountdowns.has(key)) {
+            clearInterval(rateLimitCountdowns.get(key));
+            rateLimitCountdowns.delete(key);
+        }
+    }
+
+    function showRateLimitBanner(key, { title, message, seconds }) {
+        const portal = getRateLimitPortal();
+        if (!portal) return;
+
+        let alert = portal.querySelector(`[data-rate-limit-key="${key}"]`);
+        if (!alert) {
+            alert = document.createElement('div');
+            alert.className = 'alert-box alert-box--warning rate-limit-alert';
+            alert.dataset.rateLimitKey = key;
+            alert.innerHTML = `
+                <div class="alert-icon" aria-hidden="true">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="alert-content">
+                    <p class="alert-title"></p>
+                    <p class="alert-text"></p>
+                    <p class="rate-limit-countdown"></p>
+                </div>
+            `;
+            portal.appendChild(alert);
+        }
+
+        alert.querySelector('.alert-title').textContent = title;
+        alert.querySelector('.alert-text').textContent = message;
+        const countdownEl = alert.querySelector('.rate-limit-countdown');
+
+        let remaining = Math.max(1, parseInt(seconds, 10) || 60);
+        const updateCountdown = () => {
+            countdownEl.textContent = `Try again in ${formatDuration(remaining)}.`;
+        };
+        updateCountdown();
+
+        if (rateLimitCountdowns.has(key)) {
+            clearInterval(rateLimitCountdowns.get(key));
+        }
+
+        const intervalId = setInterval(() => {
+            remaining -= 1;
+            if (remaining <= 0) {
+                clearInterval(intervalId);
+                rateLimitCountdowns.delete(key);
+                alert.remove();
+                return;
+            }
+            updateCountdown();
+        }, 1000);
+
+        rateLimitCountdowns.set(key, intervalId);
+    }
+
+    function startButtonRateLimitCountdown(button, seconds) {
+        if (!button) return;
+
+        const originalLabel = button.dataset.originalLabel || button.innerHTML;
+        button.dataset.originalLabel = originalLabel;
+
+        let remaining = Math.max(1, parseInt(seconds, 10) || 60);
+        const updateLabel = () => {
+            button.innerHTML = `<i class="fas fa-hourglass-half"></i> Retry in ${formatDuration(remaining)}`;
+        };
+
+        button.disabled = true;
+        button.classList.add('is-disabled');
+        updateLabel();
+
+        if (buttonCountdowns.has(button)) {
+            clearInterval(buttonCountdowns.get(button));
+        }
+
+        const intervalId = setInterval(() => {
+            remaining -= 1;
+            if (remaining <= 0) {
+                clearInterval(intervalId);
+                buttonCountdowns.delete(button);
+                button.disabled = false;
+                button.classList.remove('is-disabled');
+                button.innerHTML = button.dataset.originalLabel || originalLabel;
+                return;
+            }
+            updateLabel();
+        }, 1000);
+
+        buttonCountdowns.set(button, intervalId);
+    }
+
+    function handleRateLimitResponse(contextKey, retryAfterSeconds, fallbackMessage) {
+        const seconds = Math.max(1, parseInt(retryAfterSeconds, 10) || 60);
+        const titles = {
+            booking: 'Too many booking attempts',
+            cancel: 'Too many cancellations'
+        };
+
+        showRateLimitBanner(contextKey, {
+            title: titles[contextKey] || 'Too many requests',
+            message: fallbackMessage || 'Please wait before trying again.',
+            seconds
+        });
+
+        if (contextKey === 'booking') {
+            const button = document.getElementById('btnConfirmBooking');
+            startButtonRateLimitCountdown(button, seconds);
+        } else if (contextKey === 'cancel') {
+            document.querySelectorAll('.btn-cancel-booking').forEach(btn => {
+                startButtonRateLimitCountdown(btn, seconds);
+            });
+        }
+    }
+
     // Calendar state
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
@@ -30,6 +168,15 @@ document.addEventListener('DOMContentLoaded', function () {
         all: [] // Store all bookings for week calculations
     };
 
+    const getCsrfToken = () => window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    function ensureCsrfToken() {
+        const token = getCsrfToken();
+        if (!token) {
+            showToast('Your session expired. Please refresh the page.', 'error');
+        }
+        return token;
+    }
     // Flatpickr instances
     let startTimePicker = null;
     let endTimePicker = null;
@@ -765,7 +912,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         `;
                     } else if (canActuallyCancelNow) {
                         return `
-                            <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
+                            <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id}, this)">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
                         `;
@@ -814,29 +961,67 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===================================
     // CANCEL BOOKING
     // ===================================
-    window.cancelBooking = function (bookingId) {
+    window.cancelBooking = function (bookingId, triggerBtn = null) {
         if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
             return;
         }
 
+        if (triggerBtn && !triggerBtn.dataset.originalLabel) {
+            triggerBtn.dataset.originalLabel = triggerBtn.innerHTML;
+        }
+
+        const setCancellingState = () => {
+            if (!triggerBtn) return;
+            triggerBtn.disabled = true;
+            triggerBtn.classList.add('is-disabled');
+            triggerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+        };
+
+        const resetCancelButton = () => {
+            if (!triggerBtn) return;
+            triggerBtn.disabled = false;
+            triggerBtn.classList.remove('is-disabled');
+            triggerBtn.innerHTML = triggerBtn.dataset.originalLabel || '<i class="fas fa-times"></i> Cancel';
+        };
+
+        setCancellingState();
+
+        const csrfToken = ensureCsrfToken();
+        if (!csrfToken) {
+            resetCancelButton();
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append('booking_id', bookingId);
+        formData.append('csrf_token', csrfToken);
+
         fetch('api/cancel_booking.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `booking_id=${bookingId}`
+            body: formData.toString()
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    dismissRateLimitBanner('cancel');
                     showToast('Booking cancelled successfully', 'success');
                     loadUserBookings();
                     loadWeeklyBookings();
+                    resetCancelButton();
                 } else {
-                    showToast(data.message || 'Failed to cancel booking', 'error');
+                    if (data.failed_check === 'rate_limit') {
+                        handleRateLimitResponse('cancel', data.retry_after, data.message || 'Too many cancellation attempts.');
+                    } else {
+                        showToast(data.message || 'Failed to cancel booking', 'error');
+                        resetCancelButton();
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error cancelling booking:', error);
                 showToast('[CANCEL] An error occurred. Please try again.', 'error');
+                resetCancelButton();
             });
     };
 
@@ -1485,6 +1670,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // CONFIRM BOOKING
     // ===================================
     const confirmBtn = document.getElementById('btnConfirmBooking');
+    if (confirmBtn && !confirmBtn.dataset.originalLabel) {
+        confirmBtn.dataset.originalLabel = confirmBtn.innerHTML;
+    }
     if (confirmBtn && !confirmBtn.hasAttribute('data-listener-attached')) {
         confirmBtn.setAttribute('data-listener-attached', 'true');
         confirmBtn.addEventListener('click', function handleBookingConfirm(e) {
@@ -1507,6 +1695,12 @@ document.addEventListener('DOMContentLoaded', function () {
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
 
+            const csrfToken = ensureCsrfToken();
+            if (!csrfToken) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                return;
+            }
             // Convert time strings to full datetime
             const startDateTime = convertToDateTime(date, startTime);
             const endDateTime = convertToDateTime(date, endTime);
@@ -1514,6 +1708,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const formData = new URLSearchParams();
             formData.append('trainer_id', trainerId);
             formData.append('class_type', classType);
+            formData.append('booking_date', date);
+            formData.append('session_time', session);
+            formData.append('csrf_token', csrfToken);
             formData.append('start_time', startDateTime);
             formData.append('end_time', endDateTime);
             formData.append('csrf_token', getCsrfToken());
@@ -1531,6 +1728,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .then(data => {
                     if (data.success) {
+                        dismissRateLimitBanner('booking');
+                        console.log('Booking successful, showing toast'); // Debug log
                         showToast('Session booked successfully!', 'success');
 
                         // Show weekly usage update
@@ -1565,9 +1764,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         }, 500);
                     } else {
                         console.log('Booking failed:', data.message); // Debug log
-                        showToast(data.message || 'Failed to book session', 'error');
-                        button.disabled = false;
-                        button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                        if (data.failed_check === 'rate_limit') {
+                            handleRateLimitResponse('booking', data.retry_after, data.message || 'Too many booking attempts.');
+                        } else {
+                            showToast(data.message || 'Failed to book session', 'error');
+                            button.disabled = false;
+                            button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                        }
                     }
                 })
                 .catch(error => {

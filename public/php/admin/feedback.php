@@ -1,11 +1,15 @@
 <?php
 include_once('../../../includes/init.php');
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
 
 // Allow only admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
+
+// Generate CSRF token
+$csrfToken = CSRFProtection::generateToken();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +17,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
     <title>Feedback Management - Fit & Brawl Gym</title>
     <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
@@ -118,7 +123,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     </main>
 
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
-    <script src="<?= PUBLIC_PATH ?>/php/admin/js/feedback.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/feedback.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

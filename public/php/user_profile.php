@@ -11,6 +11,7 @@ require_once __DIR__ . '/../../includes/db_connect.php';
 
 // Check membership status for header
 require_once __DIR__ . '/../../includes/membership_check.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 
 $hasActiveMembership = false;
 $hasAnyRequest = false;
@@ -237,6 +238,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 Edit Profile
             </h3>
             <form method="POST" action="update_profile.php" enctype="multipart/form-data" class="edit-profile-form">
+                <?= CSRFProtection::getTokenField(); ?>
                 <!-- Avatar Upload -->
                 <div class="form-group full-width">
                     <label>Profile Picture</label>
@@ -291,7 +293,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             <div class="password-requirements-list">
                                 <div class="requirement-item" data-req="length">
                                     <span class="requirement-icon">•</span>
-                                    <span class="requirement-text">At least 8 characters</span>
+                                    <span class="requirement-text">At least 12 characters</span>
                                 </div>
                                 <div class="requirement-item" data-req="uppercase">
                                     <span class="requirement-icon">•</span>

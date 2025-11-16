@@ -1,5 +1,8 @@
 <?php
 include_once('../../../includes/init.php');
+require_once('../../../includes/csrf_protection.php');
+
+$csrfToken = CSRFProtection::generateToken();
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -14,6 +17,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Inquiries - Fit & Brawl Gym</title>
+    <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
     <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/contacts.css">

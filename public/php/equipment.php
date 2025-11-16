@@ -1,6 +1,9 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../includes/csp_nonce.php';
 
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
     header('Content-Type: application/json');
@@ -277,7 +280,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
     <!-- DSA Utilities -->
     <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
-    
+
     <!-- DSA Integration -->
     <script src="<?= PUBLIC_PATH ?>/js/dsa/user-equipment-dsa-integration.js?v=<?= time() ?>"></script>
 

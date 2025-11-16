@@ -5,7 +5,11 @@
 
 include_once('../../../includes/init.php');
 require_once('../../../includes/config.php');
+require_once('../../../includes/csp_nonce.php');
 require_once('../../../includes/activity_logger.php');
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Initialize activity logger
 ActivityLogger::init($conn);

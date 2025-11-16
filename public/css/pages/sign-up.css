@@ -81,27 +81,6 @@
     margin-bottom: var(--spacing-8);
     text-transform: uppercase;
 }
-.success-message {
-    color: var(--color-success);
-    background-color: transparent;
-    border: 1px solid var(--color-success);
-    padding: var(--spacing-3);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-3);
-    font-weight: var(--font-weight-medium);
-    text-align: center;
-}
-.error-message {
-    background-color: transparent;
-    color: var(--color-error);
-    border: 1px solid var(--color-error);
-    padding: var(--spacing-3);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-3);
-    font-weight: var(--font-weight-medium);
-    text-align: center;
-}
-
 /* Message Container - Prominent error/success display */
 .message-container {
     margin-bottom: var(--spacing-6);
@@ -109,20 +88,15 @@
     transition: min-height 0.3s ease;
 }
 
-.error-message-box,
-.success-message-box {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-3);
-    padding: var(--spacing-4);
-    border-radius: var(--radius-lg);
-    margin-bottom: var(--spacing-4);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.message-container .alert-box {
+    width: 100%;
     animation: slideInDown 0.4s ease-out;
     scroll-margin-top: 20px;
     flex-wrap: wrap;
+}
+
+.message-container .alert-content {
+    flex: 1;
 }
 
 @keyframes slideInDown {
@@ -136,46 +110,8 @@
     }
 }
 
-.error-message-box {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: var(--color-error);
-    border: 2px solid var(--color-error);
-}
-
-.error-message-box i {
-    font-size: var(--font-size-xl);
-    flex-shrink: 0;
-    color: var(--color-error);
-}
-
-.success-message-box {
-    background-color: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-    border: 2px solid #28a745;
-}
-
-.success-message-box > i,
-.success-message-box > .message-text {
-    align-self: flex-start;
-}
-
-.success-message-box i {
-    font-size: var(--font-size-xl);
-    flex-shrink: 0;
-    margin-bottom:-10px;
-    color: #28a745;
-}
-
-.message-text {
-    flex: 1;
-    line-height: var(--line-height-normal);
-}
-
-.success-message-box .resend-verification-btn {
-    align-self: center;
+.message-container .alert-actions {
     width: 100%;
-    max-width: 100%;
-    margin-top: var(--spacing-2);
 }
 
 /* Resend Verification Button - Matching Site Design Language */

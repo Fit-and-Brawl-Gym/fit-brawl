@@ -13,16 +13,16 @@ SessionManager::initialize();
 
 // Redirect logged-in users to their appropriate dashboard
 if (SessionManager::isLoggedIn()) {
+    require_once __DIR__ . '/../../includes/redirect_validator.php';
+    RedirectValidator::init();
+
     $role = $_SESSION['role'] ?? 'member';
     if ($role === 'admin') {
-        header("Location: admin/admin.php");
-        exit;
+        RedirectValidator::redirect('admin/admin.php');
     } elseif ($role === 'trainer') {
-        header("Location: trainer/schedule.php");
-        exit;
+        RedirectValidator::redirect('trainer/schedule.php');
     } else {
-        header("Location: loggedin-index.php");
-        exit;
+        RedirectValidator::redirect('loggedin-index.php');
     }
 }
 

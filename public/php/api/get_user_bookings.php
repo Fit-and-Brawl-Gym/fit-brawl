@@ -1,18 +1,21 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not logged in']);
-    exit;
+// Require authentication
+$user = ApiSecurityMiddleware::requireAuth();
+if (!$user) {
+    exit; // Already sent response
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $user['user_id'];
+
+// Rate limiting - 30 requests per minute (read endpoint)
+ApiSecurityMiddleware::applyRateLimit($conn, 'get_bookings:' . $user_id, 30, 60);
 
 try {
     // Get all user bookings
@@ -171,7 +174,7 @@ try {
         'today_bookings' => array_values(array_filter($bookings, fn($b) => $b['booking_period'] === 'today'))
     ];
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'bookings' => array_values($bookings),
         'grouped' => [
@@ -187,14 +190,14 @@ try {
             'past' => count($grouped['past'])
         ],
         'debug' => $debug
-    ]);
+    ], 200);
 
 } catch (Exception $e) {
     error_log("Error fetching user bookings: " . $e->getMessage());
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'An error occurred while fetching your bookings'
-    ]);
+    ], 500);
 } finally {
     if (isset($conn)) {
         $conn->close();

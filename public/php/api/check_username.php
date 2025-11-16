@@ -1,40 +1,43 @@
 <?php
-session_start();
-require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
-header('Content-Type: application/json');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-// Only accept POST requests
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
-    exit();
+// Require POST method
+if (!ApiSecurityMiddleware::requireMethod('POST')) {
+    exit; // Already sent response
 }
 
-// Get the username from POST data
-$input = json_decode(file_get_contents('php://input'), true);
-$username = trim($input['username'] ?? '');
+// Rate limiting - 20 requests per minute per IP (prevent username enumeration)
+$identifier = 'check_username:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 20, 60);
 
-// Validate input
-if (empty($username)) {
-    echo json_encode([
+// Get JSON body
+$data = ApiSecurityMiddleware::getJsonBody();
+
+// Validate and sanitize input
+$validation = ApiSecurityMiddleware::validateInput([
+    'username' => [
+        'type' => 'string',
+        'required' => true,
+        'min_length' => 3,
+        'max_length' => 50,
+        'pattern' => '/^[a-zA-Z0-9_]+$/' // Only alphanumeric and underscore
+    ]
+], $data);
+
+if (!$validation['valid']) {
+    $errors = implode(', ', $validation['errors']);
+    ApiSecurityMiddleware::sendJsonResponse([
         'available' => false,
-        'message' => 'Username is required'
-    ]);
-    exit();
+        'message' => 'Validation failed: ' . $errors
+    ], 400);
 }
 
-// Check minimum length
-if (strlen($username) < 3) {
-    echo json_encode([
-        'available' => false,
-        'message' => 'Username must be at least 3 characters'
-    ]);
-    exit();
-}
-
-// Sanitize username
-$username = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
+$username = $validation['data']['username'];
 
 // Check if username exists in database
 $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
@@ -43,15 +46,15 @@ $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows > 0) {
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'available' => false,
         'message' => 'Username is already taken'
-    ]);
+    ], 200);
 } else {
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'available' => true,
         'message' => 'Username is available'
-    ]);
+    ], 200);
 }
 
 $stmt->close();

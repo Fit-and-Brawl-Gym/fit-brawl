@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/session_manager.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -174,15 +175,16 @@ $pageTitle = "Transaction - Fit and Brawl";
 $currentPage = "transaction";
 $additionalCSS = ['../css/pages/transaction.css?v=' . time()];
 $additionalJS = ['../js/transaction.js'];
+$pageCsrfToken = CSRFProtection::generateToken();
+
+// Include header
+require_once __DIR__ . '/../../includes/header.php';
 ?>
 <script>
     const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
     const quarterlyPrice = <?php echo json_encode($quarterlyPrice); ?>;
+    window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
 </script>
-<?php
-// Include header
-require_once __DIR__ . '/../../includes/header.php';
-?>
 
 <!--Main-->
 <main class="transaction-page">
@@ -196,7 +198,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <div class="transaction-left">
                         <!-- Personal Information Section -->
                         <div class="form-section-title">Personal Information</div>
-                        
+
                         <div class="form-group">
                             <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
@@ -206,7 +208,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
                         <!-- Location Section -->
                         <div class="form-section-title">Location Details</div>
-                        
+
                         <div class="form-group">
                             <label for="country">Country</label>
                             <select id="country" name="country" required>
@@ -496,39 +498,7 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
     <div class="modal-body">
         <div class="modal-two-column">
-            <!-- Left Column - File Upload -->
-            <div class="modal-left">
-                <p class="modal-instruction">Please upload a screenshot or photo of your payment receipt to complete your
-                    subscription.</p>
-
-                <div class="file-upload-area" id="fileUploadArea">
-                    <input type="file" id="receiptFile" name="receipt" accept="image/png,image/jpeg,image/jpg">
-                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
-                        <path
-                            d="M7 18C4.23858 18 2 15.7614 2 13C2 10.2386 4.23858 8 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8C19.7614 8 22 10.2386 22 13C22 15.7614 19.7614 18 17 18M12 13V21M12 13L9 16M12 13L15 16"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <p class="upload-text">Click to upload or drag and drop</p>
-                    <p class="upload-subtext">PNG, JPG, PDF up to 10MB</p>
-                </div>
-
-                <div class="file-preview" id="filePreview" style="display: none;">
-                    <img id="previewImage" src="" alt="Receipt preview">
-                    <p id="fileName"></p>
-                    <button type="button" class="remove-file-btn" id="removeFile">Remove</button>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
-                        SUBMIT RECEIPT
-                    </button>
-                    <button type="button" class="modal-cancel-btn" id="cancelReceiptBtn">
-                        Cancel
-                    </button>
-                </div>
-            </div>
-
-            <!-- Right Column - QR Code / Instructions -->
+            <!-- QR Column shown first for better hierarchy -->
             <div class="modal-right">
                 <!-- QR Payment Section (only for online payment) -->
                 <div class="modal-qr-section" id="modalQrSection">
@@ -552,6 +522,38 @@ require_once __DIR__ . '/../../includes/header.php';
                             <li>Operating hours: 6:00 AM - 10:00 PM daily</li>
                         </ul>
                     </div>
+                </div>
+            </div>
+
+            <!-- Upload Column -->
+            <div class="modal-left">
+                <p class="modal-instruction">Please upload a screenshot or photo of your payment receipt to complete your
+                    subscription.</p>
+
+                <div class="file-upload-area" id="fileUploadArea">
+                    <input type="file" id="receiptFile" name="receipt" accept="image/png,image/jpeg,image/jpg">
+                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
+                        <path
+                            d="M7 18C4.23858 18 2 15.7614 2 13C2 10.2386 4.23858 8 7 8C7 5.23858 9.23858 3 12 3C14.7614 3 17 5.23858 17 8C19.7614 8 22 10.2386 22 13C22 15.7614 19.7614 18 17 18M12 13V21M12 13L9 16M12 13L15 16"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-subtext">PNG and JPG, up to 10MB</p>
+                </div>
+
+                <div class="file-preview" id="filePreview" style="display: none;">
+                    <img id="previewImage" src="" alt="Receipt preview">
+                    <p id="fileName"></p>
+                    <button type="button" class="remove-file-btn" id="removeFile">Remove</button>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
+                        SUBMIT RECEIPT
+                    </button>
+                    <button type="button" class="modal-cancel-btn" id="cancelReceiptBtn">
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>

@@ -1,36 +1,68 @@
 <?php
 require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // Don't display errors in JSON API - log them instead
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-header('Content-Type: application/json');
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+// Require POST method
+if (!ApiSecurityMiddleware::requireMethod('POST')) {
+    exit; // Already sent response
 }
 
-// Get form data
-$service = trim($_POST['service'] ?? '');
-$name = trim($_POST['name'] ?? '');
-$email = trim($_POST['email'] ?? '');
-$phone = trim($_POST['phone'] ?? '');
-$service_date = trim($_POST['service_date'] ?? '');
+// Rate limiting - 10 requests per minute per IP (public endpoint for non-members)
+$identifier = 'generate_nonmember_receipt:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 10, 60);
 
-// Validate required fields
-if (empty($service) || empty($name) || empty($email) || empty($phone) || empty($service_date)) {
-    echo json_encode(['success' => false, 'message' => 'All fields are required']);
-    exit;
+// Validate and sanitize input
+$validation = ApiSecurityMiddleware::validateInput([
+    'service' => [
+        'type' => 'whitelist',
+        'required' => true,
+        'allowed' => ['daypass-gym', 'daypass-gym-student', 'training-boxing', 'training-muaythai', 'training-mma']
+    ],
+    'name' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 255
+    ],
+    'email' => [
+        'type' => 'email',
+        'required' => true
+    ],
+    'phone' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 20
+    ],
+    'service_date' => [
+        'type' => 'date',
+        'required' => true,
+        'format' => 'Y-m-d'
+    ]
+]);
+
+if (!$validation['valid']) {
+    $errors = implode(', ', $validation['errors']);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Validation failed: ' . $errors
+    ], 400);
 }
 
-// Validate email format
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid email format']);
-    exit;
-}
+$data = $validation['data'];
+$service = $data['service'];
+$name = $data['name'];
+$email = $data['email'];
+$phone = $data['phone'];
+$service_date_obj = $data['service_date']; // DateTime object
+$service_date_mysql = $service_date_obj instanceof DateTime ? $service_date_obj->format('Y-m-d') : $service_date_obj;
 
 // Service configurations
 $services = [
@@ -41,21 +73,8 @@ $services = [
     'training-mma' => ['name' => 'Training: MMA', 'price' => 630, 'code' => 'TMMA']
 ];
 
-if (!isset($services[$service])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid service selected']);
-    exit;
-}
-
+// Service already validated by whitelist
 $selectedService = $services[$service];
-
-// Convert service date to MySQL format
-try {
-    $date = new DateTime($service_date);
-    $service_date_mysql = $date->format('Y-m-d');
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Invalid date format']);
-    exit;
-}
 
 // Generate unique receipt ID
 $receipt_id = strtoupper($selectedService['code'] . '-' . date('Ymd') . '-' . substr(uniqid(), -6));
@@ -112,22 +131,23 @@ try {
     );
 
     if ($stmt->execute()) {
-        echo json_encode([
+        ApiSecurityMiddleware::sendJsonResponse([
             'success' => true,
             'message' => 'Receipt generated successfully',
             'receipt_id' => $receipt_id
-        ]);
+        ], 200);
     } else {
-        throw new Exception('Database insert failed: ' . $stmt->error);
+        error_log("Database insert failed in generate_nonmember_receipt.php: " . $stmt->error);
+        throw new Exception('Database insert failed');
     }
 
     $stmt->close();
 } catch (Exception $e) {
     error_log("Error in generate_nonmember_receipt.php: " . $e->getMessage());
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'Failed to generate receipt. Please try again or contact support.'
-    ]);
+    ], 500);
 }
 
 $conn->close();

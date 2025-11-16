@@ -1,15 +1,22 @@
 <?php
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\api\debug_feedback.php
+// NOTE: This is a debug endpoint. Consider disabling in production.
 session_start();
-header('Content-Type: application/json');
+require_once __DIR__ . '/../../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
+ApiSecurityMiddleware::setSecurityHeaders();
+
+// Require admin authentication
+$user = ApiSecurityMiddleware::requireAuth(['role' => 'admin']);
+if (!$user) {
+    exit; // Already sent response
 }
 
-require_once '../../../../includes/db_connect.php';
+// Rate limiting for debug endpoint - 10 requests per minute per admin
+$adminId = $user['user_id'];
+ApiSecurityMiddleware::applyRateLimit($conn, 'admin_debug_feedback:' . $adminId, 10, 60);
 
 $debug = [];
 
@@ -41,4 +48,7 @@ $debug['has_id_column'] = $hasId;
 $debug['has_user_id_column'] = $hasUserId;
 $debug['has_is_visible_column'] = $hasIsVisible;
 
-echo json_encode($debug, JSON_PRETTY_PRINT);
+ApiSecurityMiddleware::sendJsonResponse([
+    'success' => true,
+    'debug' => $debug
+], 200);

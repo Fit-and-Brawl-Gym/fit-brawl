@@ -91,17 +91,7 @@
     text-transform: uppercase;
 }
 
-.error-box {
-    border: 2px solid var(--color-error);
-    background-color: rgba(239, 68, 68, 0.1);
-    color: var(--color-error);
-    padding: var(--spacing-3) var(--spacing-4);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-6);
-    text-align: center;
-    font-weight: var(--font-weight-bold);
-    font-family: var(--font-family-primary);
-}
+
 
 .input-group {
     position: relative;
@@ -182,6 +172,12 @@
 
 .login-btn:hover {
     background: var(--color-accent-hover);
+}
+
+.login-btn.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.15);
 }
 
 .signup-link {

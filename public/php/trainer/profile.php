@@ -10,6 +10,7 @@ if (!isset($_SESSION['email']) || !isset($_SESSION['role']) || $_SESSION['role']
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/session_manager.php';
 require_once __DIR__ . '/../../../includes/config.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
 
 // Initialize session manager
 SessionManager::initialize();
@@ -158,6 +159,7 @@ require_once '../../../includes/trainer_header.php';
             Edit Profile
         </h3>
         <form method="POST" action="../update_profile.php" enctype="multipart/form-data" class="edit-profile-form">
+            <?= CSRFProtection::getTokenField(); ?>
             <!-- Avatar Upload -->
             <div class="form-group full-width">
                 <label>Profile Picture</label>
