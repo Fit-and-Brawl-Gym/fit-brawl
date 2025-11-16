@@ -3,6 +3,7 @@ session_start();
 require_once '../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/password_policy.php';
+require_once __DIR__ . '/../../includes/password_history.php';
 
 // Check if user came from verification process
 if(!isset($_SESSION['reset_email'])) {
@@ -23,6 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $new_password = test_input($_POST['new_password']);
         $confirm_password = test_input($_POST['confirm_password']);
+        $userId = null;
+        $currentHash = null;
         // Check passwords match first
         if ($new_password !== $confirm_password) {
             $alertMessage = [
@@ -42,14 +45,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 // Ensure the new password is not the same as the current password
                 $email = $_SESSION['reset_email'];
-                $getStmt = $conn->prepare("SELECT password FROM users WHERE email = ? LIMIT 1");
-                $getStmt->bind_param("s", $email);
-                if ($getStmt->execute()) {
-                    $res = $getStmt->get_result();
-                    $row = $res->fetch_assoc();
-                    $currentHash = $row['password'] ?? null;
-                } else {
-                    $currentHash = null;
+                $getStmt = $conn->prepare("SELECT id, password FROM users WHERE email = ? LIMIT 1");
+                if ($getStmt) {
+                    $getStmt->bind_param("s", $email);
+                    if ($getStmt->execute()) {
+                        $res = $getStmt->get_result();
+                        $row = $res->fetch_assoc();
+                        $currentHash = $row['password'] ?? null;
+                        $userId = $row['id'] ?? null;
+                    }
+                    $getStmt->close();
                 }
 
                 if ($currentHash && password_verify($new_password, $currentHash)) {
@@ -58,6 +63,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         'title' => 'Choose a new password',
                         'text' => 'Your new password must be different from your current password.'
                     ];
+                } elseif ($userId && PasswordHistory::hasBeenUsed($conn, $userId, $new_password)) {
+                    $alertMessage = [
+                        'type' => 'error',
+                        'title' => 'Password was recently used',
+                        'text' => 'Please choose a password you haven\'t used recently.'
+                    ];
                 } else {
                     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
@@ -65,6 +76,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->bind_param("ss", $hashed_password, $email);
 
                     if ($stmt->execute()) {
+                        if ($userId && $currentHash) {
+                            PasswordHistory::record($conn, $userId, $currentHash);
+                        }
                         // Clear reset email session
                         unset($_SESSION['reset_email']);
                         $_SESSION['password_changed'] = true;

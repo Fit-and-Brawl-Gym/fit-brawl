@@ -4,6 +4,7 @@ require_once '../../includes/db_connect.php';
 require_once '../../includes/file_upload_security.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/password_policy.php';
+require_once __DIR__ . '/../../includes/password_history.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['email'])) {
@@ -27,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newPassword = test_input($_POST['new_password']);
     $confirmPassword = test_input($_POST['confirm_password']);
     $removeAvatar = isset($_POST['remove_avatar']) && $_POST['remove_avatar'] === '1';
+    $passwordHistoryContext = null;
 
     if (empty($username) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['error'] = "Please provide a valid name and email.";
@@ -60,14 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Get current password hash from database
-        $stmt = $conn->prepare("SELECT password FROM users WHERE email = ?");
-        $stmt->bind_param("s", $currentEmail);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    $stmt = $conn->prepare("SELECT id, password FROM users WHERE email = ?");
+    $stmt->bind_param("s", $currentEmail);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
             $currentPasswordHash = $row['password'];
+            $userId = $row['id'] ?? null;
 
             // Verify current password is correct
             if (!password_verify($currentPassword, $currentPasswordHash)) {
@@ -83,6 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->close();
                 header("Location: $profileRedirect");
                 exit;
+            }
+
+            if ($userId && PasswordHistory::hasBeenUsed($conn, $userId, $newPassword)) {
+                $_SESSION['error'] = "Please choose a password you haven't used recently.";
+                $stmt->close();
+                header("Location: $profileRedirect");
+                exit;
+            }
+
+            if ($userId) {
+                $passwordHistoryContext = [
+                    'user_id' => $userId,
+                    'hash' => $currentPasswordHash
+                ];
             }
         }
         $stmt->close();
@@ -134,7 +151,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sss", $username, $email, $currentEmail);
     }
 
+    $passwordChanged = !empty($newPassword);
     if ($stmt->execute()) {
+        if ($passwordChanged && $passwordHistoryContext) {
+            PasswordHistory::record($conn, $passwordHistoryContext['user_id'], $passwordHistoryContext['hash']);
+        }
         // Update session
         $_SESSION['name'] = $username;
         $_SESSION['email'] = $email;
@@ -143,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // If password was changed and user is a trainer, mark password as changed
-        if (!empty($newPassword) && isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') {
+        if ($passwordChanged && isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') {
             $update_trainer = $conn->prepare("UPDATE trainers SET password_changed = 1 WHERE email = ?");
             $update_trainer->bind_param("s", $email);
             $update_trainer->execute();

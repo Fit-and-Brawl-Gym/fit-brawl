@@ -20,6 +20,7 @@ Status of every checklist item based on the current Fit & Brawl codebase and the
 | Single sign-out / revoke tokens | High | ❌ | No UI/API for device/session revocation yet. |
 | Email verification on signup | High | ✅ | Verification token required before access. |
 | Password strength meter & UX | Medium | ✅ | Real-time strength guidance on signup/change-password forms. |
+| Password reuse prevention | High | ✅ | Change-password/profile flows block reuse of the last 5 hashes via `PasswordHistory`. |
 
 ## 2. Authorization & Access Control
 | Control | Priority | Status | Notes |

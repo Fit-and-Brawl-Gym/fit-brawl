@@ -19,8 +19,8 @@ This document provides a complete security checklist identifying all existing se
 | Password hashing (bcrypt) | Critical | ✅ | Uses PHP `password_hash()` with `PASSWORD_DEFAULT` (bcrypt). All passwords stored as hashes, never plain text. |
 | Password verification (constant-time) | Critical | ✅ | Uses `password_verify()` for constant-time comparison (prevents timing attacks). |
 | Password strength meter | Medium | ✅ | Real-time strength guidance on signup/change-password forms (weak/medium/strong indicators). |
-| Prevent password reuse | High | 🟡 | Checks if new password matches current hash, but no history tracking for previous passwords. |
-| Password history tracking | Medium | ❌ | No mechanism to prevent reusing last N passwords. |
+| Prevent password reuse | High | ✅ | Change-password and profile flows now block reuse of the last 5 passwords using `PasswordHistory`. |
+| Password history tracking | Medium | ✅ | `password_history` table with helper class maintains last 5 hashes per user (auto-created on demand). |
 | Password expiration policy | Low | ❌ | No forced password rotation policy. |
 
 ### Multi-Factor Authentication (MFA)
