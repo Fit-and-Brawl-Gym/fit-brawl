@@ -46,7 +46,13 @@ $retryAfterSeconds = 0;
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = test_input($_POST['email'] ?? '');
     $password = test_input($_POST['password'] ?? '');
-    $rateLimitIdentifier = strtolower($email) . '|' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+
+    // Create base rate limit identifier with IP
+    $ipIdentifier = 'login|' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+    $inputIdentifier = strtolower($email);
+
+    // We'll check/log against both the input AND any associated account identifiers
+    $rateLimitIdentifiers = [$ipIdentifier . '|' . $inputIdentifier];
 
     $csrfToken = $_POST['csrf_token'] ?? '';
     if (!CSRFProtection::validateToken($csrfToken)) {
@@ -62,17 +68,46 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 'body' => 'Database connection error. Please try again later.'
             ];
         } else {
-            $blockInfo = isLoginBlocked($conn, $rateLimitIdentifier, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_SECONDS);
+            // Pre-fetch the account to get both email AND username for unified rate limiting
+            $accountIdentifiers = [];
+            $accountEmail = null; // Store actual email for notifications
+            $lookupStmt = $conn->prepare("SELECT email, username FROM users WHERE email = ? OR username = ? LIMIT 1");
+            if ($lookupStmt) {
+                $lookupStmt->bind_param("ss", $email, $email);
+                $lookupStmt->execute();
+                $lookupResult = $lookupStmt->get_result();
+                if ($lookupResult->num_rows > 0) {
+                    $accountRow = $lookupResult->fetch_assoc();
+                    $accountEmail = $accountRow['email']; // Store the actual email
+                    $accountIdentifiers[] = $ipIdentifier . '|' . strtolower($accountRow['email']);
+                    $accountIdentifiers[] = $ipIdentifier . '|' . strtolower($accountRow['username']);
+                }
+                $lookupStmt->close();
+            }
 
-            if ($blockInfo['blocked']) {
-                $retryAfterSeconds = (int) ($blockInfo['retry_after'] ?? 0);
+            // If account exists, check rate limits for BOTH email and username
+            // This prevents bypassing the lock by alternating between email/username
+            $checkIdentifiers = !empty($accountIdentifiers) ? $accountIdentifiers : $rateLimitIdentifiers;
+
+            $isBlocked = false;
+            $maxRetryAfter = 0;
+
+            foreach ($checkIdentifiers as $identifier) {
+                $blockInfo = isLoginBlocked($conn, $identifier, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_SECONDS);
+                if ($blockInfo['blocked']) {
+                    $isBlocked = true;
+                    $maxRetryAfter = max($maxRetryAfter, $blockInfo['retry_after']);
+                }
+            }
+
+            if ($isBlocked) {
+                $retryAfterSeconds = (int) $maxRetryAfter;
                 $minutes = max(1, ceil($retryAfterSeconds / 60));
                 $errorMessage = [
                     'title' => 'Too many attempts. Login temporarily locked.',
-                    'body' => "Please wait {$minutes} minute" . ($minutes === 1 ? '' : 's') . ' before trying again.'
                 ];
 
-                $lockoutIdentifier = hash('sha256', $rateLimitIdentifier);
+                $lockoutIdentifier = hash('sha256', $inputIdentifier);
                 if (!isset($_SESSION['lockout_notified'])) {
                     $_SESSION['lockout_notified'] = [];
                 }
@@ -80,10 +115,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $lastNotified = $_SESSION['lockout_notified'][$lockoutIdentifier] ?? 0;
                 $shouldNotify = time() - $lastNotified >= max(60, $retryAfterSeconds / 2);
 
-                if ($shouldNotify && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                // Use the actual account email if available, otherwise fall back to input if it's a valid email
+                $notificationEmail = $accountEmail ?? (filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null);
+
+                if ($shouldNotify && $notificationEmail) {
                     if (function_exists('sendAccountLockNotification')) {
                         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-                        sendAccountLockNotification($email, $retryAfterSeconds, $ip, LOGIN_MAX_ATTEMPTS);
+                        sendAccountLockNotification($notificationEmail, $retryAfterSeconds, $ip, LOGIN_MAX_ATTEMPTS);
                     }
                     $_SESSION['lockout_notified'][$lockoutIdentifier] = time();
                 }
@@ -104,7 +142,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         $user = $result->fetch_assoc();
 
                     if ($user['is_verified'] == 0) {
-                        logFailedLoginAttempt($conn, $rateLimitIdentifier);
+                        // Log failed attempt for all associated identifiers
+                        foreach (!empty($accountIdentifiers) ? $accountIdentifiers : $rateLimitIdentifiers as $id) {
+                            logFailedLoginAttempt($conn, $id);
+                        }
                         $errorMessage = [
                             'title' => 'Verify your email',
                             'body' => 'Please verify your email before logging in.'
@@ -127,6 +168,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         }
 
                         clearLoginAttempts($conn, $rateLimitIdentifier);
+
+                        // Also clear attempts for account identifiers if they exist
+                        if (!empty($accountIdentifiers)) {
+                            foreach ($accountIdentifiers as $id) {
+                                clearLoginAttempts($conn, $id);
+                            }
+                        }
 
                         // Remember Me
                         if (isset($_POST['remember'])) {
@@ -158,14 +206,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         exit;
 
                     } else {
-                        logFailedLoginAttempt($conn, $rateLimitIdentifier);
+                        // Log failed attempt for all associated identifiers
+                        foreach (!empty($accountIdentifiers) ? $accountIdentifiers : $rateLimitIdentifiers as $id) {
+                            logFailedLoginAttempt($conn, $id);
+                        }
                         $errorMessage = [
                             'title' => 'Login failed',
                             'body' => 'Incorrect email or password.'
                         ];
                     }
                 } else {
-                    logFailedLoginAttempt($conn, $rateLimitIdentifier);
+                    // Account not found - log against input identifier only
+                    foreach ($rateLimitIdentifiers as $id) {
+                        logFailedLoginAttempt($conn, $id);
+                    }
                     $errorMessage = [
                         'title' => 'Login failed',
                         'body' => 'Incorrect email or password.'

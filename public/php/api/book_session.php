@@ -94,7 +94,7 @@ try {
     // Check if admin is booking for another user
     $is_admin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
     $target_user_id = null;
-    
+
     if ($is_admin && isset($input['user_id'])) {
         // Admin booking for a specific user
         $target_user_id = $input['user_id'];
@@ -106,14 +106,14 @@ try {
 
     $trainer_id = isset($input['trainer_id']) ? intval($input['trainer_id']) : 0;
     $class_type = $input['class_type'] ?? '';
-    
+
     // Admin can override weekly limit
     $override_weekly_limit = $is_admin && isset($input['override_weekly_limit']) && $input['override_weekly_limit'] === true;
-    
+
     // Time-based booking: accept start_time and end_time
     $start_time = $input['start_time'] ?? '';
     $end_time = $input['end_time'] ?? '';
-    
+
     // Legacy support: if session_time and booking_date provided instead of start_time/end_time
     $session_time = $input['session_time'] ?? '';
     $booking_date = $input['booking_date'] ?? '';
@@ -130,7 +130,7 @@ try {
 
     if (!$is_time_based && !$is_legacy) {
         echo json_encode([
-            'success' => false, 
+            'success' => false,
             'message' => 'Must provide either start_time/end_time OR session_time/booking_date'
         ]);
         exit;
@@ -203,32 +203,32 @@ try {
         // Time-based booking: validate with start_time and end_time
         // Skip weekly limit check if admin override is enabled
         $validation = $validator->validateBooking(
-            $user_id, 
-            $trainer_id, 
-            $class_type, 
-            $start_time, 
-            $end_time, 
-            null, 
+            $user_id,
+            $trainer_id,
+            $class_type,
+            $start_time,
+            $end_time,
+            null,
             $override_weekly_limit
         );
-        
+
         if (!$validation['valid']) {
             $response = [
                 'success' => false,
                 'message' => $validation['message'],
                 'failed_check' => $validation['failed_check'] ?? null
             ];
-            
+
             // TODO: Add suggested_slots logic in Task 26 by calling get_trainer_availability.php
             // For now, just return the validation error
-            
+
             echo json_encode($response);
             exit;
         }
-        
+
         // Extract booking_date from start_time for display
         $booking_date = substr($start_time, 0, 10);
-        
+
     } else {
         // Legacy session-based booking: use old validation method
         $valid_sessions = ['Morning', 'Afternoon', 'Evening'];
@@ -236,9 +236,9 @@ try {
             echo json_encode(['success' => false, 'message' => 'Invalid session time']);
             exit;
         }
-        
+
         $validation = $validator->validateBookingLegacy($user_id, $trainer_id, $class_type, $booking_date, $session_time);
-        
+
         if (!$validation['valid']) {
             echo json_encode([
                 'success' => false,
@@ -301,9 +301,9 @@ try {
             if ($insert_stmt === false) {
                 throw new Exception('Failed to prepare insert statement');
             }
-            
+
             $insert_stmt->bind_param("sissss", $user_id, $trainer_id, $class_type, $booking_date, $start_time, $end_time);
-            
+
         } else {
             // Legacy session-based booking: insert with session_time
             $insert_stmt = $conn->prepare("
@@ -373,12 +373,14 @@ try {
         ");
         if ($count_stmt === false) {
             throw new Exception('Failed to prepare count query');
+        }
+
         if ($is_time_based) {
             // Time-based: calculate total minutes used this week
             $count_stmt = $conn->prepare("
                 SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes
-                FROM user_reservations 
-                WHERE user_id = ? 
+                FROM user_reservations
+                WHERE user_id = ?
                 AND booking_date BETWEEN ? AND ?
                 AND booking_status IN ('confirmed', 'completed')
                 AND start_time IS NOT NULL
@@ -399,8 +401,8 @@ try {
             // Legacy: count number of bookings
             $count_stmt = $conn->prepare("
                 SELECT COUNT(*) as booking_count
-                FROM user_reservations 
-                WHERE user_id = ? 
+                FROM user_reservations
+                WHERE user_id = ?
                 AND booking_date BETWEEN ? AND ?
                 AND booking_status IN ('confirmed', 'completed')
             ");
@@ -422,7 +424,7 @@ try {
             if (function_exists('sendTrainerBookingNotification')) {
                 // For legacy bookings, use session_time; for time-based, use time_display
                 $email_time_info = $is_time_based ? $time_display : $session_time;
-                
+
                 $email_sent = sendTrainerBookingNotification(
                     $trainer_data['email'],
                     $trainer_data['name'],
@@ -445,7 +447,6 @@ try {
         }
 
         // Respond success (booking done)
-        ApiSecurityMiddleware::sendJsonResponse([
         $response = [
             'success' => true,
             'booking_id' => $booking_id,
@@ -459,9 +460,8 @@ try {
                 'weekly_usage' => $weekly_hours,
                 'weekly_limit' => $weekly_limit_display
             ]
-        ], 200);
         ];
-        
+
         // Add legacy fields for backwards compatibility
         if (!$is_time_based) {
             $response['details']['session'] = $session_time;
@@ -473,9 +473,8 @@ try {
                 $response['details']['facility_trainers'] = $validation['facility_count'] + 1;
             }
         }
-        
+
         echo json_encode($response);
-        exit;
 
     } catch (Exception $e) {
         // Rollback and bubble up to outer catch

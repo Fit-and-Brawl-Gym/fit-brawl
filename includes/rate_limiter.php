@@ -136,3 +136,63 @@ function isLoginBlocked($conn, $identifier, $maxAttempts = 5, $windowSeconds = 9
 
     return ['blocked' => false, 'retry_after' => 0];
 }
+
+// ------------------------------
+// Signup attempt rate limiting
+// ------------------------------
+
+function logSignupAttempt($conn, $identifier) {
+    if (!$conn || empty($identifier)) {
+        return;
+    }
+
+    ensureLoginAttemptsTable($conn);
+
+    $stmt = $conn->prepare("INSERT INTO login_attempts (identifier, attempt_count, last_attempt)
+        VALUES (?, 1, NOW())
+        ON DUPLICATE KEY UPDATE attempt_count = attempt_count + 1, last_attempt = NOW()");
+
+    if ($stmt) {
+        $stmt->bind_param('s', $identifier);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
+
+function isSignupBlocked($conn, $identifier, $maxAttempts = 5, $windowSeconds = 900) {
+    if (!$conn || empty($identifier)) {
+        return ['blocked' => false, 'retry_after' => 0];
+    }
+
+    ensureLoginAttemptsTable($conn);
+
+    $stmt = $conn->prepare("SELECT attempt_count, last_attempt FROM login_attempts WHERE identifier = ?");
+    if (!$stmt) {
+        return ['blocked' => false, 'retry_after' => 0];
+    }
+
+    $stmt->bind_param('s', $identifier);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$row) {
+        return ['blocked' => false, 'retry_after' => 0];
+    }
+
+    $lastAttempt = strtotime($row['last_attempt']);
+    $elapsed = time() - $lastAttempt;
+
+    if ($elapsed > $windowSeconds) {
+        clearLoginAttempts($conn, $identifier);
+        return ['blocked' => false, 'retry_after' => 0];
+    }
+
+    if ((int)$row['attempt_count'] >= $maxAttempts) {
+        $retryAfter = max(0, $windowSeconds - $elapsed);
+        return ['blocked' => true, 'retry_after' => $retryAfter];
+    }
+
+    return ['blocked' => false, 'retry_after' => 0];
+}

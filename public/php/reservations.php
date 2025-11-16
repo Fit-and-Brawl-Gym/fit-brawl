@@ -70,10 +70,6 @@ $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
 $additionalCSS = [
     '../css/components/alert.css?v=' . time(),
-    '../css/pages/reservations.css?v=2.0.' . time()
-];
-$additionalJS = ['../js/reservations.js?v=' . time() . mt_rand()];
-$pageCsrfToken = CSRFProtection::generateToken();
     '../css/pages/reservations.css?v=2.0.' . time(),
     '../css/components/time-selection-v2.css?v=' . time(),
     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'

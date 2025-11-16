@@ -1,11 +1,15 @@
 <?php
 include_once('../../../includes/init.php');
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
   header("Location: ../login.php");
   exit();
 }
+
+// Generate CSRF token
+$csrfToken = CSRFProtection::generateToken();
 
 // Fetch all equipment (order by columns that exist)
 $orderCols = [];
@@ -40,6 +44,7 @@ unset($it);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
   <title>Equipment Management - Fit & Brawl Gym</title>
   <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
   <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
@@ -409,7 +414,7 @@ unset($it);
   </div>
 
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
-  <script src="<?= PUBLIC_PATH ?>/php/admin/js/equipment.js?=v1"></script>
+  <script src="<?= PUBLIC_PATH ?>/php/admin/js/equipment.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

@@ -30,7 +30,7 @@ class ActivityLogger
 
         // Get admin info from session
         $adminId = $_SESSION['user_id'] ?? null;
-        $adminName = $_SESSION['username'] ?? 'System';
+        $adminName = $_SESSION['name'] ?? 'System'; // Changed from 'username' to 'name'
 
         error_log("ActivityLogger: Admin ID: {$adminId}, Admin Name: {$adminName}");
 
@@ -144,11 +144,19 @@ class ActivityLogger
 
         $stmt = self::$conn->prepare($sql);
 
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+        if (!$stmt) {
+            error_log('ActivityLogger::getActivities - Failed to prepare statement: ' . self::$conn->error);
+            return [];
         }
 
-        $stmt->execute();
+        // Always bind parameters since we always have at least the limit
+        $stmt->bind_param($types, ...$params);
+
+        if (!$stmt->execute()) {
+            error_log('ActivityLogger::getActivities - Failed to execute: ' . $stmt->error);
+            return [];
+        }
+
         $result = $stmt->get_result();
 
         $activities = [];
@@ -157,6 +165,8 @@ class ActivityLogger
         }
 
         $stmt->close();
+
+        error_log('ActivityLogger::getActivities - Returned ' . count($activities) . ' activities');
         return $activities;
     }
 

@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Helper to get CSRF token from meta tag
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.content || '';
+    }
+
     // Equipment data is rendered by PHP, no need to load via AJAX
 
     const form = document.getElementById('equipmentForm');
@@ -6,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const formData = new FormData(form);
+        formData.append('csrf_token', getCsrfToken());
 
         try {
             const res = await fetch('api/admin_equipment_api.php', {
@@ -71,14 +77,20 @@ async function loadEquipment() {
 // Attach Listeners
 // ================================
 function attachListeners() {
+    // Helper to get CSRF token
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.content || '';
+    }
+
     // Update status
     document.querySelectorAll('.status-dropdown').forEach(sel => {
         sel.addEventListener('change', async e => {
             const id = e.target.dataset.id;
             const status = e.target.value;
+            const params = new URLSearchParams({ id, status, csrf_token: getCsrfToken() });
             await fetch('api/admin_equipment_api.php?action=update', {
                 method: 'POST',
-                body: new URLSearchParams({ id, status }),
+                body: params,
             });
         });
     });
@@ -96,9 +108,10 @@ function attachListeners() {
         btn.addEventListener('click', async e => {
             if (!confirm('Are you sure you want to delete this equipment?')) return;
             const id = e.target.dataset.id;
+            const params = new URLSearchParams({ id, csrf_token: getCsrfToken() });
             await fetch('api/admin_equipment_api.php?action=delete', {
                 method: 'POST',
-                body: new URLSearchParams({ id }),
+                body: params,
             });
             loadEquipment();
         });
@@ -252,8 +265,13 @@ function closeDeleteModal() {
 async function confirmDelete() {
     if (!deleteId) return;
 
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const response = await fetch(`api/admin_equipment_api.php?id=${deleteId}`, {
         method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ csrf_token: csrfToken }),
     });
 
     const result = await response.json();

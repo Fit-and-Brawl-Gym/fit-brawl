@@ -2,12 +2,16 @@
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\products.php
 include_once('../../../includes/init.php');
 require_once '../../../includes/config.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();
 }
+
+// Generate CSRF token
+$csrfToken = CSRFProtection::generateToken();
 
 
 if (isset($_GET['api']) && $_GET['api'] === 'true') {
@@ -68,6 +72,7 @@ unset($p);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
     <title>Products Management - Fit & Brawl Gym</title>
     <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
@@ -402,7 +407,7 @@ unset($p);
         window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
     </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
-    <script src="<?= PUBLIC_PATH ?>/php/admin/js/products.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/products.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

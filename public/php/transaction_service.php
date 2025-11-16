@@ -155,23 +155,22 @@ require_once '../../includes/header.php';
 <script>
     window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
 </script>
-<?php
 
-    <!--Main-->
-    <main class="transaction-page">
-        <div class="transaction-container">
-            <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
+<!--Main-->
+<main class="transaction-page">
+    <div class="transaction-container">
+        <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
 
-            <div class="transaction-box">
-                <form id="subscriptionForm" class="subscription-form">
-                    <input type="hidden" name="service" value="<?php echo $service; ?>">
-                    <div class="transaction-content">
-                        <!-- Left Column -->
-                        <div class="transaction-left">
-                            <div class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" id="name" name="name" placeholder="Excel Bondoc" required>
-                            </div>
+        <div class="transaction-box">
+            <form id="subscriptionForm" class="subscription-form">
+                <input type="hidden" name="service" value="<?php echo $service; ?>">
+                <div class="transaction-content">
+                    <!-- Left Column -->
+                    <div class="transaction-left">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" placeholder="Excel Bondoc" required>
+                        </div>
 
                             <div class="form-group">
                                 <label for="country">Country</label>

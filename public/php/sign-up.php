@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/user_id_generator.php'; // Add ID generator
 require_once __DIR__ . '/../../includes/password_policy.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../includes/rate_limiter.php';
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
@@ -22,6 +23,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         exit();
     }
 
+    // Rate limit signup attempts by IP
+    $signupIdentifier = 'signup|' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+    $blockInfo = isSignupBlocked($conn, $signupIdentifier, 5, 900);
+
+    if ($blockInfo['blocked']) {
+        $retryAfterMinutes = max(1, ceil($blockInfo['retry_after'] / 60));
+        $_SESSION['register_error'] = "Too many signup attempts. Please wait {$retryAfterMinutes} minute" . ($retryAfterMinutes === 1 ? '' : 's') . " before trying again.";
+        header("Location: sign-up.php");
+        exit();
+    }
+
     $name = test_input($_POST['name']);
     $email = test_input($_POST['email']);
     $password_input = test_input($_POST['password'] ?? '');
@@ -29,6 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 
     //Validate inputs
     if (empty($name) || empty($email) || empty($password_input) || empty($confirm_password)) {
+        logSignupAttempt($conn, $signupIdentifier);
         $_SESSION['register_error'] = "All fields are required.";
         header("Location: sign-up.php");
         exit();
@@ -36,6 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 
     //Validate email format
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        logSignupAttempt($conn, $signupIdentifier);
         $_SESSION['register_error'] = "Please enter a valid email address.";
         header("Location: sign-up.php");
         exit();
@@ -44,6 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     //Check if email domain exists
     $emailDomain = substr(strrchr($email, "@"), 1);
     if (!checkdnsrr($emailDomain, "MX")) {
+        logSignupAttempt($conn, $signupIdentifier);
         $_SESSION['register_error'] = "Invalid email domain. Please use a real email address.";
         header("Location: sign-up.php");
         exit();
@@ -51,6 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 
     //Check password match
     if ($password_input !== $confirm_password) {
+        logSignupAttempt($conn, $signupIdentifier);
         $_SESSION['register_error'] = "Passwords do not match.";
         header("Location: sign-up.php");
         exit();
@@ -59,6 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     // Validate password requirements
     $passwordErrors = PasswordPolicy::validate($password_input);
     if (!empty($passwordErrors)) {
+        logSignupAttempt($conn, $signupIdentifier);
         $_SESSION['register_error'] = implode("\n", $passwordErrors);
         header("Location: sign-up.php");
         exit();
@@ -75,6 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
+        logSignupAttempt($conn, $signupIdentifier);
         $_SESSION['register_error'] = "Username or email already exists.";
         header("Location: sign-up.php");
         exit();

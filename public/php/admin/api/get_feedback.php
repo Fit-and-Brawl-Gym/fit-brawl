@@ -22,12 +22,33 @@ $checkColumn = $conn->query("SHOW COLUMNS FROM feedback LIKE 'is_visible'");
 $hasVisibleColumn = $checkColumn->num_rows > 0;
 
 // Build SQL - get ALL feedback for admin (including hidden)
+// Handle anonymous feedback (user_id can be NULL)
 if ($hasVisibleColumn) {
-    $sql = "SELECT id, user_id, username, email, avatar, message, date, is_visible FROM feedback ORDER BY date DESC";
+    $sql = "SELECT
+                f.id,
+                f.user_id,
+                COALESCE(f.username, 'Anonymous') as username,
+                COALESCE(f.email, '') as email,
+                COALESCE(f.avatar, 'default-avatar.png') as avatar,
+                f.message,
+                f.date,
+                f.is_visible
+            FROM feedback f
+            ORDER BY f.date DESC";
 } else {
     // If column doesn't exist, create it
     $conn->query("ALTER TABLE feedback ADD COLUMN is_visible TINYINT(1) DEFAULT 1 AFTER message");
-    $sql = "SELECT id, user_id, username, email, avatar, message, date, is_visible FROM feedback ORDER BY date DESC";
+    $sql = "SELECT
+                f.id,
+                f.user_id,
+                COALESCE(f.username, 'Anonymous') as username,
+                COALESCE(f.email, '') as email,
+                COALESCE(f.avatar, 'default-avatar.png') as avatar,
+                f.message,
+                f.date,
+                f.is_visible
+            FROM feedback f
+            ORDER BY f.date DESC";
 }
 
 try {

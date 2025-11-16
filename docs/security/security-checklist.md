@@ -37,13 +37,14 @@ Comprehensive security checklist tracking all security measures, their implement
 ### Account Lockout & Rate Limiting
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Login attempt rate limiting | Critical | ✅ | 5 attempts per 15 minutes per email+IP combination. Implemented via `rate_limiter.php` and `login_attempts` table. |
-| Account lockout after failed attempts | High | ✅ | Automatic lockout via rate limiter with retry-after messaging. |
+| Login attempt rate limiting | Critical | ✅ | 5 attempts per 15 minutes. Isolated signup/login rate limits prevent cross-contamination. Lockouts now apply to BOTH email and username for the same account to prevent bypass by alternating credentials. |
+| Account lockout after failed attempts | High | ✅ | Automatic lockout via unified rate limiter. Tracks attempts across email AND username for the same account. |
 | Lockout notification to user | High | ✅ | Lockouts surface consistent in-app alerts/countdowns and trigger email notifications through `sendAccountLockNotification()`. |
 | Progressive lockout delays | Medium | ❌ | No exponential backoff (fixed 15-minute window). |
 | IP-based blocking | Medium | ❌ | No automatic IP blacklisting for repeated violations. |
 | CAPTCHA on repeated failures | Medium | ❌ | No CAPTCHA integration. |
 | OTP request rate limiting | High | ✅ | 3 OTP requests per 5 minutes per email via `checkOTPRateLimit()`. |
+| Signup rate limiting | High | ✅ | 5 signup attempts per 15 minutes per IP. Prevents using signup page to reset login lockouts. |
 
 ### Session Management
 | Control | Priority | Status | Implementation Details |

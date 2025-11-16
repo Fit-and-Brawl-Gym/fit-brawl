@@ -92,7 +92,7 @@ try {
     }
 
     // Get contact details for logging
-    $infoStmt = $conn->prepare("SELECT name, email FROM contact WHERE id = ?");
+    $infoStmt = $conn->prepare("SELECT first_name, last_name, email FROM contact WHERE id = ?");
     $infoStmt->bind_param("i", $id);
     $infoStmt->execute();
     $contactInfo = $infoStmt->get_result()->fetch_assoc();
@@ -101,11 +101,12 @@ try {
     // Log admin action using ActivityLogger
     if ($contactInfo) {
         $logAction = 'contact_' . $action;
-        $logDetails = ucfirst(str_replace('_', ' ', $action)) . " contact from {$contactInfo['name']} ({$contactInfo['email']})";
+        $fullName = trim(($contactInfo['first_name'] ?? '') . ' ' . ($contactInfo['last_name'] ?? ''));
+        $logDetails = ucfirst(str_replace('_', ' ', $action)) . " contact from {$fullName} ({$contactInfo['email']})";
 
         ActivityLogger::log(
             $logAction,
-            $contactInfo['name'] ?? 'Unknown',
+            $fullName ?: 'Unknown',
             $id,
             $logDetails
         );

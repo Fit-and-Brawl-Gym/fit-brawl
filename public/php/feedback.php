@@ -443,7 +443,6 @@ require_once '../../includes/header.php';
     const IMAGES_PATH = "<?= IMAGES_PATH ?>";
     const UPLOADS_PATH = "<?= UPLOADS_PATH ?>";
 </script>
-<script src="<?= PUBLIC_PATH ?>/js/feedback.js"></script>
 </body>
 
 </html>

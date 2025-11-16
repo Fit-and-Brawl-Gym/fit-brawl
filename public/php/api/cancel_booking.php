@@ -2,11 +2,11 @@
 /**
  * Cancel Booking API
  * Allows users to cancel their bookings at any time (no time restrictions)
- * 
+ *
  * Request: POST
  * Parameters:
  *   - booking_id: int (required) - ID of the booking to cancel
- * 
+ *
  * Response: JSON
  *   - success: boolean
  *   - message: string
@@ -118,20 +118,20 @@ try {
     $stmt->close();
 
     // Verify booking belongs to user (additional security check)
-    if ($booking['user_id'] !== $user_id) {
+    if ($booking['user_id'] !== $user_id && !in_array($user_role, ['admin', 'trainer'])) {
         ApiSecurityMiddleware::sendJsonResponse([
             'success' => false,
             'message' => 'Unauthorized: This booking does not belong to you'
         ], 403);
-    // Check if booking belongs to user (unless admin/trainer)
-    if (!in_array($user_role, ['admin', 'trainer']) && $booking['user_id'] != $user_id) {
-        echo json_encode(['success' => false, 'message' => 'Unauthorized to cancel this booking']);
         exit;
     }
 
     // Check if booking can be cancelled (only pending/confirmed bookings)
     if (!in_array($booking['booking_status'], ['pending', 'confirmed'])) {
-        echo json_encode(['success' => false, 'message' => "Cannot cancel {$booking['booking_status']} booking"]);
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => "Cannot cancel {$booking['booking_status']} booking"
+        ], 400);
         exit;
     }
 
@@ -199,12 +199,9 @@ try {
         $conn->rollback();
         throw $e;
     }
-
 } catch (Exception $e) {
     error_log("Cancellation error for user $user_id: " . $e->getMessage());
     ApiSecurityMiddleware::sendJsonResponse([
-    error_log("Cancellation error: " . $e->getMessage());
-    echo json_encode([
         'success' => false,
         'message' => 'An error occurred while cancelling your booking. Please try again.'
     ], 500);
