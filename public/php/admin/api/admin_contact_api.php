@@ -4,6 +4,10 @@ require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 require_once __DIR__ . '/../../../../includes/input_validator.php';
+require_once __DIR__ . '/../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -97,6 +101,24 @@ if ($action === 'mark_read') {
     $success = $stmt->execute();
     $stmt->close();
 
+    // Log admin action
+    if ($success) {
+        $infoStmt = $conn->prepare("SELECT name, email FROM inquiries WHERE id = ?");
+        $infoStmt->bind_param('i', $id);
+        $infoStmt->execute();
+        $inquiryInfo = $infoStmt->get_result()->fetch_assoc();
+        $infoStmt->close();
+
+        if ($inquiryInfo) {
+            ActivityLogger::log(
+                'contact_mark_read',
+                $inquiryInfo['name'] ?? 'Unknown',
+                $id,
+                "Marked inquiry as read from {$inquiryInfo['name']} ({$inquiryInfo['email']})"
+            );
+        }
+    }
+
     ApiSecurityMiddleware::sendJsonResponse([
         'success' => $success,
         'message' => $success ? 'Inquiry marked as read' : 'Failed to update inquiry'
@@ -146,6 +168,24 @@ if ($action === 'delete') {
     $stmt->bind_param('i', $id);
     $success = $stmt->execute();
     $stmt->close();
+
+    // Log admin action
+    if ($success) {
+        $infoStmt = $conn->prepare("SELECT name, email FROM inquiries WHERE id = ?");
+        $infoStmt->bind_param('i', $id);
+        $infoStmt->execute();
+        $inquiryInfo = $infoStmt->get_result()->fetch_assoc();
+        $infoStmt->close();
+
+        if ($inquiryInfo) {
+            ActivityLogger::log(
+                'contact_delete',
+                $inquiryInfo['name'] ?? 'Unknown',
+                $id,
+                "Deleted inquiry from {$inquiryInfo['name']} ({$inquiryInfo['email']})"
+            );
+        }
+    }
 
     ApiSecurityMiddleware::sendJsonResponse([
         'success' => $success,

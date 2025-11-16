@@ -92,7 +92,7 @@ Comprehensive security checklist tracking all security measures, their implement
 ### Audit Trails
 | Control | Priority | Status | Implementation Details |
 | --- | --- | --- | --- |
-| Admin action logging | High | 🟡 | `ActivityLogger` class writes to `admin_logs` table. Coverage limited to select actions (subscriptions, equipment, products, members). |
+| Admin action logging | High | ✅ | `ActivityLogger` class writes to `admin_logs` table. Comprehensive coverage: subscriptions (approve, reject, mark cash paid), equipment (add, edit, delete), products (add, edit, delete), feedback (delete, toggle visibility), contact inquiries (mark read, delete, reply, archive), reservations (status updates). All admin write operations are logged with user context and action details. |
 | User activity logging | Medium | 🟡 | `activity_log` table tracks user logins and some actions. Coverage incomplete. |
 | Login/logout tracking | High | ✅ | Login events logged with IP address and timestamp. |
 | Failed login attempt logging | High | ✅ | Failed attempts logged in `login_attempts` table. |
@@ -477,8 +477,8 @@ All payment-related security measures are deferred until a real payment processo
 ## Summary Statistics
 
 - **Total Controls**: ~150
-- **✅ Implemented**: ~52 (35%)
-- **🟡 Partial**: ~18 (12%)
+- **✅ Implemented**: ~53 (35%)
+- **🟡 Partial**: ~17 (11%)
 - **⏸️ Deferred**: ~15 (10%)
 - **❌ Not Implemented**: ~65 (43%)
 
@@ -568,6 +568,15 @@ All payment-related security measures are deferred until a real payment processo
 - Blocks PHP/script execution, prevents directory listing
 - Disables SSI/CGI, allows only safe file types
 - Blocks hidden/config files, sets security headers
+
+**Admin Action Logging:**
+- Comprehensive `ActivityLogger` coverage for all admin write operations
+- Logs subscriptions (approve, reject, mark cash paid)
+- Logs equipment management (add, edit, delete)
+- Logs products management (add, edit, delete)
+- Logs feedback management (delete, toggle visibility)
+- Logs contact inquiry management (mark read, delete, reply, archive)
+- All logs include admin ID, target user, action type, and detailed context
 
 ---
 

@@ -10,6 +10,10 @@ require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 require_once __DIR__ . '/../../../../includes/input_validator.php';
+require_once __DIR__ . '/../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 // Disable HTML error output and log errors instead
 ini_set('display_errors', 0);
@@ -113,17 +117,14 @@ try {
         }
     }
 
-    // Log admin action
+    // Log admin action using ActivityLogger
     if ($contactId) {
-        $admin_id = $_SESSION['user_id'];
-        $admin_name = $_SESSION['username'] ?? 'Admin';
-        $details = "Replied to contact ID: $contactId - Sent to: $to";
-
-        $log_sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_id, details)
-                    VALUES (?, ?, 'contact_reply', ?, ?)";
-        $log_stmt = $conn->prepare($log_sql);
-        $log_stmt->bind_param("ssis", $admin_id, $admin_name, $contactId, $details);
-        $log_stmt->execute();
+        ActivityLogger::log(
+            'contact_reply',
+            $to,
+            $contactId,
+            "Replied to contact inquiry - Subject: {$subject}"
+        );
     }
 
     // Clear any unexpected output and send clean JSON

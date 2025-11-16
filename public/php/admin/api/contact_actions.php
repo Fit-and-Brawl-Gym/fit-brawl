@@ -8,6 +8,10 @@ error_reporting(E_ALL);
 require_once '../../../../includes/db_connect.php';
 require_once '../../../../includes/csrf_protection.php';
 require_once '../../../../includes/api_security_middleware.php';
+require_once '../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -87,17 +91,25 @@ try {
         throw new Exception('Failed to execute query: ' . $stmt->error);
     }
 
-    // Log admin action
-    $admin_id = $_SESSION['user_id'];
-    $admin_name = $_SESSION['username'] ?? 'Admin';
-    $log_action = ucfirst(str_replace('_', ' ', $action));
-    $details = "Contact ID: $id - Action: $log_action";
+    // Get contact details for logging
+    $infoStmt = $conn->prepare("SELECT name, email FROM contact WHERE id = ?");
+    $infoStmt->bind_param("i", $id);
+    $infoStmt->execute();
+    $contactInfo = $infoStmt->get_result()->fetch_assoc();
+    $infoStmt->close();
 
-    $log_sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_id, details)
-                VALUES (?, ?, 'contact_management', ?, ?)";
-    $log_stmt = $conn->prepare($log_sql);
-    $log_stmt->bind_param("ssis", $admin_id, $admin_name, $id, $details);
-    $log_stmt->execute();
+    // Log admin action using ActivityLogger
+    if ($contactInfo) {
+        $logAction = 'contact_' . $action;
+        $logDetails = ucfirst(str_replace('_', ' ', $action)) . " contact from {$contactInfo['name']} ({$contactInfo['email']})";
+
+        ActivityLogger::log(
+            $logAction,
+            $contactInfo['name'] ?? 'Unknown',
+            $id,
+            $logDetails
+        );
+    }
 
     ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,

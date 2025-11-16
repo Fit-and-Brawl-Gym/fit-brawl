@@ -3,6 +3,10 @@ require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -60,9 +64,25 @@ switch ($action) {
 
         $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
         if ($id > 0) {
+            // Get feedback details before deletion for logging
+            $infoStmt = $conn->prepare("SELECT u.username, f.message FROM feedback f LEFT JOIN users u ON f.user_id = u.id WHERE f.id = ?");
+            $infoStmt->bind_param('i', $id);
+            $infoStmt->execute();
+            $feedbackInfo = $infoStmt->get_result()->fetch_assoc();
+            $infoStmt->close();
+
             $stmt = $conn->prepare("DELETE FROM feedback WHERE id=?");
             $stmt->bind_param('i', $id);
             if ($stmt->execute()) {
+                // Log admin action
+                if ($feedbackInfo) {
+                    ActivityLogger::log(
+                        'feedback_delete',
+                        $feedbackInfo['username'] ?? 'Unknown',
+                        $id,
+                        "Deleted feedback from {$feedbackInfo['username']}: " . substr($feedbackInfo['message'] ?? '', 0, 100)
+                    );
+                }
                 ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Feedback deleted'], 200);
             } else {
                 ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Delete failed'], 500);

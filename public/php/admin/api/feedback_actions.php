@@ -6,6 +6,10 @@ require_once '../../../../includes/db_connect.php';
 require_once '../../../../includes/csrf_protection.php';
 require_once '../../../../includes/api_rate_limiter.php';
 require_once '../../../../includes/api_security_middleware.php';
+require_once '../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -103,6 +107,24 @@ switch ($action) {
         $stmt->bind_param("ii", $isVisible, $id);
 
         if ($stmt->execute()) {
+            // Get feedback details for logging
+            $infoStmt = $conn->prepare("SELECT u.username, f.message FROM feedback f LEFT JOIN users u ON f.user_id = u.id WHERE f.id = ?");
+            $infoStmt->bind_param("i", $id);
+            $infoStmt->execute();
+            $feedbackInfo = $infoStmt->get_result()->fetch_assoc();
+            $infoStmt->close();
+
+            // Log admin action
+            if ($feedbackInfo) {
+                $visibility = $isVisible ? 'visible' : 'hidden';
+                ActivityLogger::log(
+                    'feedback_visibility',
+                    $feedbackInfo['username'] ?? 'Unknown',
+                    $id,
+                    "Set feedback visibility to {$visibility} for feedback from {$feedbackInfo['username']}"
+                );
+            }
+
             // Success even if no rows changed (already had that visibility value)
             ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Visibility updated'], 200);
         } else {
@@ -123,6 +145,23 @@ switch ($action) {
 
         if ($stmt->execute()) {
             if ($stmt->affected_rows > 0) {
+                // Get feedback details before deletion for logging
+                $infoStmt = $conn->prepare("SELECT u.username, f.message FROM feedback f LEFT JOIN users u ON f.user_id = u.id WHERE f.$primaryKey = ?");
+                $infoStmt->bind_param("i", $id);
+                $infoStmt->execute();
+                $feedbackInfo = $infoStmt->get_result()->fetch_assoc();
+                $infoStmt->close();
+
+                // Log admin action
+                if ($feedbackInfo) {
+                    ActivityLogger::log(
+                        'feedback_delete',
+                        $feedbackInfo['username'] ?? 'Unknown',
+                        $id,
+                        "Deleted feedback from {$feedbackInfo['username']}: " . substr($feedbackInfo['message'] ?? '', 0, 100)
+                    );
+                }
+
                 ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'message' => 'Feedback deleted'], 200);
             } else {
                 ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => "No rows deleted for $primaryKey = $id"], 404);
