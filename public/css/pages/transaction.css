@@ -16,17 +16,15 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to right,
-            rgba(0, 47, 63, 0.50) 0%,
-            rgba(0, 47, 63, 0.40) 50%,
-            rgba(0, 47, 63, 0.30) 100%);
+    background: var(--color-bg-dark);
     z-index: -10;
     pointer-events: none;
+    opacity: 0.9;
 }
 
 .transaction-page {
     min-height: 100vh;
-    padding: var(--spacing-20) var(--spacing-8) var(--spacing-16);
+    padding: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;

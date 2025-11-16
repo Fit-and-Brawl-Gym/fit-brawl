@@ -130,8 +130,9 @@ require_once __DIR__ . '/../../includes/header.php';
                     <span class="price">630 PHP</span>
                     <span class="service">Training: MMA</span>
                 </a>
+                <a href="membership.php" class="view-all-btn">View All Plans</a>
+
             </div>
-            <a href="membership.php" class="view-all-btn">View All Plans</a>
         </div>
     </div>
 </main>

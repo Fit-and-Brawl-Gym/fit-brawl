@@ -218,5 +218,3 @@ require_once '../../../includes/trainer_header.php';
 </main>
 
 <script src="<?= PUBLIC_PATH ?>/js/user-profile.js"></script>
-
-<?php require_once '../../../includes/trainer_footer.php'; ?>
