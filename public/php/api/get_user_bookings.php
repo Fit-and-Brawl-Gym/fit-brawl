@@ -25,14 +25,11 @@ try {
             ur.session_time,
             ur.class_type,
             ur.booking_date,
+            ur.start_time,
+            ur.end_time,
             ur.booking_status,
             ur.booked_at,
             ur.cancelled_at,
-            CASE
-                WHEN ur.session_time = 'Morning' THEN '7-11 AM'
-                WHEN ur.session_time = 'Afternoon' THEN '1-5 PM'
-                WHEN ur.session_time = 'Evening' THEN '6-10 PM'
-            END AS session_hours,
             CASE
                 WHEN ur.booking_date < CURDATE() THEN 'past'
                 WHEN ur.booking_date = CURDATE() THEN 'today'
@@ -89,7 +86,8 @@ try {
             'date_formatted' => date('F j, Y', strtotime($row['booking_date'])),
             'day_of_week' => date('l', strtotime($row['booking_date'])),
             'session_time' => $row['session_time'],
-            'session_hours' => $row['session_hours'],
+            'start_time' => $row['start_time'],
+            'end_time' => $row['end_time'],
             'status' => $session_status,
             'session_status' => $session_status,
             'booked_at' => $row['booked_at'],
@@ -100,26 +98,63 @@ try {
     }
     $stmt->close();
 
-    // Calculate weekly bookings (current week: Monday to Sunday)
-    // Get the start of the week (Monday)
-    $current_day_of_week = date('N'); // 1 (Monday) to 7 (Sunday)
-    $days_since_monday = $current_day_of_week - 1;
-    $week_start = date('Y-m-d', strtotime("-{$days_since_monday} days"));
-    $week_end = date('Y-m-d', strtotime($week_start . ' +6 days'));
-
-    $weekly_stmt = $conn->prepare("
-        SELECT COUNT(*) as booking_count
-        FROM user_reservations
-        WHERE user_id = ?
-        AND booking_date BETWEEN ? AND ?
-        AND booking_status IN ('confirmed', 'completed')
-    ");
-    $weekly_stmt->bind_param("sss", $user_id, $week_start, $week_end);
-    $weekly_stmt->execute();
-    $weekly_result = $weekly_stmt->get_result();
-    $weekly_row = $weekly_result->fetch_assoc();
-    $weekly_count = (int) $weekly_row['booking_count'];
-    $weekly_stmt->close();
+    // Calculate weekly hours usage (Sunday to Saturday)
+    $week_start = new DateTime();
+    $week_start->modify('Sunday this week')->setTime(0, 0, 0);
+    $week_end = clone $week_start;
+    $week_end->modify('+6 days')->setTime(23, 59, 59);
+    
+    // Get user's membership plan weekly limit
+    $membership_query = "SELECT m.weekly_hours_limit, m.plan_name
+                         FROM user_memberships um
+                         JOIN memberships m ON um.plan_id = m.id
+                         WHERE um.user_id = ?
+                         AND um.membership_status = 'active'
+                         AND DATE_ADD(um.end_date, INTERVAL 3 DAY) >= CURDATE()
+                         ORDER BY um.end_date DESC
+                         LIMIT 1";
+    
+    $mem_stmt = $conn->prepare($membership_query);
+    $mem_stmt->bind_param('s', $user_id);
+    $mem_stmt->execute();
+    $mem_result = $mem_stmt->get_result();
+    $membership = $mem_result->fetch_assoc();
+    $mem_stmt->close();
+    
+    $weekly_hours_limit = $membership ? (int)$membership['weekly_hours_limit'] : 48;
+    $plan_name = $membership ? $membership['plan_name'] : 'Unknown';
+    
+    $week_query = "SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes
+                   FROM user_reservations
+                   WHERE user_id = ?
+                   AND start_time >= ?
+                   AND start_time <= ?
+                   AND booking_status IN ('confirmed', 'completed')
+                   AND start_time IS NOT NULL
+                   AND end_time IS NOT NULL";
+    
+    $week_stmt = $conn->prepare($week_query);
+    $week_start_str = $week_start->format('Y-m-d H:i:s');
+    $week_end_str = $week_end->format('Y-m-d H:i:s');
+    $week_stmt->bind_param('sss', $user_id, $week_start_str, $week_end_str);
+    $week_stmt->execute();
+    $week_result = $week_stmt->get_result();
+    $week_row = $week_result->fetch_assoc();
+    $week_stmt->close();
+    
+    $total_minutes = (int)($week_row['total_minutes'] ?? 0);
+    $limit_minutes = $weekly_hours_limit * 60;
+    $remaining_minutes = max(0, $limit_minutes - $total_minutes);
+    
+    $weekly_usage = [
+        'total_minutes' => $total_minutes,
+        'limit_hours' => $weekly_hours_limit,
+        'limit_minutes' => $limit_minutes,
+        'remaining_minutes' => $remaining_minutes,
+        'plan_name' => $plan_name,
+        'week_start' => $week_start->format('M j'),
+        'week_end' => $week_end->format('M j')
+    ];
 
     // Group bookings by period
     $grouped = [
@@ -144,14 +179,12 @@ try {
             'today' => array_values($grouped['today']),
             'past' => array_values($grouped['past'])
         ],
+        'weekly_usage' => $weekly_usage,
         'summary' => [
             'total' => count($bookings),
             'upcoming' => count($grouped['upcoming']),
             'today' => count($grouped['today']),
-            'past' => count($grouped['past']),
-            'weekly_count' => $weekly_count,
-            'weekly_limit' => 12,
-            'weekly_remaining' => max(0, 12 - $weekly_count)
+            'past' => count($grouped['past'])
         ],
         'debug' => $debug
     ]);

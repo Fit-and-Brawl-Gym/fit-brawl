@@ -1,8 +1,22 @@
 <?php
+/**
+ * Cancel Booking API
+ * Allows users to cancel their bookings at any time (no time restrictions)
+ * 
+ * Request: POST
+ * Parameters:
+ *   - booking_id: int (required) - ID of the booking to cancel
+ * 
+ * Response: JSON
+ *   - success: boolean
+ *   - message: string
+ *   - details: object with cancelled booking information
+ */
+
 session_start();
 require_once '../../../includes/db_connect.php';
-require_once '../../../includes/booking_validator.php';
 require_once '../../../includes/activity_logger.php';
+require_once '../../../includes/timezone_helper.php';
 
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -21,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $user_id = $_SESSION['user_id'];
+$user_role = $_SESSION['role'] ?? 'member';
 $booking_id = isset($_POST['booking_id']) ? intval($_POST['booking_id']) : 0;
 
 if (!$booking_id) {
@@ -29,23 +44,10 @@ if (!$booking_id) {
 }
 
 try {
-    // Initialize validator and activity logger
-    $validator = new BookingValidator($conn);
+    // Initialize activity logger
     ActivityLogger::init($conn);
 
-    // Validate cancellation (must be >24 hours before session)
-    $validation = $validator->validateCancellation($booking_id, $user_id);
-
-    if (!$validation['valid']) {
-        echo json_encode([
-            'success' => false,
-            'message' => $validation['message'],
-            'hours_remaining' => $validation['hours_remaining'] ?? null
-        ]);
-        exit;
-    }
-
-    // Get booking details before cancellation
+    // Get booking details before cancellation (supports both time-based and legacy formats)
     $stmt = $conn->prepare("
         SELECT
             ur.user_id,
@@ -53,14 +55,18 @@ try {
             ur.session_time,
             ur.class_type,
             ur.booking_date,
+            ur.start_time,
+            ur.end_time,
+            ur.booking_status,
             t.name AS trainer_name,
-            u.username
+            u.username,
+            u.name AS user_name
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
         JOIN users u ON ur.user_id = u.id
-        WHERE ur.id = ? AND ur.user_id = ?
+        WHERE ur.id = ?
     ");
-    $stmt->bind_param("is", $booking_id, $user_id);
+    $stmt->bind_param("i", $booking_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -72,6 +78,18 @@ try {
     $booking = $result->fetch_assoc();
     $stmt->close();
 
+    // Check if booking belongs to user (unless admin/trainer)
+    if (!in_array($user_role, ['admin', 'trainer']) && $booking['user_id'] != $user_id) {
+        echo json_encode(['success' => false, 'message' => 'Unauthorized to cancel this booking']);
+        exit;
+    }
+
+    // Check if booking can be cancelled (only pending/confirmed bookings)
+    if (!in_array($booking['booking_status'], ['pending', 'confirmed'])) {
+        echo json_encode(['success' => false, 'message' => "Cannot cancel {$booking['booking_status']} booking"]);
+        exit;
+    }
+
     // Start transaction
     $conn->begin_transaction();
 
@@ -80,10 +98,11 @@ try {
         $update_stmt = $conn->prepare("
             UPDATE user_reservations
             SET booking_status = 'cancelled',
-                cancelled_at = NOW()
-            WHERE id = ? AND user_id = ?
+                cancelled_at = NOW(),
+                updated_at = NOW()
+            WHERE id = ?
         ");
-        $update_stmt->bind_param("is", $booking_id, $user_id);
+        $update_stmt->bind_param("i", $booking_id);
 
         if (!$update_stmt->execute()) {
             throw new Exception('Failed to cancel booking');
@@ -94,10 +113,28 @@ try {
         // Commit transaction
         $conn->commit();
 
+        // Determine booking time display (time-based vs legacy)
+        if ($booking['start_time'] && $booking['end_time']) {
+            // Time-based booking
+            $start_dt = TimezoneHelper::create($booking['start_time']);
+            $end_dt = TimezoneHelper::create($booking['end_time']);
+            $time_display = $start_dt->format('M d, Y g:i A') . ' - ' . $end_dt->format('g:i A');
+            $date_display = $start_dt->format('F j, Y');
+            $time_range = $start_dt->format('g:i A') . ' - ' . $end_dt->format('g:i A');
+        } else {
+            // Legacy booking
+            $session_hours = $booking['session_time'] === 'Morning' ? '7-11 AM' :
+                ($booking['session_time'] === 'Afternoon' ? '1-5 PM' : '6-10 PM');
+            $time_display = $booking['booking_date'] . ' (' . $booking['session_time'] . ': ' . $session_hours . ')';
+            $date_display = date('F j, Y', strtotime($booking['booking_date']));
+            $time_range = $session_hours;
+        }
+
         // Log activity
-        $session_hours = $booking['session_time'] === 'Morning' ? '7-11 AM' :
-            ($booking['session_time'] === 'Afternoon' ? '1-5 PM' : '6-10 PM');
-        $log_details = "Cancelled {$booking['class_type']} session with {$booking['trainer_name']} on {$booking['booking_date']} ({$booking['session_time']}: {$session_hours})";
+        $log_details = "Cancelled {$booking['class_type']} session with {$booking['trainer_name']} on {$time_display}";
+        if ($user_role === 'admin' && $booking['user_id'] != $user_id) {
+            $log_details = "Admin cancelled booking for {$booking['user_name']}: " . $log_details;
+        }
         ActivityLogger::log('session_cancelled', $booking['username'], $booking_id, $log_details);
 
         echo json_encode([
@@ -105,10 +142,11 @@ try {
             'message' => 'Booking cancelled successfully',
             'details' => [
                 'booking_id' => $booking_id,
+                'user_name' => $booking['user_name'],
                 'trainer' => $booking['trainer_name'],
                 'class' => $booking['class_type'],
-                'date' => date('F j, Y', strtotime($booking['booking_date'])),
-                'session' => $booking['session_time']
+                'date' => $date_display,
+                'time' => $time_range
             ]
         ]);
 
@@ -118,7 +156,7 @@ try {
     }
 
 } catch (Exception $e) {
-    error_log("Cancellation error for user $user_id: " . $e->getMessage());
+    error_log("Cancellation error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'An error occurred while cancelling your booking. Please try again.'

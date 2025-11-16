@@ -971,6 +971,7 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 2px;
     margin: 0 0 var(--spacing-3);
+    margin-top: var(--spacing-8);
 }
 
 .comparison-subtitle {

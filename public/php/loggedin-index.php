@@ -325,7 +325,18 @@ $sessionHours = [
                                     <h4><?= htmlspecialchars($booking['class_type']) ?></h4>
                                     <p class="booking-details">
                                         <span><i class="fas fa-clock"></i>
-                                            <?= htmlspecialchars($booking['session_time']) ?></span>
+                                            <?php 
+                                            // Check if time-based booking
+                                            if (!empty($booking['start_time']) && !empty($booking['end_time'])) {
+                                                $startTime = new DateTime($booking['start_time']);
+                                                $endTime = new DateTime($booking['end_time']);
+                                                echo $startTime->format('g:i A') . ' - ' . $endTime->format('g:i A');
+                                            } else {
+                                                // Legacy session-based
+                                                echo htmlspecialchars($booking['session_time']);
+                                            }
+                                            ?>
+                                        </span>
                                         <span><i class="fas fa-user"></i>
                                             <?= htmlspecialchars($booking['trainer_name']) ?></span>
                                     </p>
@@ -350,15 +361,60 @@ $sessionHours = [
                 <div class="card-body">
                     <div class="progress-stats">
                         <div class="progress-number">
-                            <span class="big-number"><?= $weeklyBookings ?></span>
-                            <span class="small-text">/ 12 sessions</span>
+                            <?php 
+                            // Get user's membership weekly limit
+                            $limit_query = "SELECT m.weekly_hours_limit
+                                           FROM user_memberships um
+                                           JOIN memberships m ON um.plan_id = m.id
+                                           WHERE um.user_id = ?
+                                           AND um.membership_status = 'active'
+                                           AND DATE_ADD(um.end_date, INTERVAL 3 DAY) >= CURDATE()
+                                           ORDER BY um.end_date DESC
+                                           LIMIT 1";
+                            $limit_stmt = $conn->prepare($limit_query);
+                            $limit_stmt->bind_param('s', $user_id);
+                            $limit_stmt->execute();
+                            $limit_result = $limit_stmt->get_result();
+                            $limit_row = $limit_result->fetch_assoc();
+                            $limit_stmt->close();
+                            $weeklyHourLimit = $limit_row ? (int)$limit_row['weekly_hours_limit'] : 48;
+                            
+                            // Calculate hours used from weeklyBookings duration
+                            $weekStart = new DateTime();
+                            $weekStart->modify('Sunday this week')->setTime(0, 0, 0);
+                            $weekEnd = clone $weekStart;
+                            $weekEnd->modify('+6 days')->setTime(23, 59, 59);
+                            
+                            $hours_query = "SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes
+                                           FROM user_reservations
+                                           WHERE user_id = ?
+                                           AND start_time >= ?
+                                           AND start_time <= ?
+                                           AND booking_status IN ('confirmed', 'completed')
+                                           AND start_time IS NOT NULL
+                                           AND end_time IS NOT NULL";
+                            $hours_stmt = $conn->prepare($hours_query);
+                            $weekStartStr = $weekStart->format('Y-m-d H:i:s');
+                            $weekEndStr = $weekEnd->format('Y-m-d H:i:s');
+                            $hours_stmt->bind_param('sss', $user_id, $weekStartStr, $weekEndStr);
+                            $hours_stmt->execute();
+                            $hours_result = $hours_stmt->get_result();
+                            $hours_row = $hours_result->fetch_assoc();
+                            $hours_stmt->close();
+                            
+                            $totalMinutes = (int)($hours_row['total_minutes'] ?? 0);
+                            $hoursUsed = floor($totalMinutes / 60);
+                            $minutesUsed = $totalMinutes % 60;
+                            $displayUsed = $minutesUsed > 0 ? "{$hoursUsed}h {$minutesUsed}m" : "{$hoursUsed}h";
+                            ?>
+                            <span class="big-number"><?= $displayUsed ?></span>
+                            <span class="small-text">/ <?= $weeklyHourLimit ?>h this week</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar">
                                 <div class="progress-fill"
-                                    style="width: <?= min(100, ($weeklyBookings / 12) * 100) ?>%"></div>
+                                    style="width: <?= min(100, ($totalMinutes / ($weeklyHourLimit * 60)) * 100) ?>%"></div>
                             </div>
-                            <p class="progress-label"><?= 12 - $weeklyBookings ?> sessions remaining this week</p>
                         </div>
                     </div>
                     <?php if ($weeklyBookings > 0): ?>

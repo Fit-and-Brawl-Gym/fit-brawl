@@ -190,6 +190,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="plan-price">2,200 PHP <span>/MONTH</span></div>
                         <div class="plan-savings">(Save 1,400 PHP)</div>
                         <ul class="plan-features">
+                            <li><strong>24 Hours Training/Week</strong></li>
                             <li>Gym Equipment Access with Face Recognition</li>
                             <li>Shower Access</li>
                             <li>Locker Access</li>
@@ -203,6 +204,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="plan-price">11,500 PHP <span>/MONTH</span></div>
                         <div class="plan-savings">(Save 3,500 PHP)</div>
                         <ul class="plan-features">
+                            <li><strong>36 Hours Training/Week</strong></li>
                             <li>Muay Thai Training with Professional Coaches</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
@@ -220,6 +222,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             <div class="price-main">14,500 PHP <span>/MONTH</span></div>
                         </div>
                         <ul class="plan-features">
+                            <li><strong>48 Hours Training/Week</strong></li>
                             <li>Boxing Training with Professional Coaches</li>
                             <li>MMA Training with Professional Coaches</li>
                             <li>Boxing and MMA Area Access</li>
@@ -237,6 +240,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="plan-price">7,000 PHP <span>/MONTH</span></div>
                         <div class="plan-savings">(Save 3,500 PHP)</div>
                         <ul class="plan-features">
+                            <li><strong>36 Hours Training/Week</strong></li>
                             <li>Boxing Training with Professional Coaches</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
@@ -252,6 +256,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="plan-price">13,500 PHP <span>/MONTH</span></div>
                         <div class="plan-savings">(Save 4,500 PHP)</div>
                         <ul class="plan-features">
+                            <li><strong>36 Hours Training/Week</strong></li>
                             <li>MMA Training with Professional Coaches</li>
                             <li>MMA Area Access</li>
                             <li>Free Orientation and Fitness Assessment</li>
@@ -329,6 +334,19 @@ require_once __DIR__ . '/../../includes/header.php';
                             </tr>
                         </thead>
                         <tbody>
+                            <!-- Weekly Training Hours -->
+                            <tr>
+                                <td class="feature-name">
+                                    <i class="fas fa-clock feature-icon"></i>
+                                    Weekly Training Hours
+                                </td>
+                                <td class="feature-value"><strong>24 hrs</strong></td>
+                                <td class="feature-value"><strong>36 hrs</strong></td>
+                                <td class="feature-value"><strong>48 hrs</strong></td>
+                                <td class="feature-value"><strong>36 hrs</strong></td>
+                                <td class="feature-value"><strong>36 hrs</strong></td>
+                            </tr>
+
                             <!-- Gym Access -->
                             <tr>
                                 <td class="feature-name">
