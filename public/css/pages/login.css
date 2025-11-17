@@ -63,28 +63,37 @@
 .login-modal {
     flex: 1; /* Match hero content flex */
     max-width: 500px;
-    background: rgba(255, 255, 255, 0.98);
+    background: linear-gradient(135deg, rgba(255, 206, 0, 0.08) 0%, rgba(0, 47, 63, 0.7) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 206, 0, 0.2);
     border-radius: var(--radius-2xl);
     padding: var(--spacing-6);
     position: relative;
-    box-shadow: var(--shadow-2xl);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 60px rgba(255, 206, 0, 0.1);
 }
 
 .modal-header h2 {
-    background: var(--color-primary);
-    color: var(--color-white);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 30, 40, 0.8) 100%);
+    color: var(--color-accent);
     text-align: center;
-    padding: var(--spacing-4);
+    padding: var(--spacing-5) var(--spacing-6);
     margin: calc(var(--spacing-6) * -1) calc(var(--spacing-6) * -1) var(--spacing-6);
     border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-semibold);
+    border-bottom: 2px solid rgba(255, 206, 0, 0.3);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
     font-family: var(--font-family-display);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(255, 206, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .login-form h3 {
     text-align: center;
-    color: var(--color-text-dark);
+    color: var(--color-white);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
     margin-bottom: var(--spacing-8);
@@ -98,28 +107,169 @@
     margin-bottom: var(--spacing-6);
 }
 
+/* Prevent input-group styling when it's also a password-group */
+.input-group.password-group {
+    position: relative;
+    margin-bottom: 0;
+}
+
 .input-group i {
     position: absolute;
     left: var(--spacing-4);
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-text-muted);
+    color: rgba(255, 255, 255, 0.5);
     font-size: var(--font-size-lg);
+    z-index: 2;
 }
 
+/* Eye toggle icon - lighter color for visibility on teal background */
+.input-group.password-input-group .eye-toggle,
+.input-group.password-input-group .eye-toggle.fa-eye,
+.input-group.password-input-group .eye-toggle.fa-eye-slash {
+    position: absolute;
+    right: var(--spacing-4);
+    left: auto !important;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+    z-index: 10;
+    pointer-events: auto;
+    opacity: 1 !important;
+    visibility: visible !important;
+    font-size: var(--font-size-lg);
+    display: inline-block !important;
+    width: auto;
+    height: auto;
+    text-align: center;
+    line-height: 1;
+}
+
+.input-group.password-input-group .eye-toggle:hover {
+    color: var(--color-accent);
+}
+
+/* Force override any default input styles */
+.login-modal .input-group input,
+.input-group input[type="text"],
+.input-group input[type="email"],
 .input-group input {
     width: 100%;
     padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) 50px;
-    border: 2px solid #ddd;
+    border: 2px solid rgba(255, 206, 0, 0.3) !important;
     border-radius: var(--radius-2xl);
     font-size: var(--font-size-base);
-    background: var(--color-text-light);
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--color-white) !important;
+    backdrop-filter: blur(10px);
     transition: var(--transition-base);
+    -webkit-appearance: none;
+    appearance: none;
 }
 
+/* Don't apply input-group input styling to password-group inputs */
+.password-group input {
+    padding: var(--spacing-3) var(--spacing-4) !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.login-modal .input-group input:focus,
+.input-group input[type="text"]:focus,
+.input-group input[type="email"]:focus,
 .input-group input:focus {
     outline: none;
+    border-color: var(--color-accent) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 0 0 4px rgba(255, 206, 0, 0.1);
+}
+
+/* Password group doesn't need the box-shadow */
+.password-group input:focus {
+    box-shadow: none !important;
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Override browser autofill styles */
+.login-modal .input-group input:-webkit-autofill,
+.login-modal .input-group input:-webkit-autofill:hover,
+.login-modal .input-group input:-webkit-autofill:focus,
+.login-modal .input-group input:-webkit-autofill:active,
+.input-group input:-webkit-autofill,
+.input-group input:-webkit-autofill:hover,
+.input-group input:-webkit-autofill:focus,
+.input-group input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--color-white) !important;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 20px 20px rgba(255, 255, 255, 0.08) !important;
+    border: 2px solid rgba(255, 206, 0, 0.3) !important;
+}
+
+/* Password group with icon wrapper */
+.password-group {
+    display: flex;
+    align-items: center;
+    border: 2px solid rgba(255, 206, 0, 0.3);
+    border-radius: var(--radius-2xl);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transition: var(--transition-base);
+    margin-bottom: var(--spacing-6);
+}
+
+.password-group:focus-within {
     border-color: var(--color-accent);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 4px rgba(255, 206, 0, 0.1);
+}
+
+.password-group .icon-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-3) var(--spacing-4);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.password-group .icon-left i {
+    position: static;
+    transform: none;
+}
+
+.password-group input {
+    flex: 1;
+    padding: var(--spacing-3) var(--spacing-4) !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--color-white);
+    font-size: var(--font-size-base);
+    box-shadow: none !important;
+}
+
+.password-group input:focus {
+    outline: none;
+}
+
+.password-group input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.password-group input:-webkit-autofill,
+.password-group input:-webkit-autofill:hover,
+.password-group input:-webkit-autofill:focus,
+.password-group input:-webkit-autofill:active {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: var(--color-white) !important;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 .form-options {
@@ -134,7 +284,7 @@
     display: flex;
     align-items: center; /* Center align for proper alignment */
     cursor: pointer;
-    color: var(--color-text-dark);
+    color: rgba(255, 255, 255, 0.9);
     line-height: 1.4;
     gap: var(--spacing-2);
 }
@@ -148,7 +298,7 @@
 }
 
 .forgot-password {
-    color: var(--color-text-muted);
+    color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
 }
 
@@ -182,14 +332,14 @@
 
 .signup-link {
     text-align: center;
-    color: var(--color-text-muted);
+    color: rgba(255, 255, 255, 0.7);
     font-size: var(--font-size-sm);
     font-style: italic;
     margin: 0;
 }
 
 .signup-link a {
-    color: var(--color-text-dark);
+    color: var(--color-white);
     text-decoration: underline;
     font-weight: var(--font-weight-semibold);
 }
