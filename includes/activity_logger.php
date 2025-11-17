@@ -50,7 +50,7 @@ class ActivityLogger
                 return false;
             }
 
-            $stmt->bind_param("isssis", $adminId, $adminName, $actionType, $targetUser, $targetId, $details);
+            $stmt->bind_param("ssssis", $adminId, $adminName, $actionType, $targetUser, $targetId, $details);
             $result = $stmt->execute();
 
             if ($result) {
