@@ -302,7 +302,7 @@ if (!isset($ogImage)) {
                     </div>
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
-                        <a href="logout.php">Logout</a>
+                        <a href="<?= PUBLIC_PATH ?>/php/logout.php">Logout</a>
                     </div>
                 </div>
             <?php else: ?>
