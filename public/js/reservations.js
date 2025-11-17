@@ -638,42 +638,47 @@ document.addEventListener('DOMContentLoaded', function () {
                     </td>
                     <td class="booking-actions-cell">
                         ${(() => {
-                    if (isOngoing) {
-                        return `
-                            <div class="booking-status-badge ongoing-badge">
-                                <i class="fas fa-play-circle"></i>
-                                <span>Ongoing Session</span>
-                            </div>
-                        `;
-                    } else if (booking.status === 'cancelled') {
-                        return `
-                            <div class="booking-status-badge cancelled-badge">
-                                <i class="fas fa-times-circle"></i>
-                                <span>Cancelled</span>
-                            </div>
-                        `;
-                    } else if (canActuallyCancelNow) {
-                        return `
-                            <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
-                        `;
-                    } else if (isWithinCancellationWindow) {
-                        return `
-                            <div class="booking-status-badge warning-badge" title="Cannot cancel within 12 hours of session start">
-                                <i class="fas fa-lock"></i>
-                                <span>Cannot Cancel</span>
-                            </div>
-                        `;
-                    } else {
-                        return `
-                            <div class="booking-status-badge completed-badge">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Completed</span>
-                            </div>
-                        `;
-                    }
-                })()}
+                            if (isOngoing) {
+                                return `
+                                    <div class="booking-status-badge ongoing-badge">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Ongoing Session</span>
+                                    </div>
+                                `;
+                            } else if (booking.status === 'cancelled') {
+                                return `
+                                    <div class="booking-status-badge cancelled-badge">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>Cancelled</span>
+                                    </div>
+                                `;
+                            } else if (canActuallyCancelNow) {
+                                return `
+                                    <div class="booking-action-buttons">
+                                        <button class="btn-reschedule-booking" onclick="openRescheduleModal(${booking.id}, this)">
+                                            <i class="fas fa-calendar-check"></i> Reschedule
+                                        </button>
+                                        <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                `;
+                            } else if (isWithinCancellationWindow) {
+                                return `
+                                    <div class="booking-status-badge warning-badge" title="Cannot cancel within 12 hours of session start">
+                                        <i class="fas fa-lock"></i>
+                                        <span>Cannot Modify</span>
+                                    </div>
+                                `;
+                            } else {
+                                return `
+                                    <div class="booking-status-badge completed-badge">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Completed</span>
+                                    </div>
+                                `;
+                            }
+                        })()}
                     </td>
                 </tr>
             `;

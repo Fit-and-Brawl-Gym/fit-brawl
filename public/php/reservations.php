@@ -75,8 +75,9 @@ $additionalCSS = [
 $additionalJS = [
     'https://cdn.jsdelivr.net/npm/flatpickr',
     '../js/time-selection-modern-v2.js?v=' . time(),
-    '../js/reservations.js?v=' . time() . mt_rand()
-];
+    '../js/resheduling.js?v=' . time(),  // ← LOAD THIS FIRST
+    '../js/reservations.js?v=' . time() . mt_rand()  // ← LOAD THIS SECOND
+]; 
 
 require_once __DIR__ . '/../../includes/header.php';
 ?>
@@ -637,8 +638,271 @@ require_once __DIR__ . '/../../includes/header.php';
             </div>
         <?php endif; ?>
     </div>
-</main>
 
+</main>
+<!-- Reschedule Booking Modal -->
+<div id="rescheduleModal" class="reschedule-modal" style="display: none;">
+    <div class="reschedule-modal-content">
+
+        <!-- Header -->
+        <div class="modal-header">
+            <h2>Reschedule Booking</h2>
+            <button class="close-modal" onclick="closeRescheduleModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+<!-- Current Booking (Always Visible) -->
+            <div class="original-booking-info">
+                <h3>Current Booking</h3>
+
+                <div class="booking-detail">
+                    <span class="label">Date & Time:</span>
+                    <span class="value" id="originalDateTime">-</span>
+                </div>
+
+                <div class="booking-detail">
+                    <span class="label">Trainer:</span>
+                    <span class="value" id="originalTrainer">-</span>
+                </div>
+
+                <div class="booking-detail">
+                    <span class="label">Class Type:</span>
+                    <span class="value" id="originalClass">-</span>
+                </div>
+
+                <div class="booking-detail">
+                    <span class="label">Duration:</span>
+                    <span class="value" id="originalDuration">-</span>
+                </div>
+            </div>
+            <!-- Reschedule Form (Hidden after time selection) -->
+            <form id="rescheduleForm" class="reschedule-form">
+  <input type="hidden" id="rescheduleBookingId" name="booking_id">
+    <input type="hidden" id="rescheduleSelectedDate" name="new_date">
+    <input type="hidden" id="rescheduleSelectedTime" name="new_time">
+                <!-- New Date -->
+                <div class="form-group">
+                    <label for="rescheduleDate">
+                        <i class="fas fa-calendar"></i> Select New Date
+                    </label>
+                    <input type="date" id="rescheduleDate"  onclick="this.showPicker()" required>
+                </div>
+
+                <!-- Class Type -->
+                <div class="form-group">
+                    <label for="rescheduleClass">
+                        <i class="fas fa-dumbbell"></i> Class Type
+                    </label>
+                    <select id="rescheduleClass" required>
+                        <option value="">Choose a class...</option>
+                    </select>
+                </div>
+
+                <!-- Trainer Selection Grid -->
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-user"></i> Select Trainer
+                    </label>
+                    <input type="hidden" id="rescheduleTrainerInput">
+                    <div class="trainers-grid" id="rescheduleTrainersGrid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Time Selection -->
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-hourglass-start"></i>
+                        Select Time Slot
+                    </label>
+
+                    <!-- Availability Banner -->
+                    <div id="rescheduleAvailabilityBanner" class="availability-banner" style="display: none;">
+                        <div class="banner-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Loading trainer availability...</span>
+                        </div>
+                    </div>
+
+                    <!-- Time Selection Layout (Two Column) -->
+                    <div id="rescheduleTimeSelectionLayout" class="time-selection-layout" style="display: none;">
+                        
+                        <!-- Left Column: Time Pickers -->
+                        <div class="time-pickers-column">
+                            <h3 class="section-title">
+                                <i class="fas fa-clock"></i>
+                                Select Your Training Time
+                            </h3>
+
+                            <!-- Start Time -->
+                            <div class="time-slot-selector">
+                                <label class="time-picker-label">
+                                    <i class="fas fa-play-circle"></i>
+                                    Start Time
+                                </label>
+                                <select class="time-select-dropdown" id="rescheduleStartTimeSelect">
+                                    <option value="">Select start time</option>
+                                </select>
+                                <small class="time-picker-hint">Select when you want to begin</small>
+                            </div>
+
+                            <!-- End Time -->
+                            <div class="time-slot-selector">
+                                <label class="time-picker-label">
+                                    <i class="fas fa-stop-circle"></i>
+                                    End Time
+                                </label>
+                                <select class="time-select-dropdown" id="rescheduleEndTimeSelect" disabled>
+                                    <option value="">Select start time first</option>
+                                </select>
+                                <small class="time-picker-hint">Select when you want to finish</small>
+                            </div>
+
+                            <!-- Duration Display -->
+                            <div class="duration-display" id="rescheduleDurationDisplay" style="display: none;">
+                                <div class="duration-icon">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="duration-info">
+                                    <span class="duration-label">Total Duration</span>
+                                    <span class="duration-value" id="rescheduleDurationValue">0 minutes</span>
+                                </div>
+                            </div>
+
+                            <!-- Weekly Usage Info -->
+                            <div class="weekly-usage-info" id="rescheduleWeeklyUsageInfo" style="display: none;">
+                                <i class="fas fa-chart-line"></i>
+                                <span id="rescheduleWeeklyUsageText">Loading...</span>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Availability Sidebar -->
+                        <div class="availability-sidebar">
+                            <h3 class="sidebar-title">
+                                <i class="fas fa-calendar-alt"></i>
+                                Trainer Availability
+                            </h3>
+                            <div class="availability-timeline" id="rescheduleAvailabilityTimeline">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reschedule Reason (ALWAYS VISIBLE) -->
+                    <div class="form-group reason-section">
+                        <label for="rescheduleReason">
+                            <i class="fas fa-comment"></i> Reason for Rescheduling (Optional)
+                        </label>
+                        <textarea id="rescheduleReason" rows="3" placeholder="Tell us why you're rescheduling..."></textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeRescheduleModal()">
+                             Cancel
+                        </button>
+
+                    </div>
+                </div>
+            </form>
+
+            <!-- Time Summary with Current vs New Booking Comparison (Shown after time selection) -->
+            <div class="reschedule-time-summary" id="rescheduleTimeSummary" style="display: none;">
+                <div class="reschedule-summary-comparison">
+                    <!-- Current Booking (Left) -->
+                    <div class="reschedule-summary-column current-booking">
+                        <div class="reschedule-summary-header">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Current Booking</span>
+                        </div>
+                        <div class="reschedule-booking-card">
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Date & Time:</span>
+                                <span class="reschedule-booking-value" id="currentBookingDateTime">-</span>
+                            </div>
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Trainer:</span>
+                                <span class="reschedule-booking-value" id="currentBookingTrainer">-</span>
+                            </div>
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Class Type:</span>
+                                <span class="reschedule-booking-value" id="currentBookingClass">-</span>
+                            </div>
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Duration:</span>
+                                <span class="reschedule-booking-value" id="currentBookingDuration">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arrow Divider -->
+                    <div class="reschedule-summary-divider">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+
+                    <!-- New Selected Booking (Right) -->
+                    <div class="reschedule-summary-column new-booking">
+                        <div class="reschedule-summary-header">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>New Booking</span>
+                        </div>
+                        <div class="reschedule-booking-card">
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Date & Time:</span>
+                                <span class="reschedule-booking-value" id="newBookingDateTime">-</span>
+                            </div>
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Trainer:</span>
+                                <span class="reschedule-booking-value" id="newBookingTrainer">-</span>
+                            </div>
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Class Type:</span>
+                                <span class="reschedule-booking-value" id="newBookingClass">-</span>
+                            </div>
+                            <div class="reschedule-booking-row">
+                                <span class="reschedule-booking-label">Duration:</span>
+                                <span class="reschedule-booking-value" id="newBookingDuration">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <!-- Reschedule Reason (ALWAYS VISIBLE) -->
+                    <div class="form-group reason-section">
+                        <label for="rescheduleReason">
+                            <i class="fas fa-comment"></i> Reason for Rescheduling (Optional)
+                        </label>
+                        <textarea id="rescheduleReason" rows="3" placeholder="Tell us why you're rescheduling..."></textarea>
+                    </div>
+                    <br>
+
+                <!-- Summary Info -->
+                <div class="reschedule-summary-info">
+                    <div class="reschedule-info-row">
+                        <i class="fas fa-calendar-week"></i>
+                        <span>Weekly usage: <strong id="rescheduleWeeklyUsageDisplay">-</strong></span>
+                    </div>
+                </div>
+
+                <!-- Summary Buttons (Cancel button always visible) -->
+                <div class="reschedule-summary-actions">
+                    <button type="button" class="btn-cancel" onclick="closeRescheduleModal()">
+                         Cancel
+                    </button>
+                    <button type="button" class="reschedule-btn-change" id="rescheduleChangeTime">
+                        <i class="fas fa-edit"></i>
+                        Change Selection
+                    </button>
+                    <button type="submit" class="btn-confirm" form="rescheduleForm">
+                        <i class="fas fa-check"></i> Confirm Reschedule
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 <script>
     // Pass membership expiration data to JavaScript
     <?php if ($activeMembership): ?>
