@@ -668,7 +668,7 @@ function createUserRow(user) {
         <tr>
             <td>
                 <div class="user-cell">
-                    <img src="${user.avatar || 'default-avatar.png'}" alt="${escapeHtml(user.full_name)}" class="user-avatar">
+                    <img src="${user.avatar || 'images/account-icon.svg'}" alt="${escapeHtml(user.full_name)}" class="user-avatar">
                     <div class="user-info">
                         <div class="user-name">${escapeHtml(user.full_name)}</div>
                         <div class="user-username">@${escapeHtml(user.username)}</div>

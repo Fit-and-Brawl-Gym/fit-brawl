@@ -3,10 +3,6 @@
  * Security Event Alerter
  * Sends alerts for critical and high-severity security events
  */
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 class SecurityAlerter {
     private static $conn = null;
     private static $alertThresholds = [
@@ -148,6 +144,9 @@ class SecurityAlerter {
         try {
             require_once __DIR__ . '/mail_config.php';
             require_once __DIR__ . '/email_template.php';
+
+            use PHPMailer\PHPMailer\PHPMailer;
+            use PHPMailer\PHPMailer\Exception;
 
             $mail = new PHPMailer(true);
 

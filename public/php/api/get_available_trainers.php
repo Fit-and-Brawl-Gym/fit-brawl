@@ -286,6 +286,18 @@ try {
 
 } catch (Exception $e) {
     error_log("Error in get_available_trainers.php: " . $e->getMessage());
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'An error occurred while fetching available trainers'
+    ], 500);
+} finally {
+        'available_count' => count(array_filter($trainers, fn($t) => $t['status'] === 'available')),
+        'weekly_limit_hours' => $weekly_limit_hours,
+        'current_week_usage_minutes' => $current_week_usage_minutes
+    ]);
+
+} catch (Exception $e) {
+    error_log("Error in get_available_trainers.php: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
@@ -294,7 +306,7 @@ try {
         'debug_file' => $e->getFile(),
         'debug_line' => $e->getLine()
     ]);
-} finally {
+} finally{
     if (isset($conn)) {
         $conn->close();
     }

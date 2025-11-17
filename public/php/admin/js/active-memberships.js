@@ -188,7 +188,7 @@ function createMembershipRow(membership) {
     const paymentBadge = getPaymentBadge(membership);
     const avatar = membership.profile_image 
         ? `<img src="${IMAGES_PATH}/${membership.profile_image}" alt="${membership.name}" class="user-avatar">`
-        : `<div class="user-avatar-placeholder">${getInitials(membership.name)}</div>`;
+        : `<img src="${IMAGES_PATH}/account-icon.svg" alt="${membership.name}" class="user-avatar">`;
 
     return `
         <tr>

@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $avatar = null;
     if ($removeAvatar) {
         // Set to default avatar
-        $avatar = 'default-avatar.png';
+        $avatar = 'account-icon-white.svg';
     } elseif (!empty($_FILES['avatar']['name'])) {
         // Use absolute path to uploads directory
         $targetDir = __DIR__ . "/../../uploads/avatars/";

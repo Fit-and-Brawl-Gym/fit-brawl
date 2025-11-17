@@ -94,7 +94,7 @@ if (isset($_SESSION['role'])) {
 // Avatar for header
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
+    $hasCustomAvatar = $_SESSION['avatar'] !== 'account-icon.svg' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar
         ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar'])
         : "../../images/account-icon.svg";

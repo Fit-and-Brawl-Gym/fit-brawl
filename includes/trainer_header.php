@@ -28,7 +28,7 @@ if (!isset($avatarSrc)) {
     $avatarSrc = IMAGES_PATH . '/account-icon.svg';
     $hasCustomAvatar = false;
     if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-        $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
+        $hasCustomAvatar = $_SESSION['avatar'] !== 'account-icon.svg' && !empty($_SESSION['avatar']);
         $avatarSrc = $hasCustomAvatar ? UPLOADS_PATH . "/avatars/" . htmlspecialchars($_SESSION['avatar']) : IMAGES_PATH . '/account-icon.svg';
     }
 } else {
@@ -123,7 +123,7 @@ if (class_exists('SessionManager')) {
             <?php else: ?>
                 <!-- Not logged-in -->
                 <a href="<?= PUBLIC_PATH ?>/php/login.php" class="account-link">
-                    <img src="<?= IMAGES_PATH ?>/account-icon-white.svg" alt="Account" class="account-icon default-icon">
+                    <img src="<?= IMAGES_PATH ?>/account-icon.svg" alt="Account" class="account-icon default-icon">
                 </a>
             <?php endif; ?>
         </div>

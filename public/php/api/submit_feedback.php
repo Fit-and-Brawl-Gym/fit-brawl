@@ -79,7 +79,7 @@ try {
             $email = $_SESSION['email'] ?? '';
 
             // Determine avatar
-            if (empty($row['avatar']) || $row['avatar'] === 'default-avatar.png') {
+            if (empty($row['avatar']) || $row['avatar'] === 'account-icon.svg') {
                 $avatar = "../../images/account-icon.svg";
             } else {
                 $avatar = $row['avatar'];

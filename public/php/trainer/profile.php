@@ -74,7 +74,7 @@ if (isset($_SESSION['email'])) {
 }
 
 // Determine avatar source
-$hasCustomAvatar = $user['avatar'] !== 'default-avatar.png' && !empty($user['avatar']);
+$hasCustomAvatar = $user['avatar'] !== 'account-icon-white.svg' && !empty($user['avatar']);
 $avatarSrc = $hasCustomAvatar ? "../../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../../images/account-icon.svg";
 
 // Set variables for header

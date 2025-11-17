@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         copy('../../../uploads/trainers/' . $photo, $avatars_dir . $photo);
                     } else {
-                        $avatar = 'default-avatar.png';
+                        $avatar = 'account-icon.svg';
                     }
 
                     // Create user account FIRST with generated user ID

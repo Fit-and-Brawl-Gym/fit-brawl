@@ -29,7 +29,7 @@ if ($hasVisibleColumn) {
                 f.user_id,
                 COALESCE(f.username, 'Anonymous') as username,
                 COALESCE(f.email, '') as email,
-                COALESCE(f.avatar, 'default-avatar.png') as avatar,
+                COALESCE(f.avatar, 'account-icon.svg') as avatar,
                 f.message,
                 f.date,
                 f.is_visible
@@ -43,7 +43,7 @@ if ($hasVisibleColumn) {
                 f.user_id,
                 COALESCE(f.username, 'Anonymous') as username,
                 COALESCE(f.email, '') as email,
-                COALESCE(f.avatar, 'default-avatar.png') as avatar,
+                COALESCE(f.avatar, 'account-icon.svg') as avatar,
                 f.message,
                 f.date,
                 f.is_visible

@@ -135,7 +135,7 @@ $classType = isset($serviceToClassMap[$service]) ? $serviceToClassMap[$service] 
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
+    $hasCustomAvatar = $_SESSION['avatar'] !== 'account-icon-white.svg' && !empty($_SESSION['avatar']);
     $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
 }
 
