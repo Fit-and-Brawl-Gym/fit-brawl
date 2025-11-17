@@ -6,6 +6,10 @@ require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/password_policy.php';
 require_once __DIR__ . '/../../includes/password_history.php';
 require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
+require_once __DIR__ . '/../../includes/activity_logger.php'; // Add activity logging
+
+// Initialize activity logger
+ActivityLogger::init($conn);
 
 // Check if user is logged in
 if (!isset($_SESSION['email'])) {
@@ -160,6 +164,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($passwordChanged && $passwordHistoryContext) {
             PasswordHistory::record($conn, $passwordHistoryContext['user_id'], $passwordHistoryContext['hash']);
         }
+        
+        // Build change log for activity logging
+        $changes = [];
+        if ($username !== $_SESSION['name']) {
+            $changes[] = "username changed from '{$_SESSION['name']}' to '$username'";
+        }
+        if ($email !== $currentEmail) {
+            $changes[] = "email changed from '$currentEmail' to '$email'";
+        }
+        if ($avatar) {
+            $changes[] = "profile picture updated";
+        }
+        if ($removeAvatar) {
+            $changes[] = "profile picture removed";
+        }
+        if ($passwordChanged) {
+            $changes[] = "password changed";
+        }
+        
+        // Log the activity
+        if (!empty($changes)) {
+            $role = $_SESSION['role'] ?? 'user';
+            $changeLog = implode(", ", $changes);
+            ActivityLogger::log(
+                'profile_updated', 
+                $username, 
+                $_SESSION['id'] ?? null, 
+                "User '$username' ($role) updated profile: $changeLog"
+            );
+        }
+        
         // Update session
         $_SESSION['name'] = $username;
         $_SESSION['email'] = $email;
