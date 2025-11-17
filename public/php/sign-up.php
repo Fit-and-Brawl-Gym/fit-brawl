@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../includes/password_policy.php';
 require_once __DIR__ . '/../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/rate_limiter.php';
+require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
@@ -111,12 +112,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
         // Generate formatted user ID based on role (with FOR UPDATE lock)
         $userId = generateFormattedUserId($conn, $role);
 
+        // Encrypt email before storing
+        $encryptedEmail = Encryption::encrypt($email);
+
         // Insert user with verification token and formatted ID
         $insertQuery = $conn->prepare("
-            INSERT INTO users (id, username, email, password, role, verification_token, is_verified)
-            VALUES (?, ?, ?, ?, ?, ?, 0)
+            INSERT INTO users (id, username, email, email_encrypted, password, role, verification_token, is_verified)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0)
         ");
-        $insertQuery->bind_param("ssssss", $userId, $name, $email, $password, $role, $verificationToken);
+        $insertQuery->bind_param("sssssss", $userId, $name, $email, $encryptedEmail, $password, $role, $verificationToken);
 
         if (!$insertQuery->execute()) {
             throw new Exception("Failed to insert user");

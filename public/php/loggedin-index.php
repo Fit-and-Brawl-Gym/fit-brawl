@@ -325,7 +325,7 @@ $sessionHours = [
                                     <h4><?= htmlspecialchars($booking['class_type']) ?></h4>
                                     <p class="booking-details">
                                         <span><i class="fas fa-clock"></i>
-                                            <?php 
+                                            <?php
                                             // Check if time-based booking
                                             if (!empty($booking['start_time']) && !empty($booking['end_time'])) {
                                                 $startTime = new DateTime($booking['start_time']);
@@ -361,7 +361,7 @@ $sessionHours = [
                 <div class="card-body">
                     <div class="progress-stats">
                         <div class="progress-number">
-                            <?php 
+                            <?php
                             // Get user's membership weekly limit
                             $limit_query = "SELECT m.weekly_hours_limit
                                            FROM user_memberships um
@@ -378,13 +378,13 @@ $sessionHours = [
                             $limit_row = $limit_result->fetch_assoc();
                             $limit_stmt->close();
                             $weeklyHourLimit = $limit_row ? (int)$limit_row['weekly_hours_limit'] : 48;
-                            
+
                             // Calculate hours used from weeklyBookings duration
                             $weekStart = new DateTime();
                             $weekStart->modify('Sunday this week')->setTime(0, 0, 0);
                             $weekEnd = clone $weekStart;
                             $weekEnd->modify('+6 days')->setTime(23, 59, 59);
-                            
+
                             $hours_query = "SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes
                                            FROM user_reservations
                                            WHERE user_id = ?
@@ -401,7 +401,7 @@ $sessionHours = [
                             $hours_result = $hours_stmt->get_result();
                             $hours_row = $hours_result->fetch_assoc();
                             $hours_stmt->close();
-                            
+
                             $totalMinutes = (int)($hours_row['total_minutes'] ?? 0);
                             $hoursUsed = floor($totalMinutes / 60);
                             $minutesUsed = $totalMinutes % 60;

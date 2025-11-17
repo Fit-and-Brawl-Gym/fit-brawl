@@ -268,8 +268,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             weeklyTextEl.textContent = `This week's limit reached (${limitHours}h max)`;
                             weeklyTextEl.style.color = '#ff9800';
                         } else {
-                            const remainingText = remainingMins > 0 ? 
-                                `${remainingHours}h ${remainingMins}m remaining this week` : 
+                            const remainingText = remainingMins > 0 ?
+                                `${remainingHours}h ${remainingMins}m remaining this week` :
                                 `${remainingHours}h remaining this week`;
                             weeklyTextEl.textContent = remainingText;
                             weeklyTextEl.style.color = '';
@@ -465,27 +465,27 @@ document.addEventListener('DOMContentLoaded', function () {
         // Sort upcoming by date ascending (earliest first), then by session time
         // Use DSA if available for better performance
         const useDSA = window.DSA || window.DSAUtils;
-        
+
         if (useDSA) {
             // DSA-POWERED SORTING (Optimized comparison functions)
             const sessionOrder = { 'Morning': 1, 'Afternoon': 2, 'Evening': 3 };
             const sessionOrderReverse = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
-            
+
             upcomingList.sort(useDSA.compareByMultiple([
                 (a, b) => new Date(a.date) - new Date(b.date),
                 (a, b) => sessionOrder[a.session_time] - sessionOrder[b.session_time]
             ]));
-            
+
             pastList.sort(useDSA.compareByMultiple([
                 (a, b) => new Date(b.date) - new Date(a.date),
                 (a, b) => sessionOrderReverse[a.session_time] - sessionOrderReverse[b.session_time]
             ]));
-            
+
             cancelledList.sort(useDSA.compareByMultiple([
                 (a, b) => new Date(b.date) - new Date(a.date),
                 (a, b) => sessionOrderReverse[a.session_time] - sessionOrderReverse[b.session_time]
             ]));
-            
+
             console.log('✅ DSA sorting applied to bookings');
         } else {
             // FALLBACK: Basic sorting
@@ -530,44 +530,44 @@ document.addEventListener('DOMContentLoaded', function () {
      * ========================================================================
      * APPLY BOOKINGS FILTER - DSA-OPTIMIZED FILTERING
      * ========================================================================
-     * 
+     *
      * WHAT THIS DOES:
      * Filters the bookings list based on selected class type (Boxing, Muay Thai,
      * MMA, Gym, or All). This runs every time the user changes the dropdown.
-     * 
+     *
      * WHY DSA OPTIMIZATION MATTERS HERE:
      * Users often have 50-100+ bookings (some with many past bookings).
      * Filtering needs to be instant because it happens on dropdown change.
-     * 
+     *
      * PERFORMANCE COMPARISON:
      * Basic approach (without DSA):
      *   - 3 separate .filter() calls (upcoming, past, cancelled)
      *   - Each scans the entire array
      *   - 100 bookings × 3 arrays = 300 item checks
      *   - Takes ~10-15ms
-     * 
+     *
      * DSA approach (with FilterBuilder):
      *   - Build filter condition once
      *   - Apply to each array with optimized algorithm
      *   - More efficient condition checking
      *   - Takes ~3-5ms (2-3x faster!)
-     * 
+     *
      * HOW IT WORKS:
      * 1. Check if DSA library is loaded
      * 2. If yes → Use FilterBuilder (fast path)
      * 3. If no → Use basic .filter() (fallback path)
      * 4. Either way, bookings get filtered correctly
-     * 
+     *
      * DSA PATH:
      * - Create FilterBuilder with condition
      * - Apply to each booking array (upcoming, past, cancelled)
      * - FilterBuilder does a single optimized pass
-     * 
+     *
      * FALLBACK PATH:
      * - Use traditional .filter() method
      * - Still works correctly, just a bit slower
      * - Ensures app works even if DSA fails to load
-     * 
+     *
      * WHY WE NEED FALLBACK:
      * If DSA library fails to load (network issue, browser compatibility,
      * etc.), the app still works. This is called "progressive enhancement" -
@@ -579,43 +579,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Check if DSA utilities are available
         const useDSA = window.DSA || window.DSAUtils;
-        
+
         let filteredUpcoming, filteredPast, filteredCancelled;
-        
+
         if (useDSA) {
             // ═══════════════════════════════════════════════════════════════
             // DSA-POWERED FILTERING (Optimized with FilterBuilder)
             // ═══════════════════════════════════════════════════════════════
-            
+
             const filterBuilder = new useDSA.FilterBuilder();
-            
+
             // Add filter condition only if user selected a specific class type
             if (filterValue !== 'all') {
                 // This creates a filter that checks: booking.class_type === filterValue
                 filterBuilder.where('class_type', '===', filterValue);
             }
-            
+
             // Apply the filter to each booking category
             // If 'all' is selected, skip filtering (show everything)
-            filteredUpcoming = filterValue === 'all' ? 
-                allBookingsData.upcoming : 
+            filteredUpcoming = filterValue === 'all' ?
+                allBookingsData.upcoming :
                 filterBuilder.apply(allBookingsData.upcoming);
-                
-            filteredPast = filterValue === 'all' ? 
-                allBookingsData.past : 
+
+            filteredPast = filterValue === 'all' ?
+                allBookingsData.past :
                 filterBuilder.apply(allBookingsData.past);
-                
-            filteredCancelled = filterValue === 'all' ? 
-                allBookingsData.cancelled : 
+
+            filteredCancelled = filterValue === 'all' ?
+                allBookingsData.cancelled :
                 filterBuilder.apply(allBookingsData.cancelled);
-                
+
             console.log('✅ DSA FilterBuilder applied to bookings (optimized path)');
         } else {
             // ═══════════════════════════════════════════════════════════════
             // FALLBACK: Basic JavaScript .filter() method
             // ═══════════════════════════════════════════════════════════════
             // This works the same way functionally, just not as optimized
-            
+
             filteredUpcoming = allBookingsData.upcoming;
             if (filterValue !== 'all') {
                 filteredUpcoming = allBookingsData.upcoming.filter(booking =>
@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     booking.class_type === filterValue
                 );
             }
-            
+
             console.log('⚠️ Using fallback filtering (DSA not available)');
         }
 
@@ -685,7 +685,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // If booking is today, check if session hasn't ended yet
             if (bookingDate.getTime() === today.getTime()) {
                 const currentHour = now.getHours();
-                
+
                 // Check if time-based booking
                 if (booking.start_time && booking.end_time) {
                     const endTime = new Date(booking.end_time);
@@ -725,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (upcomingDateEl) {
             let dateText = '';
             let timeInfo = '';
-            
+
             // Check if time-based booking
             if (nextBooking.start_time && nextBooking.end_time) {
                 const startTime = new Date(nextBooking.start_time);
@@ -737,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Legacy session-based
                 timeInfo = nextBooking.session_time;
             }
-            
+
             if (isToday) {
                 dateText = `Today, ${timeInfo}`;
             } else if (isTomorrow) {
@@ -761,7 +761,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const durationMinutes = (endTime - startTime) / 1000 / 60;
                 const hours = Math.floor(durationMinutes / 60);
                 const minutes = durationMinutes % 60;
-                const durationDisplay = hours > 0 
+                const durationDisplay = hours > 0
                     ? (minutes > 0 ? `${hours}h ${minutes}m session` : `${hours}h session`)
                     : `${minutes}m session`;
                 trainerSubtextEl.textContent = durationDisplay;
@@ -792,7 +792,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${bookings.map(booking => {
             // Determine if this booking can actually be cancelled based on current time and 12-hour policy
             const bookingDate = new Date(booking.date + 'T00:00:00');
-            
+
             // Calculate hours until session starts
             let hoursUntilSession = 0;
             if (booking.start_time) {
@@ -851,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Format time display - check if time-based or legacy
             let timeDisplay = '';
             let durationDisplay = '';
-            
+
             if (booking.start_time && booking.end_time) {
                 // Time-based booking
                 const startTime = new Date(booking.start_time);
@@ -859,12 +859,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const startFormatted = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                 const endFormatted = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                 timeDisplay = `${startFormatted} - ${endFormatted}`;
-                
+
                 // Calculate duration
                 const durationMinutes = (endTime - startTime) / 1000 / 60;
                 const hours = Math.floor(durationMinutes / 60);
                 const minutes = durationMinutes % 60;
-                durationDisplay = hours > 0 
+                durationDisplay = hours > 0
                     ? (minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`)
                     : `${minutes}m`;
             } else {
@@ -1147,12 +1147,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (dayCount % 7 === 0) {
                 // Check if all days in this week are past or inactive
                 const allPastOrInactive = weekDays.every(d => d.isPast || d.isInactive);
-                
+
                 // Only add the week if not all days are past/inactive
                 if (!allPastOrInactive) {
                     html += weekDays.map(d => d.html).join('');
                 }
-                
+
                 weekDays = [];
             }
         }
@@ -1611,16 +1611,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }) : '-';
             summaryDateEl.innerHTML = dateText;
         }
-        
+
         // Convert 24-hour format to 12-hour format for display
         const formattedStartTime = startTime ? formatTimeTo12Hour(startTime) : '';
         const formattedEndTime = endTime ? formatTimeTo12Hour(endTime) : '';
         const timeText = (formattedStartTime && formattedEndTime) ? `${formattedStartTime} - ${formattedEndTime}` : '-';
-        
+
         if (summaryTimeEl) {
             summaryTimeEl.innerHTML = timeText;
         }
-        
+
         const durationMinutes = duration || 0;
         let durationText = '';
         if (durationMinutes === 0) {
@@ -1639,7 +1639,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (summaryDurationEl) {
             summaryDurationEl.innerHTML = durationText;
         }
-        
+
         if (summaryClassEl) {
             summaryClassEl.innerHTML = classType || '-';
         }
@@ -1647,7 +1647,7 @@ document.addEventListener('DOMContentLoaded', function () {
             summaryTrainerEl.innerHTML = trainerName || '-';
         }
     }
-    
+
     // Helper function to format 24-hour time to 12-hour
     function formatTimeTo12Hour(time24) {
         if (!time24) return '';
@@ -1656,7 +1656,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const displayHours = hours % 12 || 12;
         return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
     }
-    
+
     // Helper function to format 24-hour time to 12-hour
     function formatTimeTo12Hour(time24) {
         if (!time24) return '';
@@ -1813,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', function () {
             defaultMinute: 0,
             onChange: function(selectedDates, dateStr, instance) {
                 bookingState.startTime = dateStr;
-                
+
                 // Update end time picker minimum
                 if (endTimePicker) {
                     const startDate = selectedDates[0];
@@ -1823,7 +1823,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         endTimePicker.set('minTime', formatTime(minEndDate));
                     }
                 }
-                
+
                 updateDurationDisplay();
                 updateNextButton();
             }
@@ -1901,7 +1901,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
                 bookingState.availableSlots = data.available_slots || [];
                 bookingState.trainerShiftInfo = data.shift_info;
-                
+
                 displayShiftInfo(data.shift_info);
                 displayAvailableSlots(data.available_slots);
             } else {
@@ -1964,7 +1964,7 @@ document.addEventListener('DOMContentLoaded', function () {
             slotBtn.className = 'slot-button';
             slotBtn.textContent = slot.formatted_time;
             slotBtn.title = `${slot.start_time} - ${slot.end_time}`;
-            
+
             slotBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 selectTimeSlot(slot);
@@ -2068,8 +2068,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const nextBtn = currentStepEl.querySelector('.btn-next');
         if (nextBtn) {
             nextBtn.disabled = !canProceedFromStep(bookingState.currentStep);
-            console.log('Next button state updated:', { 
-                step: bookingState.currentStep, 
+            console.log('Next button state updated:', {
+                step: bookingState.currentStep,
                 disabled: nextBtn.disabled,
                 startTime: bookingState.startTime,
                 endTime: bookingState.endTime,
@@ -2077,7 +2077,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
-    
+
     // Expose updateNextButton globally for time-selection module
     window.updateNextButton = updateNextButton;
 
@@ -2148,7 +2148,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function nextStep() {
         if (bookingState.currentStep < 5) {
             bookingState.currentStep++;
-            
+
             // Load trainers when entering step 3 (trainer selection)
             if (bookingState.currentStep === 3) {
                 loadTrainers();
@@ -2207,8 +2207,8 @@ document.addEventListener('DOMContentLoaded', function () {
             case 1: return bookingState.date !== null;
             case 2: return bookingState.classType !== null;
             case 3: return bookingState.trainerId !== null;
-            case 4: 
-                return bookingState.startTime !== null && 
+            case 4:
+                return bookingState.startTime !== null &&
                        bookingState.endTime !== null &&
                        bookingState.duration !== null;
             case 5: return true;
@@ -2264,7 +2264,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (timeStr.match(/^\d{2}:\d{2}$/)) {
             return `${dateStr} ${timeStr}:00`;
         }
-        
+
         // Handle 12-hour format (h:mm AM/PM) - legacy format
         const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
         if (!match) return null;

@@ -41,7 +41,7 @@ $currentPage = "error";
             </p>
 
             <div class="error-actions">
-                <a href="<?= PUBLIC_PATH ?>/../index.php" class="btn btn-primary">
+                <a href="<?= PUBLIC_PATH ?>/php/index.php" class="btn btn-primary">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M10 3L3 10L10 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M3 10H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>

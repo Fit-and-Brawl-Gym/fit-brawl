@@ -14,6 +14,7 @@ require_once __DIR__ . '/../../includes/security_headers.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/rate_limiter.php';
 require_once __DIR__ . '/../../includes/mail_config.php';
+require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
 
 // Generate CSP nonces for this request
 CSPNonce::generate();

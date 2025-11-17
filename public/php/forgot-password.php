@@ -2,6 +2,7 @@
 session_start();
 require_once '../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
 
 $alertMessage = null;
 

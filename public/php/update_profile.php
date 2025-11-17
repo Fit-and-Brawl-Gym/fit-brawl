@@ -5,6 +5,7 @@ require_once '../../includes/file_upload_security.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/password_policy.php';
 require_once __DIR__ . '/../../includes/password_history.php';
+require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
 
 // Check if user is logged in
 if (!isset($_SESSION['email'])) {
@@ -134,21 +135,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Encrypt email before updating
+    $encryptedEmail = Encryption::encrypt($email);
+
     // Build update query
     if (!empty($newPassword) && $avatar) {
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE users SET username=?, email=?, password=?, avatar=? WHERE email=?");
-        $stmt->bind_param("sssss", $username, $email, $hashedPassword, $avatar, $currentEmail);
+        $stmt = $conn->prepare("UPDATE users SET username=?, email=?, email_encrypted=?, password=?, avatar=? WHERE email=?");
+        $stmt->bind_param("ssssss", $username, $email, $encryptedEmail, $hashedPassword, $avatar, $currentEmail);
     } elseif (!empty($newPassword)) {
         $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("UPDATE users SET username=?, email=?, password=? WHERE email=?");
-        $stmt->bind_param("ssss", $username, $email, $hashedPassword, $currentEmail);
+        $stmt = $conn->prepare("UPDATE users SET username=?, email=?, email_encrypted=?, password=? WHERE email=?");
+        $stmt->bind_param("sssss", $username, $email, $encryptedEmail, $hashedPassword, $currentEmail);
     } elseif ($avatar) {
-        $stmt = $conn->prepare("UPDATE users SET username=?, email=?, avatar=? WHERE email=?");
-        $stmt->bind_param("ssss", $username, $email, $avatar, $currentEmail);
+        $stmt = $conn->prepare("UPDATE users SET username=?, email=?, email_encrypted=?, avatar=? WHERE email=?");
+        $stmt->bind_param("sssss", $username, $email, $encryptedEmail, $avatar, $currentEmail);
     } else {
-        $stmt = $conn->prepare("UPDATE users SET username=?, email=? WHERE email=?");
-        $stmt->bind_param("sss", $username, $email, $currentEmail);
+        $stmt = $conn->prepare("UPDATE users SET username=?, email=?, email_encrypted=? WHERE email=?");
+        $stmt->bind_param("ssss", $username, $email, $encryptedEmail, $currentEmail);
     }
 
     $passwordChanged = !empty($newPassword);

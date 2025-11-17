@@ -8,6 +8,7 @@ require_once '../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../includes/input_validator.php';
+require_once __DIR__ . '/../../../includes/encryption.php'; // Add encryption support
 
 // Check if file_upload_security exists, if not, skip it
 $uploadSecurityExists = file_exists('../../../includes/file_upload_security.php');
@@ -526,17 +527,28 @@ if ($stmt->execute()) {
     // Attempt to send acknowledgement email to the user
     try {
         // fetch user email and username
-        $userStmt = $conn->prepare("SELECT email, username FROM users WHERE id = ? LIMIT 1");
+        $userStmt = $conn->prepare("SELECT email, email_encrypted, username FROM users WHERE id = ? LIMIT 1");
         if ($userStmt) {
             $userStmt->bind_param('i', $user_id);
             $userStmt->execute();
             $userRow = $userStmt->get_result()->fetch_assoc();
             $userStmt->close();
 
-            if ($userRow && !empty($userRow['email'])) {
-                include_once __DIR__ . '/../../../includes/membership_mailer.php';
-                // Send application acknowledgement (status pending)
-                sendMembershipApplicationEmail($userRow['email'], $userRow['username'] ?? $name, $membership['plan_name'] ?? $plan, 'pending');
+            if ($userRow) {
+                // Decrypt email if encrypted version exists
+                if (!empty($userRow['email_encrypted'])) {
+                    try {
+                        $userRow['email'] = Encryption::decrypt($userRow['email_encrypted']);
+                    } catch (Exception $e) {
+                        // Keep plaintext email if decryption fails
+                    }
+                }
+
+                if (!empty($userRow['email'])) {
+                    include_once __DIR__ . '/../../../includes/membership_mailer.php';
+                    // Send application acknowledgement (status pending)
+                    sendMembershipApplicationEmail($userRow['email'], $userRow['username'] ?? $name, $membership['plan_name'] ?? $plan, 'pending');
+                }
             }
         }
     } catch (Exception $e) {

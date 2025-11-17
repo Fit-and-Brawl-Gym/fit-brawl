@@ -9,6 +9,7 @@ require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 require_once __DIR__ . '/../../../includes/input_validator.php';
+require_once __DIR__ . '/../../../includes/encryption.php'; // Add encryption support
 
 ApiSecurityMiddleware::setSecurityHeaders();
 require_once '../../../includes/mail_config.php';
@@ -269,7 +270,7 @@ try {
     $trainer_name = $trainer_data['name'] ?? 'Unknown';
 
     // Get member (user) info for email
-    $member_stmt = $conn->prepare("SELECT username, email FROM users WHERE id = ?");
+    $member_stmt = $conn->prepare("SELECT username, email, email_encrypted FROM users WHERE id = ?");
     if ($member_stmt === false) {
         throw new Exception('Failed to prepare member query');
     }
@@ -284,6 +285,15 @@ try {
             'success' => false,
             'message' => 'Member not found'
         ], 404);
+    }
+
+    // Decrypt member email if encrypted
+    if (!empty($member_data['email_encrypted'])) {
+        try {
+            $member_data['email'] = Encryption::decrypt($member_data['email_encrypted']);
+        } catch (Exception $e) {
+            // Keep plaintext email if decryption fails
+        }
     }
 
     // Start transaction

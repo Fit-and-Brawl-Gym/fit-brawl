@@ -8,6 +8,7 @@ if (!isset($_SESSION['email'])) {
 }
 
 require_once __DIR__ . '/../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
 
 // Check membership status for header
 require_once __DIR__ . '/../../includes/membership_check.php';
@@ -123,10 +124,21 @@ if (isset($_SESSION['role'])) {
 
 // Fetch user data
 $email = $_SESSION['email'];
-$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+$stmt = $conn->prepare("SELECT *, email_encrypted FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
+
+// Decrypt email for display if encrypted version exists
+if (!empty($user['email_encrypted'])) {
+    try {
+        $user['email_display'] = Encryption::decrypt($user['email_encrypted']);
+    } catch (Exception $e) {
+        $user['email_display'] = $user['email']; // Fallback to plaintext
+    }
+} else {
+    $user['email_display'] = $user['email'];
+}
 
 // TODO: Fetch real membership and activity data from database
 // For now using mock data
@@ -187,7 +199,7 @@ require_once __DIR__ . '/../../includes/header.php';
             </div>
             <div class="profile-info">
                 <h1><?= htmlspecialchars($user['username']) ?></h1>
-                <p class="profile-email"><?= htmlspecialchars($user['email']) ?></p>
+                <p class="profile-email"><?= htmlspecialchars($user['email_display']) ?></p>
                 <div class="profile-actions">
                     <button class="btn-edit-profile" id="toggleEditBtn">
                         <i class="fas fa-edit"></i> Edit Profile
@@ -270,7 +282,7 @@ require_once __DIR__ . '/../../includes/header.php';
                 <!-- Email -->
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>"
+                    <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email_display']) ?>"
                         required>
                 </div>
 
