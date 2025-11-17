@@ -334,7 +334,7 @@ body {
 }
 
 .page-header > *:not(.header-actions) {
-    flex: 1 1 280px;
+    flex: 1 1 50px;
 }
 
 .header-actions,

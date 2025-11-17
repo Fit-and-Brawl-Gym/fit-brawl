@@ -253,7 +253,9 @@ $additionalCSS = [
     PUBLIC_PATH . "/css/pages/login.css?v=" . time()
 ];
 // No need to add hamburger-menu.js - it's already loaded in header.php
-$additionalJS = [];
+$additionalJS = [
+    '../js/password-validation.js'
+];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
@@ -290,17 +292,19 @@ require_once __DIR__ . '/../../includes/header.php';
                     </div>
                 <?php endif; ?>
                 <input type="hidden" id="loginRetryAfter" value="<?= (int)$retryAfterSeconds ?>">
+
                 <div class="input-group">
                     <i class="fas fa-envelope"></i>
                     <input type="text" name="email" placeholder="Username or Email"
                         value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
                 </div>
 
-                <div class="input-group password-group">
-                    <div class="icon-left">
-                        <i class="fas fa-key"></i>
-                    </div>
-                    <input type="password" name="password" id="password" placeholder="Password" required>
+                <div class="input-group password-input-group">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="passwordInput" name="password" placeholder="Password"
+                           autocomplete="current-password" autocapitalize="off" autocorrect="off"
+                           spellcheck="false" data-form-type="other" required>
+                    <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
                 </div>
 
                 <div class="form-options">

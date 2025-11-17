@@ -55,8 +55,8 @@
     flex: 1; /* Match hero content flex */
     max-width: 500px;
     background: linear-gradient(135deg, rgba(255, 206, 0, 0.08) 0%, rgba(0, 47, 63, 0.7) 100%);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 206, 0, 0.2);
     border-radius: var(--radius-2xl);
     padding: var(--spacing-6);
@@ -78,8 +78,8 @@
     text-transform: uppercase;
     letter-spacing: 2px;
     text-shadow: 0 2px 8px rgba(255, 206, 0, 0.3);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
 }
 
 .signup-form h3 {
@@ -418,6 +418,7 @@ text-decoration: none;
     font-size: var(--font-size-base);
     background: rgba(255, 255, 255, 0.08);
     color: var(--color-white);
+    -webkit-backdrop-filter: none;
     backdrop-filter: blur(10px);
     transition: var(--transition-base);
 }
@@ -480,6 +481,7 @@ text-decoration: none;
     font-size: var(--font-size-base);
     background: rgba(255, 255, 255, 0.08) !important;
     color: var(--color-white) !important;
+    -webkit-backdrop-filter: none;
     backdrop-filter: blur(10px);
     transition: var(--transition-base);
     -webkit-appearance: none;

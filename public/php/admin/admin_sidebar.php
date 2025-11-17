@@ -51,12 +51,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fas fa-dumbbell"></i>
             <span>Trainers</span>
         </a>
-        <a href="<?= PUBLIC_PATH ?>/php/admin/trainer-schedules.php" class="<?= $current_page == 'trainer-schedules.php' ? 'active' : '' ?>">
+        <a href="<?= PUBLIC_PATH ?>/php/admin/trainer_availability.php" class="<?= $current_page == 'trainer_availability.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-calendar-xmark"></i>
-            <span>Schedule Blocks</span> </a>
-        <a href="<?= PUBLIC_PATH ?>/php/admin/trainer_schedules.php" class="<?= $current_page == 'trainer-availability.php' ? 'active' : '' ?>">
+            <span>Schedule Availability</span> </a>
+        <a href="<?= PUBLIC_PATH ?>/php/admin/trainer_schedules.php" class="<?= $current_page == 'trainer_schedules.php' ? 'active' : '' ?>">
             <i class="fas fa-calendar-times"></i>
-            <span>Trainer Availability</span>
+            <span>Trainer Schedules</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
             <i class="fas fa-calendar-check"></i>
