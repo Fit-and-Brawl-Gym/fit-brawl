@@ -117,12 +117,12 @@ if (class_exists('SessionManager')) {
                     <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
                     <div class="dropdown-menu">
                         <a href="profile.php">Profile</a>
-                        <a href="../logout.php">Logout</a>
+                        <a href="<?= PUBLIC_PATH ?>/php/logout.php">Logout</a>
                     </div>
                 </div>
             <?php else: ?>
                 <!-- Not logged-in -->
-                <a href="../login.php" class="account-link">
+                <a href="<?= PUBLIC_PATH ?>/php/login.php" class="account-link">
                     <img src="<?= IMAGES_PATH ?>/account-icon-white.svg" alt="Account" class="account-icon default-icon">
                 </a>
             <?php endif; ?>

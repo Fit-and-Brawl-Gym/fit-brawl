@@ -25,18 +25,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <!-- OVERVIEW -->
         <div class="nav-section-title">Overview</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/admin.php" class="<?= $current_page == 'admin.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-home"></i>
+            <i class="fas fa-home"></i>
             <span>Dashboard</span>
         </a>
 
         <!-- MEMBERSHIP MANAGEMENT -->
         <div class="nav-section-title">Membership Management</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/users.php" class="<?= $current_page == 'users.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-id-card"></i>
-            <span>Memberships</span>
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+        </a>
+        <a href="<?= PUBLIC_PATH ?>/php/admin/active-memberships.php" class="<?= $current_page == 'active-memberships.php' ? 'active' : '' ?>">
+            <i class="fas fa-id-card"></i>
+            <span>Active Memberships</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/subscriptions.php" class="<?= $current_page == 'subscriptions.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-credit-card"></i>
+            <i class="fas fa-credit-card"></i>
             <span>Subscriptions</span>
         </a>
 
@@ -44,44 +48,53 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <div class="nav-section-title">Trainers & Schedules</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainers.php"
             class="<?= in_array($current_page, ['trainers.php', 'trainer_add.php', 'trainer_edit.php', 'trainer_view.php']) ? 'active' : '' ?>">
-            <i class="fa-solid fa-dumbbell"></i>
+            <i class="fas fa-dumbbell"></i>
             <span>Trainers</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainer-schedules.php" class="<?= $current_page == 'trainer-schedules.php' ? 'active' : '' ?>">
+<<<<<<< Updated upstream
             <i class="fa-solid fa-calendar-xmark"></i>
+<<<<<<< Updated upstream
             <span>Trainer Schedules</span>
+=======
+            <span>Schedule Blocks</span>
+=======
+            <i class="fas fa-calendar-times"></i>
+            <span>Trainer Schedules</span>
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-calendar-check"></i>
+            <i class="fas fa-calendar-check"></i>
             <span>Reservations</span>
         </a>
 
         <!-- FACILITY MANAGEMENT -->
         <div class="nav-section-title">Facility Management</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/equipment.php" class="<?= $current_page == 'equipment.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-tools"></i>
+            <i class="fas fa-tools"></i>
             <span>Equipment</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/products.php" class="<?= $current_page == 'products.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-shopping-bag"></i>
+            <i class="fas fa-shopping-bag"></i>
             <span>Products</span>
         </a>
 
         <!-- COMMUNICATIONS -->
         <div class="nav-section-title">Communications</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/feedback.php" class="<?= $current_page == 'feedback.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-comment-dots"></i>
+            <i class="fas fa-comment-dots"></i>
             <span>Feedback</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-address-book"></i>
+            <i class="fas fa-address-book"></i>
             <span>Contacts</span>
         </a>
 
         <!-- SYSTEM -->
         <div class="nav-section-title">System</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/activity-log.php" class="<?= $current_page == 'activity-log.php' ? 'active' : '' ?>">
-            <i class="fa-solid fa-history"></i>
+            <i class="fas fa-history"></i>
             <span>Activity Log</span>
         </a>
         <!-- <a href="<?= PUBLIC_PATH ?>/php/admin/system_status.php" class="<?= $current_page == 'system_status.php' ? 'active' : '' ?>">
@@ -91,7 +104,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </nav>
     <div class="sidebar-footer">
         <a href="<?= PUBLIC_PATH ?>/php/logout.php" class="logout-btn">
-            <i class="fa-solid fa-sign-out-alt"></i>
+            <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>
     </div>

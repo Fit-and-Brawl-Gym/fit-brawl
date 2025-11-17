@@ -113,7 +113,9 @@ class SessionTimer {
         if (this.displayInterval) {
             clearInterval(this.displayInterval);
         }
-        window.location.href = 'logout.php';
+        // Use PUBLIC_PATH from global scope (set in header)
+        const logoutPath = window.PUBLIC_PATH ? `${window.PUBLIC_PATH}/php/logout.php` : '/fit-brawl/public/php/logout.php';
+        window.location.href = logoutPath;
     }
 }
 
