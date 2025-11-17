@@ -83,11 +83,12 @@ $additionalJS = [
     '../js/dsa/dsa-utils.js?v=' . time(), // DSA Core Library
     '../js/time-selection-modern-v2.js?v=' . time(),
     '../js/resheduling.js?v=' . time(),  // ← LOAD THIS FIRST
-    '../js/reservations.js?v=' . time() . mt_rand()  // ← LOAD THIS SECOND
-]; 
-    '../js/reservations.js?v=' . time() . mt_rand(),
+    '../js/reservations.js?v=' . time() . mt_rand(),  // ← LOAD THIS SECOND
     '../js/dsa/reservations-dsa-integration.js?v=' . time() // DSA Integration Layer
 ];
+
+// Generate CSRF token for this page
+$pageCsrfToken = CSRFProtection::generateToken();
 
 require_once __DIR__ . '/../../includes/header.php';
 ?>
@@ -743,7 +744,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <!-- Time Selection Layout (Two Column) -->
                     <div id="rescheduleTimeSelectionLayout" class="time-selection-layout" style="display: none;">
-                        
+
                         <!-- Left Column: Time Pickers -->
                         <div class="time-pickers-column">
                             <h3 class="section-title">

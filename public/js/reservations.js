@@ -1706,19 +1706,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
                 return;
             }
+
             // Convert time strings to full datetime
             const startDateTime = convertToDateTime(date, startTime);
             const endDateTime = convertToDateTime(date, endTime);
+
+            // Determine session based on start time
+            const startHour = parseInt(startTime.split(':')[0]);
+            let sessionTime = 'Morning'; // Default
+            if (startHour >= 13 && startHour < 18) {
+                sessionTime = 'Afternoon';
+            } else if (startHour >= 18) {
+                sessionTime = 'Evening';
+            }
 
             const formData = new URLSearchParams();
             formData.append('trainer_id', trainerId);
             formData.append('class_type', classType);
             formData.append('booking_date', date);
-            formData.append('session_time', session);
-            formData.append('csrf_token', csrfToken);
+            formData.append('session_time', sessionTime);
             formData.append('start_time', startDateTime);
             formData.append('end_time', endDateTime);
-            formData.append('csrf_token', getCsrfToken());
+            formData.append('csrf_token', csrfToken);
 
             fetch('api/book_session.php', {
                 method: 'POST',
@@ -1726,12 +1735,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: formData
             })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
+                    // Log response for debugging
+                    console.log('Booking response status:', response.status);
+                    console.log('Booking response headers:', response.headers);
+
+                    // Try to parse as JSON even if not ok
+                    return response.text().then(text => {
+                        console.log('Raw response:', text);
+                        try {
+                            const data = JSON.parse(text);
+                            return { ok: response.ok, status: response.status, data };
+                        } catch (e) {
+                            console.error('Failed to parse JSON:', e);
+                            console.error('Response text:', text);
+                            throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+                        }
+                    });
                 })
-                .then(data => {
+                .then(({ ok, status, data }) => {
+                    console.log('Parsed booking response:', data);
+
                     if (data.success) {
                         dismissRateLimitBanner('booking');
                         console.log('Booking successful, showing toast'); // Debug log
@@ -2288,13 +2311,5 @@ document.addEventListener('DOMContentLoaded', function () {
         return `${dateStr} ${hours24}:${minutes}:00`;
     }
 
-    function getCsrfToken() {
-        // Try to get CSRF token from meta tag or generate a temporary one
-        const metaTag = document.querySelector('meta[name="csrf-token"]');
-        if (metaTag) {
-            return metaTag.getAttribute('content');
-        }
-        // Generate a simple token for now (in production, this should come from server)
-        return 'csrf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    }
+    // getCsrfToken is already defined at line 171 - removed duplicate
 });

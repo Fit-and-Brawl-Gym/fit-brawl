@@ -1,9 +1,19 @@
 <?php
+// Prevent any output before headers
+ob_start();
+
+// Disable error display for API
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 session_start();
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/booking_validator.php';
 require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+
+// Set JSON header immediately
+header('Content-Type: application/json');
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -91,7 +101,7 @@ try {
             ], 400);
         }
     }
-    // Note: Time cutoff validation (30 minutes before end) is now done 
+    // Note: Time cutoff validation (30 minutes before end) is now done
     // in book_session.php with actual selected start/end times
 
     // Get facility capacity info
@@ -143,13 +153,13 @@ try {
     $user_id = $_SESSION['user_id'] ?? null;
     $weekly_limit_hours = 48; // Default
     $current_week_usage_minutes = 0;
-    
+
     if ($user_id) {
         // Get user's membership plan weekly limit
-        $limit_query = "SELECT m.weekly_hours_limit 
+        $limit_query = "SELECT m.weekly_hours_limit
                         FROM user_memberships um
                         JOIN memberships m ON um.plan_id = m.id
-                        WHERE um.user_id = ? 
+                        WHERE um.user_id = ?
                         AND um.membership_status = 'active'
                         ORDER BY um.start_date DESC
                         LIMIT 1";
@@ -161,7 +171,7 @@ try {
             $weekly_limit_hours = (int)$limit_row['weekly_hours_limit'];
         }
         $limit_stmt->close();
-        
+
         // Get current week usage (Sunday to Saturday)
         $usage_query = "SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes
                         FROM user_reservations
@@ -228,12 +238,12 @@ try {
             AND end_time IS NOT NULL
             ORDER BY start_time
         ";
-        
+
         $bookings_stmt = $conn->prepare($bookings_query);
         $bookings_stmt->bind_param("is", $trainer_id, $date);
         $bookings_stmt->execute();
         $bookings_result = $bookings_stmt->get_result();
-        
+
         $available_slots = [];
         while ($booking = $bookings_result->fetch_assoc()) {
             $available_slots[] = [
@@ -281,34 +291,23 @@ try {
         'facility_available' => $facility_available,
         'trainers' => $trainers,
         'trainer_count' => count($trainers),
-        'available_count' => count(array_filter($trainers, fn($t) => $t['status'] === 'available'))
+        'available_count' => count(array_filter($trainers, function($t) { return $t['status'] === 'available'; }))
     ], 200);
 
 } catch (Exception $e) {
     error_log("Error in get_available_trainers.php: " . $e->getMessage());
-    ApiSecurityMiddleware::sendJsonResponse([
-        'success' => false,
-        'message' => 'An error occurred while fetching available trainers'
-    ], 500);
-} finally {
-        'available_count' => count(array_filter($trainers, fn($t) => $t['status'] === 'available')),
-        'weekly_limit_hours' => $weekly_limit_hours,
-        'current_week_usage_minutes' => $current_week_usage_minutes
-    ]);
-
-} catch (Exception $e) {
-    error_log("Error in get_available_trainers.php: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'An error occurred while fetching available trainers',
         'debug_error' => $e->getMessage(),
         'debug_file' => $e->getFile(),
         'debug_line' => $e->getLine()
-    ]);
-} finally{
+    ], 500);
+} finally {
     if (isset($conn)) {
         $conn->close();
     }
+    ob_end_flush();
 }
 ?>

@@ -189,16 +189,6 @@ try {
     }
     $membership_check->close();
 
-    // Run all validations
-    $validation = $validator->validateBooking($user_id, $trainer_id, $class_type, $booking_date, $session_time);
-
-    if (!$validation['valid']) {
-        ApiSecurityMiddleware::sendJsonResponse([
-            'success' => false,
-            'message' => $validation['message'],
-            'failed_check' => $validation['failed_check'] ?? null
-        ], 400);
-    }
     // Run validation based on booking type
     if ($is_time_based) {
         // Time-based booking: validate with start_time and end_time

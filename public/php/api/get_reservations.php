@@ -1,15 +1,21 @@
 <?php
+// Prevent output before headers
+ob_start();
+
+// Disable error display for API
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 session_start();
+
+// Set JSON header immediately
+header('Content-Type: application/json');
+
 require_once '../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
-
-// Don't display errors in JSON API - log them instead
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
 
 // Rate limiting - 60 requests per minute per IP (public endpoint, used frequently)
 $identifier = 'get_reservations:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');

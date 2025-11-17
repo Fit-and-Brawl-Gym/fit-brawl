@@ -296,10 +296,11 @@ require_once __DIR__ . '/../../includes/header.php';
                         value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
                 </div>
 
-                <div class="input-group password-input-group">
-                    <i class="fas fa-key"></i>
+                <div class="input-group password-group">
+                    <div class="icon-left">
+                        <i class="fas fa-key"></i>
+                    </div>
                     <input type="password" name="password" id="password" placeholder="Password" required>
-                    <i class="fas fa-eye eye-toggle" id="togglePassword" aria-hidden="true"></i>
                 </div>
 
                 <div class="form-options">
@@ -361,21 +362,6 @@ require_once __DIR__ . '/../../includes/header.php';
         updateCountdown();
         const timer = setInterval(updateCountdown, 1000);
     })();
-
-    // Password toggle functionality
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-    
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Toggle icon
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-    }
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

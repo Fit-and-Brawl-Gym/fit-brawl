@@ -52,17 +52,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span>Trainers</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainer-schedules.php" class="<?= $current_page == 'trainer-schedules.php' ? 'active' : '' ?>">
-<<<<<<< Updated upstream
             <i class="fa-solid fa-calendar-xmark"></i>
-<<<<<<< Updated upstream
-            <span>Trainer Schedules</span>
-=======
-            <span>Schedule Blocks</span>
-=======
+            <span>Schedule Blocks</span> </a>
+        <a href="<?= PUBLIC_PATH ?>/php/admin/trainer_schedules.php" class="<?= $current_page == 'trainer-availability.php' ? 'active' : '' ?>">
             <i class="fas fa-calendar-times"></i>
-            <span>Trainer Schedules</span>
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+            <span>Trainer Availability</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
             <i class="fas fa-calendar-check"></i>

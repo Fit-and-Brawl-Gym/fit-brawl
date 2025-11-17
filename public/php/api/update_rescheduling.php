@@ -1,9 +1,17 @@
 <?php
-require_once __DIR__ . '/../../../includes/db_connect.php';
+// Prevent output before headers
+ob_start();
+
+// Disable error display for API
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 
 session_start();
 
+// Set JSON header immediately
 header('Content-Type: application/json');
+
+require_once __DIR__ . '/../../../includes/db_connect.php';
 
 if (!isset($_POST['booking_id'])) {
     echo json_encode(['success' => false, 'message' => 'Missing booking ID']);
@@ -20,7 +28,7 @@ $reason = $_POST['reschedule_reason'] ?? null;
 $rescheduled_at = date("Y-m-d H:i:s");
 
 // Update the booking
-$sql = "UPDATE user_reservations SET 
+$sql = "UPDATE user_reservations SET
             booking_date = ?,
             class_type = ?,
             trainer_id = ?,

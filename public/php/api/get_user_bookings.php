@@ -1,5 +1,16 @@
 <?php
+// Prevent output before headers
+ob_start();
+
+// Disable error display for API
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 session_start();
+
+// Set JSON header immediately
+header('Content-Type: application/json');
+
 require_once '../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
@@ -14,8 +25,8 @@ if (!$user) {
 
 $user_id = $user['user_id'];
 
-// Rate limiting - 30 requests per minute (read endpoint)
-ApiSecurityMiddleware::applyRateLimit($conn, 'get_bookings:' . $user_id, 30, 60);
+// Rate limiting - 120 requests per minute (read endpoint, called frequently on page load)
+ApiSecurityMiddleware::applyRateLimit($conn, 'get_bookings:' . $user_id, 120, 60);
 
 try {
     // Get all user bookings
@@ -106,7 +117,7 @@ try {
     $week_start->modify('Sunday this week')->setTime(0, 0, 0);
     $week_end = clone $week_start;
     $week_end->modify('+6 days')->setTime(23, 59, 59);
-    
+
     // Get user's membership plan weekly limit
     $membership_query = "SELECT m.weekly_hours_limit, m.plan_name
                          FROM user_memberships um
@@ -116,17 +127,17 @@ try {
                          AND DATE_ADD(um.end_date, INTERVAL 3 DAY) >= CURDATE()
                          ORDER BY um.end_date DESC
                          LIMIT 1";
-    
+
     $mem_stmt = $conn->prepare($membership_query);
     $mem_stmt->bind_param('s', $user_id);
     $mem_stmt->execute();
     $mem_result = $mem_stmt->get_result();
     $membership = $mem_result->fetch_assoc();
     $mem_stmt->close();
-    
+
     $weekly_hours_limit = $membership ? (int)$membership['weekly_hours_limit'] : 48;
     $plan_name = $membership ? $membership['plan_name'] : 'Unknown';
-    
+
     $week_query = "SELECT SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)) as total_minutes
                    FROM user_reservations
                    WHERE user_id = ?
@@ -135,7 +146,7 @@ try {
                    AND booking_status IN ('confirmed', 'completed')
                    AND start_time IS NOT NULL
                    AND end_time IS NOT NULL";
-    
+
     $week_stmt = $conn->prepare($week_query);
     $week_start_str = $week_start->format('Y-m-d H:i:s');
     $week_end_str = $week_end->format('Y-m-d H:i:s');
@@ -144,11 +155,11 @@ try {
     $week_result = $week_stmt->get_result();
     $week_row = $week_result->fetch_assoc();
     $week_stmt->close();
-    
+
     $total_minutes = (int)($week_row['total_minutes'] ?? 0);
     $limit_minutes = $weekly_hours_limit * 60;
     $remaining_minutes = max(0, $limit_minutes - $total_minutes);
-    
+
     $weekly_usage = [
         'total_minutes' => $total_minutes,
         'limit_hours' => $weekly_hours_limit,
