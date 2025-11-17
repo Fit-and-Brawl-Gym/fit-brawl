@@ -267,7 +267,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="equipment-content">
                 <!-- equipment list -->
                 <div id="equipment-container">
-                    <!-- JS will render equipment cards here -->
+                    <!-- Equipment cards are rendered by JS -->
                 </div>
             </div>
         </div>

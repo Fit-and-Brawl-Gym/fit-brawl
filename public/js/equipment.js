@@ -78,8 +78,24 @@ function renderEquipment(items) {
       `;
     }
 
+    // Build maintenance tooltip content
+    let maintenanceTooltip = '';
+    if (isMaintenance && (item.maintenance_start_date && item.maintenance_end_date || item.maintenance_reason)) {
+      const startFormatted = item.maintenance_start_date ? new Date(item.maintenance_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      const endFormatted = item.maintenance_end_date ? new Date(item.maintenance_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+      maintenanceTooltip = `
+        <div class="maintenance-badge-tooltip">
+          <div class="tooltip-header">Under Maintenance</div>
+          ${(startFormatted && endFormatted) ? `<div class="tooltip-dates"><i class="fas fa-calendar"></i> ${startFormatted} - ${endFormatted}</div>` : ''}
+          ${item.maintenance_reason ? `<div class="tooltip-reason"><i class="fas fa-tools"></i> ${escapeHtml(item.maintenance_reason)}</div>` : ''}
+        </div>
+      `;
+    }
+
     return `
       <div class="equipment-card ${isMaintenance ? 'maintenance-mode' : ''}" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
+        ${isMaintenance ? `<div class="maintenance-badge" tabindex="0"><i class="fas fa-tools"></i>${maintenanceTooltip}</div>` : ''}
         <div class="equipment-image-container">
           ${imageContent}
         </div>
@@ -97,13 +113,32 @@ function renderEquipment(items) {
             </div>
           </div>
 
-          ${maintenanceInfo}
-
           <div class="equipment-desc">${escapeHtml(item.description || 'No description available.')}</div>
         </div>
       </div>
     `;
   }).join('');
+
+  // Add click/tap event for maintenance badge tooltips
+  setTimeout(() => {
+    document.querySelectorAll('.maintenance-badge').forEach(badge => {
+      badge.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const tooltip = this.querySelector('.maintenance-badge-tooltip');
+        if (tooltip) {
+          const isVisible = tooltip.classList.contains('show');
+          document.querySelectorAll('.maintenance-badge-tooltip').forEach(t => t.classList.remove('show'));
+          if (!isVisible) {
+            tooltip.classList.add('show');
+          }
+        }
+      });
+    });
+    // Hide tooltip on click outside
+    document.addEventListener('click', function(e) {
+      document.querySelectorAll('.maintenance-badge-tooltip').forEach(t => t.classList.remove('show'));
+    });
+  }, 100);
 
   renderPagination(totalPages);
 }
@@ -215,52 +250,52 @@ function escapeHtml(unsafe) {
  * ============================================================================
  * APPLY EQUIPMENT FILTERS - DSA-OPTIMIZED FILTERING WITH FUZZY SEARCH
  * ============================================================================
- * 
+ *
  * WHAT THIS DOES:
  * Filters equipment based on:
  *   1. Search text (name, description, category)
  *   2. Status (Available, In Use, Maintenance, Retired)
  *   3. Category chips (Boxing, Muay Thai, MMA, General)
- * 
+ *
  * This runs on every keystroke in the search box (debounced), so it needs
  * to be FAST to feel responsive.
- * 
+ *
  * WHY DSA MAKES A HUGE DIFFERENCE:
- * 
+ *
  * PROBLEM: Gym has 200+ equipment items across 4 categories
- * 
+ *
  * Basic approach:
  *   - Check each item: Does it match category? Check. Status? Check. Search? Check.
  *   - Use .includes() for text matching (strict - "Boxng" won't find "Boxing")
  *   - 200 items × 3 checks = 600 operations
  *   - Takes ~15-20ms
  *   - User typos = no results (frustrating!)
- * 
+ *
  * DSA approach:
  *   - FilterBuilder: Efficiently chains conditions (single pass)
  *   - FuzzySearch: Finds "Boxing" even if user types "Boxng" (typo-tolerant!)
  *   - Optimized algorithms reduce wasted comparisons
  *   - Takes ~5-8ms (2-3x faster!)
  *   - User typos = still finds results (great UX!)
- * 
+ *
  * REAL EXAMPLE:
  * User searches for "boxng gloves" (typo):
  *   Without DSA: 0 results (too strict)
  *   With DSA: Finds "Boxing Gloves" (fuzzy matching!)
- * 
+ *
  * THE THREE-STAGE FILTER PROCESS:
- * 
+ *
  * Stage 1: Category chip filter (if user clicked a category)
  *   Narrows down to one category (e.g., only Boxing equipment)
- * 
+ *
  * Stage 2: Status filter (if user selected a status)
  *   Further narrows by availability (e.g., only Available items)
  *   Uses FilterBuilder for optimized checking
- * 
+ *
  * Stage 3: Search text filter (if user typed something)
  *   Uses FuzzySearch to find matches in name/description/category
  *   Tolerates typos and partial matches
- * 
+ *
  * WHY THIS MATTERS FOR GYM MANAGEMENT:
  * - Staff can quickly find equipment even with typos
  * - Instant filtering feels responsive (important for mobile devices)
@@ -274,27 +309,27 @@ function applyFilters() {
 
   // Check if DSA utilities library is available
   const useDSA = window.DSA || window.DSAUtils;
-  
+
   let filtered;  // Will hold our filtered results
-  
+
   if (useDSA) {
     // ═══════════════════════════════════════════════════════════════════════
     // DSA-POWERED FILTERING (Optimized with FilterBuilder + FuzzySearch)
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     const fuzzySearch = useDSA.FuzzySearch;  // Typo-tolerant search
     const filterBuilder = new useDSA.FilterBuilder();  // Efficient multi-filter
-    
+
     // Stage 1: Add status filter to FilterBuilder (if specific status selected)
     if (status !== 'all' && status !== '') {
       filterBuilder.where('status', '===', status);
     }
-    
+
     // Stage 2: Apply all filters using optimized approach
     filtered = EQUIPMENT_DATA.filter(item => {
       // Helper function: Normalize text (lowercase, trim, single spaces)
       const normalize = str => str.trim().toLowerCase().replace(/\\s+/g, ' ');
-      
+
       // Parse categories (equipment can have multiple categories)
       const categories = item.category ? item.category.split(',').map(c => normalize(c)) : [];
 
@@ -302,13 +337,13 @@ function applyFilters() {
       if (activeCategory) {
         const chipCategory = normalize(activeCategory);
         const chipFirstWord = chipCategory.split(' ')[0];  // e.g., "Boxing" from "Boxing Equipment"
-        
+
         // Check if item belongs to this category
         const hasCategory = categories.some(cat => {
           const catFirstWord = cat.split(' ')[0];
           return catFirstWord === chipFirstWord;  // Match first word (flexible matching)
         });
-        
+
         if (!hasCategory) return false;  // Item not in selected category - exclude it
       }
 
@@ -320,7 +355,7 @@ function applyFilters() {
       if (q) {
         // Build searchable text from name, description, and category
         const hay = (item.name + ' ' + (item.description || '') + ' ' + (item.category || '')).toLowerCase();
-        
+
         // Use fuzzy search - finds matches even with typos!
         // "boxng" will match "boxing", "muy" will match "muay"
         if (!fuzzySearch(q, hay)) return false;  // No match found - exclude
@@ -328,7 +363,7 @@ function applyFilters() {
 
       return true;  // Passed all filters - include this item!
     });
-    
+
     console.log('✅ DSA optimization applied to equipment filtering');
     console.log(`   - FilterBuilder: Status filtering`);
     console.log(`   - FuzzySearch: Typo-tolerant text matching`);
@@ -339,7 +374,7 @@ function applyFilters() {
     // ═══════════════════════════════════════════════════════════════════════
     // Same logic, but uses basic .includes() instead of fuzzy search
     // Works correctly but: slower + no typo tolerance
-    
+
     filtered = EQUIPMENT_DATA.filter(item => {
       const normalize = str => str.trim().toLowerCase().replace(/\\s+/g, ' ');
       const categories = item.category ? item.category.split(',').map(c => normalize(c)) : [];

@@ -298,7 +298,21 @@ if (!isset($ogImage)) {
                 <div class="account-dropdown">
                     <div class="account-info">
                         <span class="username-display"><?= htmlspecialchars($_SESSION['name'] ?? 'User') ?></span>
-                        <img src="<?= $avatarSrc ?>" alt="Account" class="account-icon <?= !$hasCustomAvatar ? 'default-icon' : '' ?>">
+                        <?php
+                        // On all pages except user_profile, always show default if missing or empty
+                        $isProfilePage = (basename($_SERVER['PHP_SELF']) === 'user_profile.php');
+                        $avatarToShow = $avatarSrc;
+                        if (
+                            !$isProfilePage && (
+                                !$hasCustomAvatar ||
+                                empty($_SESSION['avatar']) ||
+                                $_SESSION['avatar'] === 'account-icon-white.svg'
+                            )
+                        ) {
+                            $avatarToShow = IMAGES_PATH . '/account-icon.svg';
+                        }
+                        ?>
+                        <img src="<?= $avatarToShow ?>" alt="Account" class="account-icon <?= (!$hasCustomAvatar || empty($_SESSION['avatar'])) ? 'default-icon' : '' ?>">
                     </div>
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>

@@ -847,24 +847,103 @@ select#statusFilter option {
 }
 
 /* Equipment card in maintenance mode */
+.equipment-card {
+    position: relative;
+}
+
 .equipment-card.maintenance-mode {
     border: 2px solid #ffd700;
     background: linear-gradient(135deg, rgba(255, 249, 230, 0.1) 0%, rgba(255, 251, 240, 0.05) 100%);
 }
 
-.equipment-card.maintenance-mode .equipment-image-container {
-    position: relative;
+/* Maintenance Badge in Upper Right */
+.maintenance-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
 }
 
-.equipment-card.maintenance-mode .equipment-image-container::after {
-    content: '🔧';
+.maintenance-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+}
+
+.maintenance-badge i {
+    color: #0a232d;
+    font-size: 20px;
+}
+
+/* Maintenance Tooltip */
+.maintenance-badge-tooltip {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    background: #fff9e6;
-    padding: 6px 10px;
-    border-radius: 50%;
-    border: 2px solid #ffd700;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: rgba(10, 35, 45, 0.98);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3) var(--spacing-4);
+    min-width: 250px;
+    max-width: 300px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.maintenance-badge-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.maintenance-badge-tooltip .tooltip-header {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-2);
+    border-bottom: 1px solid rgba(255, 206, 0, 0.3);
+    padding-bottom: var(--spacing-2);
+}
+
+.maintenance-badge-tooltip .tooltip-dates,
+.maintenance-badge-tooltip .tooltip-reason {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    margin-top: var(--spacing-2);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.maintenance-badge-tooltip .tooltip-dates i,
+.maintenance-badge-tooltip .tooltip-reason i {
+    color: var(--color-accent);
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+.maintenance-badge-tooltip .tooltip-reason {
+    font-style: italic;
+    opacity: 0.9;
+}
+
+.equipment-card.maintenance-mode .equipment-image-container {
+    position: relative;
 }
