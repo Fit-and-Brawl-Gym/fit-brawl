@@ -1,5 +1,5 @@
 # Secure Uploads Directory
-# Prevent execution of any PHP scripts in uploads
+# Prevent execution of any PHP scripts and other dangerous files
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -7,18 +7,45 @@
     # Prevent execution of PHP files in uploads directory
     RewriteCond %{THE_REQUEST} \s+.*\.php.*\sHTTP/
     RewriteRule .* - [F,L]
+
+    # Block access to hidden files (starting with .)
+    RewriteCond %{SCRIPT_FILENAME} -d [OR]
+    RewriteCond %{SCRIPT_FILENAME} -f
+    RewriteRule "(^|/)\." - [F,L]
 </IfModule>
 
 # Prevent listing of directory contents
 Options -Indexes
 
-# Only allow access to image and PDF files
-<FilesMatch "\.(php|pl|py|jsp|asp|sh|cgi)$">
+# Disable server-side includes
+Options -Includes
+
+# Disable script execution
+Options -ExecCGI
+
+# Only allow access to specific file types (images, PDFs)
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi|exe|com|bat|dll|scr|vbs|js|jar|war|ear|class)$">
     Require all denied
 </FilesMatch>
 
-# Force download for potentially dangerous files
-<FilesMatch "\.(exe|com|bat|sh)$">
+# Allow only safe file types
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|pdf|svg)$">
+    # Force content-type headers to prevent script execution
+    Header set Content-Type "image/jpeg" "expr=%{REQUEST_FILENAME} =~ /\.(jpg|jpeg)$/i"
+    Header set Content-Type "image/png" "expr=%{REQUEST_FILENAME} =~ /\.png$/i"
+    Header set Content-Type "image/gif" "expr=%{REQUEST_FILENAME} =~ /\.gif$/i"
+    Header set Content-Type "application/pdf" "expr=%{REQUEST_FILENAME} =~ /\.pdf$/i"
+</FilesMatch>
+
+# Prevent access to .htaccess and other config files
+<FilesMatch "^(\.htaccess|\.htpasswd|\.git|\.svn|\.env|\.ini|\.log)$">
     Require all denied
 </FilesMatch>
+
+# Set security headers for uploads
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set Content-Security-Policy "default-src 'none'; script-src 'none'; style-src 'none';"
+</IfModule>
 

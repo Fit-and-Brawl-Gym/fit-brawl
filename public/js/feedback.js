@@ -8,6 +8,14 @@ document.addEventListener('DOMContentLoaded', function () {
     let feedbackData = [];
     let searchTimeout = null;
 
+    // Escape HTML to prevent XSS (for toast messages)
+    function escapeHtml(text) {
+        if (typeof text !== 'string') return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Toast notification function
     function showToast(message, type = 'info', duration = 3000) {
         // Remove any existing toasts
@@ -30,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
         toast.innerHTML = `
             <i class="fas ${icons[type]} toast-icon"></i>
             <div class="toast-content">
-                <p class="toast-message">${message}</p>
+                <p class="toast-message">${escapeHtml(message)}</p>
             </div>
             <button class="toast-close" aria-label="Close notification">
                 <i class="fas fa-times"></i>
@@ -135,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 avatar = `${UPLOADS_PATH}/avatars/${item.avatar}`;
                 isDefaultIcon = false;
             }
-     
+
             const defaultIconClass = isDefaultIcon ? 'default-icon' : '';
 
             // Format date
@@ -181,16 +189,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="feedback-card">
                     <div class="bubble">
                         <div class="bubble-header">
-                        
+
                             <img src="${avatar}" alt="${item.username}" class="${defaultIconClass}"
      onerror="this.onerror=null; this.src='${IMAGES_PATH}/account-icon.svg'; this.classList.add('default-icon');">
 
                             <div>
-                                <h3>${item.username}</h3>
-                                <span class="feedback-date">${formattedDate}</span>
+                                <h3>${escapeHtml(item.username || 'Anonymous')}</h3>
+                                <span class="feedback-date">${escapeHtml(formattedDate)}</span>
                             </div>
                         </div>
-                        <p>${item.message}</p>
+                        <p>${escapeHtml(item.message || '')}</p>
                         ${votingHTML}
                     </div>
                 </div>
@@ -219,11 +227,23 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Get CSRF token
+    function getCsrfToken() {
+        return window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+    }
+
     // Handle voting
     function handleVote(feedbackId, voteType, button) {
         // Disable button during request
         const allButtons = container.querySelectorAll(`[data-feedback-id="${feedbackId}"]`);
         allButtons.forEach(btn => btn.disabled = true);
+
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) {
+            showToast('Your session expired. Please refresh the page.', 'error', 3000);
+            allButtons.forEach(btn => btn.disabled = false);
+            return;
+        }
 
         fetch(`${PUBLIC_PATH}/php/api/feedback_vote.php`, {
             method: 'POST',
@@ -232,7 +252,8 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify({
                 feedback_id: feedbackId,
-                vote_type: voteType
+                vote_type: voteType,
+                csrf_token: csrfToken
             })
         })
             .then(response => response.json())
@@ -393,10 +414,18 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             const formData = new FormData(feedbackForm);
+            const csrfToken = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            if (!csrfToken) {
+                showToast('Your session expired. Please refresh the page.', 'error', 3000);
+                return;
+            }
+
             const data = {
                 message: formData.get('message'),
                 name: formData.get('name') || '',
-                email: formData.get('email') || ''
+                email: formData.get('email') || '',
+                csrf_token: csrfToken
             };
 
             // Validate message

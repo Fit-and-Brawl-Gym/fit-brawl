@@ -1,6 +1,6 @@
 # User Profile Page Documentation
-**File:** `public/php/user_profile.php`  
-**Purpose:** View and edit personal account information  
+**File:** `public/php/user_profile.php`
+**Purpose:** View and edit personal account information
 **User Access:** Members only (must be logged in)
 
 ---
@@ -192,7 +192,7 @@ When you click or focus on the "New Password" field, a helpful requirements pane
 
 **Requirements List:**
 Five checkpoints displayed:
-- ✓ At least 8 characters
+- ✓ At least 12 characters
 - ✓ One uppercase letter (A-Z)
 - ✓ One lowercase letter (a-z)
 - ✓ One number (0-9)

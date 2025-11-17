@@ -17,7 +17,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
   <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
   <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
   <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/subscriptions.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>

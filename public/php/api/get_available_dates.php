@@ -1,23 +1,40 @@
 <?php
 require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
 
-header('Content-Type: application/json');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Cache-Control: post-check=0, pre-check=0', false);
-header('Pragma: no-cache');
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // Don't display errors in JSON API - log them instead
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-try {
-    $class_type = isset($_GET['class']) ? trim($_GET['class']) : '';
+// Rate limiting - 60 requests per minute per IP (public endpoint, used frequently)
+$identifier = 'get_available_dates:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 60, 60);
 
-    if (empty($class_type)) {
-        echo json_encode(['success' => false, 'message' => 'Class type required']);
-        exit;
+try {
+    // Validate and sanitize input
+    $validation = ApiSecurityMiddleware::validateInput([
+        'class' => [
+            'type' => 'whitelist',
+            'required' => true,
+            'allowed' => ['boxing', 'muay-thai', 'mma', 'gym']
+        ]
+    ], $_GET);
+
+    if (!$validation['valid']) {
+        $errors = implode(', ', $validation['errors']);
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => false,
+            'message' => 'Validation failed: ' . $errors
+        ], 400);
     }
+
+    $data = $validation['data'];
+    $class_type = $data['class'];
 
     // Map service class keys to database class types
     $class_map = [
@@ -26,11 +43,6 @@ try {
         'mma' => 'MMA',
         'gym' => 'Gym'
     ];
-
-    if (!isset($class_map[$class_type])) {
-        echo json_encode(['success' => false, 'message' => 'Invalid class type']);
-        exit;
-    }
 
     $db_class_type = $class_map[$class_type];
 
@@ -70,18 +82,18 @@ try {
         $available_dates[] = $row['date'];
     }
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'available_dates' => $available_dates
-    ]);
+    ], 200);
 
 } catch (Throwable $e) {
     error_log("Error in get_available_dates.php: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'An error occurred while fetching available dates.'
-    ]);
+    ], 500);
 } finally {
     if (isset($stmt) && $stmt) {
         $stmt->close();

@@ -252,17 +252,17 @@ if (!isset($ogImage)) {
                 <span></span>
             </button>
             <div class="title">
-                <a href="index.php">
+                <a href="<?= $isLoggedIn ? 'loggedin-index.php' : 'index.php' ?>">
                     <img src="<?= IMAGES_PATH ?>/fnb-logo-yellow.svg" alt="Logo" class="fnb-logo">
                 </a>
-                <a href="index.php">
+                <a href="<?= $isLoggedIn ? 'loggedin-index.php' : 'index.php' ?>">
                     <img src="<?= IMAGES_PATH ?>/header-title.svg" alt="FITXBRAWL" class="logo-title">
                 </a>
             </div>
             <nav class="nav-bar member-nav">
                 <ul>
                     <li>
-                        <a href="index.php" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
+                        <a href="<?= $isLoggedIn ? 'loggedin-index.php' : 'index.php' ?>" <?= $currentPage === 'home' ? 'class="active"' : '' ?> title="Home">
                             <i class="fas fa-home"></i>
                         </a>
                     </li>
@@ -302,7 +302,7 @@ if (!isset($ogImage)) {
                     </div>
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>
-                        <a href="logout.php">Logout</a>
+                        <a href="<?= PUBLIC_PATH ?>/php/logout.php">Logout</a>
                     </div>
                 </div>
             <?php else: ?>

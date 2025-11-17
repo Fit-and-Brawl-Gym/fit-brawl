@@ -50,6 +50,20 @@ class SessionManager {
         $_SESSION['login_time'] = time();
         $_SESSION['last_activity'] = time();
         $_SESSION['session_expires'] = time() + self::IDLE_TIMEOUT;
+
+        // Register session in tracker if available
+        if (file_exists(__DIR__ . '/session_tracker.php')) {
+            require_once __DIR__ . '/session_tracker.php';
+            global $conn;
+            if (isset($conn) && $conn instanceof mysqli) {
+                SessionTracker::init($conn);
+                $userId = $_SESSION['user_id'] ?? null;
+                $sessionId = session_id();
+                if ($userId && $sessionId) {
+                    SessionTracker::registerSession($userId, $sessionId);
+                }
+            }
+        }
     }
 
     public static function getRemainingTime() {
@@ -80,6 +94,26 @@ class SessionManager {
         if (self::isLoggedIn() && !self::isAbsoluteTimeoutReached()) {
             $_SESSION['last_activity'] = time();
             $_SESSION['session_expires'] = time() + self::IDLE_TIMEOUT;
+
+            // Update session tracker if available
+            if (file_exists(__DIR__ . '/session_tracker.php')) {
+                require_once __DIR__ . '/session_tracker.php';
+                global $conn;
+                if (isset($conn) && $conn instanceof mysqli) {
+                    SessionTracker::init($conn);
+                    $userId = $_SESSION['user_id'] ?? null;
+                    $sessionId = session_id();
+                    if ($userId && $sessionId) {
+                        // Check if session is still valid (not revoked)
+                        if (!SessionTracker::isSessionValid($userId, $sessionId)) {
+                            self::logout('Session has been revoked');
+                            return 0;
+                        }
+                        SessionTracker::updateActivity($userId, $sessionId);
+                    }
+                }
+            }
+
             return self::getRemainingTime();
         }
         return 0;
@@ -93,6 +127,20 @@ class SessionManager {
         // Store message before destroying session
         if (!empty($message)) {
             $messageToStore = $message;
+        }
+
+        // Remove session from tracker if available
+        if (file_exists(__DIR__ . '/session_tracker.php')) {
+            require_once __DIR__ . '/session_tracker.php';
+            global $conn;
+            if (isset($conn) && $conn instanceof mysqli) {
+                SessionTracker::init($conn);
+                $userId = $_SESSION['user_id'] ?? null;
+                $sessionId = session_id();
+                if ($userId && $sessionId) {
+                    SessionTracker::revokeSession($userId, $sessionId);
+                }
+            }
         }
 
         // Get session name before destroying

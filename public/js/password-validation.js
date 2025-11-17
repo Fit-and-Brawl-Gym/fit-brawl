@@ -12,7 +12,7 @@
 
         // Password validation patterns
         const patterns = {
-            length: /.{8,}/,
+            length: /.{12,}/,
             uppercase: /[A-Z]/,
             lowercase: /[a-z]/,
             number: /[0-9]/,

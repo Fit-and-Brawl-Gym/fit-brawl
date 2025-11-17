@@ -1,11 +1,20 @@
 <?php
 session_start();
 require_once '../../includes/db_connect.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
 
-$error = '';
-$success = '';
+$alertMessage = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        $alertMessage = [
+            'type' => 'error',
+            'title' => 'Session expired',
+            'text' => 'Your session expired. Please reload the page and try again.'
+        ];
+    } else {
     $email = test_input(filter_var($_POST['email'], FILTER_SANITIZE_EMAIL));
 
     // Check if email exists in database
@@ -19,10 +28,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['reset_email'] = $email;
         // Initialize resend counter
         $_SESSION['otp_resend_count'] = 0;
-        header("Location: verification.php");  // Changed from change-password.php
-        exit;
+        require_once __DIR__ . '/../../includes/redirect_validator.php';
+        RedirectValidator::init();
+        RedirectValidator::redirect('verification.php');
     } else {
-        $error = "Email address not found in our records.";
+        $alertMessage = [
+            'type' => 'error',
+            'title' => 'Email not found',
+            'text' => 'We couldn\'t find an account with that email address. Please try again.'
+        ];
+    }
     }
 }
 function test_input($data) {
@@ -35,7 +50,10 @@ function test_input($data) {
 
 $pageTitle = "Forgot Password - Fit and Brawl";
 $currentPage = "forgot_password";
-$additionalCSS = ['../css/pages/forgot-password.css'];
+$additionalCSS = [
+    '../css/components/alert.css?v=' . time(),
+    '../css/pages/forgot-password.css'
+];
 $additionalJS = [];
 require_once '../../includes/header.php';
 ?>
@@ -56,11 +74,20 @@ require_once '../../includes/header.php';
                     <h2>Enter email to verify your account</h2>
                 </div>
 
-                <?php if ($error): ?>
-                    <div class="error-message"><?php echo $error; ?></div>
+                <?php if (!empty($alertMessage)): ?>
+                    <div class="alert-box alert-box--<?= htmlspecialchars($alertMessage['type']); ?>" role="alert">
+                        <div class="alert-icon" aria-hidden="true">
+                            <i class="fas fa-<?= $alertMessage['type'] === 'error' ? 'exclamation-triangle' : 'info-circle'; ?>"></i>
+                        </div>
+                        <div class="alert-content">
+                            <p class="alert-title"><?= htmlspecialchars($alertMessage['title']); ?></p>
+                            <p class="alert-text"><?= nl2br(htmlspecialchars($alertMessage['text'])); ?></p>
+                        </div>
+                    </div>
                 <?php endif; ?>
 
                 <form class="forgot-password-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+                    <?= CSRFProtection::getTokenField(); ?>
                     <h3>A LITTLE STEPBACK BEFORE THE BEST VERSION OF YOU!</h3>
 
                     <div class="input-group">

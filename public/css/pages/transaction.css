@@ -473,6 +473,7 @@ body::before {
     display: flex;
     align-items: baseline;
     gap: var(--spacing-2);
+    flex-wrap: wrap;
 }
 
 .price-amount {
@@ -584,6 +585,7 @@ body::before {
     font-size: var(--font-size-sm);
     padding-bottom: var(--spacing-3);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    word-break: break-word;
 }
 
 .benefits-list li:last-child {
@@ -1109,6 +1111,10 @@ body::before {
         padding: var(--spacing-16) var(--spacing-4);
     }
 
+    .transaction-container {
+        padding: 0;
+    }
+
     .transaction-title {
         font-size: var(--font-size-3xl);
         margin-bottom: var(--spacing-8);
@@ -1120,7 +1126,7 @@ body::before {
     }
 
     .transaction-box {
-        padding: var(--spacing-8) var(--spacing-5);
+        padding: var(--spacing-6) var(--spacing-4);
     }
 
     .transaction-content {
@@ -1155,6 +1161,36 @@ body::before {
 
     .price-amount {
         font-size: var(--font-size-2xl);
+    }
+
+    .plan-card-transaction {
+        width: 100%;
+    }
+
+    .plan-header-headband {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-2);
+    }
+
+    .plan-price {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .plan-variant-selector {
+        flex-direction: column;
+        gap: var(--spacing-3);
+        align-items: stretch;
+        padding: var(--spacing-4) var(--spacing-3);
+    }
+
+    .variant-option {
+        justify-content: space-between;
+    }
+
+    .plan-body {
+        padding: var(--spacing-5) var(--spacing-4);
     }
 
     .qr-code {
@@ -1209,8 +1245,8 @@ body::before {
     border: 2px solid rgba(255, 206, 0, 0.3);
     border-radius: var(--radius-xl);
     cursor: pointer;
+    max-height: 150px;
     transition: all 0.3s ease;
-    min-height: 110px;
     text-align: center;
 }
 
@@ -1361,17 +1397,17 @@ body::before {
         grid-template-columns: 1fr;
         gap: var(--spacing-3);
     }
-    
+
     .payment-card-label {
         min-height: 75px;
         padding: var(--spacing-4);
     }
-    
+
     .payment-icon {
         width: 45px;
         height: 45px;
     }
-    
+
     .payment-icon i {
         font-size: 20px;
     }

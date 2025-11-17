@@ -1,18 +1,30 @@
 <?php
 session_start();
-header('Content-Type: application/json');
 
 // Disable HTML error output
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
+require_once '../../../../includes/db_connect.php';
+require_once '../../../../includes/csrf_protection.php';
+require_once '../../../../includes/api_security_middleware.php';
+require_once '../../../../includes/activity_logger.php';
+
+// Initialize activity logger
+ActivityLogger::init($conn);
+
+ApiSecurityMiddleware::setSecurityHeaders();
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Unauthorized'], 403);
     exit;
 }
 
-require_once '../../../../includes/db_connect.php';
+$csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+if (!CSRFProtection::validateToken($csrfToken)) {
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid or missing CSRF token'], 419);
+    exit;
+}
 
 try {
     // Get JSON input
@@ -79,29 +91,37 @@ try {
         throw new Exception('Failed to execute query: ' . $stmt->error);
     }
 
-    // Log admin action
-    $admin_id = $_SESSION['user_id'];
-    $admin_name = $_SESSION['username'] ?? 'Admin';
-    $log_action = ucfirst(str_replace('_', ' ', $action));
-    $details = "Contact ID: $id - Action: $log_action";
+    // Get contact details for logging
+    $infoStmt = $conn->prepare("SELECT first_name, last_name, email FROM contact WHERE id = ?");
+    $infoStmt->bind_param("i", $id);
+    $infoStmt->execute();
+    $contactInfo = $infoStmt->get_result()->fetch_assoc();
+    $infoStmt->close();
 
-    $log_sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_id, details) 
-                VALUES (?, ?, 'contact_management', ?, ?)";
-    $log_stmt = $conn->prepare($log_sql);
-    $log_stmt->bind_param("ssis", $admin_id, $admin_name, $id, $details);
-    $log_stmt->execute();
+    // Log admin action using ActivityLogger
+    if ($contactInfo) {
+        $logAction = 'contact_' . $action;
+        $fullName = trim(($contactInfo['first_name'] ?? '') . ' ' . ($contactInfo['last_name'] ?? ''));
+        $logDetails = ucfirst(str_replace('_', ' ', $action)) . " contact from {$fullName} ({$contactInfo['email']})";
 
-    echo json_encode([
+        ActivityLogger::log(
+            $logAction,
+            $fullName ?: 'Unknown',
+            $id,
+            $logDetails
+        );
+    }
+
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'message' => ucfirst($action) . ' completed successfully'
-    ]);
+    ], 200);
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => $e->getMessage()
-    ]);
+    ], 500);
 }
 
 if (isset($conn)) {

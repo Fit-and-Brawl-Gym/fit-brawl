@@ -14,7 +14,10 @@ async function loadFeedback(filter = 'all') {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const feedbacks = await response.json();
+        const data = await response.json();
+
+        // Extract feedbacks array from response
+        const feedbacks = data.feedbacks || [];
 
         console.log('=== FEEDBACK DATA LOADED ===');
         console.log('Total feedbacks:', feedbacks.length);
@@ -38,7 +41,7 @@ async function loadFeedback(filter = 'all') {
         // Check which view is active and render accordingly
         const tableView = document.getElementById('tableView');
         const cardsView = document.getElementById('cardsView');
-        
+
         if (tableView && tableView.classList.contains('active')) {
             // Render table view
             renderFeedbackTable(filteredFeedbacks);
@@ -107,10 +110,13 @@ async function toggleVisibility(id, show) {
     console.log('ID:', id);
     console.log('Show:', show);
 
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
     const requestBody = {
         action: 'toggle_visibility',
         id: id,
-        is_visible: show ? 1 : 0
+        is_visible: show ? 1 : 0,
+        csrf_token: csrfToken
     };
 
     try {
@@ -149,6 +155,8 @@ async function deleteFeedback(id) {
     console.log('=== DELETING FEEDBACK ===');
     console.log('ID:', id);
 
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
     try {
         const response = await fetch('api/feedback_actions.php', {
             method: 'POST',
@@ -157,7 +165,8 @@ async function deleteFeedback(id) {
             },
             body: JSON.stringify({
                 action: 'delete',
-                id: id
+                id: id,
+                csrf_token: csrfToken
             })
         });
 

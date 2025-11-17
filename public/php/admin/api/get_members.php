@@ -1,19 +1,25 @@
 <?php
 // filepath: c:\xampp\htdocs\fit-brawl\public\php\admin\api\get_members.php
 session_start();
-header('Content-Type: application/json');
+require_once __DIR__ . '/../../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
+
+ApiSecurityMiddleware::setSecurityHeaders();
 
 // Disable HTML error output
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+// Require admin authentication
+$user = ApiSecurityMiddleware::requireAuth(['role' => 'admin']);
+if (!$user) {
+    exit; // Already sent response
 }
 
-require_once '../../../../includes/db_connect.php';
+// Rate limiting for admin read endpoints - 30 requests per minute per admin
+$adminId = $user['user_id'];
+ApiSecurityMiddleware::applyRateLimit($conn, 'admin_get_members:' . $adminId, 30, 60);
 
 try {
     // Check if table exists
@@ -102,31 +108,31 @@ try {
             'Resolution Regular' => ['monthly' => 4000, 'quarterly' => 11400],
             'Resolution Student' => ['monthly' => 2500, 'quarterly' => 7125]
         ];
-        
+
         $planName = $row['plan_name'];
         $billingType = $row['billing_type'] ?? 'monthly';
-        
+
         if (isset($planPrices[$planName][$billingType])) {
             $row['total_payment'] = $planPrices[$planName][$billingType];
         } else {
             $row['total_payment'] = null;
         }
-        
+
         $members[] = $row;
     }
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'members' => $members,
         'total' => count($members)
-    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    ], 200);
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
+    error_log("Error in get_members.php: " . $e->getMessage());
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
-        'message' => $e->getMessage()
-    ]);
+        'message' => 'An error occurred while fetching members. Please try again.'
+    ], 500);
 }
 
 if (isset($conn)) {

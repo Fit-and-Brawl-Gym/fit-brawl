@@ -1,15 +1,21 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
-header('Content-Type: application/json');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not logged in']);
-    exit;
+// Require authentication
+$user = ApiSecurityMiddleware::requireAuth();
+if (!$user) {
+    exit; // Already sent response
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $user['user_id'];
+
+// Rate limiting - 30 requests per minute (read endpoint)
+ApiSecurityMiddleware::applyRateLimit($conn, 'get_membership:' . $user_id, 30, 60);
 
 // Get active membership
 $query = "SELECT um.*, m.plan_name, m.price, m.duration
@@ -25,7 +31,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($row = $result->fetch_assoc()) {
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'membership' => [
             'plan_name' => $row['plan_name'],
@@ -33,11 +39,14 @@ if ($row = $result->fetch_assoc()) {
             'billing_type' => $row['billing_type'],
             'price' => $row['price']
         ]
-    ]);
+    ], 200);
 } else {
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
         'message' => 'No active membership found'
-    ]);
+    ], 404);
 }
+
+$stmt->close();
+$conn->close();
 ?>

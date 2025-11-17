@@ -61,6 +61,17 @@ define('ENVIRONMENT', $appEnv);
 // This ensures consistent time across all environments
 date_default_timezone_set('Asia/Manila');
 
+// AES-256 Encryption Key Configuration
+// For encrypting sensitive data at rest (emails, phone numbers, etc.)
+// IMPORTANT: Generate key with: php generate_encryption_key.php
+// Store in .env file (recommended) or define here (development only)
+if (!getenv('ENCRYPTION_KEY')) {
+    // ⚠️  CHANGE THIS IN PRODUCTION!
+    // This is a placeholder key for development/testing only
+    // Run: php generate_encryption_key.php to generate a secure key
+    define('ENCRYPTION_KEY', hex2bin('c32db2d06ee27bc655da88c949c576a15a963cce89fb8f0bf1ab37c03e2f5ae1'));
+}
+
 // Helper to build URL paths
 function getPath($path) {
     return rtrim(BASE_PATH, '/') . '/' . ltrim($path, '/');

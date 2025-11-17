@@ -1,30 +1,84 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
-header('Content-Type: application/json');
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/input_validator.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Please login first']);
-    exit;
+ApiSecurityMiddleware::setSecurityHeaders();
+
+// Require authentication
+$user = ApiSecurityMiddleware::requireAuth();
+if (!$user) {
+    exit; // Already sent response
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+$user_id = $user['user_id'];
+
+// Require POST method
+if (!ApiSecurityMiddleware::requireMethod('POST')) {
+    exit; // Already sent response
 }
 
-$user_id = $_SESSION['user_id'];
-$service_key = isset($_POST['service']) ? trim($_POST['service']) : '';
-$name = trim($_POST['name'] ?? '');
-$country = trim($_POST['country'] ?? '');
-$address = trim($_POST['address'] ?? '');
-$service_date = trim($_POST['service_date'] ?? '');
+// Require CSRF token
+if (!ApiSecurityMiddleware::requireCSRF()) {
+    exit; // Already sent response
+}
 
-// Validate required fields
-if (empty($service_key) || empty($name) || empty($country) || empty($address) || empty($service_date)) {
-    echo json_encode(['success' => false, 'message' => 'All fields are required including service date']);
-    exit;
+// Rate limiting - 10 requests per minute per user
+ApiSecurityMiddleware::applyRateLimit($conn, 'service_booking:' . $user_id, 10, 60);
+
+// Validate and sanitize input
+$validation = ApiSecurityMiddleware::validateInput([
+    'service' => [
+        'type' => 'whitelist',
+        'required' => true,
+        'allowed' => ['daypass-gym', 'daypass-gym-student', 'training-boxing', 'training-muaythai', 'training-mma']
+    ],
+    'name' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 255
+    ],
+    'country' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 100
+    ],
+    'address' => [
+        'type' => 'string',
+        'required' => true,
+        'max_length' => 500
+    ],
+    'service_date' => [
+        'type' => 'date',
+        'required' => true,
+        'format' => 'Y-m-d'
+    ]
+]);
+
+if (!$validation['valid']) {
+    $errors = implode(', ', $validation['errors']);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Validation failed: ' . $errors
+    ], 400);
+}
+
+$data = $validation['data'];
+$service_key = $data['service'];
+$name = $data['name'];
+$country = $data['country'];
+$address = $data['address'];
+
+// Handle date (DateTime object from validator)
+$service_date_obj = $data['service_date'];
+if ($service_date_obj instanceof DateTime) {
+    $service_date_mysql = $service_date_obj->format('Y-m-d');
+} else {
+    // Fallback for string date
+    $service_date_mysql = $service_date_obj;
 }
 
 // Service configurations with codes for receipt ID
@@ -36,9 +90,12 @@ $services = [
     'training-mma' => ['name' => 'Training: MMA', 'member_price' => 500, 'non_member_price' => 630, 'code' => 'TMMA']
 ];
 
+// Service already validated by whitelist, but double-check
 if (!isset($services[$service_key])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid service selected']);
-    exit;
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Invalid service selected'
+    ], 400);
 }
 
 $service = $services[$service_key];
@@ -57,15 +114,6 @@ $result = $stmt->get_result()->fetch_assoc();
 $is_member = $result['has_membership'] > 0;
 
 $price = $is_member ? $service['member_price'] : $service['non_member_price'];
-
-// Convert service date to MySQL format
-try {
-    $date = new DateTime($service_date);
-    $service_date_mysql = $date->format('Y-m-d');
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Invalid date format']);
-    exit;
-}
 
 // Generate unique receipt ID (format: CODE-YYYYMMDD-XXXXXX)
 $receipt_id = strtoupper($service['code'] . '-' . date('Ymd') . '-' . substr(uniqid(), -6));
@@ -92,20 +140,24 @@ $stmt->bind_param(
 );
 
 if ($stmt->execute()) {
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'message' => 'Service booked successfully! Your receipt is ready.',
         'receipt_id' => $receipt_id,
         'booking' => [
             'service' => $service['name'],
-            'service_date' => $service_date,
+            'service_date' => $service_date_mysql,
             'price' => $price,
             'status' => 'confirmed',
             'is_member' => $is_member
         ]
-    ]);
+    ], 200);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+    error_log("Database error in process_service_booking.php: " . $stmt->error);
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Database error. Please try again.'
+    ], 500);
 }
 
 $stmt->close();

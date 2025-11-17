@@ -1,6 +1,11 @@
 <?php
 require_once '../../includes/db_connect.php';
 require_once '../../includes/session_manager.php';
+require_once '../../includes/csp_nonce.php';
+require_once '../../includes/csrf_protection.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
@@ -145,25 +150,31 @@ $additionalJS = [
     '../js/transaction-service.js'
 ];
 
+$pageCsrfToken = CSRFProtection::generateToken();
+
 // Include header
 require_once '../../includes/header.php';
 ?>
 
-    <!--Main-->
-    <main class="transaction-page">
-        <div class="transaction-container">
-            <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
+    window.CSRF_TOKEN = <?= json_encode($pageCsrfToken); ?>;
+</script>
 
-            <div class="transaction-box">
-                <form id="subscriptionForm" class="subscription-form">
-                    <input type="hidden" name="service" value="<?php echo $service; ?>">
-                    <div class="transaction-content">
-                        <!-- Left Column -->
-                        <div class="transaction-left">
-                            <div class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" id="name" name="name" placeholder="Excel Bondoc" required>
-                            </div>
+<!--Main-->
+<main class="transaction-page">
+    <div class="transaction-container">
+        <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
+
+        <div class="transaction-box">
+            <form id="subscriptionForm" class="subscription-form">
+                <input type="hidden" name="service" value="<?php echo $service; ?>">
+                <div class="transaction-content">
+                    <!-- Left Column -->
+                    <div class="transaction-left">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" placeholder="Excel Bondoc" required>
+                        </div>
 
                             <div class="form-group">
                                 <label for="country">Country</label>
@@ -234,7 +245,7 @@ require_once '../../includes/header.php';
         </div>
     </main>
 
-<script>
+<script <?= CSPNonce::getScriptNonceAttr() ?>>
     // Initialize Flatpickr date picker for service date after DOM and scripts load
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof flatpickr !== 'undefined') {

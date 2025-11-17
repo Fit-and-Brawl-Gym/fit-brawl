@@ -22,7 +22,7 @@ class ActivityLogger
     {
         // DEBUG: Log to PHP error log
         error_log("ActivityLogger::log called - Action: {$actionType}, User: {$targetUser}, Details: {$details}");
-        
+
         if (!self::$conn) {
             error_log('ActivityLogger: Database connection not initialized');
             return false;
@@ -30,17 +30,17 @@ class ActivityLogger
 
         // Get admin info from session
         $adminId = $_SESSION['user_id'] ?? null;
-        $adminName = $_SESSION['username'] ?? 'System';
-        
+        $adminName = $_SESSION['name'] ?? 'System'; // Changed from 'username' to 'name'
+
         error_log("ActivityLogger: Admin ID: {$adminId}, Admin Name: {$adminName}");
-        
+
         if (!$adminId) {
             error_log('ActivityLogger: No admin ID in session');
             return false; // Not logged in as admin
         }
 
         try {
-            $sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_user, target_id, details, timestamp) 
+            $sql = "INSERT INTO admin_logs (admin_id, admin_name, action_type, target_user, target_id, details, timestamp)
                     VALUES (?, ?, ?, ?, ?, ?, NOW())";
 
             $stmt = self::$conn->prepare($sql);
@@ -52,19 +52,50 @@ class ActivityLogger
 
             $stmt->bind_param("isssis", $adminId, $adminName, $actionType, $targetUser, $targetId, $details);
             $result = $stmt->execute();
-            
+
             if ($result) {
                 error_log('ActivityLogger: Successfully logged activity');
             } else {
                 error_log('ActivityLogger: Execute failed - ' . $stmt->error);
             }
-            
+
             $stmt->close();
+
+            // Also log to centralized logger
+            if (file_exists(__DIR__ . '/centralized_logger.php')) {
+                require_once __DIR__ . '/centralized_logger.php';
+                global $conn;
+                if (isset($conn) && $conn instanceof mysqli) {
+                    CentralizedLogger::init($conn);
+                    CentralizedLogger::logActivity('info', "Admin action: {$actionType}", [
+                        'category' => $actionType,
+                        'user_id' => $adminId,
+                        'username' => $adminName,
+                        'target_user' => $targetUser,
+                        'target_id' => $targetId,
+                        'details' => $details
+                    ]);
+                }
+            }
 
             return $result;
 
         } catch (Exception $e) {
             error_log('ActivityLogger: Error - ' . $e->getMessage());
+
+            // Log error to centralized logger
+            if (file_exists(__DIR__ . '/centralized_logger.php')) {
+                require_once __DIR__ . '/centralized_logger.php';
+                global $conn;
+                if (isset($conn) && $conn instanceof mysqli) {
+                    CentralizedLogger::init($conn);
+                    CentralizedLogger::logActivity('error', "ActivityLogger error: " . $e->getMessage(), [
+                        'category' => 'error',
+                        'action_type' => $actionType
+                    ]);
+                }
+            }
+
             return false;
         }
     }
@@ -113,11 +144,19 @@ class ActivityLogger
 
         $stmt = self::$conn->prepare($sql);
 
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
+        if (!$stmt) {
+            error_log('ActivityLogger::getActivities - Failed to prepare statement: ' . self::$conn->error);
+            return [];
         }
 
-        $stmt->execute();
+        // Always bind parameters since we always have at least the limit
+        $stmt->bind_param($types, ...$params);
+
+        if (!$stmt->execute()) {
+            error_log('ActivityLogger::getActivities - Failed to execute: ' . $stmt->error);
+            return [];
+        }
+
         $result = $stmt->get_result();
 
         $activities = [];
@@ -126,6 +165,8 @@ class ActivityLogger
         }
 
         $stmt->close();
+
+        error_log('ActivityLogger::getActivities - Returned ' . count($activities) . ' activities');
         return $activities;
     }
 

@@ -12,10 +12,25 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 // Initialize activity logger
 ActivityLogger::init($conn);
 
-// Get filter parameters
+// Get and validate filter parameters
 $actionFilter = $_GET['action'] ?? 'all';
 $dateFilter = $_GET['date'] ?? 'all';
 $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 50;
+
+// Validate action filter (whitelist)
+$allowedActions = ['all', 'trainer', 'reservation', 'subscription', 'equipment', 'product', 'member', 'feedback', 'contact'];
+if (!in_array($actionFilter, $allowedActions, true)) {
+    $actionFilter = 'all';
+}
+
+// Validate date filter (whitelist)
+$allowedDates = ['all', 'today', 'week', 'month', 'year'];
+if (!in_array($dateFilter, $allowedDates, true)) {
+    $dateFilter = 'all';
+}
+
+// Validate limit (prevent excessive queries)
+$limit = max(1, min(500, $limit)); // Between 1 and 500
 
 // Get activities
 $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);

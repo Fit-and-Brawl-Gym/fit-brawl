@@ -1,6 +1,10 @@
 <?php
 include_once('../../../includes/init.php');
+require_once('../../../includes/csp_nonce.php');
 require_once('../../../includes/activity_logger.php');
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Check if user is admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -377,7 +381,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                                                 $endTime = new DateTime($booking['end_time']);
                                                 $startFormatted = $startTime->format('g:i A');
                                                 $endFormatted = $endTime->format('g:i A');
-                                                
+
                                                 echo '<div class="session-hours">' . $startFormatted . ' - ' . $endFormatted . '</div>';
                                             } elseif (!empty($booking['session_time'])) {
                                                 // Legacy session-based booking (fallback)
@@ -439,8 +443,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
     <script>
         window.bookingsData = <?php echo json_encode($bookings); ?>;
     </script>
+    <!-- Load DSA utilities first -->
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/reservations.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/admin-reservations-dsa-integration.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

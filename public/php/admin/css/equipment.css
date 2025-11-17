@@ -2,6 +2,62 @@
 /* EQUIPMENT PAGE STYLES       */
 /* =========================== */
 
+/* No Results Container Styling */
+.no-results-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: var(--color-white);
+    border-radius: 12px;
+    border: 2px dashed var(--color-border);
+    min-height: 350px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.admin-no-results {
+    margin: 2rem 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.6;
+}
+
+.no-results-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-dark);
+    margin-bottom: 0.75rem;
+}
+
+.no-results-message {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+    max-width: 450px;
+    line-height: 1.5;
+}
+
+.no-results-container .btn-primary {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
 /* Filter dropdowns */
 .filter-dropdown {
     padding: 10px 40px 10px 14px;

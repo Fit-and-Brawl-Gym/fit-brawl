@@ -1,11 +1,19 @@
 <?php
 include_once('../../../includes/init.php');
+require_once __DIR__ . '/../../../includes/csp_nonce.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+
+// Generate CSP nonces for this request
+CSPNonce::generate();
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
   header("Location: ../login.php");
   exit();
 }
+
+// Generate CSRF token
+$csrfToken = CSRFProtection::generateToken();
 
 // Fetch all equipment (order by columns that exist)
 $orderCols = [];
@@ -40,6 +48,7 @@ unset($it);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
   <title>Equipment Management - Fit & Brawl Gym</title>
   <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
   <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
@@ -408,8 +417,14 @@ unset($it);
     </div>
   </div>
 
+  <!-- DSA Utilities -->
+  <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
+
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/equipment.js?=v1"></script>
+
+  <!-- DSA Integration -->
+  <script src="<?= PUBLIC_PATH ?>/js/dsa/equipment-dsa-integration.js?v=<?= time() ?>"></script>
 </body>
 
 </html>

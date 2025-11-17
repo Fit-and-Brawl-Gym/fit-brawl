@@ -10,6 +10,8 @@ if (!isset($_SESSION['email']) || !isset($_SESSION['role']) || $_SESSION['role']
 require_once '../../../includes/db_connect.php';
 require_once '../../../includes/session_manager.php';
 require_once __DIR__ . '/../../../includes/config.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/encryption.php'; // Add encryption support
 
 // Initialize session manager
 SessionManager::initialize();
@@ -22,10 +24,21 @@ if (!SessionManager::isLoggedIn()) {
 
 // Fetch user data
 $email = $_SESSION['email'];
-$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+$stmt = $conn->prepare("SELECT *, email_encrypted FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
+
+// Decrypt email for display if encrypted version exists
+if (!empty($user['email_encrypted'])) {
+    try {
+        $user['email_display'] = Encryption::decrypt($user['email_encrypted']);
+    } catch (Exception $e) {
+        $user['email_display'] = $user['email']; // Fallback to plaintext
+    }
+} else {
+    $user['email_display'] = $user['email'];
+}
 
 // Get trainer information
 $trainer_id = null;
@@ -158,6 +171,7 @@ require_once '../../../includes/trainer_header.php';
             Edit Profile
         </h3>
         <form method="POST" action="../update_profile.php" enctype="multipart/form-data" class="edit-profile-form">
+            <?= CSRFProtection::getTokenField(); ?>
             <!-- Avatar Upload -->
             <div class="form-group full-width">
                 <label>Profile Picture</label>

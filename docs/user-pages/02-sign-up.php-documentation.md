@@ -1,7 +1,7 @@
 # User Page Documentation: Sign-Up Page (sign-up.php)
 
-**Page Name**: Sign Up / Registration Page  
-**Who Can Access**: Everyone (public)  
+**Page Name**: Sign Up / Registration Page
+**Who Can Access**: Everyone (public)
 **Last Updated**: November 10, 2025
 
 ---
@@ -79,7 +79,7 @@ The sign-up page allows new users to **create an account** for the FitXBrawl gym
 When typing a password, a **requirements panel** appears showing:
 
 **Requirements Checklist**:
-- ✗ At least 8 characters → Changes to ✓ when met
+- ✗ At least 12 characters → Changes to ✓ when met
 - ✗ One uppercase letter (A-Z)
 - ✗ One lowercase letter (a-z)
 - ✗ One number (0-9)
@@ -104,7 +104,7 @@ The validation happens **instantly** as you type:
 ```
 Length:     Minimum 8 characters
 Uppercase:  At least one A-Z letter
-Lowercase:  At least one a-z letter  
+Lowercase:  At least one a-z letter
 Number:     At least one 0-9 digit
 Special:    At least one of !@#$%^&*?
 ```
@@ -316,7 +316,7 @@ Shows various errors depending on what went wrong.
 | "Invalid email domain." | Email domain doesn't exist | Use a real email provider |
 | "Passwords do not match." | Password fields are different | Retype passwords carefully |
 | "Username or email already exists." | Account with this info exists | Use different email or log in instead |
-| "Password must be at least 8 characters long" | Password too short | Make password longer |
+| "Password must be at least 12 characters long" | Password too short | Make password longer |
 | "Password must contain..." | Missing password requirement | Add uppercase/number/special char |
 
 ### Auto-Scroll Feature
@@ -816,9 +816,9 @@ created_at         - Timestamp of registration
 
 ---
 
-**Page Status**: ✅ Fully functional  
-**Required for**: Creating a member account  
+**Page Status**: ✅ Fully functional
+**Required for**: Creating a member account
 **Next Step**: Verify email → Log in → Purchase membership or book services
 
-**Documentation Version**: 1.0  
+**Documentation Version**: 1.0
 **Last Updated**: November 10, 2025

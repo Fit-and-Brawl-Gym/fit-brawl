@@ -27,63 +27,200 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         <!-- Header Section -->
         <header class="page-header">
             <div>
-                <h1>Members Management</h1>
-                <p class="subtitle">View and manage gym members and their memberships</p>
+                <h1>User Management</h1>
+                <p class="subtitle">Manage all user accounts, roles, and permissions</p>
             </div>
         </header>
 
-        <!-- Search Bar -->
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card stat-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Total Accounts</div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Non-Members</div>
+                    <div class="stat-value" id="regularMembers">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-success">
+                <div class="stat-icon">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Subscribed Members</div>
+                    <div class="stat-value" id="subscribedMembers">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-info">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Trainers</div>
+                    <div class="stat-value" id="trainerCount">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Admins</div>
+                    <div class="stat-value" id="adminCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
         <div class="toolbar">
             <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Search members by name...">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name, email, or username...">
             </div>
-            <div class="stats-summary">
-                <span class="stat-label">Total Members:</span>
-                <strong id="totalMembers">0</strong>
+            <div class="toolbar-actions">
+                <button class="btn-filter" id="filterBtn">
+                    <i class="fas fa-filter"></i>
+                    Filters
+                </button>
             </div>
         </div>
 
-        <!-- Plan Filter Tabs -->
-        <div class="tabs">
-            <button class="tab active" data-plan="all">All</button>
-            <button class="tab" data-plan="Gladiator">Gladiator</button>
-            <button class="tab" data-plan="Brawler">Brawler</button>
-            <button class="tab" data-plan="Champion">Champion</button>
-            <button class="tab" data-plan="Clash">Clash</button>
-            <button class="tab" data-plan="Resolution Regular">Resolution</button>
-        </div>
-
-        <!-- Members List -->
-        <div class="members-container">
-            <div id="membersList" class="members-list">
-                <!-- Members will be loaded here via JavaScript -->
-                <div class="loading-state">
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p>Loading members...</p>
+        <!-- Filter Section -->
+        <div class="filter-section" id="filterSection">
+            <div class="filter-group">
+                <label>Role</label>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-role="all">
+                        <i class="fas fa-users"></i> All
+                    </button>
+                    <button class="filter-tab" data-role="member">
+                        <i class="fas fa-user"></i> Members
+                    </button>
+                    <button class="filter-tab" data-role="trainer">
+                        <i class="fas fa-user-tie"></i> Trainers
+                    </button>
+                    <button class="filter-tab" data-role="admin">
+                        <i class="fas fa-user-shield"></i> Admins
+                    </button>
                 </div>
+            </div>
+
+            <div class="filter-group">
+                <label>Account Status</label>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-status="all">
+                        <i class="fas fa-circle"></i> All
+                    </button>
+                    <button class="filter-tab" data-status="active">
+                        <i class="fas fa-check-circle"></i> Active
+                    </button>
+                    <button class="filter-tab" data-status="suspended">
+                        <i class="fas fa-pause-circle"></i> Suspended
+                    </button>
+                    <button class="filter-tab" data-status="pending">
+                        <i class="fas fa-circle"></i> Pending
+                    </button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>Verification</label>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-verified="all">All</button>
+                    <button class="filter-tab" data-verified="1">Verified</button>
+                    <button class="filter-tab" data-verified="0">Unverified</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>Membership Status</label>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-membership="all">
+                        <i class="fas fa-circle"></i> All
+                    </button>
+                    <button class="filter-tab" data-membership="active">
+                        <i class="fas fa-check-circle"></i> Active Subscription
+                    </button>
+                    <button class="filter-tab" data-membership="expired">
+                        <i class="fas fa-times-circle"></i> Expired/None
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="content-card">
+            <div class="table-header">
+                <h3>User Accounts</h3>
+                <div class="table-actions">
+                    <select id="sortBy" class="sort-select">
+                        <option value="created_at_desc">Newest First</option>
+                        <option value="created_at_asc">Oldest First</option>
+                        <option value="name_asc">Name A-Z</option>
+                        <option value="name_desc">Name Z-A</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table class="users-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Contact</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Verified</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="8" class="loading-state">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading users...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
 
-    <!-- History Side Panel -->
-    <div id="historyPanel" class="side-panel">
-        <div class="side-panel-overlay" onclick="closeHistoryPanel()"></div>
+    <!-- User Details Side Panel -->
+    <div id="userDetailsPanel" class="side-panel">
+        <div class="side-panel-overlay" onclick="closeUserDetailsPanel()"></div>
         <div class="side-panel-content">
             <div class="side-panel-header">
-                <h2>Membership History</h2>
-                <button class="close-btn" onclick="closeHistoryPanel()">
-                    <i class="fa-solid fa-xmark"></i>
+                <h2>User Details</h2>
+                <button class="close-btn" onclick="closeUserDetailsPanel()">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="side-panel-body" id="historyContent">
-                <!-- History will be loaded here -->
+            <div class="side-panel-body" id="userDetailsContent">
+                <!-- User details will be loaded here -->
             </div>
         </div>
     </div>
 
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
-    <script src="<?= PUBLIC_PATH ?>/php/admin/js/users.js"></script>
+    <script src="<?= PUBLIC_PATH ?>/php/admin/js/users-secure.js"></script>
 </body>
 
 </html>

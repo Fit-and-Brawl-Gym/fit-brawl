@@ -1,34 +1,57 @@
 <?php
 session_start();
 require_once '../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
-header('Content-Type: application/json');
+ApiSecurityMiddleware::setSecurityHeaders();
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Please login to vote']);
-    exit;
+// Require authentication
+$user = ApiSecurityMiddleware::requireAuth();
+if (!$user) {
+    exit; // Already sent response
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+$user_id = $user['user_id'];
+
+// Require POST method
+if (!ApiSecurityMiddleware::requireMethod('POST')) {
+    exit; // Already sent response
 }
 
-$data = json_decode(file_get_contents("php://input"), true);
+// Get JSON body
+$data = ApiSecurityMiddleware::getJsonBody();
+
+// Require CSRF token (from JSON body)
+$csrfToken = $data['csrf_token'] ?? '';
+if (!CSRFProtection::validateToken($csrfToken)) {
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'CSRF token validation failed'
+    ], 403);
+}
+
+// Rate limiting - 20 votes per minute per user
+ApiSecurityMiddleware::applyRateLimit($conn, 'feedback_vote:' . $user_id, 20, 60);
+
+// Validate and sanitize input
 $feedback_id = isset($data['feedback_id']) ? intval($data['feedback_id']) : 0;
 $vote_type = isset($data['vote_type']) ? trim($data['vote_type']) : '';
-$user_id = $_SESSION['user_id'];
 
 // Validate inputs
 if ($feedback_id <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid feedback ID']);
-    exit;
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Invalid feedback ID'
+    ], 400);
 }
 
 if (!in_array($vote_type, ['helpful', 'not_helpful', 'remove'])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid vote type']);
-    exit;
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Invalid vote type'
+    ], 400);
 }
 
 try {
@@ -58,8 +81,10 @@ try {
         }
 
         $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Vote removed']);
-        exit;
+        ApiSecurityMiddleware::sendJsonResponse([
+            'success' => true,
+            'message' => 'Vote removed'
+        ], 200);
     }
 
     if ($existing_vote) {
@@ -108,17 +133,21 @@ try {
 
     $conn->commit();
 
-    echo json_encode([
+    ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
         'message' => 'Vote recorded',
         'helpful_count' => $counts['helpful_count'],
         'not_helpful_count' => $counts['not_helpful_count'],
         'user_vote' => $vote_type
-    ]);
+    ], 200);
 
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['success' => false, 'message' => 'Error recording vote: ' . $e->getMessage()]);
+    error_log("Error in feedback_vote.php: " . $e->getMessage());
+    ApiSecurityMiddleware::sendJsonResponse([
+        'success' => false,
+        'message' => 'Error recording vote. Please try again.'
+    ], 500);
 }
 
 $conn->close();
