@@ -201,7 +201,8 @@ require_once __DIR__ . '/../../includes/header.php';
 
                         <div class="form-group">
                             <label for="name">Full Name</label>
-                            <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
+                            <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" 
+                                   value="<?= htmlspecialchars($_SESSION['name'] ?? $_SESSION['username'] ?? '') ?>" required>
                         </div>
 
                         <div class="form-section-divider"></div>

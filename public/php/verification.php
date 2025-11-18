@@ -2,12 +2,12 @@
 session_start();
 require_once '../../includes/db_connect.php';
 require_once '../../includes/mail_config.php';
+require_once '../../includes/csrf_protection.php';
 
 // Redirect if no reset email in session
 if(!isset($_SESSION['reset_email'])) {
-    require_once __DIR__ . '/../../includes/redirect_validator.php';
-    RedirectValidator::init();
-    RedirectValidator::redirect('forgot-password.php');
+    header('Location: forgot-password.php');
+    exit();
 }
 
 $alertMessage = null;
@@ -33,8 +33,17 @@ if(!isset($_SESSION['otp_sent'])) {
 
 // Verify OTP
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $entered_otp = $_POST['otp'];
-    $email = $_SESSION['reset_email'];
+    // Validate CSRF token
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        $alertMessage = [
+            'type' => 'error',
+            'title' => 'Invalid Request',
+            'text' => 'Security token validation failed. Please try again.'
+        ];
+    } else {
+        $entered_otp = $_POST['otp'];
+        $email = $_SESSION['reset_email'];
 
     $stmt = $conn->prepare("SELECT otp, otp_expiry FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
@@ -55,9 +64,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Set flag to clear session storage after redirect
             $_SESSION['clear_otp_timer'] = true;
 
-            require_once __DIR__ . '/../../includes/redirect_validator.php';
-            RedirectValidator::init();
-            RedirectValidator::redirect('change-password.php');
+            header('Location: change-password.php');
+            exit();
         } else {
             $alertMessage = [
                 'type' => 'error',
@@ -71,6 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'title' => 'Invalid code',
             'text' => 'The verification code you entered is incorrect. Please try again.'
         ];
+    }
     }
 }
 
@@ -113,6 +122,7 @@ require_once '../../includes/header.php';
                 <?php endif; ?>
 
                 <form class="verification-form" method="POST">
+                    <?= CSRFProtection::getTokenField(); ?>
                     <h3>CHECK YOUR EMAIL FOR THE <br>VERIFICATION CODE</h3>
 
                     <div class="verification-input-container">
