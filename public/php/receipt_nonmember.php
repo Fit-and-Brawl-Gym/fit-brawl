@@ -10,7 +10,7 @@ if (empty($receipt_id)) {
 }
 
 // Fetch receipt details
-$stmt = $conn->prepare("SELECT * FROM non_member_bookings WHERE receipt_id = ?");
+$stmt = $conn->prepare("SELECT * FROM nonmember_receipts WHERE receipt_id = ?");
 $stmt->bind_param("s", $receipt_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -407,8 +407,8 @@ $currentPage = "receipt_non_member";
         </div>
 
         <div class="service-highlight">
-            <p class="service-name"><?php echo htmlspecialchars($booking['service_name']); ?></p>
-            <p class="service-price"><?php echo number_format($booking['price'], 2); ?> PHP</p>
+            <p class="service-name"><?php echo htmlspecialchars($booking['service']); ?></p>
+            <p class="service-price"><?php echo number_format($booking['amount'], 2); ?> PHP</p>
         </div>
 
         <div class="receipt-body">
@@ -416,15 +416,15 @@ $currentPage = "receipt_non_member";
                 <h2><i class="fas fa-user"></i> Customer Details</h2>
                 <div class="info-row">
                     <span class="info-label">Name:</span>
-                    <span class="info-value"><?php echo htmlspecialchars($booking['customer_name']); ?></span>
+                    <span class="info-value"><?php echo htmlspecialchars($booking['name']); ?></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Email:</span>
-                    <span class="info-value"><?php echo htmlspecialchars($booking['customer_email']); ?></span>
+                    <span class="info-value"><?php echo htmlspecialchars($booking['email']); ?></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Phone:</span>
-                    <span class="info-value"><?php echo htmlspecialchars($booking['customer_phone']); ?></span>
+                    <span class="info-value"><?php echo htmlspecialchars($booking['phone']); ?></span>
                 </div>
             </div>
 
@@ -436,7 +436,7 @@ $currentPage = "receipt_non_member";
                 </div>
                 <div class="info-row">
                     <span class="info-label">Booked On:</span>
-                    <span class="info-value"><?php echo $booking_date->format('M j, Y g:i A'); ?></span>
+                    <span class="info-value"><?php echo $booking['created_at'] ? (new DateTime($booking['created_at']))->format('M j, Y g:i A') : ''; ?></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Status:</span>
@@ -488,10 +488,10 @@ $currentPage = "receipt_non_member";
         function generateQRCode() {
             const qrData = JSON.stringify({
                 id: '<?php echo $receipt_id; ?>',
-                name: '<?php echo addslashes($booking['customer_name']); ?>',
-                service: '<?php echo addslashes($booking['service_name']); ?>',
+                name: '<?php echo addslashes($booking['name']); ?>',
+                service: '<?php echo addslashes($booking['service']); ?>',
                 date: '<?php echo $booking['service_date']; ?>',
-                price: <?php echo $booking['price']; ?>,
+                price: <?php echo $booking['amount']; ?>,
                 type: 'non_member'
             });
             return new Promise((resolve) => {

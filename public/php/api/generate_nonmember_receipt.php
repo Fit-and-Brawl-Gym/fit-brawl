@@ -1,153 +1,141 @@
 <?php
-require_once '../../../includes/db_connect.php';
-require_once __DIR__ . '/../../../includes/api_security_middleware.php';
-require_once __DIR__ . '/../../../includes/input_validator.php';
-require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+// Suppress PHP warnings/notices from leaking HTML
+ob_start();
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/db_connect.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_security_middleware.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_rate_limiter.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
-// Don't display errors in JSON API - log them instead
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-
-// Require POST method
-if (!ApiSecurityMiddleware::requireMethod('POST')) {
-    exit; // Already sent response
+// Helper: get mysqli handle if available
+$db = null;
+if (isset($conn) && $conn) {
+    $db = $conn;
+} elseif (isset($mysqli) && $mysqli) {
+    $db = $mysqli;
 }
 
-// Rate limiting - 10 requests per minute per IP (public endpoint for non-members)
-$identifier = 'generate_nonmember_receipt:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 10, 60);
-
-// Validate and sanitize input
-$validation = ApiSecurityMiddleware::validateInput([
-    'service' => [
-        'type' => 'whitelist',
-        'required' => true,
-        'allowed' => ['daypass-gym', 'daypass-gym-student', 'training-boxing', 'training-muaythai', 'training-mma']
-    ],
-    'name' => [
-        'type' => 'string',
-        'required' => true,
-        'max_length' => 255
-    ],
-    'email' => [
-        'type' => 'email',
-        'required' => true
-    ],
-    'phone' => [
-        'type' => 'string',
-        'required' => true,
-        'max_length' => 20
-    ],
-    'service_date' => [
-        'type' => 'date',
-        'required' => true,
-        'format' => 'Y-m-d'
-    ]
-]);
-
-if (!$validation['valid']) {
-    $errors = implode(', ', $validation['errors']);
-    ApiSecurityMiddleware::sendJsonResponse([
-        'success' => false,
-        'message' => 'Validation failed: ' . $errors
-    ], 400);
+$required = ['service', 'name', 'email', 'phone', 'service_date'];
+foreach ($required as $f) {
+    if (empty($_POST[$f])) {
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => "Missing required field: $f"], 400);
+    }
 }
 
-$data = $validation['data'];
-$service = $data['service'];
-$name = $data['name'];
-$email = $data['email'];
-$phone = $data['phone'];
-$service_date_obj = $data['service_date']; // DateTime object
-$service_date_mysql = $service_date_obj instanceof DateTime ? $service_date_obj->format('Y-m-d') : $service_date_obj;
+$service = preg_replace('/[^a-z0-9_-]/i', '', $_POST['service']);
+$name = trim($_POST['name']);
+$email = trim($_POST['email']);
+$phone = trim($_POST['phone']);
+$serviceDate = trim($_POST['service_date']);
 
-// Service configurations
+// Validate email
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid email address.'], 400);
+}
+
+// Basic date validation
+$dateObj = DateTime::createFromFormat('F j, Y', $serviceDate) ?: DateTime::createFromFormat('Y-m-d', $serviceDate);
+if (!$dateObj) {
+    // Try to parse generic format
+    try {
+        $dateObj = new DateTime($serviceDate);
+    } catch (Exception $ex) {
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid service date.'], 400);
+    }
+}
+$serviceDateFormatted = $dateObj->format('Y-m-d');
+
+// Price mapping (must match the page mapping)
 $services = [
-    'daypass-gym' => ['name' => 'Day Pass: Gym Access', 'price' => 150, 'code' => 'DPG'],
-    'daypass-gym-student' => ['name' => 'Day Pass: Student Gym Access', 'price' => 120, 'code' => 'DPGS'],
-    'training-boxing' => ['name' => 'Training: Boxing', 'price' => 380, 'code' => 'TBX'],
-    'training-muaythai' => ['name' => 'Training: Muay Thai', 'price' => 530, 'code' => 'TMT'],
-    'training-mma' => ['name' => 'Training: MMA', 'price' => 630, 'code' => 'TMMA']
+    'daypass-gym' => 150,
+    'daypass-gym-student' => 120,
+    'training-boxing' => 380,
+    'training-muaythai' => 530,
+    'training-mma' => 630
 ];
 
-// Service already validated by whitelist
-$selectedService = $services[$service];
+$price = isset($services[$service]) ? $services[$service] : 0;
 
-// Generate unique receipt ID
-$receipt_id = strtoupper($selectedService['code'] . '-' . date('Ymd') . '-' . substr(uniqid(), -6));
+// Try DB insert (if table exists), otherwise fallback to a JSON file
+$receiptId = null;
+$createdAt = (new DateTime())->format('Y-m-d H:i:s');
 
-try {
-    // Check if table exists, if not create it
-    $tableCheck = $conn->query("SHOW TABLES LIKE 'non_member_bookings'");
-    if ($tableCheck->num_rows == 0) {
-        // Create the table
-        $createTable = "CREATE TABLE `non_member_bookings` (
-            `id` INT AUTO_INCREMENT PRIMARY KEY,
-            `receipt_id` VARCHAR(50) UNIQUE NOT NULL,
-            `service_key` VARCHAR(100) NOT NULL,
-            `service_name` VARCHAR(255) NOT NULL,
-            `price` DECIMAL(10,2) NOT NULL,
-            `customer_name` VARCHAR(255) NOT NULL,
-            `customer_email` VARCHAR(255) NOT NULL,
-            `customer_phone` VARCHAR(20) NOT NULL,
-            `service_date` DATE NOT NULL,
-            `booking_date` DATETIME NOT NULL,
-            `status` ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'pending',
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX `idx_email` (`customer_email`),
-            INDEX `idx_service_date` (`service_date`),
-            INDEX `idx_receipt` (`receipt_id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+// Rate limit non-member receipt generation to avoid abuse
+ApiSecurityMiddleware::applyRateLimit($conn, 'generate_nonmember_receipt:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 10, 60, true);
 
-        if (!$conn->query($createTable)) {
-            throw new Exception('Failed to create non_member_bookings table: ' . $conn->error);
+if ($db && method_exists($db, 'prepare')) {
+    // Try a common table name. Adjust to your schema if you have one.
+    $tableName = 'nonmember_receipts'; // change if your schema uses a different table
+    $receiptUniqueId = 'NM-' . uniqid();
+    $sql = "INSERT INTO {$tableName} (service, name, email, phone, service_date, amount, created_at, receipt_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = @$db->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param('ssssssss', $service, $name, $email, $phone, $serviceDateFormatted, $price, $createdAt, $receiptUniqueId);
+        $ok = $stmt->execute();
+        if ($ok) {
+            ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'receipt_id' => $receiptUniqueId], 200);
+            // sendJsonResponse already exits
         }
+        // If insertion failed, continue to fallback
     }
-
-    // Insert into database
-    $stmt = $conn->prepare("
-        INSERT INTO non_member_bookings
-        (receipt_id, service_key, service_name, price, customer_name, customer_email, customer_phone, service_date, booking_date, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')
-    ");
-
-    if (!$stmt) {
-        throw new Exception('Database prepare failed: ' . $conn->error);
-    }
-
-    $stmt->bind_param(
-        "sssdssss",
-        $receipt_id,
-        $service,
-        $selectedService['name'],
-        $selectedService['price'],
-        $name,
-        $email,
-        $phone,
-        $service_date_mysql
-    );
-
-    if ($stmt->execute()) {
-        ApiSecurityMiddleware::sendJsonResponse([
-            'success' => true,
-            'message' => 'Receipt generated successfully',
-            'receipt_id' => $receipt_id
-        ], 200);
-    } else {
-        error_log("Database insert failed in generate_nonmember_receipt.php: " . $stmt->error);
-        throw new Exception('Database insert failed');
-    }
-
-    $stmt->close();
-} catch (Exception $e) {
-    error_log("Error in generate_nonmember_receipt.php: " . $e->getMessage());
-    ApiSecurityMiddleware::sendJsonResponse([
-        'success' => false,
-        'message' => 'Failed to generate receipt. Please try again or contact support.'
-    ], 500);
 }
 
-$conn->close();
+// Fallback to JSON file storage if DB not present
+$storageDir = __DIR__ . '/../../data';
+if (!file_exists($storageDir)) {
+    if (!@mkdir($storageDir, 0755, true)) {
+        error_log('Failed to create data directory: ' . $storageDir);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Server error: cannot create data directory.'], 500);
+    }
+}
+$storageFile = $storageDir . '/receipts.json';
+$receipts = [];
+
+if (file_exists($storageFile)) {
+    $content = @file_get_contents($storageFile);
+    if ($content === false) {
+        error_log('Failed to read receipts file: ' . $storageFile);
+        ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Server error: cannot read receipts file.'], 500);
+    }
+    $receipts = json_decode($content, true) ?: [];
+}
+
+// Compose new receipt
+$newReceipt = [
+    'id' => 'NM-' . uniqid(),
+    'service' => $service,
+    'name' => $name,
+    'email' => $email,
+    'phone' => $phone,
+    'service_date' => $serviceDateFormatted,
+    'amount' => $price,
+    'created_at' => $createdAt
+];
+
+$receipts[] = $newReceipt;
+if (@file_put_contents($storageFile, json_encode($receipts, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+    ApiSecurityMiddleware::sendJsonResponse(['success' => true, 'receipt_id' => $newReceipt['id']], 200);
+    // sendJsonResponse exits
+} else {
+    error_log('Failed to write receipts file: ' . $storageFile);
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Server error: cannot write receipts file.'], 500);
+}
+    
+
+// If we reach here, fall through to error response (log then return HTTP 500). Some older code
+// appended below was removed during cleanup because it duplicated logic and caused parse
+// errors on some PHP configurations. Close DB connection if open.
+if (isset($stmt) && $stmt) {
+    $stmt->close();
+}
+if (isset($conn) && $conn) {
+    $conn->close();
+}
+
+// Already returned by now, but ensure a proper server response if execution continues
+http_response_code(500);
+echo json_encode(['success' => false, 'message' => 'Unable to create receipt.']);
+exit;

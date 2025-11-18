@@ -15,7 +15,17 @@ $port = getenv('DB_PORT') ?: 3306;
 $conn = new mysqli($host, $user, $pass, $db, $port);
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    if (php_sapi_name() === 'cli') {
+        // CLI: print error and exit
+        fwrite(STDERR, "DB Connection failed: " . $conn->connect_error . "\n");
+        exit(1);
+    } else {
+        // API: return JSON error and exit
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Database connection failed.']);
+        exit;
+    }
 }
 
 // Set character set to support UTF-8 (emojis, international characters)
