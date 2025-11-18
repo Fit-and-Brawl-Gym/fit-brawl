@@ -611,33 +611,40 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="bookings-tabs">
-                            <button class="tab-btn active" data-tab="upcoming">
-                                Booked
-                                <span class="tab-count" id="upcomingCount">0</span>
-                            </button>
-                            <button class="tab-btn" data-tab="past">
-                                Past
-                                <span class="tab-count" id="pastCount">0</span>
-                            </button>
-                            <button class="tab-btn" data-tab="cancelled">
-                                Cancelled
-                                <span class="tab-count" id="cancelledCount">0</span>
-                            </button>
+                            <div class="bookings-tabs">
+                                <button class="tab-btn active" data-tab="upcoming">
+                                    Booked
+                                    <span class="tab-count" id="upcomingCount">0</span>
+                                </button>
+                                <button class="tab-btn" data-tab="past">
+                                    Past
+                                    <span class="tab-count" id="pastCount">0</span>
+                                </button>
+                                <button class="tab-btn" data-tab="cancelled">
+                                    Cancelled
+                                    <span class="tab-count" id="cancelledCount">0</span>
+                                </button>
+                                <button class="tab-btn tab-blocked" data-tab="blocked">
+                                    Unavailable
+                                    <span class="tab-count" id="blockedCount">0</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="bookings-content">
-                    <div class="bookings-list active" id="upcomingBookings">
-                        <p class="loading-text">Loading bookings...</p>
+                    <div class="bookings-content">
+                        <div class="bookings-list active" id="upcomingBookings">
+                            <p class="loading-text">Loading bookings...</p>
+                        </div>
+                        <div class="bookings-list" id="pastBookings">
+                            <p class="loading-text">Loading bookings...</p>
+                        </div>
+                        <div class="bookings-list" id="cancelledBookings">
+                            <p class="loading-text">Loading bookings...</p>
+                        </div>
+                        <div class="bookings-list tab-blocked" id="blockedBookings">
+                            <p class="loading-text">Loading blocked schedules...</p>
+                        </div>
                     </div>
-                    <div class="bookings-list" id="pastBookings">
-                        <p class="loading-text">Loading bookings...</p>
-                    </div>
-                    <div class="bookings-list" id="cancelledBookings">
-                        <p class="loading-text">Loading bookings...</p>
-                    </div>
-                </div>
             </div>
         <?php else: ?>
             <!-- No Membership CTA -->
