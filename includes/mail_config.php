@@ -256,36 +256,46 @@ function sendTrainerBookingNotification($trainer_email, $trainer_name, $member_n
     }
 }
 
-function sendMemberBookingCancellationNotification($email, $member_name, $trainer_name, $date, $session_time, $class_type, $reason = '') {
+function sendMemberBookingRescheduleOption(
+    $email, 
+    $member_name, 
+    $trainer_name, 
+    $date, 
+    $time_range,  
+    $class_type, 
+    $reason = '',
+    $trainer_id = null 
+) {
     $mail = new PHPMailer(true);
 
     try {
         // SMTP Setup
         $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
+        $mail->Host       = getenv('EMAIL_HOST');
+        $mail->SMTPAuth   = true;
+        $mail->Username   = getenv('EMAIL_USER');
+        $mail->Password   = getenv('EMAIL_PASS');
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = getenv('EMAIL_PORT');
-        $mail->SMTPDebug = 2; // or 3 for more detailed output
-        $mail->Debugoutput = 'error_log'; // log to PHP error log
-        // Sender and Recipient
+        $mail->Port       = getenv('EMAIL_PORT');
+        $mail->SMTPDebug  = 0;
+        $mail->Debugoutput = 'error_log';
+
+        // Sender & recipient
         $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
         $mail->addAddress($email, $member_name);
 
-        // Subject
+        // Email subject
         $mail->isHTML(true);
-        $mail->Subject = "Class Cancellation Notice - $class_type on " . date('M d, Y', strtotime($date));
+        $mail->Subject = "Your Session - $class_type on " . date('M d, Y', strtotime($date)) . " Needs Attention";
 
-        // Message body
+        // Email body
         $html = "
             <p>Hi <strong>" . htmlspecialchars($member_name) . "</strong>,</p>
-            <p>We regret to inform you that your training session has been <strong>cancelled</strong> due to your trainer’s unavailability.</p>
+            <p>Your upcoming training session may be affected due to your trainer’s unavailability.</p>
             <table style='border-collapse: collapse; margin: 15px 0;'>
                 <tr><td><strong>Trainer:</strong></td><td>" . htmlspecialchars($trainer_name) . "</td></tr>
                 <tr><td><strong>Date:</strong></td><td>" . date('M d, Y', strtotime($date)) . "</td></tr>
-                <tr><td><strong>Session:</strong></td><td>" . htmlspecialchars($session_time) . "</td></tr>
+                <tr><td><strong>Time:</strong></td><td>" . htmlspecialchars($time_range) . "</td></tr>
                 <tr><td><strong>Class Type:</strong></td><td>" . htmlspecialchars($class_type) . "</td></tr>
             </table>";
 
@@ -293,16 +303,29 @@ function sendMemberBookingCancellationNotification($email, $member_name, $traine
             $html .= "<p><strong>Reason:</strong> " . htmlspecialchars($reason) . "</p>";
         }
 
-        $html .= "<p>We apologize for any inconvenience this may cause. You may rebook another available session from your member dashboard.</p>";
-        $html .= "<p>Thank you for your understanding,<br><strong>Fit & Brawl Gym Team</strong></p>";
+        $html .= "
+            <p>You can choose one of the following options:</p>
+            <ul>";
 
-        // Apply shared template
+        if ($trainer_id) {
+            $html .= "
+                <li><a href='" . getenv('APP_URL') . "/member/reschedule.php?trainer_id=" . urlencode($trainer_id) . "&date=" . urlencode($date) . "&time=" . urlencode($time_range) . "'>Reschedule your session</a></li>
+                <li><a href='" . getenv('APP_URL') . "/member/cancel.php?trainer_id=" . urlencode($trainer_id) . "&date=" . urlencode($date) . "&time=" . urlencode($time_range) . "'>Cancel your session</a></li>";
+        }
+
+        $html .= "
+            </ul>
+            <p>Please take action as soon as possible to secure your preferred slot.</p>
+            <p>Thank you for your understanding,<br><strong>Fit & Brawl Gym Team</strong></p>
+        ";
+
+        // Apply shared template if available
         applyEmailTemplate($mail, $html);
 
         $mail->send();
         return true;
     } catch (Exception $e) {
-        error_log("Failed to send booking cancellation email to $email: " . $e->getMessage());
+        error_log("Failed to send reschedule notification email to $email: " . $e->getMessage());
         return false;
     }
 }

@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
         upcoming: [],
         past: [],
         cancelled: [],
+        blocked: [],
         all: [] // Store all bookings for week calculations
     };
 
@@ -394,6 +395,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
                     document.getElementById('cancelledBookings').innerHTML =
                         `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
+                    document.getElementById('blockedBookings').innerHTML =
+                        `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
                 }
             })
             .catch(error => {
@@ -404,127 +407,86 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<p class="empty-message">Failed to load bookings</p>';
                 document.getElementById('cancelledBookings').innerHTML =
                     '<p class="empty-message">Failed to load bookings</p>';
+                    document.getElementById('blockedBookings').innerHTML =
+                    '<p class="empty-message">Failed to load bookings</p>';
             });
     }
 
-    function renderBookings(grouped) {
-        console.log('Rendering bookings - upcoming:', grouped.upcoming?.length, 'today:', grouped.today?.length, 'past:', grouped.past?.length); // Debug log
+  function renderBookings(grouped) {
+    // Combine all bookings from server groups
+    const allBookings = [...(grouped.today || []), ...(grouped.upcoming || []), ...(grouped.past || []), ...(grouped.blocked || [])];
 
-        // Combine all bookings from server groups
-        const allBookings = [...(grouped.today || []), ...(grouped.upcoming || []), ...(grouped.past || [])];
+    // Get current date and time
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
 
-        // Get current date and time
-        const now = new Date();
-        const today = new Date(now);
-        today.setHours(0, 0, 0, 0);
+    const sessionEndTimes = {
+        'Morning': 11,
+        'Afternoon': 17,
+        'Evening': 22
+    };
 
-        const sessionEndTimes = {
-            'Morning': 11,
-            'Afternoon': 17,
-            'Evening': 22
-        };
+    // Re-categorize bookings based on current time
+    const upcomingList = [];
+    const pastList = [];
+    const cancelledList = [];
+    const blockedList = [];
+    // Hide or show the Blocked tab
+    const blockedTab = document.querySelector('.tab-blocked'); 
 
-        // Re-categorize bookings based on current time
-        const upcomingList = [];
-        const pastList = [];
-        const cancelledList = [];
-
-        allBookings.forEach(booking => {
-            // Separate cancelled bookings first
-            if (booking.status === 'cancelled') {
-                cancelledList.push(booking);
-                return;
-            }
-
-            const bookingDate = new Date(booking.date + 'T00:00:00');
-            bookingDate.setHours(0, 0, 0, 0);
-
-            // If booking date is in the future
-            if (bookingDate > today) {
-                upcomingList.push(booking);
-            }
-            // If booking date is today
-            else if (bookingDate.getTime() === today.getTime()) {
-                const currentHour = now.getHours();
-                const sessionEnd = sessionEndTimes[booking.session_time] || 24;
-
-                // If session hasn't ended yet, it's upcoming
-                if (currentHour < sessionEnd) {
-                    upcomingList.push(booking);
-                } else {
-                    // Session has ended, move to past
-                    pastList.push(booking);
-                }
-            }
-            // Booking date is in the past
-            else {
-                pastList.push(booking);
-            }
-        });
-
-        // Sort upcoming by date ascending (earliest first), then by session time
-        // Use DSA if available for better performance
-        const useDSA = window.DSA || window.DSAUtils;
-
-        if (useDSA) {
-            // DSA-POWERED SORTING (Optimized comparison functions)
-            const sessionOrder = { 'Morning': 1, 'Afternoon': 2, 'Evening': 3 };
-            const sessionOrderReverse = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
-
-            upcomingList.sort(useDSA.compareByMultiple([
-                (a, b) => new Date(a.date) - new Date(b.date),
-                (a, b) => sessionOrder[a.session_time] - sessionOrder[b.session_time]
-            ]));
-
-            pastList.sort(useDSA.compareByMultiple([
-                (a, b) => new Date(b.date) - new Date(a.date),
-                (a, b) => sessionOrderReverse[a.session_time] - sessionOrderReverse[b.session_time]
-            ]));
-
-            cancelledList.sort(useDSA.compareByMultiple([
-                (a, b) => new Date(b.date) - new Date(a.date),
-                (a, b) => sessionOrderReverse[a.session_time] - sessionOrderReverse[b.session_time]
-            ]));
-
-            console.log('✅ DSA sorting applied to bookings');
-        } else {
-            // FALLBACK: Basic sorting
-            upcomingList.sort((a, b) => {
-                const dateCompare = new Date(a.date) - new Date(b.date);
-                if (dateCompare !== 0) return dateCompare;
-
-                const sessionOrder = { 'Morning': 1, 'Afternoon': 2, 'Evening': 3 };
-                return sessionOrder[a.session_time] - sessionOrder[b.session_time];
-            });
-
-            pastList.sort((a, b) => {
-                const dateCompare = new Date(b.date) - new Date(a.date);
-                if (dateCompare !== 0) return dateCompare;
-
-                const sessionOrder = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
-                return sessionOrder[a.session_time] - sessionOrder[b.session_time];
-            });
-
-            cancelledList.sort((a, b) => {
-                const dateCompare = new Date(b.date) - new Date(a.date);
-                if (dateCompare !== 0) return dateCompare;
-
-                const sessionOrder = { 'Evening': 1, 'Afternoon': 2, 'Morning': 3 };
-                return sessionOrder[a.session_time] - sessionOrder[b.session_time];
-            });
+    allBookings.forEach(booking => {
+        if (booking.status === 'cancelled') {
+            cancelledList.push(booking);
+            return;
         }
 
-        // Store the full data for filtering
-        allBookingsData.upcoming = upcomingList;
-        allBookingsData.past = pastList;
-        allBookingsData.cancelled = cancelledList;
+        if (booking.status === 'blocked') {
+            blockedList.push(booking);
+            return;
+        }
 
-        // Update stat cards with next upcoming session
-        updateStatCards(upcomingList);
+        const bookingDate = new Date(booking.date + 'T00:00:00');
+        bookingDate.setHours(0, 0, 0, 0);
 
-        // Apply current filter
-        applyBookingsFilter();
+        if (bookingDate > today) {
+            upcomingList.push(booking);
+        } else if (bookingDate.getTime() === today.getTime()) {
+            const currentHour = now.getHours();
+            const sessionEnd = sessionEndTimes[booking.session_time] || 24;
+
+            if (currentHour < sessionEnd) {
+                upcomingList.push(booking);
+            } else {
+                pastList.push(booking);
+            }
+        } else {
+            pastList.push(booking);
+        }
+    });
+
+    // Sort (upcoming ascending, past descending, blocked by date ascending)
+    upcomingList.sort((a, b) => new Date(a.date) - new Date(b.date));
+    pastList.sort((a, b) => new Date(b.date) - new Date(a.date));
+    blockedList.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    allBookingsData.upcoming = upcomingList;
+    allBookingsData.past = pastList;
+    allBookingsData.cancelled = cancelledList;
+    allBookingsData.blocked = blockedList;
+    
+    if (blockedList.length === 0) {
+        blockedTab.style.display = 'none';
+    } else {
+        blockedTab.style.display = 'inline-block'; 
     }
+    // Update stat cards with next upcoming session
+    updateStatCards(upcomingList);
+
+    // Apply current filter
+    applyBookingsFilter();
+}
+
 
     /**
      * ========================================================================
@@ -573,83 +535,44 @@ document.addEventListener('DOMContentLoaded', function () {
      * etc.), the app still works. This is called "progressive enhancement" -
      * better if available, functional if not.
      */
-    function applyBookingsFilter() {
-        // Get selected class type from dropdown
-        const filterValue = document.getElementById('classFilter')?.value || 'all';
+  function applyBookingsFilter() {
+    const filterValue = document.getElementById('classFilter')?.value || 'all';
+    const useDSA = window.DSA || window.DSAUtils;
 
-        // Check if DSA utilities are available
-        const useDSA = window.DSA || window.DSAUtils;
+    let filteredUpcoming, filteredPast, filteredCancelled, filteredBlocked;
 
-        let filteredUpcoming, filteredPast, filteredCancelled;
+    if (useDSA) {
+        const filterBuilder = new useDSA.FilterBuilder();
+        if (filterValue !== 'all') filterBuilder.where('class_type', '===', filterValue);
 
-        if (useDSA) {
-            // ═══════════════════════════════════════════════════════════════
-            // DSA-POWERED FILTERING (Optimized with FilterBuilder)
-            // ═══════════════════════════════════════════════════════════════
+        filteredUpcoming = filterValue === 'all' ? allBookingsData.upcoming : filterBuilder.apply(allBookingsData.upcoming);
+        filteredPast = filterValue === 'all' ? allBookingsData.past : filterBuilder.apply(allBookingsData.past);
+        filteredCancelled = filterValue === 'all' ? allBookingsData.cancelled : filterBuilder.apply(allBookingsData.cancelled);
+        filteredBlocked = filterValue === 'all' ? allBookingsData.blocked : filterBuilder.apply(allBookingsData.blocked);
 
-            const filterBuilder = new useDSA.FilterBuilder();
+        console.log('✅ DSA FilterBuilder applied');
+    } else {
+        filteredUpcoming = filterValue === 'all' ? allBookingsData.upcoming : allBookingsData.upcoming.filter(b => b.class_type === filterValue);
+        filteredPast = filterValue === 'all' ? allBookingsData.past : allBookingsData.past.filter(b => b.class_type === filterValue);
+        filteredCancelled = filterValue === 'all' ? allBookingsData.cancelled : allBookingsData.cancelled.filter(b => b.class_type === filterValue);
+        filteredBlocked = filterValue === 'all' ? allBookingsData.blocked : allBookingsData.blocked.filter(b => b.class_type === filterValue);
 
-            // Add filter condition only if user selected a specific class type
-            if (filterValue !== 'all') {
-                // This creates a filter that checks: booking.class_type === filterValue
-                filterBuilder.where('class_type', '===', filterValue);
-            }
-
-            // Apply the filter to each booking category
-            // If 'all' is selected, skip filtering (show everything)
-            filteredUpcoming = filterValue === 'all' ?
-                allBookingsData.upcoming :
-                filterBuilder.apply(allBookingsData.upcoming);
-
-            filteredPast = filterValue === 'all' ?
-                allBookingsData.past :
-                filterBuilder.apply(allBookingsData.past);
-
-            filteredCancelled = filterValue === 'all' ?
-                allBookingsData.cancelled :
-                filterBuilder.apply(allBookingsData.cancelled);
-
-            console.log('✅ DSA FilterBuilder applied to bookings (optimized path)');
-        } else {
-            // ═══════════════════════════════════════════════════════════════
-            // FALLBACK: Basic JavaScript .filter() method
-            // ═══════════════════════════════════════════════════════════════
-            // This works the same way functionally, just not as optimized
-
-            filteredUpcoming = allBookingsData.upcoming;
-            if (filterValue !== 'all') {
-                filteredUpcoming = allBookingsData.upcoming.filter(booking =>
-                    booking.class_type === filterValue
-                );
-            }
-
-            filteredPast = allBookingsData.past;
-            if (filterValue !== 'all') {
-                filteredPast = allBookingsData.past.filter(booking =>
-                    booking.class_type === filterValue
-                );
-            }
-
-            filteredCancelled = allBookingsData.cancelled;
-            if (filterValue !== 'all') {
-                filteredCancelled = allBookingsData.cancelled.filter(booking =>
-                    booking.class_type === filterValue
-                );
-            }
-
-            console.log('⚠️ Using fallback filtering (DSA not available)');
-        }
-
-        // Render the filtered results to the page
-        renderBookingList('upcomingBookings', filteredUpcoming);
-        renderBookingList('pastBookings', filteredPast);
-        renderBookingList('cancelledBookings', filteredCancelled);
-
-        // Update the count badges (shows number of bookings in each category)
-        document.getElementById('upcomingCount').textContent = filteredUpcoming.length;
-        document.getElementById('pastCount').textContent = filteredPast.length;
-        document.getElementById('cancelledCount').textContent = filteredCancelled.length;
+        console.log('⚠️ Using fallback filtering');
     }
+
+    // RENDER
+    renderBookingList('upcomingBookings', filteredUpcoming);
+    renderBookingList('pastBookings', filteredPast);
+    renderBookingList('cancelledBookings', filteredCancelled);
+    renderBookingList('blockedBookings', filteredBlocked);
+
+    // UPDATE COUNTERS
+    document.getElementById('upcomingCount').textContent = filteredUpcoming.length;
+    document.getElementById('pastCount').textContent = filteredPast.length;
+    document.getElementById('cancelledCount').textContent = filteredCancelled.length;
+    document.getElementById('blockedCount').textContent = filteredBlocked.length;
+}
+
 
     function updateStatCards(upcomingList) {
         const upcomingClassEl = document.getElementById('upcomingClass');
@@ -771,180 +694,90 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function renderBookingList(containerId, bookings) {
-        const container = document.getElementById(containerId);
-        console.log(`Rendering ${containerId}:`, bookings); // Debug log
+   function renderBookingList(containerId, bookings) {
+    const container = document.getElementById(containerId);
+    console.log(`Rendering ${containerId}:`, bookings);
 
-        if (!bookings || bookings.length === 0) {
-            container.innerHTML = '<p class="empty-message">No bookings found</p>';
-            return;
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<p class="empty-message">No bookings found</p>';
+        return;
+    }
+
+    const now = new Date();
+    container.innerHTML = `
+        <table class="bookings-table">
+            <tbody>
+                ${bookings.map(booking => {
+        // Format times
+        let timeDisplay = '';
+        let durationDisplay = '';
+        if (booking.start_time && booking.end_time) {
+            const startTime = new Date(booking.start_time);
+            const endTime = new Date(booking.end_time);
+            const startFormatted = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            const endFormatted = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            timeDisplay = `${startFormatted} - ${endFormatted}`;
+
+            const durationMinutes = (endTime - startTime) / 1000 / 60;
+            const hours = Math.floor(durationMinutes / 60);
+            const minutes = durationMinutes % 60;
+            durationDisplay = hours > 0
+                ? (minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`)
+                : `${minutes}m`;
+        } else {
+            timeDisplay = booking.session_time || '-';
+            durationDisplay = '-';
         }
 
-        // Time-related variables
-        const now = new Date();
-        const currentHour = now.getHours();
-        const today = new Date(now);
-        today.setHours(0, 0, 0, 0);
+        // Determine action buttons
+        let actionCell = '';
+        if (booking.status === 'cancelled') {
+            actionCell = `
+                <div class="booking-status-badge cancelled-badge">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Cancelled</span>
+                </div>`;
+        } else if (booking.status === 'blocked' || booking.status === 'confirmed') {
+            // Show Reschedule + Cancel for both blocked and confirmed
+            actionCell = `
+                <div class="booking-action-buttons">
+                    <button class="btn-reschedule-booking" onclick="openRescheduleModal(${booking.id}, this)">
+                        <i class="fas fa-calendar-check"></i> Reschedule
+                    </button>
+                    <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>`;
+        } else {
+            // Completed / past sessions
+            actionCell = `
+                <div class="booking-status-badge completed-badge">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed</span>
+                </div>`;
+        }
 
-        container.innerHTML = `
-            <table class="bookings-table">
-                <tbody>
-                    ${bookings.map(booking => {
-            // Determine if this booking can actually be cancelled based on current time and 12-hour policy
-            const bookingDate = new Date(booking.date + 'T00:00:00');
+        return `
+            <tr class="booking-row ${booking.status}">
+                <td class="booking-date-cell">
+                    <div class="booking-date-badge">
+                        <div class="booking-day">${new Date(booking.date).getDate()}</div>
+                        <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
+                    </div>
+                </td>
+                <td class="booking-class-cell">${booking.class_type}</td>
+                <td class="booking-time-cell"><i class="fas fa-clock"></i> ${timeDisplay}</td>
+                <td class="booking-duration-cell"><span class="duration-badge"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</span></td>
+                <td class="booking-trainer-cell"><i class="fas fa-user"></i> ${booking.trainer_name}</td>
+                <td class="booking-day-cell"><i class="fas fa-calendar"></i> ${booking.day_of_week}</td>
+                <td class="booking-actions-cell">${actionCell}</td>
+            </tr>`;
+    }).join('')}
+            </tbody>
+        </table>
+    `;
+}
 
-            // Calculate hours until session starts
-            let hoursUntilSession = 0;
-            if (booking.start_time) {
-                const sessionStartDateTime = new Date(booking.start_time);
-                hoursUntilSession = (sessionStartDateTime - now) / (1000 * 60 * 60);
-            }
-
-            let canActuallyCancelNow = false;
-            let isWithinCancellationWindow = false;
-            let hasSessionPassed = false;
-
-            // Check if session is ongoing
-            const todayStr = now.toISOString().split('T')[0];
-            const isToday = booking.date === todayStr;
-
-            let isOngoing = false;
-            if (isToday && booking.status !== 'cancelled' && booking.start_time && booking.end_time) {
-                const startTime = new Date(booking.start_time);
-                const endTime = new Date(booking.end_time);
-                isOngoing = now >= startTime && now < endTime;
-            }
-
-            // Check if session has ended for today
-            let hasSessionEnded = false;
-            if (isToday && booking.end_time) {
-                const endTime = new Date(booking.end_time);
-                hasSessionEnded = now >= endTime;
-            }
-
-            if (booking.status === 'cancelled') {
-                canActuallyCancelNow = false;
-                isWithinCancellationWindow = false;
-                hasSessionPassed = false;
-            } else if (isOngoing) {
-                canActuallyCancelNow = false;
-                isWithinCancellationWindow = false;
-                hasSessionPassed = false;
-            } else if (booking.status === 'completed' || hasSessionEnded) {
-                canActuallyCancelNow = false;
-                hasSessionPassed = true;
-            } else if (hoursUntilSession < 0) {
-                // Session is in the past - mark as completed
-                canActuallyCancelNow = false;
-                hasSessionPassed = true;
-            } else {
-                // Can only cancel if more than 12 hours before session start
-                if (hoursUntilSession > 12) {
-                    canActuallyCancelNow = true;
-                } else {
-                    // Within 12 hours of session - cannot cancel (but not past yet)
-                    isWithinCancellationWindow = true;
-                    canActuallyCancelNow = false;
-                }
-            }
-
-            // Format time display - check if time-based or legacy
-            let timeDisplay = '';
-            let durationDisplay = '';
-
-            if (booking.start_time && booking.end_time) {
-                // Time-based booking
-                const startTime = new Date(booking.start_time);
-                const endTime = new Date(booking.end_time);
-                const startFormatted = startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                const endFormatted = endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-                timeDisplay = `${startFormatted} - ${endFormatted}`;
-
-                // Calculate duration
-                const durationMinutes = (endTime - startTime) / 1000 / 60;
-                const hours = Math.floor(durationMinutes / 60);
-                const minutes = durationMinutes % 60;
-                durationDisplay = hours > 0
-                    ? (minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`)
-                    : `${minutes}m`;
-            } else {
-                // Legacy session-based booking (fallback for old data)
-                timeDisplay = booking.session_time || '-';
-                durationDisplay = '-';
-            }
-
-            return `
-                <tr class="booking-row ${booking.status === 'cancelled' ? 'cancelled' : ''}">
-                    <td class="booking-date-cell">
-                        <div class="booking-date-badge">
-                            <div class="booking-day">${new Date(booking.date).getDate()}</div>
-                            <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
-                        </div>
-                    </td>
-                    <td class="booking-class-cell">${booking.class_type}</td>
-                    <td class="booking-time-cell">
-                        <i class="fas fa-clock"></i> ${timeDisplay}
-                    </td>
-                    <td class="booking-duration-cell">
-                        <span class="duration-badge"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</span>
-                    </td>
-                    <td class="booking-trainer-cell">
-                        <i class="fas fa-user"></i> ${booking.trainer_name}
-                    </td>
-                    <td class="booking-day-cell">
-                        <i class="fas fa-calendar"></i> ${booking.day_of_week}
-                    </td>
-                    <td class="booking-actions-cell">
-                        ${(() => {
-                            if (isOngoing) {
-                                return `
-                                    <div class="booking-status-badge ongoing-badge">
-                                        <i class="fas fa-play-circle"></i>
-                                        <span>Ongoing Session</span>
-                                    </div>
-                                `;
-                            } else if (booking.status === 'cancelled') {
-                                return `
-                                    <div class="booking-status-badge cancelled-badge">
-                                        <i class="fas fa-times-circle"></i>
-                                        <span>Cancelled</span>
-                                    </div>
-                                `;
-                            } else if (canActuallyCancelNow) {
-                                return `
-                                    <div class="booking-action-buttons">
-                                        <button class="btn-reschedule-booking" onclick="openRescheduleModal(${booking.id}, this)">
-                                            <i class="fas fa-calendar-check"></i> Reschedule
-                                        </button>
-                                        <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})">
-                                            <i class="fas fa-times"></i> Cancel
-                                        </button>
-                                    </div>
-                                `;
-                            } else if (isWithinCancellationWindow) {
-                                return `
-                                    <div class="booking-status-badge warning-badge" title="Cannot cancel within 12 hours of session start">
-                                        <i class="fas fa-lock"></i>
-                                        <span>Cannot Modify</span>
-                                    </div>
-                                `;
-                            } else {
-                                return `
-                                    <div class="booking-status-badge completed-badge">
-                                        <i class="fas fa-check-circle"></i>
-                                        <span>Completed</span>
-                                    </div>
-                                `;
-                            }
-                        })()}
-                    </td>
-                </tr>
-            `;
-        }).join('')}
-                </tbody>
-            </table>
-        `;
-    }
 
     // ===================================
     // BOOKING TABS

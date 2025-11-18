@@ -57,7 +57,7 @@ try {
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
         WHERE ur.user_id = ?
-        AND ur.booking_status IN ('confirmed', 'completed', 'cancelled')
+        AND ur.booking_status IN ('confirmed', 'completed', 'cancelled', 'blocked')
         ORDER BY ur.booking_date DESC, ur.session_time ASC
     ");
     $stmt->bind_param("s", $user_id);
@@ -172,11 +172,11 @@ try {
 
     // Group bookings by period
     $grouped = [
-        'upcoming' => array_filter($bookings, fn($b) => $b['booking_period'] === 'upcoming' && $b['status'] !== 'cancelled'),
-        'today' => array_filter($bookings, fn($b) => $b['booking_period'] === 'today' && $b['status'] !== 'cancelled'),
-        'past' => array_filter($bookings, fn($b) => $b['booking_period'] === 'past' || $b['status'] === 'cancelled')
+        'upcoming' => array_filter($bookings, fn($b) => $b['booking_period'] === 'upcoming' && $b['status'] !== 'cancelled' && $b['status'] !== 'blocked'),
+        'today'    => array_filter($bookings, fn($b) => $b['booking_period'] === 'today' && $b['status'] !== 'cancelled' && $b['status'] !== 'blocked'),
+        'past'     => array_filter($bookings, fn($b) => $b['booking_period'] === 'past' || $b['status'] === 'cancelled'),
+        'blocked'  => array_filter($bookings, fn($b) => $b['status'] === 'blocked')
     ];
-
     // Debug info
     $debug = [
         'current_time' => date('H:i:s'),
@@ -191,14 +191,16 @@ try {
         'grouped' => [
             'upcoming' => array_values($grouped['upcoming']),
             'today' => array_values($grouped['today']),
-            'past' => array_values($grouped['past'])
+            'past' => array_values($grouped['past']),
+            'blocked' => array_values($grouped['blocked'])
         ],
         'weekly_usage' => $weekly_usage,
         'summary' => [
             'total' => count($bookings),
             'upcoming' => count($grouped['upcoming']),
             'today' => count($grouped['today']),
-            'past' => count($grouped['past'])
+            'past' => count($grouped['past']),
+            'blocked' => count($grouped['blocked'])
         ],
         'debug' => $debug
     ], 200);
