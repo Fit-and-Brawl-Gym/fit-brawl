@@ -93,8 +93,13 @@ $currentPage = "membership";
 $additionalCSS = [PUBLIC_PATH . "/css/pages/membership.css?v=" . time() . mt_rand()];
 $additionalJS = ["../js/membership.js?v=" . time() . mt_rand()];
 
+// CSRF token for AJAX and forms
+require_once __DIR__ . '/../../includes/csrf_protection.php';
+$csrfToken = CSRFProtection::generateToken();
+
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
+echo '<script>window.CSRF_TOKEN = "' . htmlspecialchars($csrfToken) . '";</script>';
 ?>
 
 <!--Main-->
@@ -196,7 +201,15 @@ require_once __DIR__ . '/../../includes/header.php';
                             <li>Shower Access</li>
                             <li>Locker Access</li>
                         </ul>
-                        <button class="select-btn">SELECT PLAN</button>
+                        <form id="membershipTransactionForm">
+                            <?php if ($isLoggedIn && isset($_SESSION['username'])): ?>
+                                <input type="text" id="name" name="name" value="<?= htmlspecialchars($_SESSION['username']) ?>" readonly>
+                            <?php else: ?>
+                                <input type="text" id="name" name="name" placeholder="Your Name" required>
+                            <?php endif; ?>
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                            <button class="select-btn" type="submit">SELECT PLAN</button>
+                        </form>
                     </div>
 
                     <div class="plan-card" data-plan="brawler" data-category="member">

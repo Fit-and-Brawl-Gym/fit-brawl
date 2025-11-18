@@ -11,6 +11,14 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
 <html lang="en">
 
 <head>
+  <?php
+  require_once '../../../includes/csrf_protection.php';
+  $csrfToken = CSRFProtection::generateToken();
+  ?>
+  <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
+  <script>
+    window.CSRF_TOKEN = '<?= htmlspecialchars($csrfToken) ?>';
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin | Manage Subscriptions</title>

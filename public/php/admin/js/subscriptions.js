@@ -385,6 +385,7 @@ function openConfirmModal(message, actionText = 'OK', showReason = false) {
   const newCancel = document.getElementById('confirmCancel');
 
   newOk.textContent = actionText;
+  newOk.classList.add('btn-modal');
   modal.classList.add('show');
 
   newOk.addEventListener('click', () => {
@@ -403,6 +404,7 @@ function openConfirmModal(message, actionText = 'OK', showReason = false) {
     }
   });
 
+  newCancel.classList.add('btn-modal');
   newCancel.addEventListener('click', () => {
     modal.classList.remove('show');
     pendingSubAction = null;
@@ -425,6 +427,10 @@ function performSubscriptionUpdate(id, status, reason = '') {
   formData.append('id', id);
   if (action === 'reject' && reason) {
     formData.append('remarks', reason);
+  }
+  // Add CSRF token
+  if (window.CSRF_TOKEN) {
+    formData.append('csrf_token', window.CSRF_TOKEN);
   }
 
   fetch(`api/admin_subscriptions_api.php?action=${action}`, {
@@ -622,7 +628,10 @@ async function executeAction() {
 
   const formData = new FormData();
   formData.append('id', currentId);
-
+  // Add CSRF token
+  if (window.CSRF_TOKEN) {
+    formData.append('csrf_token', window.CSRF_TOKEN);
+  }
   if (currentAction === 'reject') {
     const reason = document.getElementById('rejectReason').value.trim();
     if (!reason) {
