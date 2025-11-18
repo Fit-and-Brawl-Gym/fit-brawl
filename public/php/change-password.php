@@ -147,8 +147,7 @@ require_once '../../includes/header.php';
 
             <form method="POST" class="change-password-form">
                 <?= CSRFProtection::getTokenField(); ?>
-                <h3>A LITTLE STEP BACK BEFORE THE BEST VERSION OF YOU!</h3>
-
+                
                 <?php if (!empty($alertMessage)): ?>
                     <div class="alert-box alert-box--<?= htmlspecialchars($alertMessage['type']); ?>" role="alert">
                         <div class="alert-icon" aria-hidden="true">
