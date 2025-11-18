@@ -173,7 +173,8 @@ require_once '../../includes/header.php';
                     <div class="transaction-left">
                         <div class="form-group">
                             <label for="name">Name</label>
-                            <input type="text" id="name" name="name" placeholder="Excel Bondoc" required>
+                            <input type="text" id="name" name="name" placeholder="Excel Bondoc" 
+                                   value="<?= htmlspecialchars($_SESSION['name'] ?? $_SESSION['username'] ?? '') ?>" required>
                         </div>
 
                             <div class="form-group">
