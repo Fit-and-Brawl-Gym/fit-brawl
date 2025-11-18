@@ -74,7 +74,7 @@ $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
 $additionalCSS = [
     '../css/components/alert.css?v=' . time(),
-    '../css/pages/reservations.css?v=2.0.' . time(),
+    '../css/pages/reservations.css?v=3.0.' . time(),
     '../css/components/time-selection-v2.css?v=' . time(),
     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'
 ];
@@ -83,7 +83,7 @@ $additionalJS = [
     '../js/dsa/dsa-utils.js?v=' . time(), // DSA Core Library
     '../js/time-selection-modern-v2.js?v=' . time(),
     '../js/resheduling.js?v=' . time(),  // ← LOAD THIS FIRST
-    '../js/reservations.js?v=' . time() . mt_rand(),  // ← LOAD THIS SECOND
+    '../js/reservations-new.js?v=' . time() . mt_rand(),  // ← LOAD THIS SECOND - RENAMED TO BYPASS CACHE
     '../js/dsa/reservations-dsa-integration.js?v=' . time() // DSA Integration Layer
 ];
 

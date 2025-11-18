@@ -59,67 +59,6 @@ function resetRescheduleModal() {
 // OPEN modal
 window.openRescheduleModal = function(bookingId, element) {
     console.log('openRescheduleModal called with bookingId:', bookingId);
- 
-    const modalBody = document.querySelector('.modal-body');
-
-    const bookingRow = element.closest('.booking-row');
-    if (!bookingRow) return console.error('Could not find booking row');
-    // Disable scroll
-    document.body.classList.add('modal-open');
-    document.documentElement.classList.add('modal-open'); // ensures html doesn't scroll
-
-    // Store booking data
-    currentRescheduleBooking = {
-        id: bookingId,
-        date: bookingRow.querySelector('.booking-date-cell')?.textContent.trim() || '',
-        class: bookingRow.querySelector('.booking-class-cell')?.textContent.trim() || '',
-        trainer: bookingRow.querySelector('.booking-trainer-cell')?.textContent.trim() || '',
-        time: bookingRow.querySelector('.booking-time-cell')?.textContent.trim() || ''
-    };
-    console.log('Current reschedule booking:', currentRescheduleBooking);
-
-    // Populate original booking details
-    document.getElementById('originalDateTime').textContent = `${currentRescheduleBooking.date} ${currentRescheduleBooking.time}`;
-    document.getElementById('originalTrainer').textContent = currentRescheduleBooking.trainer;
-    document.getElementById('originalClass').textContent = currentRescheduleBooking.class;
-
-    // Reset modal content
-    resetRescheduleModal();
-
-    // Populate current booking summary
-    populateCurrentBookingSummary();
-
-    // Populate class options
-    loadRescheduleClassOptions();
-
-    // Show modal
-    const modal = document.getElementById('rescheduleModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        document.body.classList.add('modal-open');
-        console.log('✅ Reschedule modal displayed');
-    }
-};
-
-// CLOSE modal
-window.closeRescheduleModal = function() {
-     document.body.style.overflow = ''; 
-    const modal = document.getElementById('rescheduleModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.classList.remove('modal-open');
-    }
-    // Enable scroll
-    document.body.classList.remove('modal-open');
-    document.documentElement.classList.remove('modal-open');
-
-    // Clear booking reference and reset modal
-    currentRescheduleBooking = null;
-    resetRescheduleModal();
-};
-
-window.openRescheduleModal = function(bookingId, element) {
-    console.log('openRescheduleModal called with bookingId:', bookingId);
     
     const bookingRow = element.closest('.booking-row');
     if (!bookingRow) {
@@ -191,8 +130,38 @@ window.openRescheduleModal = function(bookingId, element) {
         });
     }
 
+    // Set minimum date to today (disable past dates)
+    const dateInput = document.getElementById('rescheduleDate');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+        
+        // Pre-fill with current booking date if it's in the future
+        if (currentRescheduleBooking && currentRescheduleBooking.date) {
+            // Parse the date from "December 25, 2025" format to "YYYY-MM-DD"
+            const parsedDate = parseBookingDateToISO(currentRescheduleBooking.date);
+            if (parsedDate && parsedDate >= today) {
+                dateInput.value = parsedDate;
+            } else {
+                dateInput.value = today; // Default to today if current booking is in past
+            }
+        }
+    }
+
     // Populate class options
     loadRescheduleClassOptions();
+    
+    // Pre-select the current class type after options are loaded
+    setTimeout(() => {
+        const classSelect = document.getElementById('rescheduleClass');
+        if (classSelect && currentRescheduleBooking && currentRescheduleBooking.class) {
+            classSelect.value = currentRescheduleBooking.class;
+            // Trigger change to load trainers
+            if (dateInput && dateInput.value) {
+                loadRescheduleTrainersAndAvailability();
+            }
+        }
+    }, 100);
 
     // Show modal
     const modal = document.getElementById('rescheduleModal');
@@ -352,6 +321,58 @@ function showRescheduleTimeSummary(state) {
     }
 }
 
+// Helper function to parse booking date (e.g., "December 25, 2025") to ISO format ("2025-12-25")
+function parseBookingDateToISO(dateString) {
+    try {
+        // Try parsing formats like "December 25, 2025" or "Dec 25, 2025"
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    } catch (e) {
+        console.error('Error parsing date:', e);
+    }
+    return null;
+}
+
+// Helper function to parse booking date (e.g., "December 25, 2025") to ISO format ("2025-12-25")
+function parseBookingDateToISO(dateString) {
+    try {
+        // Try parsing formats like "December 25, 2025" or "Dec 25, 2025"
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    } catch (e) {
+        console.error('Error parsing date:', e);
+    }
+    return null;
+}
+
+// Helper function to check if time is in the past for today's date
+function isRescheduleTimePast(timeString, selectedDate) {
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate !== today) {
+        return false; // Not today, allow all times
+    }
+    
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Parse time inline (can't use parseRescheduleTime as it's defined later)
+    if (!timeString) return true; // If no time string, consider it past
+    const parts = timeString.split(':');
+    const slotMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    
+    return slotMinutes <= currentMinutes;
+}
+
 // Event listeners for date and class changes
 document.addEventListener('DOMContentLoaded', function() {
     const rescheduleDate = document.getElementById('rescheduleDate');
@@ -451,6 +472,75 @@ function loadRescheduleTrainersAndAvailability() {
         });
 }
 
+// Helper function to check if trainer's shift has ended for today
+function isRescheduleTrainerShiftEnded(trainer, selectedDate) {
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate !== today) {
+        return false; // Not today, shifts are valid
+    }
+
+    // Get shift end time
+    let shiftEnd = trainer.shift_end;
+    if (!shiftEnd) {
+        const defaultShifts = {
+            'Morning': '15:00',
+            'Afternoon': '19:00',
+            'Night': '22:00'
+        };
+        shiftEnd = defaultShifts[trainer.shift] || '22:00';
+    }
+
+    // Parse shift end time to minutes
+    const parts = shiftEnd.split(':');
+    const shiftEndMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+
+    // Get current time in minutes
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    return currentMinutes >= shiftEndMinutes;
+}
+
+// Helper function to check if trainer's shift start time has passed for today
+function isRescheduleTrainerShiftStartPassed(trainer, selectedDate) {
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate !== today) {
+        return true; // Not today, shift times are valid (future dates)
+    }
+
+    // Get shift start time
+    let shiftStart = trainer.shift_start;
+    if (!shiftStart) {
+        const defaultShifts = {
+            'Morning': '07:00',
+            'Afternoon': '11:00',
+            'Night': '14:00'
+        };
+        shiftStart = defaultShifts[trainer.shift] || '07:00';
+    }
+
+    // Parse shift start time to minutes
+    const parts = shiftStart.split(':');
+    const shiftStartMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+
+    // Get current time in minutes
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    return currentMinutes >= shiftStartMinutes;
+}
+
+// Helper function to format shift time display
+function formatRescheduleShiftTime(time) {
+    if (!time) return '';
+    const parts = time.split(':');
+    const hours = parseInt(parts[0]);
+    const minutes = parts[1];
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes} ${period}`;
+}
+
 function renderRescheduleTrainers(trainers) {
     const trainersGrid = document.getElementById('rescheduleTrainersGrid');
 
@@ -464,30 +554,59 @@ function renderRescheduleTrainers(trainers) {
         return;
     }
 
+    const selectedDate = document.getElementById('rescheduleDate')?.value;
+
     trainersGrid.innerHTML = trainers.map(trainer => {
+        // Check if shift has ended for today
+        const shiftEnded = isRescheduleTrainerShiftEnded(trainer, selectedDate);
+        // Check if shift start time has passed
+        const shiftStartPassed = isRescheduleTrainerShiftStartPassed(trainer, selectedDate);
+        // Mark unavailable if shift ended OR if shift start time hasn't passed yet (no available times)
+        const effectiveStatus = (shiftEnded || !shiftStartPassed) ? 'unavailable' : trainer.status;
+        
         const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
         const photoSrc = trainer.photo && trainer.photo !== 'account-icon.svg'
             ? `../../uploads/trainers/${trainer.photo}`
             : `../../images/account-icon.svg`;
+        
+        // Format shift times
+        let shiftTimeDisplay = '';
+        if (trainer.shift_start && trainer.shift_end) {
+            shiftTimeDisplay = `<p class="trainer-shift-time"><i class="fas fa-clock"></i> ${formatRescheduleShiftTime(trainer.shift_start)} - ${formatRescheduleShiftTime(trainer.shift_end)}</p>`;
+        } else {
+            const defaultShifts = {
+                'Morning': { start: '07:00', end: '15:00' },
+                'Afternoon': { start: '11:00', end: '19:00' },
+                'Night': { start: '14:00', end: '22:00' }
+            };
+            const shift = defaultShifts[trainer.shift] || defaultShifts['Morning'];
+            shiftTimeDisplay = `<p class="trainer-shift-time"><i class="fas fa-clock"></i> ${formatRescheduleShiftTime(shift.start)} - ${formatRescheduleShiftTime(shift.end)}</p>`;
+        }
+        
+        const statusText = (shiftEnded || !shiftStartPassed) ? 'Unavailable' : trainer.status;
+        
         return `
-            <div class="trainer-card ${trainer.status}"
+            <div class="trainer-card ${effectiveStatus}"
                  data-trainer-id="${trainer.id}"
                  data-trainer-name="${escapedName}"
-                 data-trainer-status="${trainer.status}"
-                 onclick="selectRescheduleTrainer(${trainer.id}, '${escapedName}', '${trainer.status}')">
-                <span class="trainer-status-badge ${trainer.status}">${trainer.status}</span>
+                 data-trainer-status="${effectiveStatus}"
+                 onclick="selectRescheduleTrainer(${trainer.id}, '${escapedName}', '${effectiveStatus}')">
+                <span class="trainer-status-badge ${effectiveStatus}">${statusText}</span>
                 <img src="${photoSrc}"
                      alt="${escapedName}"
                      class="trainer-photo ${trainer.photo && trainer.photo !== 'account-icon.svg' ? '' : 'default-icon'}"
                      onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
                 <h3 class="trainer-name">${trainer.name}</h3>
                 <p class="trainer-specialty">${trainer.specialization}</p>
+                ${shiftTimeDisplay}
             </div>
         `;
     }).join('');
 }
 
 window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
+    console.log('🟢 selectRescheduleTrainer CALLED:', { trainerId, trainerName, status });
+    
     if (status === 'unavailable') {
         showToast('This trainer is not available for the selected date', 'warning');
         return;
@@ -498,7 +617,7 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
         return;
     }
 
-    console.log('Selected reschedule trainer:', trainerId, trainerName);
+    console.log('✅ Trainer selection valid, proceeding...', trainerId, trainerName);
 
     const trainerInput = document.getElementById('rescheduleTrainerInput');
     if (!trainerInput) {
@@ -525,17 +644,20 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
 
 // Load trainer availability for reschedule
 function loadRescheduleTrainerAvailability() {
+    console.log('🔵 loadRescheduleTrainerAvailability CALLED');
     const date = document.getElementById('rescheduleDate').value;
     const trainerInput = document.getElementById('rescheduleTrainerInput');
     const trainerId = trainerInput ? trainerInput.value : '';
     const classType = document.getElementById('rescheduleClass').value;
 
+    console.log('🔵 Field values:', { date, trainerId, classType, trainerInputExists: !!trainerInput });
+
     if (!date || !trainerId || !classType) {
-        console.warn('Missing required fields:', { date, trainerId, classType });
+        console.warn('❌ Missing required fields:', { date, trainerId, classType });
         return;
     }
 
-    console.log('Loading reschedule trainer availability:', { date, trainerId, classType });
+    console.log('✅ Loading reschedule trainer availability:', { date, trainerId, classType });
 
     const banner = document.getElementById('rescheduleAvailabilityBanner');
     if (banner) {
@@ -553,11 +675,31 @@ function loadRescheduleTrainerAvailability() {
     formData.append('trainer_id', trainerId);
     formData.append('date', date);
     formData.append('class_type', classType);
+    
+    // Exclude current booking from availability check during reschedule
+    console.log('🔍 currentRescheduleBooking object:', currentRescheduleBooking);
+    console.log('🔍 currentRescheduleBooking.id:', currentRescheduleBooking ? currentRescheduleBooking.id : 'undefined');
+    
+    if (currentRescheduleBooking && currentRescheduleBooking.id) {
+        formData.append('exclude_booking_id', currentRescheduleBooking.id);
+        console.log('🔄 Excluding booking ID from availability:', currentRescheduleBooking.id);
+    } else {
+        console.warn('⚠️ No booking ID to exclude! currentRescheduleBooking:', currentRescheduleBooking);
+    }
+    
+    console.log('📤 FormData contents:', {
+        trainer_id: formData.get('trainer_id'),
+        date: formData.get('date'),
+        class_type: formData.get('class_type'),
+        exclude_booking_id: formData.get('exclude_booking_id')
+    });
 
     fetch('api/get_trainer_availability.php', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
-            console.log('Reschedule availability response:', data);
+            console.log('📥 Reschedule availability response:', data);
+            console.log('📊 Excluded booking ID in response:', data.excluded_booking_id);
+            console.log('📊 Booked slots count:', data.booked_count);
 
             if (data.success && data.available_slots && data.available_slots.length > 0) {
                 if (banner) banner.style.display = 'none';
@@ -601,6 +743,18 @@ function loadRescheduleTrainerAvailability() {
                 `;
             }
         });
+}
+
+// Helper function to check if time is in the past for today's date
+function isRescheduleTimePast(timeString, selectedDate) {
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate !== today) return false; // Not today, allow all times
+    
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const slotMinutes = parseRescheduleTime(timeString);
+    
+    return slotMinutes <= currentMinutes;
 }
 
 function buildRescheduleAvailabilityTimeline(state, data) {
@@ -669,6 +823,12 @@ function generateRescheduleTimeSlots(startTime, endTime, intervalMinutes) {
 }
 
 function getRescheduleSlotStatus(slotTime, state, shift) {
+    // Check if time is in the past (only for today's bookings)
+    const selectedDate = document.getElementById('rescheduleDate')?.value;
+    if (selectedDate && isRescheduleTimePast(slotTime, selectedDate)) {
+        return 'unavailable';
+    }
+    
     if (isRescheduleBreakTime(slotTime, shift)) {
         return 'break';
     }
@@ -772,7 +932,7 @@ function generateRescheduleStartTimeOptions(state, shift) {
 
     const options = slots.map(timeStr => {
         const status = getRescheduleSlotStatus(timeStr, state, shift);
-        const isDisabled = status === 'booked' || status === 'break';
+        const isDisabled = status === 'booked' || status === 'break' || status === 'unavailable';
         const label = formatRescheduleTime(timeStr);
         const unavailableText = isDisabled ? ' (unavailable)' : '';
 
@@ -1405,6 +1565,22 @@ async function handleRescheduleFormSubmit(e) {
     if (!date || !classType || !trainerId || !start || !end) {
         showToast('Please complete all fields before confirming.', 'warning');
         return;
+    }
+
+    // Validate that selected time is not in the past
+    const today = new Date().toISOString().split('T')[0];
+    if (date === today) {
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        
+        // Parse start time
+        const startParts = start.split(':');
+        const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+        
+        if (startMinutes <= currentMinutes) {
+            showToast('Cannot book a time slot that has already passed. Please select a future time.', 'error');
+            return;
+        }
     }
 
     const startDateTime = `${date} ${start}:00`;
