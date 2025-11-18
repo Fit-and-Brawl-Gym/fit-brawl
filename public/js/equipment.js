@@ -40,6 +40,7 @@ function renderEquipment(items) {
     const categories = item.category ? item.category.split(',').map(c => c.trim()) : [];
     const statusClass = (item.status || '').toLowerCase().replace(/\s+/g, '-');
     const isMaintenance = item.status === 'Maintenance';
+    const isOutOfOrder = item.status === 'Out of Order';
 
     // Use image if available, otherwise use emoji
     let imageContent;
@@ -94,8 +95,9 @@ function renderEquipment(items) {
     }
 
     return `
-      <div class="equipment-card ${isMaintenance ? 'maintenance-mode' : ''}" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
+      <div class="equipment-card ${isMaintenance ? 'maintenance-mode' : ''} ${isOutOfOrder ? 'out-of-order-mode' : ''}" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
         ${isMaintenance ? `<div class="maintenance-badge" tabindex="0"><i class="fas fa-tools"></i>${maintenanceTooltip}</div>` : ''}
+        ${isOutOfOrder ? `<div class="out-of-order-badge" tabindex="0"><i class="fas fa-times-circle"></i></div>` : ''}
         <div class="equipment-image-container">
           ${imageContent}
         </div>
@@ -422,7 +424,11 @@ fetch('equipment.php?api=true')
       category: d.category,
       status: d.status,
       description: d.description,
-      image_path: d.image_path || null
+      image_path: d.image_path || null,
+      emoji: d.emoji || null,
+      maintenance_start_date: d.maintenance_start_date || null,
+      maintenance_end_date: d.maintenance_end_date || null,
+      maintenance_reason: d.maintenance_reason || null
     }));
     applyFilters();
   })
