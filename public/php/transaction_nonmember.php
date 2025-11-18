@@ -1,6 +1,8 @@
 <?php
+session_start();
 // No session_start or login check - accessible to non-members
 require_once '../../includes/db_connect.php';
+require_once '../../includes/csrf_protection.php';
 
 // Get service details from URL parameters
 $service = isset($_GET['service']) ? $_GET['service'] : 'daypass-gym';
@@ -128,7 +130,8 @@ require_once '../../includes/header.php';
         <div class="transaction-container">
             <h1 class="transaction-title">BOOK YOUR SERVICE</h1>
             <div class="transaction-box">
-                <form id="nonMemberForm" class="subscription-form">
+                <form id="nonMemberForm" class="subscription-form" method="POST">
+                    <?= CSRFProtection::getTokenField(); ?>
                     <input type="hidden" name="service" value="<?php echo $service; ?>">
 
                     <div class="transaction-content">

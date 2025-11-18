@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Suppress PHP warnings/notices from leaking HTML
 ob_start();
 ini_set('display_errors', 0);
@@ -7,6 +8,11 @@ ini_set('log_errors', 1);
 require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/db_connect.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_security_middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_rate_limiter.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/csrf_protection.php';
+$csrfToken = $_POST['csrf_token'] ?? '';
+if (!CSRFProtection::validateToken($csrfToken)) {
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid CSRF token.'], 403);
+}
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -64,7 +70,7 @@ $receiptId = null;
 $createdAt = (new DateTime())->format('Y-m-d H:i:s');
 
 // Rate limit non-member receipt generation to avoid abuse
-ApiSecurityMiddleware::applyRateLimit($conn, 'generate_nonmember_receipt:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 10, 60, true);
+ApiSecurityMiddleware::applyRateLimit($conn, 'generate_nonmember_receipt:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 30, 60, true);
 
 if ($db && method_exists($db, 'prepare')) {
     // Try a common table name. Adjust to your schema if you have one.
