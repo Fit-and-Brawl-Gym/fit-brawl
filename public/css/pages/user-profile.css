@@ -61,6 +61,45 @@ body::before {
 	z-index: 1;
 }
 
+/* Alert Messages */
+.alert {
+	padding: var(--spacing-4) var(--spacing-6);
+	border-radius: var(--radius-xl);
+	margin-bottom: var(--spacing-6);
+	font-size: var(--font-size-base);
+	font-weight: var(--font-weight-semibold);
+	border: 1px solid;
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-3);
+	animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.alert-success {
+	background: rgba(40, 167, 69, 0.15);
+	color: #28a745;
+	border-color: #28a745;
+	box-shadow: 0 4px 20px rgba(40, 167, 69, 0.2);
+}
+
+.alert-error {
+	background: rgba(220, 53, 69, 0.15);
+	color: #dc3545;
+	border-color: #dc3545;
+	box-shadow: 0 4px 20px rgba(220, 53, 69, 0.2);
+}
+
 /* Profile Header Section */
 .profile-header {
 	background: rgba(0, 47, 63, 0.7);
@@ -95,14 +134,26 @@ body::before {
     height: 150px;
     border-radius: var(--radius-full);
     object-fit: cover;
-    /* Remove yellow border/glow */
+    /* Gold border for custom avatars */
+    border: 3px solid var(--color-accent);
+    box-shadow: 0 0 15px rgba(213, 186, 43, 0.4);
+    transition: var(--transition-base);
+}
+
+.profile-avatar:hover {
+    box-shadow: 0 0 25px rgba(213, 186, 43, 0.6);
+    transform: scale(1.02);
+}
+
+.profile-avatar.default-icon {
+    /* No border for default icon */
     border: none;
     box-shadow: none;
 }
 
-.profile-avatar.default-icon {
-    border: none;
+.profile-avatar.default-icon:hover {
     box-shadow: none;
+    transform: none;
 }
 
 /* Icon shown instead of trainer name */
@@ -574,11 +625,26 @@ body::before {
     height: 100px;
     border-radius: var(--radius-full);
     object-fit: cover;
+    /* Gold border for custom avatars */
+    border: 3px solid var(--color-accent);
+    box-shadow: 0 0 15px rgba(213, 186, 43, 0.4);
+    transition: var(--transition-base);
+}
+
+.avatar-preview:hover {
+    box-shadow: 0 0 25px rgba(213, 186, 43, 0.6);
 }
 
 .avatar-preview.default-icon {
     padding-left: 1px;
     object-fit: contain;
+    /* No border for default icon */
+    border: none;
+    box-shadow: none;
+}
+
+.avatar-preview.default-icon:hover {
+    box-shadow: none;
 }
 
 .upload-btn-wrapper {

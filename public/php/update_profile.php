@@ -160,59 +160,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $passwordChanged = !empty($newPassword);
-    if ($stmt->execute()) {
-        if ($passwordChanged && $passwordHistoryContext) {
-            PasswordHistory::record($conn, $passwordHistoryContext['user_id'], $passwordHistoryContext['hash']);
-        }
-        
-        // Build change log for activity logging
-        $changes = [];
-        if ($username !== $_SESSION['name']) {
-            $changes[] = "username changed from '{$_SESSION['name']}' to '$username'";
-        }
-        if ($email !== $currentEmail) {
-            $changes[] = "email changed from '$currentEmail' to '$email'";
-        }
-        if ($avatar) {
-            $changes[] = "profile picture updated";
-        }
-        if ($removeAvatar) {
-            $changes[] = "profile picture removed";
-        }
-        if ($passwordChanged) {
-            $changes[] = "password changed";
-        }
-        
-        // Log the activity
-        if (!empty($changes)) {
-            $role = $_SESSION['role'] ?? 'user';
-            $changeLog = implode(", ", $changes);
-            ActivityLogger::log(
-                'profile_updated', 
-                $username, 
-                $_SESSION['id'] ?? null, 
-                "User '$username' ($role) updated profile: $changeLog"
-            );
-        }
-        
-        // Update session
-        $_SESSION['name'] = $username;
-        $_SESSION['email'] = $email;
-        if ($avatar) {
-            $_SESSION['avatar'] = $avatar;
-        }
 
-        // If password was changed and user is a trainer, mark password as changed
-        if ($passwordChanged && isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') {
-            $update_trainer = $conn->prepare("UPDATE trainers SET password_changed = 1 WHERE email = ?");
-            $update_trainer->bind_param("s", $email);
-            $update_trainer->execute();
+    try {
+        $executeSuccess = $stmt->execute();
+    } catch (mysqli_sql_exception $e) {
+        // Handle duplicate entry errors
+        if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+            if (strpos($e->getMessage(), 'username') !== false) {
+                $_SESSION['error'] = "This username is already taken. Please choose a different username.";
+            } elseif (strpos($e->getMessage(), 'email') !== false) {
+                $_SESSION['error'] = "This email is already registered. Please use a different email.";
+            } else {
+                $_SESSION['error'] = "This information is already in use. Please try different details.";
+            }
+        } else {
+            $_SESSION['error'] = "Failed to update profile: " . $e->getMessage();
         }
-
-        $_SESSION['success'] = "Profile updated successfully!";
-    } else {
-        $_SESSION['error'] = "Failed to update profile.";
+        $stmt->close();
+        header("Location: $profileRedirect");
+        exit;
     }
+
+    if ($executeSuccess) {
+        // Verify the update was successful
+        $affectedRows = $stmt->affected_rows;
+
+        if ($affectedRows > 0 || $stmt->error === '') {
+            if ($passwordChanged && $passwordHistoryContext) {
+                PasswordHistory::record($conn, $passwordHistoryContext['user_id'], $passwordHistoryContext['hash']);
+            }
+
+            // Build change log for activity logging
+            $changes = [];
+            if ($username !== $_SESSION['name']) {
+                $changes[] = "username changed from '{$_SESSION['name']}' to '$username'";
+            }
+            if ($email !== $currentEmail) {
+                $changes[] = "email changed from '$currentEmail' to '$email'";
+            }
+            if ($avatar) {
+                $changes[] = "profile picture updated to '$avatar'";
+            }
+            if ($removeAvatar) {
+                $changes[] = "profile picture removed";
+            }
+            if ($passwordChanged) {
+                $changes[] = "password changed";
+            }
+
+            // Log the activity
+            if (!empty($changes)) {
+                $role = $_SESSION['role'] ?? 'user';
+                $changeLog = implode(", ", $changes);
+                ActivityLogger::log(
+                    'profile_updated',
+                    $username,
+                    $_SESSION['id'] ?? null,
+                    "User '$username' ($role) updated profile: $changeLog"
+                );
+            }
+
+            // Update session
+            $_SESSION['name'] = $username;
+            $_SESSION['email'] = $email;
+            if ($avatar) {
+                $_SESSION['avatar'] = $avatar;
+            }
+
+            // If password was changed and user is a trainer, mark password as changed
+            if ($passwordChanged && isset($_SESSION['role']) && $_SESSION['role'] === 'trainer') {
+                $update_trainer = $conn->prepare("UPDATE trainers SET password_changed = 1 WHERE email = ?");
+                $update_trainer->bind_param("s", $email);
+                $update_trainer->execute();
+            }
+
+            $_SESSION['success'] = "Profile updated successfully!";
+        } else {
+            $_SESSION['error'] = "No changes were made or update failed. Please try again.";
+        }
+    } else {
+        $_SESSION['error'] = "Failed to update profile: " . $stmt->error;
+    }
+
+    $stmt->close();
 
     // Redirect based on role
     header("Location: $profileRedirect");

@@ -365,7 +365,14 @@ require_once '../../includes/header.php';
                 <!-- Logged in users don't see name/email fields -->
                 <div class="logged-in-notice">
                     <i class="fas fa-user-check"></i>
-                    <span>Posting as: <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Member') ?></strong></span>
+                    <?php
+                    $displayName = htmlspecialchars($_SESSION['name'] ?? 'Member');
+                    // Truncate long names with ellipsis (max 25 characters)
+                    if (mb_strlen($displayName) > 25) {
+                        $displayName = mb_substr($displayName, 0, 22) . '...';
+                    }
+                    ?>
+                    <span>Posting as: <strong><?= $displayName ?></strong></span>
                 </div>
             <?php endif; ?>
 

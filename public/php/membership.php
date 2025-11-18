@@ -203,7 +203,11 @@ echo '<script>window.CSRF_TOKEN = "' . htmlspecialchars($csrfToken) . '";</scrip
                         </ul>
                         <form id="membershipTransactionForm">
                             <?php if ($isLoggedIn && isset($_SESSION['username'])): ?>
-                                <input type="text" id="name" name="name" value="<?= htmlspecialchars($_SESSION['username']) ?>" readonly>
+                                <div class="logged-in-notice" style="margin-bottom:8px;">
+                                    <i class="fas fa-user-check"></i>
+                                    <span>Joining as: <strong><?= htmlspecialchars($_SESSION['username']) ?></strong></span>
+                                </div>
+                                <input type="hidden" id="name" name="name" value="<?= htmlspecialchars($_SESSION['username']) ?>">
                             <?php else: ?>
                                 <input type="text" id="name" name="name" placeholder="Your Name" required>
                             <?php endif; ?>

@@ -174,11 +174,26 @@
     object-fit: cover;
     border-radius: 50%;
     cursor: pointer;
+    /* Gold border for custom avatars */
+    border: 2px solid var(--color-accent);
+    box-shadow: 0 0 10px rgba(213, 186, 43, 0.3);
+    transition: var(--transition-base);
+}
+
+.account-icon:hover {
+    box-shadow: 0 0 15px rgba(213, 186, 43, 0.5);
+    transform: scale(1.05);
 }
 
 .account-icon.default-icon {
+    /* No border for default icon */
     border: none;
     box-shadow: none;
+}
+
+.account-icon.default-icon:hover {
+    box-shadow: none;
+    transform: none;
 }
 
 .account-dropdown {

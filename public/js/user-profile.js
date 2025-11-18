@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
         avatarInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                console.log('Avatar file selected:', file.name, 'Size:', file.size, 'bytes', 'Type:', file.type);
+
                 // Check file size (2MB limit)
                 const maxSize = 2 * 1024 * 1024; // 2MB in bytes
                 if (file.size > maxSize) {
@@ -63,10 +65,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    console.log('Avatar preview loaded successfully');
                     avatarPreview.src = e.target.result;
                     avatarPreview.classList.remove('default-icon');
                     removeAvatarBtn.classList.add('show');
                     removeAvatarFlag.value = '0';
+                };
+                reader.onerror = function(error) {
+                    console.error('Error reading file:', error);
+                    alert('Error reading file. Please try again.');
                 };
                 reader.readAsDataURL(file);
             }
@@ -100,6 +107,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (sameAsCurrentWarning) {
                 sameAsCurrentWarning.classList.remove('show');
             }
+
+            // Check if avatar file is selected
+            const avatarFile = avatarInput && avatarInput.files && avatarInput.files[0];
+            const removeAvatarRequested = removeAvatarFlag && removeAvatarFlag.value === '1';
+
+            // Log what's being submitted for debugging
+            console.log('Form submission:', {
+                hasAvatarFile: !!avatarFile,
+                avatarFileName: avatarFile ? avatarFile.name : 'none',
+                removeAvatar: removeAvatarRequested,
+                hasNewPassword: !!newPassword
+            });
 
             if (newPassword || confirmPassword) {
                 // Ensure current password field is visible when attempting to change password
@@ -145,6 +164,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     return false;
                 }
+            }
+
+            // Show loading indicator
+            const submitBtn = form.querySelector('.btn-save');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             }
         });
     }

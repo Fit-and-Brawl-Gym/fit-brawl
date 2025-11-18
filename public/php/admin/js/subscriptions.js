@@ -9,13 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadOnlinePayments() {
   const tbody = document.getElementById('processingTableBody');
   if (!tbody) return;
-  
+
   tbody.innerHTML = `<tr><td colspan="6" align="center">Loading...</td></tr>`;
 
   try {
     const response = await fetch(`api/admin_subscriptions_api.php?action=fetch&type=processing`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
+
     const result = await response.json();
     if (!result.success) {
       console.error('API Error:', result.message);
@@ -32,11 +32,11 @@ async function loadOnlinePayments() {
     }
 
     tbody.innerHTML = onlinePayments.map(sub => {
-      const qrLink = sub.qr_proof 
-        ? `<a class="qr-link" href="${window.UPLOADS_PATH}/receipts/${encodeURIComponent(sub.qr_proof)}" target="_blank">View</a>` 
+      const qrLink = sub.qr_proof
+        ? `<a class="qr-link" href="${window.UPLOADS_PATH}/receipts/${encodeURIComponent(sub.qr_proof)}" target="_blank">View</a>`
         : '—';
       const dateFormatted = formatDate(sub.date_submitted || '');
-      
+
       return `
         <tr>
           <td>${sub.id}</td>
@@ -61,13 +61,13 @@ async function loadOnlinePayments() {
 async function loadRejectedSubmissions() {
   const tbody = document.getElementById('rejectedTableBody');
   if (!tbody) return;
-  
+
   tbody.innerHTML = `<tr><td colspan="5" align="center">Loading...</td></tr>`;
 
   try {
     const response = await fetch(`api/admin_subscriptions_api.php?action=fetch&type=rejected`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
+
     const result = await response.json();
     if (!result.success) {
       console.error('API Error:', result.message);
@@ -83,7 +83,7 @@ async function loadRejectedSubmissions() {
     tbody.innerHTML = result.data.map(sub => {
       const dateFormatted = formatDate(sub.date_submitted || '');
       const remarks = escapeHtml(sub.remarks || 'No reason provided');
-      
+
       return `
         <tr>
           <td>${sub.id}</td>
@@ -104,13 +104,13 @@ async function loadRejectedSubmissions() {
 async function loadCashPayments() {
   const tbody = document.getElementById('cashTableBody');
   if (!tbody) return;
-  
+
   tbody.innerHTML = `<tr><td colspan="6" align="center">Loading...</td></tr>`;
 
   try {
     const response = await fetch(`api/admin_subscriptions_api.php?action=fetch&type=processing`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
+
     const result = await response.json();
     if (!result.success) {
       console.error('API Error:', result.message);
@@ -131,10 +131,10 @@ async function loadCashPayments() {
       const member = escapeHtml(sub.member || '');
       const plan = escapeHtml(sub.plan || '—');
       const dateSubmitted = formatDate(sub.date_submitted);
-      const paymentStatus = sub.cash_payment_status === 'paid' 
+      const paymentStatus = sub.cash_payment_status === 'paid'
         ? `<span class="status-badge status-paid">Paid</span>`
         : `<span class="status-badge status-unpaid">Unpaid</span>`;
-      
+
       const action = sub.cash_payment_status === 'unpaid'
         ? `<button class="btn-approve" onclick="markCashAsPaid(${id})">Mark as Paid</button>
            <button class="btn-reject" onclick="updateSubscription(${id}, 'Rejected')">Reject</button>`
@@ -517,7 +517,7 @@ async function loadSubscriptions(type, tableBodyId) {
 
     // Filter data based on table type
     let filteredData = result.data;
-    
+
     // For processing table, exclude cash payments (they're shown separately)
     if (tableBodyId === 'processingTableBody') {
       filteredData = result.data.filter(sub => sub.payment_method !== 'cash');

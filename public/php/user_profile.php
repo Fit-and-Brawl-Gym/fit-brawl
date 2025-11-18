@@ -178,8 +178,19 @@ if ($bookingQuery) {
 $pageTitle = "My Profile - Fit and Brawl";
 $currentPage = "user_profile";
 // Determine avatar source
-$hasCustomAvatar = $user['avatar'] !== 'account-icon-white.svg' && !empty($user['avatar']);
-$avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($user['avatar']) : "../../images/account-icon.svg";
+
+// Enhanced avatar logic: fallback to default if file missing or invalid
+$avatarFile = isset($user['avatar']) ? $user['avatar'] : '';
+$hasCustomAvatar = $avatarFile !== 'account-icon.svg' && $avatarFile !== 'account-icon-white.svg' && !empty($avatarFile);
+$avatarPath = "../../uploads/avatars/" . htmlspecialchars($avatarFile);
+$avatarExists = false;
+if ($hasCustomAvatar) {
+    $realPath = __DIR__ . '/../../uploads/avatars/' . $avatarFile;
+    $avatarExists = file_exists($realPath);
+}
+// Add cache-busting parameter to prevent browser caching
+$cacheBuster = $hasCustomAvatar && $avatarExists ? '?v=' . time() : '';
+$avatarSrc = ($hasCustomAvatar && $avatarExists) ? $avatarPath . $cacheBuster : "../../images/account-icon.svg";
 
 // Set additional files for header
 $additionalCSS = ['../css/pages/user-profile.css'];
@@ -191,6 +202,20 @@ require_once __DIR__ . '/../../includes/header.php';
 
     <!--Main-->
     <main class="profile-main">
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success" role="alert">
+                <?= htmlspecialchars($_SESSION['success']) ?>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-error" role="alert">
+                <?= $_SESSION['error'] ?>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+
         <!-- Profile Header -->
         <section class="profile-header">
             <div class="profile-avatar-container">

@@ -138,8 +138,20 @@ if (!isset($avatarSrc)) {
     $avatarSrc = IMAGES_PATH . '/account-icon.svg';
     $hasCustomAvatar = false;
     if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-        $hasCustomAvatar = $_SESSION['avatar'] !== 'account-icon.svg' && !empty($_SESSION['avatar']);
-        $avatarSrc = $hasCustomAvatar ? UPLOADS_PATH . "/avatars/" . htmlspecialchars($_SESSION['avatar']) : IMAGES_PATH . "/account-icon.svg";
+        $avatarFile = $_SESSION['avatar'];
+        $hasCustomAvatar = $avatarFile !== 'account-icon.svg' && $avatarFile !== 'account-icon-white.svg' && !empty($avatarFile);
+        if ($hasCustomAvatar) {
+            // Verify file exists before using it
+            $realPath = __DIR__ . '/../uploads/avatars/' . $avatarFile;
+            if (file_exists($realPath)) {
+                $avatarSrc = UPLOADS_PATH . "/avatars/" . htmlspecialchars($avatarFile) . '?v=' . time();
+            } else {
+                $avatarSrc = IMAGES_PATH . "/account-icon.svg";
+                $hasCustomAvatar = false;
+            }
+        } else {
+            $avatarSrc = IMAGES_PATH . "/account-icon.svg";
+        }
     }
 } else {
     // If avatarSrc is already set, determine if it's custom
@@ -302,17 +314,23 @@ if (!isset($ogImage)) {
                         // On all pages except user_profile, always show default if missing or empty
                         $isProfilePage = (basename($_SERVER['PHP_SELF']) === 'user_profile.php');
                         $avatarToShow = $avatarSrc;
-                        if (
-                            !$isProfilePage && (
-                                !$hasCustomAvatar ||
-                                empty($_SESSION['avatar']) ||
-                                $_SESSION['avatar'] === 'account-icon-white.svg'
-                            )
-                        ) {
+                        // Enhanced error handling for missing/invalid avatar
+                        $avatarFile = isset($_SESSION['avatar']) ? $_SESSION['avatar'] : '';
+                        $avatarPath = UPLOADS_PATH . "/avatars/" . htmlspecialchars($avatarFile);
+                        $avatarExists = false;
+                        if ($hasCustomAvatar && !empty($avatarFile) && $avatarFile !== 'account-icon.svg' && $avatarFile !== 'account-icon-white.svg') {
+                            // Check if file exists on disk using __DIR__ for reliable path resolution
+                            $realPath = __DIR__ . '/../uploads/avatars/' . $avatarFile;
+                            $avatarExists = file_exists($realPath);
+                        }
+                        if (!$isProfilePage && (!$hasCustomAvatar || empty($avatarFile) || $avatarFile === 'account-icon-white.svg' || !$avatarExists)) {
                             $avatarToShow = IMAGES_PATH . '/account-icon.svg';
+                        } elseif ($avatarExists) {
+                            // Add cache-busting parameter to force browser to reload new avatar
+                            $avatarToShow = $avatarPath . '?v=' . time();
                         }
                         ?>
-                        <img src="<?= $avatarToShow ?>" alt="Account" class="account-icon <?= (!$hasCustomAvatar || empty($_SESSION['avatar'])) ? 'default-icon' : '' ?>">
+                        <img src="<?= $avatarToShow ?>" alt="Account" class="account-icon <?= (!$hasCustomAvatar || empty($_SESSION['avatar']) || !$avatarExists) ? 'default-icon' : '' ?>">
                     </div>
                     <div class="dropdown-menu">
                         <a href="user_profile.php">Profile</a>

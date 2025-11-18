@@ -129,7 +129,7 @@ if (@file_put_contents($storageFile, json_encode($receipts, JSON_PRETTY_PRINT | 
     error_log('Failed to write receipts file: ' . $storageFile);
     ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Server error: cannot write receipts file.'], 500);
 }
-    
+
 
 // If we reach here, fall through to error response (log then return HTTP 500). Some older code
 // appended below was removed during cleanup because it duplicated logic and caused parse

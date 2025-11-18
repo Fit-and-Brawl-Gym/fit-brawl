@@ -213,11 +213,11 @@ require_once '../../includes/header.php';
     document.addEventListener('DOMContentLoaded', function() {
         // Phone number formatting
         const phoneInput = document.getElementById('phone');
-        
+
         if (phoneInput) {
             phoneInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-                
+
                 // If user starts typing with 0 or 9, automatically add +63
                 if (value.length > 0) {
                     if (value.startsWith('0')) {
@@ -227,7 +227,7 @@ require_once '../../includes/header.php';
                         // Add +63 before the 9
                         value = '63' + value;
                     }
-                    
+
                     // Format: +63 XXX XXX XXXX
                     let formatted = '+63';
                     if (value.length > 2) {
@@ -243,7 +243,7 @@ require_once '../../includes/header.php';
                             formatted += ' ' + number.substring(6, 10);
                         }
                     }
-                    
+
                     e.target.value = formatted;
                 } else {
                     e.target.value = '';
@@ -254,7 +254,7 @@ require_once '../../includes/header.php';
             phoneInput.addEventListener('keydown', function(e) {
                 const cursorPosition = e.target.selectionStart;
                 const value = e.target.value;
-                
+
                 // If backspace or delete is pressed and cursor is at position 0-3 (within +63)
                 if ((e.key === 'Backspace' || e.key === 'Delete') && cursorPosition <= 3) {
                     e.preventDefault();
