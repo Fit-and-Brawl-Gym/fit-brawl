@@ -2,6 +2,7 @@
 require_once '../../../includes/init.php';
 require_once '../../../includes/file_upload_security.php';
 require_once '../../../includes/activity_logger.php';
+require_once '../../../includes/csrf_protection.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -50,8 +51,13 @@ while ($row = $day_offs_result->fetch_assoc()) {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
+    // Validate CSRF token
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        $error = 'Security token validation failed. Please try again.';
+    } else {
+        $name = trim($_POST['name']);
+        $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
     $specialization = $_POST['specialization'];
     $bio = trim($_POST['bio']);
@@ -180,6 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -220,6 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="form-container">
             <form method="POST" enctype="multipart/form-data" class="trainer-form">
+                <?= CSRFProtection::getTokenField(); ?>
                 <div class="form-section">
                     <h3 class="section-title">Basic Information</h3>
 

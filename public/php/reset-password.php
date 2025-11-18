@@ -10,6 +10,7 @@ require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/enhanced_audit_logger.php';
 require_once __DIR__ . '/../../includes/password_reset_service.php';
 require_once __DIR__ . '/../../includes/password_policy.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 
 EnhancedAuditLogger::init($conn);
 PasswordResetService::init($conn);
@@ -32,8 +33,13 @@ if (!$token) {
 
 // Handle password submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
-    $newPassword = $_POST['password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
+    // Validate CSRF token
+    $csrfToken = $_POST['csrf_token'] ?? '';
+    if (!CSRFProtection::validateToken($csrfToken)) {
+        $error = 'Security token validation failed. Please try again.';
+    } else {
+        $newPassword = $_POST['password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
 
     if (empty($newPassword)) {
         $error = 'Password is required';
@@ -47,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
         } else {
             $result = PasswordResetService::completePasswordReset($token, $newPassword);
         }
+    }
     }
 }
 ?>
@@ -673,6 +680,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
             <?php endif; ?>
             
             <form method="POST" action="" id="resetForm">
+                <?= CSRFProtection::getTokenField(); ?>
                 <div class="password-input-group">
                     <label for="passwordInput">New Password</label>
                     <div class="input-wrapper">

@@ -8,6 +8,7 @@ session_start();
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/enhanced_audit_logger.php';
 require_once __DIR__ . '/../../includes/sensitive_change_service.php';
+require_once __DIR__ . '/../../includes/csrf_protection.php';
 
 EnhancedAuditLogger::init($conn);
 SensitiveChangeService::init($conn);
@@ -20,7 +21,13 @@ if (!$token) {
 } else {
     // Process confirmation
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $result = SensitiveChangeService::confirmSensitiveChange($token);
+        // Validate CSRF token
+        $csrfToken = $_POST['csrf_token'] ?? '';
+        if (!CSRFProtection::validateToken($csrfToken)) {
+            $error = 'Security token validation failed. Please try again.';
+        } else {
+            $result = SensitiveChangeService::confirmSensitiveChange($token);
+        }
     }
 }
 ?>
@@ -161,6 +168,7 @@ if (!$token) {
             <h1>Confirm Account Change</h1>
             <p>An administrator initiated a change to your account. Click the button below to confirm this change.</p>
             <form method="POST" action="">
+                <?= CSRFProtection::getTokenField(); ?>
                 <button type="submit" class="btn">Confirm Change</button>
             </form>
             <a href="/fit-brawl" class="back-link">← Cancel</a>

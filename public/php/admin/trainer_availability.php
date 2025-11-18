@@ -3,6 +3,7 @@
 session_start();
 require_once('../../../includes/init.php');
 require_once('../../../includes/activity_logger.php');
+require_once('../../../includes/csrf_protection.php');
 // Load environment variables (if needed for SMTP)
 include_once __DIR__ . '/../../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
@@ -482,6 +483,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 </button>
             </div>
             <form id="addBlockForm" method="POST">
+                <?= CSRFProtection::getTokenField(); ?>
                 <div class="form-group">
                     <label for="trainer">Trainer *</label>
                     <select id="trainer" name="trainer_id" required>
