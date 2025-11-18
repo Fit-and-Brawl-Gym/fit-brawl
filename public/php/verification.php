@@ -6,9 +6,8 @@ require_once '../../includes/csrf_protection.php';
 
 // Redirect if no reset email in session
 if(!isset($_SESSION['reset_email'])) {
-    require_once __DIR__ . '/../../includes/redirect_validator.php';
-    RedirectValidator::init();
-    RedirectValidator::redirect('forgot-password.php');
+    header('Location: forgot-password.php');
+    exit();
 }
 
 $alertMessage = null;
@@ -65,9 +64,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Set flag to clear session storage after redirect
             $_SESSION['clear_otp_timer'] = true;
 
-            require_once __DIR__ . '/../../includes/redirect_validator.php';
-            RedirectValidator::init();
-            RedirectValidator::redirect('change-password.php');
+            header('Location: change-password.php');
+            exit();
         } else {
             $alertMessage = [
                 'type' => 'error',

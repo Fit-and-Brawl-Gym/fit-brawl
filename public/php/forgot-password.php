@@ -28,9 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['reset_email'] = $email;
         // Initialize resend counter
         $_SESSION['otp_resend_count'] = 0;
-        require_once __DIR__ . '/../../includes/redirect_validator.php';
-        RedirectValidator::init();
-        RedirectValidator::redirect('verification.php');
+        header('Location: verification.php');
+        exit();
     } else {
         $alertMessage = [
             'type' => 'error',
