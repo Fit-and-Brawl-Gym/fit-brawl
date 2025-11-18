@@ -47,7 +47,7 @@ require_once __DIR__ . '/../../includes/header.php';
             </h1>
             <p class="hero-sub"><span class="sub-underline">Ready for the battle?</span></p>
             <div class="hero-buttons">
-                <a href="membership.php" class="hero-btn">Log in</a>
+                <a href="login.php" class="hero-btn">Log in</a>
                 <button class="hero-services-btn" id="openServicesModal">Non-Member Services</button>
             </div>
         </div>

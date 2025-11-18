@@ -182,7 +182,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                         <tr>
                             <th>User</th>
                             <th>Email</th>
-                            <th>Contact</th>
                             <th>Role</th>
                             <th>Status</th>
                             <th>Verified</th>
@@ -192,7 +191,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     </thead>
                     <tbody id="usersTableBody">
                         <tr>
-                            <td colspan="8" class="loading-state">
+                            <td colspan="7" class="loading-state">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 <p>Loading users...</p>
                             </td>

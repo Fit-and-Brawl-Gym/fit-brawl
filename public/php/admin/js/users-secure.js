@@ -644,7 +644,7 @@ function renderUsersTable() {
     if (filteredUsers.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="empty-state">
+                <td colspan="7" class="empty-state">
                     <i class="fa-solid fa-users-slash"></i>
                     <h3>No Users Found</h3>
                     <p>No users match your current filters</p>
@@ -663,12 +663,24 @@ function createUserRow(user) {
     const statusBadge = getStatusBadge(user.account_status);
     const verifiedBadge = getVerifiedBadge(user.is_verified);
     const membershipBadge = getMembershipBadge(user.membership_status);
+    
+    // Determine avatar source with proper path logic
+    let avatarSrc = '../../../images/account-icon.svg'; // Default icon
+    
+    if (user.avatar && 
+        user.avatar !== 'account-icon.svg' && 
+        user.avatar !== 'account-icon-white.svg' && 
+        user.avatar !== 'default-avatar.png' && 
+        user.avatar.trim() !== '') {
+        // User has uploaded a custom avatar
+        avatarSrc = `../../../uploads/avatars/${user.avatar}`;
+    }
 
     return `
         <tr>
             <td>
                 <div class="user-cell">
-                    <img src="${user.avatar || 'images/account-icon.svg'}" alt="${escapeHtml(user.full_name)}" class="user-avatar">
+                    <img src="${avatarSrc}" alt="${escapeHtml(user.full_name)}" class="user-avatar" onerror="this.src='../../../images/account-icon.svg'">
                     <div class="user-info">
                         <div class="user-name">${escapeHtml(user.full_name)}</div>
                         <div class="user-username">@${escapeHtml(user.username)}</div>
@@ -676,10 +688,11 @@ function createUserRow(user) {
                 </div>
             </td>
             <td>${escapeHtml(user.email)}</td>
-            <td>${user.contact_number || 'N/A'}</td>
             <td>
-                ${roleBadge}
-                ${membershipBadge}
+                <div class="badges-container">
+                    ${roleBadge}
+                    ${membershipBadge}
+                </div>
             </td>
             <td>${statusBadge}</td>
             <td>${verifiedBadge}</td>
@@ -1132,15 +1145,9 @@ function showEditModal(user) {
                 </div>
                 <div class="modal-body">
                     <form id="editUserForm" onsubmit="return false;">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Full Name</label>
-                                <input type="text" id="edit_name" value="${escapeHtml(user.full_name || '')}" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label>Contact Number</label>
-                                <input type="text" id="edit_contact" value="${escapeHtml(user.contact_number || '')}" class="form-control">
-                            </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="edit_name" value="${escapeHtml(user.full_name || '')}" class="form-control">
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -1193,7 +1200,6 @@ function closeEditModal() {
 function submitEditForm(userId) {
     const updates = {
         name: document.getElementById('edit_name').value,
-        contact_number: document.getElementById('edit_contact').value,
         role: document.getElementById('edit_role').value,
         account_status: document.getElementById('edit_status').value
     };
@@ -1225,7 +1231,7 @@ function showError(message) {
     if (tbody) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="empty-state">
+                <td colspan="7" class="empty-state">
                     <i class="fa-solid fa-exclamation-triangle" style="color: #ef4444;"></i>
                     <h3>Error</h3>
                     <p>${escapeHtml(message)}</p>
