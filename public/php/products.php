@@ -68,11 +68,8 @@ require_once __DIR__ . '/../../includes/config.php';
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 
-// Check if user is logged in
-if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
+// Allow non-logged-in users to view products
+// Only require login for purchase actions (if any)
 
 // Redirect admin and trainer to their respective dashboards
 if (isset($_SESSION['role'])) {

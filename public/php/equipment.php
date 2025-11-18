@@ -74,11 +74,8 @@ require_once __DIR__ . '/../../includes/session_manager.php';
 // Initialize session manager
 SessionManager::initialize();
 
-// Redirect if not logged in
-if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
+// Allow non-logged-in users to view equipment
+// Only require login for purchase actions (if any)
 
 // Redirect admin and trainer to their respective dashboards
 if (isset($_SESSION['role'])) {

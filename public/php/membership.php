@@ -10,11 +10,8 @@ CSPNonce::generate();
 // Initialize session manager (handles session_start internally)
 SessionManager::initialize();
 
-// Check if user is logged in
-if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
+// Allow non-logged-in users to view membership plans
+// Only require login for purchase/join actions (see below)
 
 // Redirect admin and trainer to their respective dashboards
 if (isset($_SESSION['role'])) {
