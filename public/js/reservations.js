@@ -757,8 +757,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>`;
         }
 
+        // Ensure trainer id is present on the row for the reschedule modal to read.
+        // Booking objects should provide trainer_id; fall back defensively if names differ.
+        const trainerIdAttr = booking.trainer_id || booking.trainerId || 0;
+
         return `
-            <tr class="booking-row ${booking.status}">
+            <tr class="booking-row ${booking.status}" data-booking-id="${booking.id}" data-trainer-id="${trainerIdAttr}">
                 <td class="booking-date-cell">
                     <div class="booking-date-badge">
                         <div class="booking-day">${new Date(booking.date).getDate()}</div>
