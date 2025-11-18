@@ -1288,23 +1288,26 @@ body::before {
 }
 
 .modal-header {
-    background: var(--color-accent);
-    padding: var(--spacing-3);
+    background: linear-gradient(135deg, rgba(10, 35, 45, 0.95) 0%, rgba(0, 25, 35, 0.98) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    padding: var(--spacing-4);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     position: sticky;
     top: 0;
     z-index: 10;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    min-height: 50px;
-    border-bottom: 2px solid var(--color-accent);
+    justify-content: space-between;
+    min-height: 60px;
+    border-bottom: 2px solid rgba(255, 206, 0, 0.3);
 }
 
 .modal-body {
     padding: var(--spacing-5);
     overflow-y: auto;
     flex: 1;
+    background: rgba(15, 50, 56, 0.5);
 }
 
 /* Custom Scrollbar for Modal Body */
@@ -1313,19 +1316,19 @@ body::before {
 }
 
 .modal-body::-webkit-scrollbar-track {
-    background: rgba(45, 107, 117, 0.3);
+    background: rgba(0, 47, 63, 0.3);
     border-radius: var(--radius-base);
     margin: var(--spacing-2) 0;
 }
 
 .modal-body::-webkit-scrollbar-thumb {
-    background: var(--color-accent);
+    background: rgba(255, 206, 0, 0.6);
     border-radius: var(--radius-base);
     border: 2px solid rgba(15, 50, 56, 0.98);
 }
 
 .modal-body::-webkit-scrollbar-thumb:hover {
-    background: var(--color-accent-hover);
+    background: rgba(255, 206, 0, 0.8);
 }
 
 /* Firefox Scrollbar Styling */
@@ -3540,28 +3543,31 @@ body::before {
 }
 
 .reschedule-modal-content {
-    background: rgba(15, 50, 56, 0.98);
-    border: 2px solid var(--color-accent);
+    background: linear-gradient(135deg, rgba(10, 35, 45, 0.98) 0%, rgba(0, 25, 35, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 206, 0, 0.3);
     border-radius: var(--radius-lg);
     width: 95%;
     height: 95vh;
     max-width: 1400px;
     overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 206, 0, 0.1);
     animation: slideUp 0.3s ease-out;
 }
 .reschedule-modal-content .modal-header {
-    background: linear-gradient(135deg, var(--color-accent), rgba(213, 186, 43) 100%);
+    background: linear-gradient(135deg, rgba(0, 47, 63, 0.95) 0%, rgba(10, 35, 45, 0.98) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     padding: var(--spacing-4);
-
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
     z-index: 10;
-
     border-radius: 0;
+    border-bottom: 2px solid rgba(255, 206, 0, 0.3);
 }
 .modal-open {
     overflow: hidden !important;
@@ -3569,16 +3575,17 @@ body::before {
 }
 .reschedule-modal-content .modal-header h2 {
     font-family: var(--font-family-display);
-    font-size: var(--font-size-5xl);
+    font-size: var(--font-size-3xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-text-dark);
-    text-align: center;
+    color: var(--color-white);
+    text-align: left;
     margin: 0;
-    width: 100%; /* ensures full width for centering */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 .close-modal {
-    color: var(--color-text-dark);
-    font-size: var(--font-size-3xl);
+    color: var(--color-white);
+    font-size: var(--font-size-2xl);
     cursor: pointer;
     transition: all 0.3s ease;
     width: 40px;
@@ -3586,9 +3593,9 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
-    border: none;
-
+    background: rgba(255, 206, 0, 0.1);
+    border: 1px solid rgba(255, 206, 0, 0.3);
+    border-radius: var(--radius-full);
 }
 /* Prevent scrolling */
 .body-no-scroll {
@@ -3596,14 +3603,17 @@ body::before {
     height: 100vh;               /* ensure body height fits viewport */
 }
 .close-modal:hover {
-      transform: scale(1.2);
+    background: rgba(255, 206, 0, 0.2);
+    transform: scale(1.1);
+    color: var(--color-accent);
 }
 
 .close-modal:active {
-    transform: scale(1.05);
+    transform: scale(0.95);
 }
 .reschedule-modal-content .modal-body {
     padding: var(--spacing-5);
+    background: transparent;
 }
 
 .original-booking-info {
@@ -3779,15 +3789,20 @@ body::before {
 }
 
 .btn-cancel,
-.btn-submit {
+.btn-submit,
+.btn-next {
     flex: 1;
-    padding: var(--spacing-5);
+    padding: var(--spacing-3) var(--spacing-5);
     border: none;
     border-radius: var(--radius-base);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
     cursor: pointer;
     transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
 }
 
 .btn-cancel {
@@ -3799,6 +3814,18 @@ body::before {
 .btn-cancel:hover {
     background: rgba(26, 74, 82, 0.8);
     border-color: var(--color-accent);
+}
+
+.btn-next {
+    background: linear-gradient(135deg, rgba(45, 107, 117, 0.8) 0%, rgba(26, 74, 82, 0.9) 100%);
+    border: 2px solid rgba(255, 206, 0, 0.4);
+    color: var(--color-white);
+}
+
+.btn-next:hover {
+    background: linear-gradient(135deg, rgba(45, 107, 117, 1) 0%, rgba(26, 74, 82, 1) 100%);
+    border-color: var(--color-accent);
+    transform: translateX(2px);
 }
 
 .btn-submit {

@@ -58,11 +58,9 @@ function resetRescheduleModal() {
 
 // OPEN modal
 window.openRescheduleModal = function(bookingId, element) {
-    console.log('openRescheduleModal called with bookingId:', bookingId);
     
     const bookingRow = element.closest('.booking-row');
     if (!bookingRow) {
-        console.error('Could not find booking row');
         return;
     }
 
@@ -80,7 +78,6 @@ window.openRescheduleModal = function(bookingId, element) {
         time: timeCell ? timeCell.textContent.trim() : ''
     };
 
-    console.log('Current reschedule booking:', currentRescheduleBooking);
 
     // Populate original booking details
     const originalDateTimeEl = document.getElementById('originalDateTime');
@@ -168,9 +165,7 @@ window.openRescheduleModal = function(bookingId, element) {
     if (modal) {
         modal.style.display = 'flex';
         document.body.classList.add('modal-open');
-        console.log('✅ Reschedule modal displayed');
     } else {
-        console.error('❌ Reschedule modal element not found!');
     }
 };
 
@@ -187,7 +182,6 @@ window.closeRescheduleModal = function() {
 function loadRescheduleClassOptions() {
     const classSelect = document.getElementById('rescheduleClass');
     if (!classSelect) {
-        console.error('rescheduleClass element not found');
         return;
     }
     
@@ -195,7 +189,6 @@ function loadRescheduleClassOptions() {
 
     const classFilter = document.getElementById('classFilter');
     if (!classFilter) {
-        console.error('classFilter element not found');
         return;
     }
 
@@ -236,6 +229,22 @@ function hideRescheduleSelectionContent() {
     if (summary) summary.style.display = 'block';
 }   
 
+// ===== Proceed to Review Step =====
+window.proceedToReview = function() {
+    
+    if (!rescheduleState.startTime || !rescheduleState.endTime) {
+        showToast('Please select both start and end times', 'warning');
+        return;
+    }
+    
+    // Update summary with selected time info
+    showRescheduleTimeSummary(rescheduleState);
+    
+    // Hide time selection and show summary
+    hideRescheduleSelectionContent();
+    
+};
+
 // ===== Show all selection content =====
 function showRescheduleSelectionContent() {
     const form = document.getElementById('rescheduleForm');
@@ -257,19 +266,29 @@ function showRescheduleSelectionContent() {
     // Show current booking info
     document.querySelector('.original-booking-info').style.display = '';
 
-    // Reset time selectors
+    // Keep existing time selections instead of resetting
     const startTimeSelect = document.getElementById('rescheduleStartTimeSelect');
     const endTimeSelect = document.getElementById('rescheduleEndTimeSelect');
-    if (startTimeSelect) startTimeSelect.value = '';
-    if (endTimeSelect) {
-        endTimeSelect.value = '';
-        endTimeSelect.disabled = true;
+    
+    // Restore state values to selectors if they exist
+    if (startTimeSelect && rescheduleState.startTime) {
+        startTimeSelect.value = rescheduleState.startTime;
+    }
+    if (endTimeSelect && rescheduleState.endTime) {
+        endTimeSelect.value = rescheduleState.endTime;
+        endTimeSelect.disabled = false;
+    }
+    
+    // Show Next button if both times are selected
+    const nextBtn = document.getElementById('rescheduleNextBtn');
+    if (nextBtn && rescheduleState.startTime && rescheduleState.endTime) {
+        nextBtn.style.display = 'inline-flex';
+        nextBtn.disabled = false;
     }
 }
 
 
 function handleRescheduleEndTimeSelect(timeStr, state) {
-    console.log('Reschedule end time selected:', timeStr);
 
     const startMinutes = parseRescheduleTime(state.startTime);
     const endMinutes = parseRescheduleTime(timeStr);
@@ -284,10 +303,12 @@ function handleRescheduleEndTimeSelect(timeStr, state) {
     state.duration = durationMinutes;
 
     showRescheduleDurationDisplay(durationMinutes, state);
-    showRescheduleTimeSummary(state);
     
-    // Hide all other content when selection is complete
-    hideRescheduleSelectionContent();
+    // Show Next button when time selection is complete
+    const nextBtn = document.getElementById('rescheduleNextBtn');
+    if (nextBtn) {
+        nextBtn.style.display = 'inline-flex';
+    }
 }
 
 function showRescheduleTimeSummary(state) {
@@ -333,7 +354,6 @@ function parseBookingDateToISO(dateString) {
             return `${year}-${month}-${day}`;
         }
     } catch (e) {
-        console.error('Error parsing date:', e);
     }
     return null;
 }
@@ -350,7 +370,6 @@ function parseBookingDateToISO(dateString) {
             return `${year}-${month}-${day}`;
         }
     } catch (e) {
-        console.error('Error parsing date:', e);
     }
     return null;
 }
@@ -381,7 +400,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (rescheduleDate) {
         rescheduleDate.addEventListener('change', function() {
-            console.log('Reschedule date changed to:', this.value);
             document.querySelectorAll('#rescheduleTrainersGrid .trainer-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -397,7 +415,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (rescheduleClass) {
         rescheduleClass.addEventListener('change', function() {
-            console.log('Reschedule class changed to:', this.value);
             document.querySelectorAll('#rescheduleTrainersGrid .trainer-card').forEach(card => {
                 card.classList.remove('selected');
             });
@@ -441,7 +458,6 @@ function loadRescheduleTrainersAndAvailability() {
     const trainersGrid = document.getElementById('rescheduleTrainersGrid');
 
     if (!trainersGrid) {
-        console.error('rescheduleTrainersGrid not found');
         return;
     }
 
@@ -452,13 +468,11 @@ function loadRescheduleTrainersAndAvailability() {
         return;
     }
 
-    console.log('Loading reschedule trainers for date:', date, 'class:', classType);
     trainersGrid.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Loading trainers...</p>';
 
     fetch(`api/get_available_trainers.php?date=${date}&session=Morning&class=${encodeURIComponent(classType)}`)
         .then(res => res.json())
         .then(data => {
-            console.log('Reschedule trainers response:', data);
             if (data.success && data.trainers && data.trainers.length > 0) {
                 renderRescheduleTrainers(data.trainers);
             } else {
@@ -467,7 +481,6 @@ function loadRescheduleTrainersAndAvailability() {
             }
         })
         .catch(err => {
-            console.error('Error loading reschedule trainers:', err);
             trainersGrid.innerHTML = '<p class="empty-message">Error loading trainers</p>';
         });
 }
@@ -545,7 +558,6 @@ function renderRescheduleTrainers(trainers) {
     const trainersGrid = document.getElementById('rescheduleTrainersGrid');
 
     if (!trainersGrid) {
-        console.error('rescheduleTrainersGrid element not found');
         return;
     }
 
@@ -605,7 +617,6 @@ function renderRescheduleTrainers(trainers) {
 }
 
 window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
-    console.log('🟢 selectRescheduleTrainer CALLED:', { trainerId, trainerName, status });
     
     if (status === 'unavailable') {
         showToast('This trainer is not available for the selected date', 'warning');
@@ -617,7 +628,6 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
         return;
     }
 
-    console.log('✅ Trainer selection valid, proceeding...', trainerId, trainerName);
 
     const trainerInput = document.getElementById('rescheduleTrainerInput');
     if (!trainerInput) {
@@ -644,20 +654,16 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
 
 // Load trainer availability for reschedule
 function loadRescheduleTrainerAvailability() {
-    console.log('🔵 loadRescheduleTrainerAvailability CALLED');
     const date = document.getElementById('rescheduleDate').value;
     const trainerInput = document.getElementById('rescheduleTrainerInput');
     const trainerId = trainerInput ? trainerInput.value : '';
     const classType = document.getElementById('rescheduleClass').value;
 
-    console.log('🔵 Field values:', { date, trainerId, classType, trainerInputExists: !!trainerInput });
 
     if (!date || !trainerId || !classType) {
-        console.warn('❌ Missing required fields:', { date, trainerId, classType });
         return;
     }
 
-    console.log('✅ Loading reschedule trainer availability:', { date, trainerId, classType });
 
     const banner = document.getElementById('rescheduleAvailabilityBanner');
     if (banner) {
@@ -677,17 +683,12 @@ function loadRescheduleTrainerAvailability() {
     formData.append('class_type', classType);
     
     // Exclude current booking from availability check during reschedule
-    console.log('🔍 currentRescheduleBooking object:', currentRescheduleBooking);
-    console.log('🔍 currentRescheduleBooking.id:', currentRescheduleBooking ? currentRescheduleBooking.id : 'undefined');
     
     if (currentRescheduleBooking && currentRescheduleBooking.id) {
         formData.append('exclude_booking_id', currentRescheduleBooking.id);
-        console.log('🔄 Excluding booking ID from availability:', currentRescheduleBooking.id);
     } else {
-        console.warn('⚠️ No booking ID to exclude! currentRescheduleBooking:', currentRescheduleBooking);
     }
     
-    console.log('📤 FormData contents:', {
         trainer_id: formData.get('trainer_id'),
         date: formData.get('date'),
         class_type: formData.get('class_type'),
@@ -697,24 +698,20 @@ function loadRescheduleTrainerAvailability() {
     fetch('api/get_trainer_availability.php', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
-            console.log('📥 Reschedule availability response:', data);
-            console.log('📊 Excluded booking ID in response:', data.excluded_booking_id);
-            console.log('📊 Booked slots count:', data.booked_count);
 
             if (data.success && data.available_slots && data.available_slots.length > 0) {
                 if (banner) banner.style.display = 'none';
                 document.getElementById('rescheduleTimeSelectionLayout').style.display = 'grid';
                 
-                const rescheduleState = {
-                    startTime: null,
-                    endTime: null,
-                    duration: null,
-                    trainerShift: 'Morning',
-                    customShift: null,
-                    availableSlots: data.available_slots,
-                    currentWeekUsageMinutes: data.current_week_usage_minutes || 0,
-                    weeklyLimitHours: data.weekly_limit_hours || 48
-                };
+                // Update global rescheduleState instead of creating a local one
+                rescheduleState.startTime = null;
+                rescheduleState.endTime = null;
+                rescheduleState.duration = null;
+                rescheduleState.trainerShift = 'Morning';
+                rescheduleState.customShift = null;
+                rescheduleState.availableSlots = data.available_slots;
+                rescheduleState.currentWeekUsageMinutes = data.current_week_usage_minutes || 0;
+                rescheduleState.weeklyLimitHours = data.weekly_limit_hours || 48;
 
                 buildRescheduleAvailabilityTimeline(rescheduleState, data);
                 setupRescheduleTimePickers(rescheduleState);
@@ -732,7 +729,6 @@ function loadRescheduleTrainerAvailability() {
             }
         })
         .catch(err => {
-            console.error('Error loading reschedule availability:', err);
             if (banner) {
                 banner.style.display = 'block';
                 banner.innerHTML = `
@@ -886,7 +882,6 @@ function setupRescheduleTimePickers(state) {
     const endSelect = document.getElementById('rescheduleEndTimeSelect');
 
     if (!startSelect || !endSelect) {
-        console.error('Time select elements not found');
         return;
     }
 
@@ -900,6 +895,10 @@ function setupRescheduleTimePickers(state) {
         if (e.target.value) {
             handleRescheduleStartTimeSelect(e.target.value, state, endSelect, shift);
             updateNewBookingSummary();
+            
+            // Hide Next button when start time changes
+            const nextBtn = document.getElementById('rescheduleNextBtn');
+            if (nextBtn) nextBtn.style.display = 'none';
         } else {
             state.startTime = null;
             state.endTime = null;
@@ -911,6 +910,10 @@ function setupRescheduleTimePickers(state) {
 
             hideRescheduleDurationDisplay();
             updateNewBookingSummary();
+            
+            // Hide Next button
+            const nextBtn = document.getElementById('rescheduleNextBtn');
+            if (nextBtn) nextBtn.style.display = 'none';
         }
     });
 
@@ -918,11 +921,23 @@ function setupRescheduleTimePickers(state) {
         if (e.target.value) {
             handleRescheduleEndTimeSelect(e.target.value, state);
             updateNewBookingSummary();
+            
+            // Show Next button when end time is selected
+            const nextBtn = document.getElementById('rescheduleNextBtn');
+            if (nextBtn) {
+                nextBtn.style.display = 'inline-flex';
+                nextBtn.disabled = false;
+            } else {
+            }
         } else {
             state.endTime = null;
             state.duration = null;
             hideRescheduleDurationDisplay();
             updateNewBookingSummary();
+            
+            // Hide Next button
+            const nextBtn = document.getElementById('rescheduleNextBtn');
+            if (nextBtn) nextBtn.style.display = 'none';
         }
     });
 }
@@ -943,7 +958,6 @@ function generateRescheduleStartTimeOptions(state, shift) {
 }
 
 function handleRescheduleStartTimeSelect(timeStr, state, endSelect, shift) {
-    console.log('Reschedule start time selected:', timeStr);
 
     state.startTime = timeStr;
 
@@ -991,7 +1005,6 @@ function generateRescheduleEndTimeOptions(state, shift) {
 }
 
 function handleRescheduleEndTimeSelect(timeStr, state) {
-    console.log('Reschedule end time selected:', timeStr);
 
     const startMinutes = parseRescheduleTime(state.startTime);
     const endMinutes = parseRescheduleTime(timeStr);
@@ -1006,10 +1019,13 @@ function handleRescheduleEndTimeSelect(timeStr, state) {
     state.duration = durationMinutes;
 
     showRescheduleDurationDisplay(durationMinutes, state);
-    showRescheduleTimeSummary(state);
     
-    // Hide all other content when selection is complete
-    hideRescheduleSelectionContent();
+    // Show Next button when time selection is complete
+    const nextBtn = document.getElementById('rescheduleNextBtn');
+    if (nextBtn) {
+        nextBtn.style.display = 'inline-flex';
+        nextBtn.disabled = false;
+    }
 }
 
 function showRescheduleDurationDisplay(minutes, state) {
@@ -1119,7 +1135,6 @@ function updateNewBookingSummary() {
         trainerName = nameEl ? nameEl.textContent.trim() : '-';
     }
 
-    console.log('Trainer name found:', trainerName);
 
     // Format date
     const bookingDate = new Date(dateInput);
@@ -1150,7 +1165,6 @@ function updateNewBookingSummary() {
     const formattedEndTime = formatRescheduleTime(endTime);
     const dateTimeStr = `${dateStr} ${formattedStartTime} - ${formattedEndTime}`;
 
-    console.log('Updating new booking summary:', {
         dateTimeStr,
         trainerName,
         classType,
@@ -1165,22 +1179,18 @@ function updateNewBookingSummary() {
 
     if (newDateTimeEl) {
         newDateTimeEl.textContent = dateTimeStr;
-        console.log('Updated newBookingDateTime:', dateTimeStr);
     }
     
     if (newTrainerEl) {
         newTrainerEl.textContent = trainerName;
-        console.log('Updated newBookingTrainer:', trainerName);
     }
     
     if (newClassEl) {
         newClassEl.textContent = classType;
-        console.log('Updated newBookingClass:', classType);
     }
     
     if (newDurationEl) {
         newDurationEl.textContent = durationText;
-        console.log('Updated newBookingDuration:', durationText);
     }
 
     // Update reason display
@@ -1220,7 +1230,6 @@ function updateNewBookingSummary() {
     const summaryEl = document.getElementById('rescheduleTimeSummary');
     if (summaryEl) {
         summaryEl.style.display = 'block';
-        console.log('Summary section shown');
     }
 }
 
@@ -1241,11 +1250,9 @@ document.addEventListener('click', function(e) {
  */
 function populateCurrentBookingSummary() {
     if (!currentRescheduleBooking) {
-        console.warn('No current reschedule booking data available');
         return;
     }
 
-    console.log('Populating current booking summary:', currentRescheduleBooking);
 
     // Update current booking comparison section
     const currentDateTimeEl = document.getElementById('currentBookingDateTime');
@@ -1254,17 +1261,14 @@ function populateCurrentBookingSummary() {
 
     if (currentDateTimeEl) {
         currentDateTimeEl.textContent = `${currentRescheduleBooking.date} ${currentRescheduleBooking.time}`;
-        console.log('Updated currentBookingDateTime:', currentDateTimeEl.textContent);
     }
     
     if (currentTrainerEl) {
         currentTrainerEl.textContent = currentRescheduleBooking.trainer || '-';
-        console.log('Updated currentBookingTrainer:', currentTrainerEl.textContent);
     }
     
     if (currentClassEl) {
         currentClassEl.textContent = currentRescheduleBooking.class || '-';
-        console.log('Updated currentBookingClass:', currentClassEl.textContent);
     }
 
     // Fetch actual booking duration from server
@@ -1290,12 +1294,10 @@ function populateCurrentBookingSummary() {
                     
                     if (originalDurationEl) {
                         originalDurationEl.textContent = durationText;
-                        console.log('Updated originalDuration:', durationText);
                     }
                     
                     if (currentDurationEl) {
                         currentDurationEl.textContent = durationText;
-                        console.log('Updated currentBookingDuration:', durationText);
                     }
                 } else {
                     // Fallback to 30 minutes
@@ -1307,7 +1309,6 @@ function populateCurrentBookingSummary() {
                 }
             })
             .catch(err => {
-                console.error('Error fetching booking duration:', err);
                 const originalDurationEl = document.getElementById('originalDuration');
                 const currentDurationEl = document.getElementById('currentBookingDuration');
                 
@@ -1350,7 +1351,6 @@ function updateNewBookingSummary() {
         trainerName = nameEl ? nameEl.textContent.trim() : '-';
     }
 
-    console.log('Trainer name found:', trainerName);
 
     // Format date
     const bookingDate = new Date(dateInput);
@@ -1381,7 +1381,6 @@ function updateNewBookingSummary() {
     const formattedEndTime = formatRescheduleTime(endTime);
     const dateTimeStr = `${dateStr} ${formattedStartTime} - ${formattedEndTime}`;
 
-    console.log('Updating new booking summary:', {
         dateTimeStr,
         trainerName,
         classType,
@@ -1396,22 +1395,18 @@ function updateNewBookingSummary() {
 
     if (newDateTimeEl) {
         newDateTimeEl.textContent = dateTimeStr;
-        console.log('Updated newBookingDateTime:', dateTimeStr);
     }
     
     if (newTrainerEl) {
         newTrainerEl.textContent = trainerName;
-        console.log('Updated newBookingTrainer:', trainerName);
     }
     
     if (newClassEl) {
         newClassEl.textContent = classType;
-        console.log('Updated newBookingClass:', classType);
     }
     
     if (newDurationEl) {
         newDurationEl.textContent = durationText;
-        console.log('Updated newBookingDuration:', durationText);
     }
 
     // Update reason display
@@ -1451,7 +1446,6 @@ function updateNewBookingSummary() {
     const summaryEl = document.getElementById('rescheduleTimeSummary');
     if (summaryEl) {
         summaryEl.style.display = 'block';
-        console.log('Summary section shown');
     }
 }
 
@@ -1557,11 +1551,6 @@ async function handleRescheduleFormSubmit(e) {
     const end = document.getElementById('rescheduleEndTimeSelect')?.value;
     const reason = document.getElementById('rescheduleReason')?.value || '';
 
-    console.log(date);
-    console.log(classType);
-    console.log(trainerId);
-    console.log(start);
-    console.log(end);
     if (!date || !classType || !trainerId || !start || !end) {
         showToast('Please complete all fields before confirming.', 'warning');
         return;
@@ -1602,7 +1591,6 @@ async function handleRescheduleFormSubmit(e) {
         });
 
         const data = await res.json();
-        console.log('Update response:', data);
 
         if (data.success) {
             showToast('Reschedule successful!', 'success');
@@ -1612,7 +1600,6 @@ async function handleRescheduleFormSubmit(e) {
             showToast(data.message || 'Reschedule failed.', 'error');
         }
     } catch (err) {
-        console.error(err);
         showToast('Server error while updating booking.', 'error');
     }
 }

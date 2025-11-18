@@ -74,7 +74,7 @@ $pageTitle = "Scheduling - Fit and Brawl";
 $currentPage = "reservations";
 $additionalCSS = [
     '../css/components/alert.css?v=' . time(),
-    '../css/pages/reservations.css?v=3.0.' . time(),
+    '../css/pages/reservations.css?v=4.0.' . time(),
     '../css/components/time-selection-v2.css?v=' . time(),
     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'
 ];
@@ -82,7 +82,7 @@ $additionalJS = [
     'https://cdn.jsdelivr.net/npm/flatpickr',
     '../js/dsa/dsa-utils.js?v=' . time(), // DSA Core Library
     '../js/time-selection-modern-v2.js?v=' . time(),
-    '../js/resheduling.js?v=' . time(),  // ← LOAD THIS FIRST
+    '../js/resheduling.js?v=4.0.' . time(),  // ← LOAD THIS FIRST
     '../js/reservations-new.js?v=' . time() . mt_rand(),  // ← LOAD THIS SECOND - RENAMED TO BYPASS CACHE
     '../js/dsa/reservations-dsa-integration.js?v=' . time() // DSA Integration Layer
 ];
@@ -819,7 +819,9 @@ require_once __DIR__ . '/../../includes/header.php';
                         <button type="button" class="btn-cancel" onclick="closeRescheduleModal()">
                              Cancel
                         </button>
-
+                        <button type="button" class="btn-next" id="rescheduleNextBtn" style="display: none;" onclick="proceedToReview()">
+                            <i class="fas fa-arrow-right"></i> Next
+                        </button>
                     </div>
                 </div>
             </form>
