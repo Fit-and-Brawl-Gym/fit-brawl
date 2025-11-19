@@ -84,30 +84,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
 
     // Soft delete trainer
     if (isset($_POST['action']) && $_POST['action'] === 'delete_trainer') {
-        $trainer_id = intval($_POST['trainer_id']);
+        $trainer_id = intval($_POST['trainer_id'] ?? 0);
 
-        // Get trainer name before deletion
-        $name_query = "SELECT name FROM trainers WHERE id = ?";
-        $stmt = $conn->prepare($name_query);
-        $stmt->bind_param("i", $trainer_id);
-        $stmt->execute();
-        $trainer_name = $stmt->get_result()->fetch_assoc()['name'] ?? 'Unknown';
+        if ($trainer_id <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid trainer ID.']);
+            exit;
+        }
 
-        $delete_query = "UPDATE trainers SET deleted_at = NOW() WHERE id = ?";
-        $stmt = $conn->prepare($delete_query);
-        $stmt->bind_param("i", $trainer_id);
-        $stmt->execute();
+        $transactionStarted = false;
 
-        // Log activity
-        $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Deleted', 'Trainer soft-deleted')";
-        $stmt = $conn->prepare($log_query);
-        $stmt->bind_param("is", $trainer_id, $admin_id);
-        $stmt->execute();
+        try {
+            if (!$conn->begin_transaction()) {
+                throw new Exception('Unable to start database transaction: ' . $conn->error);
+            }
+            $transactionStarted = true;
 
-        // Log to main activity log
-        ActivityLogger::log('trainer_deleted', $trainer_name, $trainer_id, "Trainer '$trainer_name' (#$trainer_id) was deleted");
+            $info_stmt = $conn->prepare("SELECT name FROM trainers WHERE id = ? LIMIT 1");
+            if (!$info_stmt) {
+                throw new Exception('Failed to prepare trainer lookup: ' . $conn->error);
+            }
+            $info_stmt->bind_param("i", $trainer_id);
+            $info_stmt->execute();
+            $trainer_row = $info_stmt->get_result()->fetch_assoc();
+            $info_stmt->close();
 
-        echo json_encode(['success' => true]);
+            if (!$trainer_row) {
+                $conn->rollback();
+                $transactionStarted = false;
+                echo json_encode(['success' => false, 'error' => 'Trainer not found.']);
+                exit;
+            }
+
+            $trainer_name = $trainer_row['name'] ?? 'Unknown';
+
+            $delete_stmt = $conn->prepare("DELETE FROM trainers WHERE id = ?");
+            if (!$delete_stmt) {
+                throw new Exception('Failed to prepare trainer delete: ' . $conn->error);
+            }
+            $delete_stmt->bind_param("i", $trainer_id);
+            $delete_stmt->execute();
+
+            if ($delete_stmt->affected_rows <= 0) {
+                $delete_stmt->close();
+                $conn->rollback();
+                $transactionStarted = false;
+                echo json_encode(['success' => false, 'error' => 'Trainer could not be deleted.']);
+                exit;
+            }
+
+            $delete_stmt->close();
+            $conn->commit();
+            $transactionStarted = false;
+
+            ActivityLogger::log('trainer_deleted', $trainer_name, $trainer_id, "Trainer '$trainer_name' (#$trainer_id) permanently deleted");
+
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            if ($transactionStarted) {
+                $conn->rollback();
+                $transactionStarted = false;
+            }
+            error_log('Trainer delete failed: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Failed to delete trainer. Please try again.']);
+        }
         exit;
     }
 }
