@@ -134,6 +134,14 @@ switch ($action) {
         break;
 
     case 'delete':
+        // Get feedback details BEFORE deletion for logging
+        $infoStmt = $conn->prepare("SELECT u.username, f.message FROM feedback f LEFT JOIN users u ON f.user_id = u.id WHERE f.$primaryKey = ?");
+        $infoStmt->bind_param("i", $id);
+        $infoStmt->execute();
+        $feedbackInfo = $infoStmt->get_result()->fetch_assoc();
+        $infoStmt->close();
+
+        // Now delete
         $stmt = $conn->prepare("DELETE FROM feedback WHERE $primaryKey = ?");
 
         if (!$stmt) {
@@ -145,13 +153,6 @@ switch ($action) {
 
         if ($stmt->execute()) {
             if ($stmt->affected_rows > 0) {
-                // Get feedback details before deletion for logging
-                $infoStmt = $conn->prepare("SELECT u.username, f.message FROM feedback f LEFT JOIN users u ON f.user_id = u.id WHERE f.$primaryKey = ?");
-                $infoStmt->bind_param("i", $id);
-                $infoStmt->execute();
-                $feedbackInfo = $infoStmt->get_result()->fetch_assoc();
-                $infoStmt->close();
-
                 // Log admin action
                 if ($feedbackInfo) {
                     ActivityLogger::log(
