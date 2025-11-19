@@ -30,7 +30,7 @@
         </div>
     </div>
     <div class="copyright">
-        <p>&copy; 2025 Fit X Brawl, All rights reserved.</p>
+        <p>&copy; 2025 Fit X Brawl Gym. All rights reserved.</p>
     </div>
 </footer>
 </body>
