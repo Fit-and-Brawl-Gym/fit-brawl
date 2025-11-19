@@ -8,6 +8,7 @@ require_once __DIR__ . '/../../includes/membership_check.php';
 
 require_once __DIR__ . '/../../includes/session_manager.php';
 require_once __DIR__ . '/../../includes/config.php';
+require_once __DIR__ . '/../../includes/phone_utils.php';
 
 // Redirect admin and trainer to their respective dashboards
 if (isset($_SESSION['role'])) {
@@ -149,7 +150,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $email = test_input($_POST['email'] ?? '');
     }
 
-    $phoneNum = test_input($_POST['phone'] ?? '');
+    $phoneInput = test_input($_POST['phone'] ?? '');
+    $phoneNum = $phoneInput;
     $message = test_input($_POST['message'] ?? '');
 
     // Validation
@@ -173,10 +175,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    if (empty($phoneNum)) {
+    $formattedPhone = $phoneInput === '' ? null : format_phone_standard($phoneInput);
+    if (empty($phoneInput)) {
         $phoneErr = "Phone number is required";
-    } elseif (!preg_match("/^[0-9]{10,15}$/", $phoneNum)) {
-        $phoneErr = "Invalid phone number format";
+    } elseif (!$formattedPhone) {
+        $phoneErr = "Please enter a valid Philippine mobile number (e.g., +63 917 123 4567)";
+    }
+
+    if (!$phoneErr) {
+        $phoneNum = $formattedPhone;
     }
 
     if (empty($message)) {
@@ -187,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $sql = "INSERT INTO contact (first_name, last_name, email, phone_number, message, date_submitted)
             VALUES (?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssss", $fname, $lname, $email, $phoneNum, $message);
+    $stmt->bind_param("sssss", $fname, $lname, $email, $phoneNum, $message);
 
         if ($stmt->execute()) {
             $status = "Your message has been sent successfully! We'll get back to you soon.";

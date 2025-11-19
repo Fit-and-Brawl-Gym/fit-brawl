@@ -22,18 +22,20 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// Rate limiting for admin APIs - 20 requests per minute per admin
 $adminId = $_SESSION['user_id'] ?? 'unknown';
-$rateCheck = ApiRateLimiter::checkAndIncrement($conn, 'admin_api:' . $adminId, 20, 60);
+$isFetch = strtoupper($method) === 'GET';
+$rateLimitKey = ($isFetch ? 'admin_subscriptions_fetch:' : 'admin_subscriptions_action:') . $adminId;
+$maxRequests = $isFetch ? 120 : 40; // allow higher burst for table loads, tighter for mutations
+$rateCheck = ApiRateLimiter::checkAndIncrement($conn, $rateLimitKey, $maxRequests, 60);
 if ($rateCheck['blocked']) {
     http_response_code(429);
-    header('X-RateLimit-Limit: 20');
+    header('X-RateLimit-Limit: ' . $maxRequests);
     header('X-RateLimit-Remaining: 0');
     header('Retry-After: ' . $rateCheck['retry_after']);
     ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
     exit;
 }
-header('X-RateLimit-Limit: 20');
+header('X-RateLimit-Limit: ' . $maxRequests);
 header('X-RateLimit-Remaining: ' . $rateCheck['remaining']);
 header('X-RateLimit-Reset: ' . (time() + $rateCheck['retry_after']));
 
