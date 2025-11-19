@@ -23,7 +23,7 @@ if (!$booking) {
 
 // Format date for display
 $service_date = new DateTime($booking['service_date']);
-$booking_date = new DateTime($booking['booking_date']);
+$booking_date = new DateTime($booking['created_at']);
 
 $pageTitle = "Day Pass Receipt (Non-Member) - Fit and Brawl";
 $currentPage = "receipt_non_member";
@@ -36,6 +36,7 @@ $currentPage = "receipt_non_member";
     <title>Booking Receipt - FitXBrawl</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="shortcut icon" href="../../images/fnb-icon.png" type="image/x-icon">
+    <link rel="icon" type="image/png" href="../../images/fnb-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
