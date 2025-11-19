@@ -440,8 +440,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Separate blocked bookings
-            if (booking.status === 'blocked') {
+            // Separate blocked/unavailable bookings
+            if (booking.status === 'blocked' || booking.status === 'unavailable') {
                 blockedList.push(booking);
                 return;
             }
@@ -946,7 +946,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <span>Ongoing Session</span>
                                     </div>
                                 `;
-                            } else if (booking.status === 'blocked') {
+                            } else if (booking.status === 'blocked' || booking.status === 'unavailable') {
                                 return `
                                     <div class="booking-status-badge blocked-badge">
                                         <i class="fas fa-ban"></i>

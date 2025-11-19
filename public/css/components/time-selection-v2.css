@@ -10,6 +10,11 @@
     grid-template-columns: 1fr 400px;
     gap: 30px;
     margin-top: 24px;
+    pointer-events: auto;
+}
+
+.time-selection-layout.hidden {
+    display: none !important;
 }
 
 /* ===================================

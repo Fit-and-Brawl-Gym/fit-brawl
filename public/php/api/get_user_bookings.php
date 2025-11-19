@@ -102,12 +102,12 @@ try {
             'session_time' => $row['session_time'],
             'start_time' => $row['start_time'],
             'end_time' => $row['end_time'],
-            'status' => $session_status,
-            'session_status' => $session_status,
+            'status' => $row['booking_status'] === 'blocked' ? 'unavailable' : $session_status,
+            'session_status' => $row['booking_status'] === 'blocked' ? 'unavailable' : $session_status,
             'booked_at' => $row['booked_at'],
             'cancelled_at' => $row['cancelled_at'],
             'booking_period' => $row['booking_period'],
-            'can_cancel' => $session_status !== 'ongoing' && $can_cancel
+            'can_cancel' => $row['booking_status'] !== 'blocked' && $session_status !== 'ongoing' && $can_cancel
         ];
     }
     $stmt->close();

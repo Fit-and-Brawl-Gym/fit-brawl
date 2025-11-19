@@ -834,7 +834,7 @@ require_once __DIR__ . '/../../includes/header.php';
             </form>
 
             <!-- Time Summary with Current vs New Booking Comparison (Shown after time selection) -->
-            <div class="reschedule-time-summary" id="rescheduleTimeSummary" style="display: none;">
+            <div class="reschedule-time-summary hidden" id="rescheduleTimeSummary" style="display: none !important;">
                 <div class="reschedule-summary-comparison">
                     <!-- Current Booking (Left) -->
                     <div class="reschedule-summary-column current-booking">
@@ -893,14 +893,6 @@ require_once __DIR__ . '/../../includes/header.php';
                         </div>
                     </div>
                 </div>
-                    <!-- Reschedule Reason (ALWAYS VISIBLE) -->
-                    <div class="form-group reason-section">
-                        <label for="rescheduleReason">
-                            <i class="fas fa-comment"></i> Reason for Rescheduling (Optional)
-                        </label>
-                        <textarea id="rescheduleReason" rows="3" placeholder="Tell us why you're rescheduling..."></textarea>
-                    </div>
-                    <br>
 
                 <!-- Summary Info -->
                 <div class="reschedule-summary-info">
@@ -928,7 +920,7 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </div>
 </div>
-<script>
+
 <script <?= CSPNonce::getScriptNonceAttr() ?>>
     // Pass membership expiration data to JavaScript
     <?php if ($activeMembership): ?>

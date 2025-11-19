@@ -646,9 +646,12 @@ class BookingValidator
         $booking = $result->fetch_assoc();
         $stmt->close();
 
-        // Allow cancellation of pending or confirmed bookings
-        if (!in_array($booking['booking_status'], ['pending', 'confirmed'])) {
-            return ['valid' => false, 'message' => 'Booking cannot be cancelled'];
+        // Allow cancellation of confirmed bookings only (not completed, cancelled, or blocked)
+        if (!in_array($booking['booking_status'], ['confirmed'])) {
+            $statusMessage = $booking['booking_status'] === 'blocked' 
+                ? 'This session is no longer available. The trainer blocked this time slot after your booking.' 
+                : 'Only confirmed bookings can be cancelled. Current status: ' . $booking['booking_status'];
+            return ['valid' => false, 'message' => $statusMessage];
         }
 
         // Determine session start time (time-based vs legacy)

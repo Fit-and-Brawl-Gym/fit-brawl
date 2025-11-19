@@ -2713,6 +2713,7 @@ body::before {
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    pointer-events: auto;
 }
 
 .trainer-card:hover:not(.unavailable):not(.booked) {
@@ -2732,6 +2733,7 @@ body::before {
 .trainer-card.booked {
     opacity: 0.5;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .trainer-status-badge {
@@ -3798,6 +3800,7 @@ body::before {
     margin-top: var(--spacing-4);
     padding-top: var(--spacing-4);
     border-top: 1px solid rgba(255, 206, 0, 0.2);
+    pointer-events: auto;
 }
 
 .btn-cancel,
@@ -3815,6 +3818,7 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-2);
+    pointer-events: auto;
 }
 
 .btn-cancel {
@@ -3881,8 +3885,25 @@ body::before {
 }
 
 /* Reschedule Summary Comparison Layout */
+/* Utility class for hiding elements */
+.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
 .reschedule-time-summary {
     margin-top: var(--spacing-4);
+}
+
+.reschedule-time-summary[style*="display: none"],
+.reschedule-time-summary.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
 }
 
 .reschedule-summary-comparison {

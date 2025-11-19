@@ -110,7 +110,10 @@ window.openRescheduleModal = function(bookingId, element) {
 
     elementsToHide.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+        if (el) {
+            el.style.setProperty('display', 'none', 'important');
+            el.classList.add('hidden');
+        }
     });
 
     // Reset time selectors
@@ -230,7 +233,10 @@ function hideRescheduleSelectionContent() {
 
     // Show summary
     const summary = document.getElementById('rescheduleTimeSummary');
-    if (summary) summary.style.display = 'block';
+    if (summary) {
+        summary.classList.remove('hidden');
+        summary.style.setProperty('display', 'block', 'important');
+    }
 }   
 
 // ===== Proceed to Review Step =====
@@ -265,7 +271,10 @@ function showRescheduleSelectionContent() {
 
     // Hide summary
     const summary = document.getElementById('rescheduleTimeSummary');
-    if (summary) summary.style.display = 'none';
+    if (summary) {
+        summary.classList.add('hidden');
+        summary.style.setProperty('display', 'none', 'important');
+    }
 
     // Show current booking info
     document.querySelector('.original-booking-info').style.display = '';
@@ -679,7 +688,11 @@ function loadRescheduleTrainerAvailability() {
             </div>
         `;
     }
-    document.getElementById('rescheduleTimeSelectionLayout').style.display = 'none';
+    const timeLayout = document.getElementById('rescheduleTimeSelectionLayout');
+    if (timeLayout) {
+        timeLayout.classList.add('hidden');
+        timeLayout.style.setProperty('display', 'none', 'important');
+    }
 
     const formData = new FormData();
     formData.append('trainer_id', trainerId);
@@ -698,7 +711,11 @@ function loadRescheduleTrainerAvailability() {
 
             if (data.success && data.available_slots && data.available_slots.length > 0) {
                 if (banner) banner.style.display = 'none';
-                document.getElementById('rescheduleTimeSelectionLayout').style.display = 'grid';
+                const timeLayout = document.getElementById('rescheduleTimeSelectionLayout');
+                if (timeLayout) {
+                    timeLayout.classList.remove('hidden');
+                    timeLayout.style.setProperty('display', 'grid', 'important');
+                }
                 
                 // Update global rescheduleState instead of creating a local one
                 rescheduleState.startTime = null;
