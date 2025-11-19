@@ -143,6 +143,7 @@ input[type="file"]:hover {
 
 /* Dropdown styles */
 select {
+    width: 100%;
     padding: 12px 16px;
     border: 2px solid #00d9ff;
     border-radius: 8px;
@@ -156,7 +157,9 @@ select {
     box-shadow: 0 2px 8px rgba(0, 217, 255, 0.08);
     font-weight: 500;
 }
-
+ .shift-select{
+        width: 100%;
+    }
 select:focus,
 select:hover {
     border-color: #00b3cc;
@@ -414,6 +417,9 @@ select option {
     .days-grid {
         grid-template-columns: repeat(5, 1fr);
     }
+     .shift-select{
+        width: 100%;
+    }
 }
 
 /* Responsive */
@@ -421,7 +427,9 @@ select option {
     .form-container {
         padding: 20px;
     }
-
+     .shift-select{
+        width: 100%;
+    }
     .form-actions {
         flex-direction: column;
     }
@@ -448,7 +456,9 @@ select option {
     .form-container {
         padding: 18px;
     }
-
+ .shift-select{
+        width: 100%;
+    }
     .days-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: var(--admin-gap-sm);
@@ -463,5 +473,8 @@ select option {
     .day-checkbox .day-label {
         padding: var(--admin-gap-sm) 6px;
         min-height: 60px;
+    }
+     .shift-select{
+        width: 100%;
     }
 }

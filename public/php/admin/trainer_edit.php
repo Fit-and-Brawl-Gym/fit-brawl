@@ -50,6 +50,30 @@ while ($row = $day_offs_result->fetch_assoc()) {
     $current_day_offs[] = $row['day_of_week'];
 }
 
+// Determine current "default" shift (most common active shift_type) to preselect in form
+$current_default_shift = 'morning';
+$shift_mode_query = "SELECT shift_type, COUNT(*) AS cnt FROM trainer_shifts WHERE trainer_id = ? AND is_active = 1 GROUP BY shift_type ORDER BY cnt DESC LIMIT 1";
+$stmt = $conn->prepare($shift_mode_query);
+$stmt->bind_param("i", $trainer_id);
+$stmt->execute();
+$shift_mode_res = $stmt->get_result();
+if ($row = $shift_mode_res->fetch_assoc()) {
+    $current_default_shift = $row['shift_type'] ?: 'morning';
+}
+
+// Optionally fetch existing shift break times for informational display (take first active shift of that type)
+$current_break_start = null;
+$current_break_end = null;
+$break_query = "SELECT break_start_time, break_end_time FROM trainer_shifts WHERE trainer_id = ? AND is_active = 1 AND shift_type = ? LIMIT 1";
+$stmt = $conn->prepare($break_query);
+$stmt->bind_param("is", $trainer_id, $current_default_shift);
+$stmt->execute();
+$break_res = $stmt->get_result();
+if ($b = $break_res->fetch_assoc()) {
+    $current_break_start = $b['break_start_time'];
+    $current_break_end = $b['break_end_time'];
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate CSRF token
@@ -89,110 +113,203 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows > 0) {
             $error = 'A trainer with this email already exists.';
         } else {
-            // Handle photo upload securely
-            $photo = $trainer['photo'];
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = '../../../uploads/trainers/';
-                $uploadHandler = SecureFileUpload::imageUpload($upload_dir, 5);
+            // Check if email already exists (excluding current trainer)
+            $check_query = "SELECT id FROM trainers WHERE email = ? AND id != ? AND deleted_at IS NULL";
+            $stmt = $conn->prepare($check_query);
+            $stmt->bind_param("si", $email, $trainer_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-                $result = $uploadHandler->uploadFile($_FILES['photo']);
+            if ($result->num_rows > 0) {
+                $error = 'A trainer with this email already exists.';
+            } else {
+                // Handle photo upload securely
+                $photo = $trainer['photo'];
+                if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                    $upload_dir = '../../../uploads/trainers/';
+                    $uploadHandler = SecureFileUpload::imageUpload($upload_dir, 5);
 
-                if ($result['success']) {
-                    // Delete old photo if exists
-                    if (!empty($trainer['photo']) && file_exists($upload_dir . $trainer['photo'])) {
-                        unlink($upload_dir . $trainer['photo']);
+                    $result = $uploadHandler->uploadFile($_FILES['photo']);
+
+                    if ($result['success']) {
+                        // Delete old photo if exists
+                        if (!empty($trainer['photo']) && file_exists($upload_dir . $trainer['photo'])) {
+                            unlink($upload_dir . $trainer['photo']);
+                        }
+                        $photo = $result['filename'];
+                    } else {
+                        $error = $result['message'];
                     }
-                    $photo = $result['filename'];
-                } else {
-                    $error = $result['message'];
-                }
-            }
-
-            if (empty($error)) {
-                // Track changes for activity log
-                $changes = [];
-                if ($trainer['name'] !== $name)
-                    $changes[] = "Name: {$trainer['name']} → $name";
-                if ($trainer['email'] !== $email)
-                    $changes[] = "Email: {$trainer['email']} → $email";
-                if ($trainer['phone'] !== $phone)
-                    $changes[] = "Phone: {$trainer['phone']} → $phone";
-                if ($trainer['specialization'] !== $specialization)
-                    $changes[] = "Specialization: {$trainer['specialization']} → $specialization";
-                if ($trainer['status'] !== $status)
-                    $changes[] = "Status: {$trainer['status']} → $status";
-
-                // Check day-off changes
-                $old_day_offs = implode(', ', $current_day_offs);
-                $new_day_offs = implode(', ', $day_offs);
-                if ($old_day_offs !== $new_day_offs) {
-                    $changes[] = "Day-offs: $old_day_offs → $new_day_offs";
                 }
 
-                // Update trainer
-                $update_query = "UPDATE trainers SET name = ?, email = ?, phone = ?, specialization = ?, bio = ?, photo = ?,
-                                emergency_contact_name = ?, emergency_contact_phone = ?, status = ? WHERE id = ?";
-                $stmt = $conn->prepare($update_query);
-                $stmt->bind_param(
-                    "sssssssssi",
-                    $name,
-                    $email,
-                    $phone,
-                    $specialization,
-                    $bio,
-                    $photo,
-                    $emergency_contact_name,
-                    $emergency_contact_phone,
-                    $status,
-                    $trainer_id
-                );
+                if (empty($error)) {
+                    // Start transaction to update trainer, day-offs and shifts atomically
+                    $conn->begin_transaction();
 
-                if ($stmt->execute()) {
-                    // Update day-off schedule
-                    $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                    try {
+                        // Track changes for activity log
+                        $changes = [];
+                        if ($trainer['name'] !== $name)
+                            $changes[] = "Name: {$trainer['name']} → $name";
+                        if ($trainer['email'] !== $email)
+                            $changes[] = "Email: {$trainer['email']} → $email";
+                        if ($trainer['phone'] !== $phone)
+                            $changes[] = "Phone: {$trainer['phone']} → $phone";
+                        if ($trainer['specialization'] !== $specialization)
+                            $changes[] = "Specialization: {$trainer['specialization']} → $specialization";
+                        if ($trainer['status'] !== $status)
+                            $changes[] = "Status: {$trainer['status']} → $status";
 
-                    // Ensure all 7 days exist in the table for this trainer
-                    // Use INSERT ... ON DUPLICATE KEY UPDATE for better compatibility
-                    foreach ($days as $day) {
-                        $upsert_day = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off)
-                                      VALUES (?, ?, FALSE)
-                                      ON DUPLICATE KEY UPDATE is_day_off = FALSE";
-                        $stmt = $conn->prepare($upsert_day);
-                        $stmt->bind_param("is", $trainer_id, $day);
-                        $stmt->execute();
-                    }
+                        // Check day-off changes
+                        $old_day_offs = implode(', ', $current_day_offs);
+                        $new_day_offs = implode(', ', $day_offs);
+                        if ($old_day_offs !== $new_day_offs) {
+                            $changes[] = "Day-offs: $old_day_offs → $new_day_offs";
+                        }
 
-                    // Then mark selected days as day-offs
-                    if (!empty($day_offs)) {
-                        foreach ($day_offs as $day_off) {
-                            $update_day = "UPDATE trainer_day_offs SET is_day_off = TRUE
-                                          WHERE trainer_id = ? AND day_of_week = ?";
-                            $stmt = $conn->prepare($update_day);
-                            $stmt->bind_param("is", $trainer_id, $day_off);
+                        // Check default shift change
+                        if ($current_default_shift !== $default_shift) {
+                            $changes[] = "Default shift: {$current_default_shift} → {$default_shift}";
+                        }
+
+                        // Update trainer
+                        $update_query = "UPDATE trainers SET name = ?, email = ?, phone = ?, specialization = ?, bio = ?, photo = ?,
+                                        emergency_contact_name = ?, emergency_contact_phone = ?, status = ? WHERE id = ?";
+                        $stmt = $conn->prepare($update_query);
+                        $stmt->bind_param(
+                            "sssssssssi",
+                            $name,
+                            $email,
+                            $phone,
+                            $specialization,
+                            $bio,
+                            $photo,
+                            $emergency_contact_name,
+                            $emergency_contact_phone,
+                            $status,
+                            $trainer_id
+                        );
+
+                        if (!$stmt->execute()) {
+                            throw new Exception('Failed to update trainer. Please try again.');
+                        }
+
+                        // Update day-off schedule: ensure all days exist then mark selected as day-offs
+                        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+                        foreach ($days as $day) {
+                            $upsert_day = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off)
+                                          VALUES (?, ?, FALSE)
+                                          ON DUPLICATE KEY UPDATE is_day_off = FALSE";
+                            $stmt = $conn->prepare($upsert_day);
+                            $stmt->bind_param("is", $trainer_id, $day);
                             $stmt->execute();
                         }
+
+                        // Then mark selected days as day-offs
+                        if (!empty($day_offs)) {
+                            foreach ($day_offs as $day_off) {
+                                $update_day = "UPDATE trainer_day_offs SET is_day_off = TRUE
+                                              WHERE trainer_id = ? AND day_of_week = ?";
+                                $stmt = $conn->prepare($update_day);
+                                $stmt->bind_param("is", $trainer_id, $day_off);
+                                $stmt->execute();
+                            }
+                        }
+
+                        // Rebuild trainer_shifts for this trainer according to new day-offs and default_shift.
+                        // For simplicity and correctness, delete existing rows then insert 7 rows (one per day).
+                        $del_query = "DELETE FROM trainer_shifts WHERE trainer_id = ?";
+                        $del_stmt = $conn->prepare($del_query);
+                        $del_stmt->bind_param("i", $trainer_id);
+                        $del_stmt->execute();
+
+                        // Standard shift times and breaks:
+                        // morning => 07:00:00 - 15:00:00, break 12:00:00 - 13:00:00
+                        // afternoon => 11:00:00 - 19:00:00, break 15:00:00 - 16:00:00
+                        // night => 14:00:00 - 22:00:00, break 18:00:00 - 19:00:00
+                        foreach ($days as $day) {
+                            // If it's a day-off, set shift to 'none'
+                            if (in_array($day, $day_offs, true)) {
+                                $is_active = 0;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isi", $trainer_id, $day, $is_active);
+                                $shift_stmt->execute();
+                                continue;
+                            }
+
+                            // Otherwise apply default_shift
+                            if ($default_shift === 'morning') {
+                                $start_time = '07:00:00';
+                                $end_time = '15:00:00';
+                                $break_start = '12:00:00';
+                                $break_end = '13:00:00';
+                                $is_active = 1;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'morning', ?, ?, ?, ?, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isssssi", $trainer_id, $day, $start_time, $end_time, $break_start, $break_end, $is_active);
+                                $shift_stmt->execute();
+                            } elseif ($default_shift === 'afternoon') {
+                                $start_time = '11:00:00';
+                                $end_time = '19:00:00';
+                                $break_start = '15:00:00';
+                                $break_end = '16:00:00';
+                                $is_active = 1;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'afternoon', ?, ?, ?, ?, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isssssi", $trainer_id, $day, $start_time, $end_time, $break_start, $break_end, $is_active);
+                                $shift_stmt->execute();
+                            } elseif ($default_shift === 'night') {
+                                $start_time = '14:00:00';
+                                $end_time = '22:00:00';
+                                $break_start = '18:00:00';
+                                $break_end = '19:00:00';
+                                $is_active = 1;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'night', ?, ?, ?, ?, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isssssi", $trainer_id, $day, $start_time, $end_time, $break_start, $break_end, $is_active);
+                                $shift_stmt->execute();
+                            } else {
+                                // default_shift === 'none' should rarely be used for non-day-off days, but handle it
+                                $is_active = 0;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isi", $trainer_id, $day, $is_active);
+                                $shift_stmt->execute();
+                            }
+                        }
+
+                        // Log activity if there are changes
+                        if (!empty($changes)) {
+                            $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Edited', ?)";
+                            $details = "Updated: " . implode(", ", $changes);
+                            $stmt = $conn->prepare($log_query);
+                            $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
+                            $stmt->execute();
+
+                            // Log to main activity log
+                            ActivityLogger::log('trainer_updated', $name, $trainer_id, "Trainer '$name' (#$trainer_id) updated. Changes: " . implode(", ", $changes));
+                        }
+
+                        $conn->commit();
+
+                        header('Location: trainers.php?success=updated');
+                        exit;
+
+                    } catch (Exception $e) {
+                        // Rollback on error
+                        $conn->rollback();
+                        $error = $e->getMessage();
                     }
-
-                    // Log activity
-                    if (!empty($changes)) {
-                        $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Edited', ?)";
-                        $details = "Updated: " . implode(", ", $changes);
-                        $stmt = $conn->prepare($log_query);
-                        $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
-                        $stmt->execute();
-
-                        // Log to main activity log
-                        ActivityLogger::log('trainer_updated', $name, $trainer_id, "Trainer '$name' (#$trainer_id) updated. Changes: " . implode(", ", $changes));
-                    }
-
-                    header('Location: trainers.php?success=updated');
-                    exit;
-                } else {
-                    $error = 'Failed to update trainer. Please try again.';
                 }
             }
         }
-    }
     }
 }
 ?>
@@ -207,6 +324,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/trainer-form.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .shift-select { width: 220px; }
+        .shift-info { font-size: 0.95rem; color: #666; margin-left: 8px; }
+    </style>
 </head>
 
 <body>
@@ -370,6 +491,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
+                <div class="form-section">
+                    <h3 class="section-title">Fixed Shift</h3>
+                    <p class="section-description">Choose a single fixed shift that applies to all non-day-off days for this trainer.</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="default_shift">Default Shift</label>
+                            <?php
+                                // If form was submitted and errored, prefer posted value; otherwise show current default
+                                $posted_default = isset($_POST['default_shift']) ? $_POST['default_shift'] : $current_default_shift;
+                                $posted_default = in_array($posted_default, ['morning','afternoon','night','none'], true) ? $posted_default : 'morning';
+                            ?>
+                            <select id="default_shift" name="default_shift" class="shift-select">
+                                <option value="none" <?= $posted_default === 'none' ? 'selected' : '' ?>>None</option>
+                                <option value="morning" <?= $posted_default === 'morning' ? 'selected' : '' ?>>Morning (07:00 - 15:00)</option>
+                                <option value="afternoon" <?= $posted_default === 'afternoon' ? 'selected' : '' ?>>Afternoon (11:00 - 19:00)</option>
+                                <option value="night" <?= $posted_default === 'night' ? 'selected' : '' ?>>Night (14:00 - 22:00)</option>
+                            </select>
+                            <span class="shift-info" id="defaultShiftInfo">
+                                <?php
+                                    $map = [
+                                        'morning' => '07:00 - 15:00 (Break: 12:00 - 13:00)',
+                                        'afternoon' => '11:00 - 19:00 (Break: 15:00 - 16:00)',
+                                        'night' => '14:00 - 22:00 (Break: 18:00 - 19:00)',
+                                        'none' => '—'
+                                    ];
+                                    echo isset($map[$posted_default]) ? $map[$posted_default] : '—';
+                                ?>
+                            </span>
+                            <?php if ($current_break_start && $current_break_end): ?>
+                                <div class="form-hint">Current stored break: <?= htmlspecialchars($current_break_start) ?> - <?= htmlspecialchars($current_break_end) ?></div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <a href="trainers.php" class="btn-secondary">Cancel</a>
                     <button type="submit" class="btn-primary">
@@ -447,6 +604,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        // Update default shift info text when selection changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapping = {
+                'morning': '07:00 - 15:00 (Break: 12:00 - 13:00)',
+                'afternoon': '11:00 - 19:00 (Break: 15:00 - 16:00)',
+                'night': '14:00 - 22:00 (Break: 18:00 - 19:00)',
+                'none': '—'
+            };
+            const select = document.getElementById('default_shift');
+            const info = document.getElementById('defaultShiftInfo');
+            if (select && info) {
+                select.addEventListener('change', function() {
+                    info.textContent = mapping[this.value] || '—';
+                });
+            }
+        });
     </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
