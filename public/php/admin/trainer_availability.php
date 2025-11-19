@@ -364,7 +364,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                 </div>
                 <div class="stat-info">
                     <h3><?php echo $stats['upcoming_blocks']; ?></h3>
-                    <p>Upcoming Time Off</p>
+                    <p>Time Offs</p>
                 </div>
             </div>
             <div class="stat-card">

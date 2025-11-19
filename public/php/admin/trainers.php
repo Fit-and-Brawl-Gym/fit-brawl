@@ -352,7 +352,7 @@ if (!$stats) {
                                     <?= $sort_by === 'specialization' ? ($sort_order === 'ASC' ? '↑' : '↓') : '' ?>
                                 </a>
                             </th>
-                            <th>Upcoming</th>
+                            <th>Bookings</th>
                             <th>Actions</th>
                         </tr>
                     </thead>

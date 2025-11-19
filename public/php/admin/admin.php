@@ -131,7 +131,7 @@ if ($conn->query("SHOW TABLES LIKE 'user_reservations'")->num_rows) {
         </div>
         <div class="stat-info">
           <h3><?= $pendingRes ?></h3>
-          <p>Upcoming Bookings</p>
+          <p>Scheduled Sessions</p>
         </div>
         <?php if ($pendingRes > 0): ?>
           <a href="reservations.php" class="stat-action">
