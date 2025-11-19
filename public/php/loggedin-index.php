@@ -280,10 +280,6 @@ $sessionHours = [
             <?php if ($hasActiveMembership): ?>
                 <div class="quick-stats-bar">
                     <div class="stat-pill">
-                        <i class="fas fa-calendar-week"></i>
-                        <span><?= $weeklyBookings ?>/12 sessions</span>
-                    </div>
-                    <div class="stat-pill">
                         <i class="fas fa-clock"></i>
                         <span><?= $daysRemaining ?> days left</span>
                     </div>
