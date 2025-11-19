@@ -1989,7 +1989,9 @@ async function handleRescheduleFormSubmit(e) {
             // Set flag in sessionStorage to prevent recovery banner after reload
             sessionStorage.setItem('rescheduleJustCompleted', 'true');
             
-            showToast('Reschedule successful!', 'success');
+            // Store toast message to show after reload
+            sessionStorage.setItem('showRescheduleToast', 'true');
+            
             closeRescheduleModal();
             
             // Reload after a delay to allow state clearing to complete
@@ -1999,7 +2001,7 @@ async function handleRescheduleFormSubmit(e) {
                     window.BookingRecovery.clearState();
                 }
                 location.reload();
-            }, 800);
+            }, 500);
         } else {
             showToast(data.message || 'Reschedule failed.', 'error');
         }
@@ -2013,6 +2015,14 @@ async function handleRescheduleFormSubmit(e) {
 // INITIALIZATION
 // ===================================
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if we should show reschedule success toast
+    if (sessionStorage.getItem('showRescheduleToast') === 'true') {
+        sessionStorage.removeItem('showRescheduleToast');
+        setTimeout(() => {
+            showToast('Booking rescheduled successfully!', 'success');
+        }, 100);
+    }
+    
     // Attach form submit
     const rescheduleForm = document.getElementById('rescheduleForm');
     if (rescheduleForm) {
