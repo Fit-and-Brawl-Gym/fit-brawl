@@ -147,7 +147,15 @@ function handleGetAllUsers($conn, $adminId)
                 um.end_date as membership_end,
                 um.membership_status
               FROM users u
-              LEFT JOIN user_memberships um ON u.id = um.user_id
+              LEFT JOIN (
+                SELECT user_id, name, plan_name, start_date, end_date, membership_status
+                FROM user_memberships
+                WHERE id IN (
+                    SELECT MAX(id) 
+                    FROM user_memberships 
+                    GROUP BY user_id
+                )
+              ) um ON u.id = um.user_id
               ORDER BY u.created_at DESC";
 
     $result = $conn->query($query);

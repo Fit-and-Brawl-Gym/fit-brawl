@@ -21,12 +21,12 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 // Fetch dashboard stats
-$totalMembers = $totalTrainers = $pendingSubs = $pendingRes = 0;
+$activeSubscribers = $totalTrainers = $pendingSubs = $pendingRes = 0;
 
-// Total Members
-$result = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role = 'member'");
+// Active Subscribers (members with active memberships)
+$result = $conn->query("SELECT COUNT(DISTINCT u.id) AS total FROM users u INNER JOIN user_memberships um ON u.id = um.user_id WHERE u.role = 'member' AND um.membership_status = 'active'");
 if ($result)
-  $totalMembers = $result->fetch_assoc()['total'];
+  $activeSubscribers = $result->fetch_assoc()['total'];
 
 // Total Trainers
 $result = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role = 'trainer'");
@@ -61,9 +61,9 @@ if ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
   }
 }
 
-// Pending Reservations (optional if you have table)
-if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
-  $result = $conn->query("SELECT COUNT(*) AS total FROM reservations WHERE status = 'Pending'");
+// Pending/Upcoming Reservations - count confirmed bookings in the future
+if ($conn->query("SHOW TABLES LIKE 'user_reservations'")->num_rows) {
+  $result = $conn->query("SELECT COUNT(*) AS total FROM user_reservations WHERE booking_status = 'confirmed' AND booking_date >= CURDATE()");
   if ($result)
     $pendingRes = $result->fetch_assoc()['total'];
 }
@@ -91,40 +91,52 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
       <p>Here’s an overview of your gym’s activity.</p>
     </header>
 
-    <!-- Dashboard Cards -->
-    <section class="cards">
-      <div class="card">
-        <div class="card-icon">
+    <!-- Dashboard Stats -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">
           <i class="fa-solid fa-users"></i>
         </div>
-        <h2><?= $totalMembers ?></h2>
-        <p>Total Members</p>
+        <div class="stat-info">
+          <h3><?= $activeSubscribers ?></h3>
+          <p>Active Subscribers</p>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-icon">
+      <div class="stat-card">
+        <div class="stat-icon green">
           <i class="fa-solid fa-dumbbell"></i>
         </div>
-        <h2><?= $totalTrainers ?></h2>
-        <p>Active Trainers</p>
+        <div class="stat-info">
+          <h3><?= $totalTrainers ?></h3>
+          <p>Active Trainers</p>
+        </div>
       </div>
-      <div class="card <?= $pendingSubs > 0 ? 'has-pending' : '' ?>">
-        <div class="card-icon">
+      <div class="stat-card <?= $pendingSubs > 0 ? 'has-alert' : '' ?>">
+        <div class="stat-icon orange">
           <i class="fa-solid fa-clock"></i>
         </div>
-        <h2><?= $pendingSubs ?></h2>
-        <p>Pending Subscriptions</p>
+        <div class="stat-info">
+          <h3><?= $pendingSubs ?></h3>
+          <p>Pending Subscriptions</p>
+        </div>
         <?php if ($pendingSubs > 0): ?>
-          <a href="subscriptions.php" class="card-action">Review Now →</a>
+          <a href="subscriptions.php" class="stat-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
         <?php endif; ?>
       </div>
-      <div class="card <?= $pendingRes > 0 ? 'has-pending' : '' ?>">
-        <div class="card-icon">
+      <div class="stat-card">
+        <div class="stat-icon blue">
           <i class="fa-solid fa-calendar-check"></i>
         </div>
-        <h2><?= $pendingRes ?></h2>
-        <p>Pending Reservations</p>
+        <div class="stat-info">
+          <h3><?= $pendingRes ?></h3>
+          <p>Upcoming Bookings</p>
+        </div>
         <?php if ($pendingRes > 0): ?>
-          <a href="reservations.php" class="card-action">Review Now →</a>
+          <a href="reservations.php" class="stat-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
         <?php endif; ?>
       </div>
       <?php
@@ -135,14 +147,18 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
         $unreadContacts = $unread_row['count'];
       }
       ?>
-      <div class="card card-contacts <?= $unreadContacts > 0 ? 'has-unread' : '' ?>">
-        <div class="card-icon">
+      <div class="stat-card <?= $unreadContacts > 0 ? 'has-alert' : '' ?>">
+        <div class="stat-icon red">
           <i class="fa-solid fa-envelope"></i>
         </div>
-        <h2><?= $unreadContacts ?></h2>
-        <p>Unread Messages</p>
+        <div class="stat-info">
+          <h3><?= $unreadContacts ?></h3>
+          <p>Unread Messages</p>
+        </div>
         <?php if ($unreadContacts > 0): ?>
-          <a href="contacts.php" class="card-action">View Messages →</a>
+          <a href="contacts.php" class="stat-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
         <?php endif; ?>
       </div>
     </section>
