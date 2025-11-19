@@ -30,161 +30,229 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $name = trim($_POST['name']);
         $email = trim($_POST['email']);
-    $phone = trim($_POST['phone']);
-    $specialization = $_POST['specialization'];
-    $bio = trim($_POST['bio']);
-    $emergency_contact_name = trim($_POST['emergency_contact_name']);
-    $emergency_contact_phone = trim($_POST['emergency_contact_phone']);
-    $status = isset($_POST['status']) ? $_POST['status'] : 'Active';
-    $allowed_statuses = ['Active', 'Inactive', 'On Leave'];
-    if (!in_array($status, $allowed_statuses, true)) {
-        $status = 'Active';
-    }
+        $phone = trim($_POST['phone']);
+        $specialization = $_POST['specialization'];
+        $bio = trim($_POST['bio']);
+        $emergency_contact_name = trim($_POST['emergency_contact_name']);
+        $emergency_contact_phone = trim($_POST['emergency_contact_phone']);
+        $status = isset($_POST['status']) ? $_POST['status'] : 'Active';
+        $allowed_statuses = ['Active', 'Inactive', 'On Leave'];
+        if (!in_array($status, $allowed_statuses, true)) {
+            $status = 'Active';
+        }
 
-    // Get day-offs from form
-    $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
+        // Get day-offs from form
+        $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
 
-    // Validate required fields
-    if (empty($name) || empty($email) || empty($phone) || empty($specialization)) {
-        $error = 'Please fill in all required fields.';
-    } elseif (count($day_offs) !== 2) {
-        $error = 'You must select exactly 2 days off per week.';
-    } else {
-        // Check if email already exists
-        $check_query = "SELECT id FROM trainers WHERE email = ? AND deleted_at IS NULL";
-        $stmt = $conn->prepare($check_query);
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        // Get fixed shift for the trainer (single shift applied to all non-day-off days)
+        $default_shift = isset($_POST['default_shift']) ? $_POST['default_shift'] : 'none';
+        $valid_shifts = ['morning', 'afternoon', 'night', 'none'];
+        if (!in_array($default_shift, $valid_shifts, true)) {
+            $default_shift = 'none';
+        }
 
-        if ($result->num_rows > 0) {
-            $error = 'A trainer with this email already exists.';
+        // Validate required fields
+        if (empty($name) || empty($email) || empty($phone) || empty($specialization)) {
+            $error = 'Please fill in all required fields.';
+        } elseif (count($day_offs) !== 2) {
+            $error = 'You must select exactly 2 days off per week.';
         } else {
-            // Handle photo upload securely
-            $photo = null;
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = '../../../uploads/trainers/';
-                $uploadHandler = SecureFileUpload::imageUpload($upload_dir, 5);
+            // Check if email already exists
+            $check_query = "SELECT id FROM trainers WHERE email = ? AND deleted_at IS NULL";
+            $stmt = $conn->prepare($check_query);
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-                $result = $uploadHandler->uploadFile($_FILES['photo']);
+            if ($result->num_rows > 0) {
+                $error = 'A trainer with this email already exists.';
+            } else {
+                // Handle photo upload securely
+                $photo = null;
+                if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                    $upload_dir = '../../../uploads/trainers/';
+                    $uploadHandler = SecureFileUpload::imageUpload($upload_dir, 5);
 
-                if ($result['success']) {
-                    $photo = $result['filename'];
-                } else {
-                    $error = $result['message'];
-                }
-            }
+                    $result = $uploadHandler->uploadFile($_FILES['photo']);
 
-            if (empty($error)) {
-                // Start transaction
-                $conn->begin_transaction();
-
-                try {
-                    // Generate formatted user ID (TRN-25-XXXX) BEFORE inserting trainer
-                    $user_id = generateFormattedUserId($conn, 'trainer');
-
-                    // Generate username from name (e.g., "John Doe" -> "john.doe")
-                    $username_base = strtolower(str_replace(' ', '.', trim($name)));
-                    $username_base = preg_replace('/[^a-z0-9._]/', '', $username_base); // Remove special chars
-
-                    // Check if username exists and make it unique
-                    $generated_username = $username_base;
-                    $counter = 1;
-                    while (true) {
-                        $check_user = $conn->prepare("SELECT id FROM users WHERE username = ?");
-                        $check_user->bind_param("s", $generated_username);
-                        $check_user->execute();
-                        if ($check_user->get_result()->num_rows == 0) {
-                            break;
-                        }
-                        $generated_username = $username_base . $counter;
-                        $counter++;
-                    }
-
-                    // Generate default password: "Trainer" + last 4 digits of user_id
-                    $generated_password = "Trainer" . substr($user_id, -4);
-                    $hashed_password = password_hash($generated_password, PASSWORD_DEFAULT);
-
-                    // Copy photo to avatars folder if exists
-                    $avatar = $photo;
-                    if ($photo && file_exists('../../../uploads/trainers/' . $photo)) {
-                        $avatars_dir = '../../../uploads/avatars/';
-                        if (!file_exists($avatars_dir)) {
-                            mkdir($avatars_dir, 0750, true);
-                        }
-                        copy('../../../uploads/trainers/' . $photo, $avatars_dir . $photo);
+                    if ($result['success']) {
+                        $photo = $result['filename'];
                     } else {
-                        $avatar = 'account-icon.svg';
+                        $error = $result['message'];
                     }
+                }
 
-                    // Create user account FIRST with generated user ID
-                    $user_query = "INSERT INTO users (id, username, email, password, role, avatar, is_verified)
-                                VALUES (?, ?, ?, ?, 'trainer', ?, 1)";
-                    $stmt = $conn->prepare($user_query);
-                    $stmt->bind_param("sssss", $user_id, $generated_username, $email, $hashed_password, $avatar);
-                    if (!$stmt->execute()) {
-                        throw new Exception('Failed to create user account.');
+                if (empty($error)) {
+                    // Start transaction
+                    $conn->begin_transaction();
+
+                    try {
+                        // Generate formatted user ID (TRN-25-XXXX) BEFORE inserting trainer
+                        $user_id = generateFormattedUserId($conn, 'trainer');
+
+                        // Generate username from name (e.g., "John Doe" -> "john.doe")
+                        $username_base = strtolower(str_replace(' ', '.', trim($name)));
+                        $username_base = preg_replace('/[^a-z0-9._]/', '', $username_base); // Remove special chars
+
+                        // Check if username exists and make it unique
+                        $generated_username = $username_base;
+                        $counter = 1;
+                        while (true) {
+                            $check_user = $conn->prepare("SELECT id FROM users WHERE username = ?");
+                            $check_user->bind_param("s", $generated_username);
+                            $check_user->execute();
+                            if ($check_user->get_result()->num_rows == 0) {
+                                break;
+                            }
+                            $generated_username = $username_base . $counter;
+                            $counter++;
+                        }
+
+                        // Generate default password: "Trainer" + last 4 digits of user_id
+                        $generated_password = "Trainer" . substr($user_id, -4);
+                        $hashed_password = password_hash($generated_password, PASSWORD_DEFAULT);
+
+                        // Copy photo to avatars folder if exists
+                        $avatar = $photo;
+                        if ($photo && file_exists('../../../uploads/trainers/' . $photo)) {
+                            $avatars_dir = '../../../uploads/avatars/';
+                            if (!file_exists($avatars_dir)) {
+                                mkdir($avatars_dir, 0750, true);
+                            }
+                            copy('../../../uploads/trainers/' . $photo, $avatars_dir . $photo);
+                        } else {
+                            $avatar = 'account-icon.svg';
+                        }
+
+                        // Create user account FIRST with generated user ID
+                        $user_query = "INSERT INTO users (id, username, email, password, role, avatar, is_verified)
+                                    VALUES (?, ?, ?, ?, 'trainer', ?, 1)";
+                        $stmt = $conn->prepare($user_query);
+                        $stmt->bind_param("sssss", $user_id, $generated_username, $email, $hashed_password, $avatar);
+                        if (!$stmt->execute()) {
+                            throw new Exception('Failed to create user account.');
+                        }
+
+                        // Insert trainer with user_id reference
+                        $insert_query = "INSERT INTO trainers (user_id, name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, status, password_changed)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+                        $stmt = $conn->prepare($insert_query);
+                        $stmt->bind_param("ssssssssss", $user_id, $name, $email, $phone, $specialization, $bio, $photo, $emergency_contact_name, $emergency_contact_phone, $status);
+
+                        if (!$stmt->execute()) {
+                            throw new Exception('Failed to add trainer.');
+                        }
+
+                        $trainer_id = $stmt->insert_id;
+
+                        // Insert day-off schedule
+                        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        $day_off_insert = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off) VALUES (?, ?, ?)";
+                        $day_stmt = $conn->prepare($day_off_insert);
+
+                        foreach ($days as $day) {
+                            $is_day_off = in_array($day, $day_offs) ? 1 : 0;
+                            $day_stmt->bind_param("isi", $trainer_id, $day, $is_day_off);
+                            $day_stmt->execute();
+                        }
+
+                        // Insert trainer shifts (one shift per day). Use the single default_shift for all non-day-off days.
+                        // Standard shift times and breaks:
+                        // morning => 07:00:00 - 15:00:00, break 12:00:00 - 13:00:00
+                        // afternoon => 11:00:00 - 19:00:00, break 15:00:00 - 16:00:00
+                        // night => 14:00:00 - 22:00:00, break 18:00:00 - 19:00:00
+                        foreach ($days as $day) {
+                            // If it's a day-off, set shift to 'none'
+                            if (in_array($day, $day_offs, true)) {
+                                $is_active = 0;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isi", $trainer_id, $day, $is_active);
+                                $shift_stmt->execute();
+                                continue;
+                            }
+
+                            // Otherwise apply default_shift (with break times)
+                            if ($default_shift === 'morning') {
+                                $start_time = '07:00:00';
+                                $end_time = '15:00:00';
+                                $break_start = '12:00:00';
+                                $break_end = '13:00:00';
+                                $is_active = 1;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'morning', ?, ?, ?, ?, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isssssi", $trainer_id, $day, $start_time, $end_time, $break_start, $break_end, $is_active);
+                                $shift_stmt->execute();
+                            } elseif ($default_shift === 'afternoon') {
+                                $start_time = '11:00:00';
+                                $end_time = '19:00:00';
+                                $break_start = '15:00:00';
+                                $break_end = '16:00:00';
+                                $is_active = 1;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'afternoon', ?, ?, ?, ?, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isssssi", $trainer_id, $day, $start_time, $end_time, $break_start, $break_end, $is_active);
+                                $shift_stmt->execute();
+                            } elseif ($default_shift === 'night') {
+                                $start_time = '14:00:00';
+                                $end_time = '22:00:00';
+                                $break_start = '18:00:00';
+                                $break_end = '19:00:00';
+                                $is_active = 1;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'night', ?, ?, ?, ?, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isssssi", $trainer_id, $day, $start_time, $end_time, $break_start, $break_end, $is_active);
+                                $shift_stmt->execute();
+                            } else {
+                                // default_shift === 'none' (shouldn't reach here because day-offs handled above)
+                                $is_active = 0;
+                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
+                                $shift_stmt = $conn->prepare($shift_query);
+                                $shift_stmt->bind_param("isi", $trainer_id, $day, $is_active);
+                                $shift_stmt->execute();
+                            }
+                        }
+
+                        // Log activity
+                        $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Added', ?)";
+                        $day_offs_str = implode(', ', $day_offs);
+                        $details = "New trainer added: $name ($specialization) with username: $generated_username, User ID: $user_id. Day-offs: $day_offs_str. Default shift: $default_shift";
+                        $stmt = $conn->prepare($log_query);
+                        $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
+                        $stmt->execute();
+
+                        // Log to main activity log
+                        ActivityLogger::log('trainer_created', $name, $trainer_id, "New trainer '$name' (User ID: $user_id, Trainer ID: #$trainer_id) added with specialization: $specialization. Day-offs: $day_offs_str. Default shift: $default_shift");
+
+                        // Send email with credentials
+                        $email_sent = sendTrainerCredentialsEmail($email, $name, $generated_username, $generated_password);
+
+                        // Commit transaction
+                        $conn->commit();
+
+                        // Store credentials in session for display
+                        $_SESSION['new_trainer_username'] = $generated_username;
+                        $_SESSION['new_trainer_password'] = $generated_password;
+                        $_SESSION['new_trainer_name'] = $name;
+                        $_SESSION['new_trainer_user_id'] = $user_id;
+                        $_SESSION['email_sent'] = $email_sent;
+
+                        header('Location: trainers.php?success=added');
+                        exit;
+
+                    } catch (Exception $e) {
+                        // Rollback on error
+                        $conn->rollback();
+                        $error = $e->getMessage();
                     }
-
-                    // Insert trainer with user_id reference
-                    $insert_query = "INSERT INTO trainers (user_id, name, email, phone, specialization, bio, photo, emergency_contact_name, emergency_contact_phone, status, password_changed)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
-                    $stmt = $conn->prepare($insert_query);
-                    $stmt->bind_param("ssssssssss", $user_id, $name, $email, $phone, $specialization, $bio, $photo, $emergency_contact_name, $emergency_contact_phone, $status);
-
-                    if (!$stmt->execute()) {
-                        throw new Exception('Failed to add trainer.');
-                    }
-
-                    $trainer_id = $stmt->insert_id;
-
-                    // Insert day-off schedule
-                    $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                    $day_off_insert = "INSERT INTO trainer_day_offs (trainer_id, day_of_week, is_day_off) VALUES (?, ?, ?)";
-                    $day_stmt = $conn->prepare($day_off_insert);
-
-                    foreach ($days as $day) {
-                        $is_day_off = in_array($day, $day_offs) ? 1 : 0;
-                        $day_stmt->bind_param("isi", $trainer_id, $day, $is_day_off);
-                        $day_stmt->execute();
-                    }
-
-                    // Log activity
-                    $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Added', ?)";
-                    $day_offs_str = implode(', ', $day_offs);
-                    $details = "New trainer added: $name ($specialization) with username: $generated_username, User ID: $user_id. Day-offs: $day_offs_str";
-                    $stmt = $conn->prepare($log_query);
-                    $stmt->bind_param("iss", $trainer_id, $admin_id, $details);
-                    $stmt->execute();
-
-                    // Log to main activity log
-                    ActivityLogger::log('trainer_created', $name, $trainer_id, "New trainer '$name' (User ID: $user_id, Trainer ID: #$trainer_id) added with specialization: $specialization. Day-offs: $day_offs_str");
-
-                    // Send email with credentials
-                    $email_sent = sendTrainerCredentialsEmail($email, $name, $generated_username, $generated_password);
-
-
-                    // Commit transaction
-                    $conn->commit();
-
-                    // Store credentials in session for display
-                    $_SESSION['new_trainer_username'] = $generated_username;
-                    $_SESSION['new_trainer_password'] = $generated_password;
-                    $_SESSION['new_trainer_name'] = $name;
-                    $_SESSION['new_trainer_user_id'] = $user_id;
-                    $_SESSION['email_sent'] = $email_sent;
-
-                    header('Location: trainers.php?success=added');
-                    exit;
-
-                } catch (Exception $e) {
-                    // Rollback on error
-                    $conn->rollback();
-                    $error = $e->getMessage();
                 }
             }
         }
-    }
     }
 }
 ?>
@@ -197,8 +265,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Add Trainer - Admin Panel</title>
     <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
-    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/trainer-form.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/trainer-form.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .shift-select { width: 220px; }
+        .shift-info { font-size: 0.95rem; color: #666; margin-left: 8px; }
+    </style>
 </head>
 
 <body>
@@ -352,6 +424,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
+                <div class="form-section" style="width: 100%;">
+                    <h3 class="section-title">Fixed Shift</h3>
+                    <p class="section-description">Choose a single fixed shift that will apply to all non-day-off days for this trainer.</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="default_shift">Default Shift</label>
+                            <select id="default_shift" name="default_shift" class="shift-select">
+                                <?php $posted_default = isset($_POST['default_shift']) ? $_POST['default_shift'] : 'morning'; ?>
+                                <option value="none" <?= $posted_default === 'none' ? 'selected' : '' ?>>None</option>
+                                <option value="morning" <?= $posted_default === 'morning' ? 'selected' : '' ?>>Morning (07:00 - 15:00)</option>
+                                <option value="afternoon" <?= $posted_default === 'afternoon' ? 'selected' : '' ?>>Afternoon (11:00 - 19:00)</option>
+                                <option value="night" <?= $posted_default === 'night' ? 'selected' : '' ?>>Night (14:00 - 22:00)</option>
+                            </select>
+                            <span class="shift-info" id="defaultShiftInfo">
+                                <?php
+                                    $map = [
+                                        'morning' => '07:00 - 15:00 (Break: 12:00 - 13:00)',
+                                        'afternoon' => '11:00 - 19:00 (Break: 15:00 - 16:00)',
+                                        'night' => '14:00 - 22:00 (Break: 18:00 - 19:00)',
+                                        'none' => '—'
+                                    ];
+                                    echo isset($map[$posted_default]) ? $map[$posted_default] : '—';
+                                ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <a href="trainers.php" class="btn-secondary">Cancel</a>
                     <button type="submit" class="btn-primary">
@@ -434,6 +535,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 text.textContent = 'Upload an image to set profile photo';
             }
         }
+
+        // Update default shift info text when selection changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapping = {
+                'morning': '07:00 - 15:00 (Break: 12:00 - 13:00)',
+                'afternoon': '11:00 - 19:00 (Break: 15:00 - 16:00)',
+                'night': '14:00 - 22:00 (Break: 18:00 - 19:00)',
+                'none': '—'
+            };
+            const select = document.getElementById('default_shift');
+            const info = document.getElementById('defaultShiftInfo');
+            if (select && info) {
+                select.addEventListener('change', function() {
+                    info.textContent = mapping[this.value] || '—';
+                });
+            }
+        });
     </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
