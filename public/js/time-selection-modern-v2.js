@@ -386,6 +386,11 @@ function handleStartTimeSelect(timeStr, state) {
     // Store start time
     state.startTime = timeStr;
     
+    // Save state after start time selection
+    if (window.BookingRecovery) {
+        window.BookingRecovery.saveState(state);
+    }
+    
     // Generate end time options - use custom shift if available
     const shift = state.customShift || TRAINER_SHIFTS[state.trainerShift] || TRAINER_SHIFTS['Morning'];
     const endSelect = document.getElementById('endTimeSelect');
@@ -470,6 +475,11 @@ function handleEndTimeSelect(timeStr, state) {
         endTime: state.endTime, 
         duration: state.duration 
     });
+    
+    // Save state after time selection
+    if (window.BookingRecovery) {
+        window.BookingRecovery.saveState(state);
+    }
     
     // Show duration display
     showDurationDisplay(durationMinutes, state);

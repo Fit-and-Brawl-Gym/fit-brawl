@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
         trainerShiftInfo: null,
         availableSlots: []
     };
+    
+    // Expose bookingState globally for recovery system
+    window.bookingState = bookingState;
 
     const rateLimitCountdowns = new Map();
     const buttonCountdowns = new WeakMap();
@@ -1326,6 +1329,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         bookingState.date = dateStr;
+        
+        // Save state after date selection
+        if (window.BookingRecovery) {
+            window.BookingRecovery.saveState(bookingState);
+        }
 
         // Check weekly limit for the selected week
         const canBook = checkWeeklyLimitForDate(dateStr);
@@ -1911,6 +1919,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.log('Booking successful, showing toast'); // Debug log
                         showToast('Session booked successfully!', 'success');
 
+                        // Clear recovery state on successful booking
+                        if (window.BookingRecovery) {
+                            window.BookingRecovery.clearState();
+                            // Dispatch completion event
+                            window.dispatchEvent(new Event('bookingCompleted'));
+                        }
+
                         // Show weekly usage update
                         if (data.data && data.data.weekly_usage_hours !== undefined) {
                             setTimeout(() => {
@@ -1954,7 +1969,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(error => {
                     console.error('Error in booking process (catch block):', error);
-                    showToast('[BOOKING] An error occurred. Please try again.', 'error');
+                    
+                    // Save state on error for recovery
+                    if (window.BookingRecovery) {
+                        window.BookingRecovery.saveState(bookingState);
+                    }
+                    
+                    showToast('[BOOKING] An error occurred. Your progress has been saved.', 'error');
                     button.disabled = false;
                     button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
                 });
@@ -2275,6 +2296,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Add new selection
                 classCard.classList.add('selected');
                 bookingState.classType = classCard.dataset.class;
+                
+                // Save state after class selection
+                if (window.BookingRecovery) {
+                    window.BookingRecovery.saveState(bookingState);
+                }
 
                 // Enable next button
                 updateNextButton();
@@ -2298,6 +2324,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 trainerCard.classList.add('selected');
                 bookingState.trainerId = trainerCard.dataset.trainerId;
                 bookingState.trainerName = trainerCard.dataset.trainerName;
+                
+                // Save state after trainer selection
+                if (window.BookingRecovery) {
+                    window.BookingRecovery.saveState(bookingState);
+                }
 
                 // Enable next button
                 updateNextButton();
@@ -2463,4 +2494,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // getCsrfToken is already defined at line 171 - removed duplicate
+    
+    // Expose necessary functions globally for recovery system
+    window.updateWizardStep = updateWizardStep;
+    window.loadTrainers = loadTrainers;
+    window.initializeModernTimeSelection = initializeModernTimeSelection;
+    window.loadModernTrainerAvailability = loadModernTrainerAvailability;
+    window.updateSummary = updateSummary;
 });

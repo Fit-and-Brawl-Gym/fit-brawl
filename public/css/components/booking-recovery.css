@@ -1,0 +1,234 @@
+/**
+ * Booking Recovery Modal Styles
+ */
+
+.recovery-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 20, 30, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 20px;
+}
+
+.recovery-modal.active {
+    opacity: 1;
+}
+
+.recovery-modal-content {
+    background: linear-gradient(135deg, rgba(10, 35, 45, 0.98) 0%, rgba(0, 25, 35, 0.98) 100%);
+    border: 2px solid rgba(213, 186, 43, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(213, 186, 43, 0.1);
+    max-width: 500px;
+    width: 100%;
+    padding: 0;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.recovery-modal.active .recovery-modal-content {
+    transform: scale(1);
+}
+
+.recovery-header {
+    background: linear-gradient(135deg, rgba(213, 186, 43, 0.15) 0%, rgba(26, 74, 82, 0.3) 100%);
+    border-bottom: 2px solid rgba(213, 186, 43, 0.3);
+    color: #d5ba2b;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.recovery-header i {
+    font-size: 28px;
+    opacity: 0.9;
+    color: #d5ba2b;
+}
+
+.recovery-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.recovery-body {
+    padding: 28px;
+}
+
+.recovery-body > p {
+    margin: 0 0 20px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.recovery-details {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(213, 186, 43, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.recovery-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recovery-detail:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.recovery-detail i {
+    color: #d5ba2b;
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+.recovery-detail span {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.recovery-hint {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-style: italic;
+    margin-top: 16px !important;
+}
+
+.recovery-actions {
+    display: flex;
+    gap: 12px;
+    padding: 20px 28px 28px;
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(213, 186, 43, 0.2);
+}
+
+.recovery-actions button {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-recovery-discard {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-recovery-discard:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-recovery-restore {
+    background: linear-gradient(135deg, #d5ba2b 0%, #b39a26 100%);
+    color: #0a232d;
+    border: 2px solid transparent;
+}
+
+.btn-recovery-restore:hover {
+    background: linear-gradient(135deg, #e5ca3b 0%, #c9ab24 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(213, 186, 43, 0.4);
+}
+
+.btn-recovery-discard i,
+.btn-recovery-restore i {
+    font-size: 16px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .recovery-modal {
+        padding: 16px;
+    }
+
+    .recovery-modal-content {
+        max-width: 100%;
+    }
+
+    .recovery-header {
+        padding: 20px;
+    }
+
+    .recovery-header h3 {
+        font-size: 19px;
+    }
+
+    .recovery-body {
+        padding: 24px 20px;
+    }
+
+    .recovery-details {
+        padding: 16px;
+    }
+
+    .recovery-detail {
+        padding: 10px 0;
+    }
+
+    .recovery-actions {
+        flex-direction: column;
+        padding: 16px 20px 20px;
+    }
+
+    .recovery-actions button {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}

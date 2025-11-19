@@ -76,11 +76,13 @@ $additionalCSS = [
     '../css/components/alert.css?v=' . time(),
     '../css/pages/reservations.css?v=4.0.' . time(),
     '../css/components/time-selection-v2.css?v=' . time(),
+    '../css/components/booking-recovery.css?v=' . time(),
     'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'
 ];
 $additionalJS = [
     'https://cdn.jsdelivr.net/npm/flatpickr',
     '../js/dsa/dsa-utils.js?v=' . time(), // DSA Core Library
+    '../js/booking-recovery.js?v=' . time(), // Booking Recovery System - LOAD EARLY
     '../js/time-selection-modern-v2.js?v=' . time(),
     '../js/resheduling-fixed.js?v=' . time() . rand(1000, 9999),  // ← LOAD THIS FIRST
     '../js/reservations-new.js?v=' . time() . mt_rand(),  // ← LOAD THIS SECOND - RENAMED TO BYPASS CACHE
