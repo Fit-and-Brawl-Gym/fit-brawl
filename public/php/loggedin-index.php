@@ -230,7 +230,17 @@ if (isset($_SESSION['avatar'])) {
 // Set variables for header
 $pageTitle = "Homepage - Fit and Brawl";
 $currentPage = "home";
-$additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css?v=" . time()];
+$additionalCSS = [
+    PUBLIC_PATH . "/css/pages/loggedin-homepage.css?v=" . time(),
+    PUBLIC_PATH . "/css/components/blocked-booking-modal.css?v=" . time()
+];
+$additionalJS = [
+    PUBLIC_PATH . "/js/blocked-booking-modal.js?v=" . time()
+];
+
+// Generate CSRF token for the page
+require_once __DIR__ . '/../../includes/csrf_protection.php';
+$csrfToken = CSRFProtection::generateToken();
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';

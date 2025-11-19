@@ -1983,6 +1983,12 @@ async function handleRescheduleFormSubmit(e) {
                 window.BookingRecovery.clearState();
             }
             
+            // Dispatch reschedule completed event
+            window.dispatchEvent(new Event('rescheduleCompleted'));
+            
+            // Set flag in sessionStorage to prevent recovery banner after reload
+            sessionStorage.setItem('rescheduleJustCompleted', 'true');
+            
             showToast('Reschedule successful!', 'success');
             closeRescheduleModal();
             

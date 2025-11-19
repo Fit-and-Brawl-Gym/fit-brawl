@@ -144,6 +144,15 @@ const BookingRecovery = {
      * Attempt to recover booking state
      */
     attemptRecovery() {
+        // Check if reschedule just completed - if so, skip recovery and clear the flag
+        const rescheduleJustCompleted = sessionStorage.getItem('rescheduleJustCompleted');
+        if (rescheduleJustCompleted === 'true') {
+            console.log('✅ Reschedule just completed, skipping recovery and clearing state');
+            sessionStorage.removeItem('rescheduleJustCompleted');
+            this.clearState();
+            return false;
+        }
+
         const savedState = this.getState();
 
         if (!savedState) {
@@ -158,10 +167,20 @@ const BookingRecovery = {
             return false;
         }
 
-        // Only show recovery if user has made meaningful progress (step 2 or later)
-        // Step 1 is just date selection, which is not significant enough
-        if (!savedState.currentStep || savedState.currentStep < 2) {
-            console.log('ℹ️ No meaningful progress to recover (step < 2)');
+        // Only show recovery if user has made meaningful progress
+        // Check multiple conditions to ensure significant progress:
+        // 1. Must be at step 2 or later
+        // 2. Must have selected a class type (not just a date)
+        // 3. OR must have selected a trainer (step 3+)
+        const hasSignificantProgress = savedState.currentStep >= 2 && 
+                                       (savedState.classType || savedState.trainerId);
+        
+        if (!hasSignificantProgress) {
+            console.log('ℹ️ No meaningful progress to recover', {
+                step: savedState.currentStep,
+                hasClass: !!savedState.classType,
+                hasTrainer: !!savedState.trainerId
+            });
             this.clearState();
             return false;
         }
@@ -520,6 +539,14 @@ const BookingRecovery = {
         window.addEventListener('bookingCompleted', () => {
             console.log('✅ Booking completed, clearing recovery state');
             this.clearState();
+        });
+
+        // Listen for successful reschedule completion
+        window.addEventListener('rescheduleCompleted', () => {
+            console.log('✅ Reschedule completed, clearing recovery state');
+            this.clearState();
+            // Set a flag to prevent banner from showing on next page load
+            sessionStorage.setItem('rescheduleJustCompleted', 'true');
         });
 
         // Also clear on navigation to "My Bookings" section

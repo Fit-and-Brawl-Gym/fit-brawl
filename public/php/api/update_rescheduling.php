@@ -60,7 +60,7 @@ if ($current_booking['booking_date'] === $booking_date &&
     exit;
 }
 
-// Update the booking
+// Update the booking - also reset booking_status to 'confirmed' if it was blocked
 $sql = "UPDATE user_reservations SET
             booking_date = ?,
             class_type = ?,
@@ -68,7 +68,9 @@ $sql = "UPDATE user_reservations SET
             start_time = ?,
             end_time = ?,
             reschedule_reason = ?,
-            rescheduled_at = ?
+            rescheduled_at = ?,
+            booking_status = 'confirmed',
+            unavailable_marked_at = NULL
         WHERE id = ?";
 
 $stmt = $conn->prepare($sql);

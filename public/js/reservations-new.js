@@ -464,7 +464,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const upcomingList = [];
         const pastList = [];
         const cancelledList = [];
-        const blockedList = [];
 
         allBookings.forEach(booking => {
             // Separate cancelled bookings first
@@ -473,11 +472,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Separate blocked/unavailable bookings
-            if (booking.status === 'blocked' || booking.status === 'unavailable') {
-                blockedList.push(booking);
-                return;
-            }
+            // Note: Blocked/unavailable bookings are now kept in upcoming list
+            // so users can see and act on them in the Booked tab
 
             const bookingDate = new Date(booking.date + 'T00:00:00');
             bookingDate.setHours(0, 0, 0, 0);
@@ -574,13 +570,6 @@ document.addEventListener('DOMContentLoaded', function () {
         allBookingsData.upcoming = upcomingList;
         allBookingsData.past = pastList;
         allBookingsData.cancelled = cancelledList;
-        allBookingsData.blocked = blockedList;
-
-        // Show/hide blocked tab based on blocked bookings
-        const blockedTab = document.querySelector('.tab-blocked');
-        if (blockedTab) {
-            blockedTab.style.display = blockedList.length > 0 ? 'inline-block' : 'none';
-        }
 
         // Update stat cards with next upcoming session
         updateStatCards(upcomingList);
@@ -643,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check if DSA utilities are available
         const useDSA = window.DSA || window.DSAUtils;
 
-        let filteredUpcoming, filteredPast, filteredCancelled, filteredBlocked;
+        let filteredUpcoming, filteredPast, filteredCancelled;
 
         if (useDSA) {
             // ═══════════════════════════════════════════════════════════════
@@ -671,10 +660,6 @@ document.addEventListener('DOMContentLoaded', function () {
             filteredCancelled = filterValue === 'all' ?
                 allBookingsData.cancelled :
                 filterBuilder.apply(allBookingsData.cancelled);
-
-            filteredBlocked = filterValue === 'all' ?
-                (allBookingsData.blocked || []) :
-                filterBuilder.apply(allBookingsData.blocked || []);
 
             console.log('✅ DSA FilterBuilder applied to bookings (optimized path)');
         } else {
@@ -704,13 +689,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
-            filteredBlocked = allBookingsData.blocked || [];
-            if (filterValue !== 'all') {
-                filteredBlocked = (allBookingsData.blocked || []).filter(booking =>
-                    booking.class_type === filterValue
-                );
-            }
-
             console.log('⚠️ Using fallback filtering (DSA not available)');
         }
 
@@ -718,13 +696,11 @@ document.addEventListener('DOMContentLoaded', function () {
         renderBookingList('upcomingBookings', filteredUpcoming);
         renderBookingList('pastBookings', filteredPast);
         renderBookingList('cancelledBookings', filteredCancelled);
-        renderBookingList('blockedBookings', filteredBlocked);
 
         // Update the count badges (shows number of bookings in each category)
         document.getElementById('upcomingCount').textContent = filteredUpcoming.length;
         document.getElementById('pastCount').textContent = filteredPast.length;
         document.getElementById('cancelledCount').textContent = filteredCancelled.length;
-        document.getElementById('blockedCount').textContent = filteredBlocked.length;
     }
 
     function updateStatCards(upcomingList) {
@@ -949,7 +925,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             return `
-                <div class="booking-row ${booking.status === 'cancelled' ? 'cancelled' : ''}" data-booking-id="${booking.id}" data-trainer-id="${booking.trainer_id || ''}">
+                <div class="booking-row ${booking.status === 'cancelled' ? 'cancelled' : ''} ${booking.status === 'blocked' || booking.status === 'unavailable' ? 'blocked' : ''}" data-booking-id="${booking.id}" data-trainer-id="${booking.trainer_id || ''}">
                     <div class="booking-date-cell">
                         <div class="booking-date-badge">
                             <div class="booking-day">${new Date(booking.date).getDate()}</div>
@@ -988,10 +964,21 @@ document.addEventListener('DOMContentLoaded', function () {
                                     </div>
                                 `;
                             } else if (booking.status === 'blocked' || booking.status === 'unavailable') {
+                                // Blocked bookings should be actionable - users need to reschedule or cancel within 24 hours
                                 return `
-                                    <div class="booking-status-badge blocked-badge">
-                                        <i class="fas fa-ban"></i>
-                                        <span>Unavailable</span>
+                                    <div class="blocked-booking-actions">
+                                        <div class="booking-status-badge urgent-badge" style="margin-bottom: 8px;">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span>Trainer Unavailable</span>
+                                        </div>
+                                        <div class="booking-action-buttons">
+                                            <button class="btn-reschedule-booking" onclick="openRescheduleModal(${booking.id}, this)" style="background: linear-gradient(135deg, #d5ba2b 0%, #ffd700 100%);">
+                                                <i class="fas fa-calendar-check"></i> Reschedule
+                                            </button>
+                                            <button class="btn-cancel-booking" onclick="cancelBooking(${booking.id})" style="background: linear-gradient(135deg, #ff5733 0%, #ff8c42 100%);">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        </div>
                                     </div>
                                 `;
                             } else if (booking.status === 'cancelled') {
@@ -1087,14 +1074,22 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const formData = new URLSearchParams();
+        // Check if this is a blocked booking by finding it in the DOM
+        const bookingRow = document.querySelector(`[data-booking-id="${bookingId}"]`);
+        const isBlockedBooking = bookingRow && (bookingRow.classList.contains('blocked') || bookingRow.classList.contains('unavailable'));
+
+        const formData = new FormData();
         formData.append('booking_id', bookingId);
         formData.append('csrf_token', csrfToken);
+        
+        // Add from_blocked parameter if this is a blocked booking
+        if (isBlockedBooking) {
+            formData.append('from_blocked', 'true');
+        }
 
         fetch('api/cancel_booking.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
+            body: formData
         })
             .then(response => response.json())
             .then(data => {

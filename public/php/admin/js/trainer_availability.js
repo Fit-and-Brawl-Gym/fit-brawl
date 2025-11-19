@@ -72,6 +72,7 @@ function closeModalFunc() {
 async function populateSessions(trainerId) {
     const fromSelect = document.getElementById('sessionFrom');
     const toSelect = document.getElementById('sessionTo');
+    const dateInput = document.getElementById('date');
 
     if (!fromSelect || !toSelect) {
         console.error('Session dropdowns not found');
@@ -81,8 +82,11 @@ async function populateSessions(trainerId) {
     fromSelect.innerHTML = '<option value="">Loading...</option>';
     toSelect.innerHTML = '<option value="">Loading...</option>';
 
+    // Get the selected date
+    const selectedDate = dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split('T')[0];
+
     try {
-        const res = await fetch(`api/get_trainer_shift.php?trainer_id=${trainerId}`);
+        const res = await fetch(`api/get_trainer_shift.php?trainer_id=${trainerId}&date=${selectedDate}`);
         const data = await res.json();
 
         if (!data.success || !data.shift) {
@@ -139,6 +143,15 @@ function generateTimeOptions(start, end) {
 trainerSelect.addEventListener('change', () => {
     if (trainerSelect.value) populateSessions(trainerSelect.value);
 });
+
+// Repopulate sessions when date changes (different days may have different shifts)
+if (dateInput) {
+    dateInput.addEventListener('change', () => {
+        if (trainerSelect.value) {
+            populateSessions(trainerSelect.value);
+        }
+    });
+}
 
 // =======================
 // Form Submission

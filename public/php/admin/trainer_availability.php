@@ -128,6 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
             // If neither supported, we will still send emails but report that a DB migration is required.
             $dbMigrationNeeded = (!$supportsTrainerUnavailable && !$hasReservationState);
 
+            // Initialize booking conflict notifier
+            require_once __DIR__ . '/../../../includes/booking_conflict_notifier.php';
+            BookingConflictNotifier::init($conn);
+
             foreach ($reservations as $res) {
                 $memberEmail = $res['user_email'] ?? null;
                 $memberName  = $res['user_name'] ?? ($res['user_id'] ?? 'Member');
@@ -155,18 +159,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
                     error_log("Skipping email for reservation id {$res['id']} - email not found for user_id={$res['user_id']}");
                 }
 
-                // --- Mark reservation as "blocked" instead of cancelling ---
+                // --- Mark reservation as "blocked" and create notification ---
                 if ($supportsTrainerUnavailable) {
                     $upd = $conn->prepare("
                         UPDATE user_reservations
-                        SET booking_status = 'blocked', cancelled_at = NULL, updated_at = NOW()
+                        SET booking_status = 'blocked', unavailable_marked_at = NOW(), cancelled_at = NULL, updated_at = NOW()
                         WHERE id = ?
                     ");
                 } elseif ($hasReservationState) {
                     // Use reservation_state as fallback.
                     $upd = $conn->prepare("
                         UPDATE user_reservations
-                        SET reservation_state = 'blocked', updated_at = NOW()
+                        SET reservation_state = 'blocked', unavailable_marked_at = NOW(), updated_at = NOW()
                         WHERE id = ?
                     ");
                 } else {
@@ -178,6 +182,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['ajax'])) {
                 if ($upd) {
                     $upd->bind_param('i', $res['id']);
                     $upd->execute();
+
+                    // Create in-app notification for user
+                    $booking_details = [
+                        'trainer_name' => $trainer_name,
+                        'booking_date' => date('Y-m-d', strtotime($res['start_time'])),
+                        'start_time' => $res['start_time'],
+                        'end_time' => $res['end_time'],
+                        'class_type' => $res['class_type'] ?? 'training'
+                    ];
+                    
+                    BookingConflictNotifier::notifyBlockedBooking(
+                        $res['id'],
+                        $res['user_id'],
+                        $booking_details,
+                        $reason,
+                        $_SESSION['user_id'] ?? null
+                    );
                 }
             }
 

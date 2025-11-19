@@ -3197,6 +3197,20 @@ body::before {
     background: rgba(26, 74, 82, 0.4);
 }
 
+.booking-row.blocked,
+.booking-row.unavailable {
+    border: 2px solid rgba(213, 186, 43, 0.8);
+    background: rgba(213, 186, 43, 0.08);
+    box-shadow: 0 0 15px rgba(213, 186, 43, 0.15);
+}
+
+.booking-row.blocked:hover,
+.booking-row.unavailable:hover {
+    border-color: rgba(213, 186, 43, 1);
+    background: rgba(213, 186, 43, 0.12);
+    box-shadow: 0 0 20px rgba(213, 186, 43, 0.25);
+}
+
 .booking-row > div {
     display: flex;
     flex-direction: column;
@@ -3508,6 +3522,29 @@ body::before {
     font-size: var(--font-size-base);
 }
 
+.urgent-badge {
+    background: rgba(213, 186, 43, 0.15);
+    border: 2px solid rgba(213, 186, 43, 0.6);
+    color: #d5ba2b;
+    animation: urgentPulse 2s infinite;
+}
+
+.urgent-badge i {
+    color: #d5ba2b;
+    font-size: var(--font-size-base);
+}
+
+.blocked-booking-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.blocked-booking-actions .booking-action-buttons {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
 @keyframes pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(0, 176, 255, 0.4);
@@ -3519,6 +3556,23 @@ body::before {
 
     100% {
         box-shadow: 0 0 0 0 rgba(0, 176, 255, 0);
+    }
+}
+
+@keyframes urgentPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(213, 186, 43, 0.6);
+        border-color: rgba(213, 186, 43, 0.6);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(213, 186, 43, 0);
+        border-color: rgba(213, 186, 43, 1);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(213, 186, 43, 0);
+        border-color: rgba(213, 186, 43, 0.6);
     }
 }
 

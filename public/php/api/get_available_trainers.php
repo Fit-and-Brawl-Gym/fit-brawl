@@ -239,9 +239,9 @@ try {
         $bookings_stmt->execute();
         $bookings_result = $bookings_stmt->get_result();
 
-        $available_slots = [];
+        $booked_slots = [];
         while ($booking = $bookings_result->fetch_assoc()) {
-            $available_slots[] = [
+            $booked_slots[] = [
                 'start_time' => date('H:i', strtotime($booking['start_time'])),
                 'end_time' => date('H:i', strtotime($booking['end_time'])),
                 'status' => 'booked',
@@ -249,6 +249,73 @@ try {
             ];
         }
         $bookings_stmt->close();
+        
+        // Check if trainer has ANY available time slots (not fully booked)
+        // Get shift times for this trainer
+        $shift_start_check = $row['custom_start_time'];
+        $shift_end_check = $row['custom_end_time'];
+        $break_start = $row['break_start_time'];
+        $break_end = $row['break_end_time'];
+        
+        if (!$shift_start_check || !$shift_end_check) {
+            $default_shifts = [
+                'morning' => ['07:00:00', '15:00:00', '12:00:00', '13:00:00'],
+                'afternoon' => ['11:00:00', '19:00:00', '15:00:00', '16:00:00'],
+                'night' => ['14:00:00', '22:00:00', '18:00:00', '19:00:00']
+            ];
+            $shift_type = $row['shift_type'] ?? 'morning';
+            if (isset($default_shifts[$shift_type])) {
+                $shift_start_check = $default_shifts[$shift_type][0];
+                $shift_end_check = $default_shifts[$shift_type][1];
+                if (!$break_start) $break_start = $default_shifts[$shift_type][2];
+                if (!$break_end) $break_end = $default_shifts[$shift_type][3];
+            }
+        }
+        
+        // Calculate if there are any available 30-minute slots
+        $has_available_slots = false;
+        if ($trainer_status === 'available' && $shift_start_check && $shift_end_check) {
+            $shift_start_minutes = (int)substr($shift_start_check, 0, 2) * 60 + (int)substr($shift_start_check, 3, 2);
+            $shift_end_minutes = (int)substr($shift_end_check, 0, 2) * 60 + (int)substr($shift_end_check, 3, 2);
+            
+            // Check each 30-minute slot in the shift
+            for ($slot_start = $shift_start_minutes; $slot_start < $shift_end_minutes; $slot_start += 30) {
+                $slot_end = $slot_start + 30;
+                
+                // Skip if in break time
+                if ($break_start && $break_end) {
+                    $break_start_minutes = (int)substr($break_start, 0, 2) * 60 + (int)substr($break_start, 3, 2);
+                    $break_end_minutes = (int)substr($break_end, 0, 2) * 60 + (int)substr($break_end, 3, 2);
+                    if ($slot_start >= $break_start_minutes && $slot_end <= $break_end_minutes) {
+                        continue;
+                    }
+                }
+                
+                // Check if slot overlaps with any booking
+                $is_available = true;
+                foreach ($booked_slots as $booking) {
+                    $booking_start_minutes = (int)substr($booking['start_time'], 0, 2) * 60 + (int)substr($booking['start_time'], 3, 2);
+                    $booking_end_minutes = (int)substr($booking['end_time'], 0, 2) * 60 + (int)substr($booking['end_time'], 3, 2);
+                    
+                    // Check overlap
+                    if ($slot_start < $booking_end_minutes && $slot_end > $booking_start_minutes) {
+                        $is_available = false;
+                        break;
+                    }
+                }
+                
+                if ($is_available) {
+                    $has_available_slots = true;
+                    break;
+                }
+            }
+        }
+        
+        // Mark as fully-booked if no available slots
+        if ($trainer_status === 'available' && !$has_available_slots && count($booked_slots) > 0) {
+            $trainer_status = 'fully-booked';
+            $unavailable_reason = 'fully_booked';
+        }
 
         $trainers[] = [
             'id' => $row['id'],
@@ -262,15 +329,16 @@ try {
             'shift_end' => $row['custom_end_time'] ?? null,
             'break_start' => $row['break_start_time'] ?? null,
             'break_end' => $row['break_end_time'] ?? null,
-            'available_slots' => $available_slots
+            'booked_slots' => $booked_slots,
+            'has_available_slots' => $has_available_slots
         ];
     }
 
     $stmt->close();
 
-    // Sort: available first, then booked, then unavailable
+    // Sort: available first, then fully-booked, then unavailable
     usort($trainers, function ($a, $b) {
-        $order = ['available' => 0, 'booked' => 1, 'unavailable' => 2];
+        $order = ['available' => 0, 'fully-booked' => 1, 'unavailable' => 2];
         return $order[$a['status']] - $order[$b['status']];
     });
 

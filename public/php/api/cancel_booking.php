@@ -45,6 +45,7 @@ if (!ApiSecurityMiddleware::requireCSRF()) {
 $user_id = $_SESSION['user_id'];
 $user_role = $_SESSION['role'] ?? 'member';
 $booking_id = isset($_POST['booking_id']) ? intval($_POST['booking_id']) : 0;
+$from_blocked = isset($_POST['from_blocked']) && $_POST['from_blocked'] === 'true';
 
 // Rate limiting - 6 requests per minute per user
 ApiSecurityMiddleware::applyRateLimit($conn, 'cancel_booking:' . $user_id, 6, 60);
@@ -75,16 +76,19 @@ try {
     // Initialize booking validator
     $validator = new BookingValidator($conn);
 
-    // Validate cancellation (must be >24 hours before session)
-    $validation = $validator->validateCancellation($booking_id, $user_id);
+    // Skip validation for blocked bookings - they need to be cancelled urgently
+    if (!$from_blocked) {
+        // Validate cancellation (must be >24 hours before session)
+        $validation = $validator->validateCancellation($booking_id, $user_id);
 
-    if (!$validation['valid']) {
-        ApiSecurityMiddleware::sendJsonResponse([
-            'success' => false,
-            'message' => $validation['message'],
-            'hours_remaining' => $validation['hours_remaining'] ?? null
-        ], 400);
-        exit;
+        if (!$validation['valid']) {
+            ApiSecurityMiddleware::sendJsonResponse([
+                'success' => false,
+                'message' => $validation['message'],
+                'hours_remaining' => $validation['hours_remaining'] ?? null
+            ], 400);
+            exit;
+        }
     }
 
     // Get booking details before cancellation
@@ -130,8 +134,13 @@ try {
         exit;
     }
 
-    // Check if booking can be cancelled (only pending/confirmed bookings)
-    if (!in_array($booking['booking_status'], ['pending', 'confirmed'])) {
+    // Check if booking can be cancelled (pending/confirmed/blocked bookings)
+    $cancellable_statuses = ['pending', 'confirmed'];
+    if ($from_blocked) {
+        $cancellable_statuses[] = 'blocked';
+    }
+    
+    if (!in_array($booking['booking_status'], $cancellable_statuses)) {
         ApiSecurityMiddleware::sendJsonResponse([
             'success' => false,
             'message' => "Cannot cancel {$booking['booking_status']} booking"
