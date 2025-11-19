@@ -18,7 +18,7 @@
         <div class="footer-contact-block">
             <div class="footer-contact-title">CONTACT</div>
             <div class="footer-contact-details">
-                1832 Oroquieta Rd, Santa Cruz, Manila,<br>
+                108 P. Aquino Barangay Longos, Malabon City<br>
                 1008 Metro Manila<br><br>
                 Gmail: fitxbrawl@gmail.com
             </div>
