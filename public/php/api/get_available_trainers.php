@@ -76,33 +76,10 @@ try {
         ], 400);
     }
 
-    // Check if session is too close to ending (within 30 minutes)
-    $session_end_times = [
-        'Morning' => '11:00:00',
-        'Afternoon' => '17:00:00',
-        'Evening' => '22:00:00'
-    ];
-
-    $today = date('Y-m-d');
-    $now = date('H:i:s');
-
-    // If booking for today, check if there's at least 30 minutes left
-    if ($date === $today) {
-        $session_end = $session_end_times[$session_time];
-        $end_time = strtotime($date . ' ' . $session_end);
-        $current_time = strtotime($date . ' ' . $now);
-        $minutes_remaining = ($end_time - $current_time) / 60;
-
-        if ($minutes_remaining < 30) {
-            ApiSecurityMiddleware::sendJsonResponse([
-                'success' => false,
-                'message' => 'Cannot book this session. Less than 30 minutes remaining before session ends.',
-                'time_cutoff' => true
-            ], 400);
-        }
-    }
-    // Note: Time cutoff validation (30 minutes before end) is now done
-    // in book_session.php with actual selected start/end times
+    // Note: 30-minute time cutoff validation is done in book_session.php
+    // with actual user-selected start/end times, not here at the session period level.
+    // Users should be able to view available trainers even if the session period 
+    // is ending soon, as they may select earlier time slots within that period.
 
     // Get facility capacity info
     $facility_check = $validator->validateFacilityCapacity($class_type, $date, $session_time);
@@ -212,13 +189,31 @@ try {
             }
         }
 
-        // Check if trainer already has booking
+        // Check if trainer has ANY availability during the session period
+        // Note: For time-based booking, we don't mark trainer as "booked" entirely
+        // We let users select them and then show available time slots
+        // Only mark as unavailable if their ENTIRE shift is outside the session period or fully booked
         if ($trainer_status === 'available') {
-            $availability_check = $validator->validateTrainerAvailability($trainer_id, $session_start_time, $session_end_time);
-            if (!$availability_check['valid']) {
-                $trainer_status = 'booked';
-                $unavailable_reason = 'already_booked';
+            // Check if trainer has any shift time during this session
+            $shift_start = $row['custom_start_time'];
+            $shift_end = $row['custom_end_time'];
+            
+            // If no custom times, use default shift times
+            if (!$shift_start || !$shift_end) {
+                $default_shifts = [
+                    'morning' => ['07:00:00', '15:00:00'],
+                    'afternoon' => ['11:00:00', '19:00:00'],
+                    'night' => ['14:00:00', '22:00:00']
+                ];
+                if (isset($row['shift_type']) && isset($default_shifts[$row['shift_type']])) {
+                    $shift_start = $default_shifts[$row['shift_type']][0];
+                    $shift_end = $default_shifts[$row['shift_type']][1];
+                }
             }
+            
+            // For time-based booking, always show trainers as available if they have a shift
+            // Let the time slot selection handle showing which specific times are free
+            // This allows partial availability instead of all-or-nothing
         }
 
         // Check facility capacity (only if trainer is available)

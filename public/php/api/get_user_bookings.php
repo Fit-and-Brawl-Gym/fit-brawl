@@ -113,10 +113,19 @@ try {
     $stmt->close();
 
     // Calculate weekly hours usage (Sunday to Saturday)
+    // Get the Sunday of the current week (go back to previous/current Sunday)
     $week_start = new DateTime();
-    $week_start->modify('Sunday this week')->setTime(0, 0, 0);
+    $day_of_week = (int)$week_start->format('w'); // 0 (Sunday) to 6 (Saturday)
+    if ($day_of_week > 0) {
+        // If not Sunday, go back to previous Sunday
+        $week_start->modify("-$day_of_week days");
+    }
+    $week_start->setTime(0, 0, 0);
+    
     $week_end = clone $week_start;
     $week_end->modify('+6 days')->setTime(23, 59, 59);
+    
+    error_log("📊 Week calculation - Start: " . $week_start->format('Y-m-d H:i:s') . ", End: " . $week_end->format('Y-m-d H:i:s'));
 
     // Get user's membership plan weekly limit
     $membership_query = "SELECT m.weekly_hours_limit, m.plan_name
@@ -150,6 +159,7 @@ try {
     $week_stmt = $conn->prepare($week_query);
     $week_start_str = $week_start->format('Y-m-d H:i:s');
     $week_end_str = $week_end->format('Y-m-d H:i:s');
+    error_log("📊 Query params - User: $user_id, Start: $week_start_str, End: $week_end_str");
     $week_stmt->bind_param('sss', $user_id, $week_start_str, $week_end_str);
     $week_stmt->execute();
     $week_result = $week_stmt->get_result();
@@ -157,6 +167,7 @@ try {
     $week_stmt->close();
 
     $total_minutes = (int)($week_row['total_minutes'] ?? 0);
+    error_log("📊 Total minutes from query: $total_minutes");
     $limit_minutes = $weekly_hours_limit * 60;
     $remaining_minutes = max(0, $limit_minutes - $total_minutes);
 

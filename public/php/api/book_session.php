@@ -487,11 +487,13 @@ try {
 } catch (Exception $e) {
     // Log the actual error for debugging
     $user_id_log = $_SESSION['user_id'] ?? 'unknown';
-    error_log("Booking error for user $user_id_log: " . $e->getMessage());
+    error_log("❌ Booking error for user $user_id_log: " . $e->getMessage());
+    error_log("❌ Stack trace: " . $e->getTraceAsString());
 
     ApiSecurityMiddleware::sendJsonResponse([
         'success' => false,
-        'message' => 'An error occurred while processing your booking. Please try again.'
+        'message' => 'An error occurred while processing your booking. Please try again.',
+        'debug_error' => $e->getMessage() // Temporary for debugging
     ], 500);
 } finally {
     if (isset($conn) && $conn) {

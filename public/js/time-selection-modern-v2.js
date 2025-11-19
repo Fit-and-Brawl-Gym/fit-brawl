@@ -207,9 +207,34 @@ function generateTimeSlots(startTime, endTime, intervalMinutes) {
 }
 
 /**
+ * Check if time is in the past for today's date
+ */
+function isTimePast(timeString, selectedDate) {
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate !== today) {
+        return false; // Not today, allow all times
+    }
+    
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Parse time inline
+    if (!timeString) return true;
+    const parts = timeString.split(':');
+    const slotMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    
+    return slotMinutes <= currentMinutes;
+}
+
+/**
  * Get status for a time slot
  */
 function getSlotStatus(slotTime, state, shift) {
+    // Check if time is in the past (only for today's bookings)
+    if (state.date && isTimePast(slotTime, state.date)) {
+        return 'unavailable';
+    }
+    
     // Check if it's break time
     if (isBreakTime(slotTime, shift)) {
         return 'break';
@@ -342,7 +367,7 @@ function generateStartTimeOptions(state, shift) {
     
     const options = slots.map(timeStr => {
         const status = getSlotStatus(timeStr, state, shift);
-        const isDisabled = status === 'booked' || status === 'break';
+        const isDisabled = status === 'booked' || status === 'break' || status === 'unavailable';
         const label = formatTime(timeStr);
         const unavailableText = isDisabled ? ' (unavailable)' : '';
         
