@@ -195,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('plan', basePlan);
         formData.append('billing', urlParams.get('billing') || 'monthly');
         formData.append('payment_method', 'cash');
+        formData.append('csrf_token', window.CSRF_TOKEN || '');
 
         submitCashBtn.disabled = true;
         submitCashBtn.textContent = 'SUBMITTING...';

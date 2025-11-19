@@ -164,6 +164,9 @@ async function markCashAsPaid(id) {
   try {
     const formData = new FormData();
     formData.append('id', id);
+    if (window.CSRF_TOKEN) {
+      formData.append('csrf_token', window.CSRF_TOKEN);
+    }
 
     const response = await fetch('api/admin_subscriptions_api.php?action=mark_cash_paid', {
       method: 'POST',
@@ -694,8 +697,12 @@ async function approveSub(id) {
 
 // Reject subscription function
 async function rejectSub(id, reason) {
+  console.log('rejectSub called with id:', id, 'reason:', reason);
   const row = document.querySelector(`#processingTableBody tr[data-id="${id}"]`);
-  if (!row) return;
+  if (!row) {
+    console.error('Row not found for id:', id);
+    return;
+  }
 
   // Call the existing reject function
   await executeAction(id, 'reject', reason);
