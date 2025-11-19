@@ -99,6 +99,9 @@ window.openRescheduleModal = function(bookingId, element) {
     const form = document.getElementById('rescheduleForm');
     if (form) form.reset();
 
+    // Hide alert
+    hideRescheduleAlert();
+
     // Hide all optional sections
     const elementsToHide = [
         'rescheduleTimeSummary',
@@ -449,6 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (rescheduleChangeTime) {
         rescheduleChangeTime.addEventListener('click', function(e) {
             e.preventDefault();
+            hideRescheduleAlert();
             showRescheduleSelectionContent();
         });
     }
@@ -1595,16 +1599,47 @@ async function handleRescheduleFormSubmit(e) {
         const data = await res.json();
 
         if (data.success) {
-            showToast('Reschedule successful!', 'success');
-            setTimeout(() => location.reload(), 800);
-            closeRescheduleModal();
+            showRescheduleAlert('Reschedule successful!', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            showToast(data.message || 'Reschedule failed.', 'error');
+            showRescheduleAlert(data.message || 'Reschedule failed.', 'error');
         }
     } catch (err) {
-        showToast('Server error while updating booking.', 'error');
+        showRescheduleAlert('Server error while updating booking.', 'error');
     }
 }
+
+// Show alert in reschedule modal
+window.showRescheduleAlert = function(message, type = 'error') {
+    const alert = document.getElementById('rescheduleAlert');
+    const messageEl = alert.querySelector('.reschedule-alert-message');
+    
+    if (!alert || !messageEl) return;
+    
+    // Remove previous type classes
+    alert.classList.remove('error', 'success', 'warning');
+    
+    // Add new type class
+    alert.classList.add(type);
+    
+    // Set message
+    messageEl.textContent = message;
+    
+    // Show alert
+    alert.style.display = 'block';
+    
+    // Scroll to alert
+    alert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+// Hide alert in reschedule modal
+window.hideRescheduleAlert = function() {
+    const alert = document.getElementById('rescheduleAlert');
+    if (alert) {
+        alert.style.display = 'none';
+    }
+};
+
 // ===================================
 // INITIALIZATION
 // ===================================

@@ -676,6 +676,17 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
 
         <div class="modal-body">
+            <!-- Error/Success Alert -->
+            <div id="rescheduleAlert" class="reschedule-alert" style="display: none;">
+                <div class="reschedule-alert-content">
+                    <i class="reschedule-alert-icon fas"></i>
+                    <span class="reschedule-alert-message"></span>
+                    <button class="reschedule-alert-close" onclick="hideRescheduleAlert()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
 <!-- Current Booking (Always Visible) -->
             <div class="original-booking-info">
                 <h3>Current Booking</h3>
