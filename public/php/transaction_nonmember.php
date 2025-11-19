@@ -228,6 +228,11 @@ require_once '../../includes/header.php';
                         value = '63' + value;
                     }
 
+                    // Limit to 10 digits after 63 (total 12 digits)
+                    if (value.length > 12) {
+                        value = value.substring(0, 12);
+                    }
+
                     // Format: +63 XXX XXX XXXX
                     let formatted = '+63';
                     if (value.length > 2) {
