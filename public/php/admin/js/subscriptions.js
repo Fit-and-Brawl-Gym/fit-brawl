@@ -535,6 +535,7 @@ async function loadSubscriptions(type, tableBodyId) {
     // Populate rows based on type
     filteredData.forEach(sub => {
       const row = document.createElement('tr');
+      row.setAttribute('data-id', sub.id);
 
       if (type === 'processing') {
         row.innerHTML = `
@@ -609,8 +610,10 @@ function approveSubscription(id) {
 
 // Reject subscription
 function rejectSubscription(id) {
+  console.log('rejectSubscription called with id:', id, 'type:', typeof id);
   currentAction = 'reject';
   currentId = id;
+  console.log('Set currentId to:', currentId);
   document.getElementById('confirmTitle').textContent = 'Reject Subscription';
   document.getElementById('confirmMessage').textContent = 'Please provide a reason for rejection:';
   document.getElementById('rejectReasonContainer').style.display = 'block';
@@ -627,10 +630,15 @@ function closeModal() {
 
 // Execute approve/reject action
 async function executeAction() {
-  if (!currentAction || !currentId) return;
+  console.log('executeAction called - currentAction:', currentAction, 'currentId:', currentId);
+  if (!currentAction || !currentId) {
+    console.error('Missing action or ID!');
+    return;
+  }
 
   const formData = new FormData();
   formData.append('id', currentId);
+  console.log('FormData id appended:', currentId);
   // Add CSRF token
   if (window.CSRF_TOKEN) {
     formData.append('csrf_token', window.CSRF_TOKEN);
