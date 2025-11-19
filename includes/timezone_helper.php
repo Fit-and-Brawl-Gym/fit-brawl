@@ -123,8 +123,8 @@ class TimezoneHelper {
      * - formatTimeRange('14:00', '15:00', false) => '2:00 PM - 3:00 PM PHT'
      */
     public static function formatTimeRange($start_time, $end_time, $show_duration = true) {
-        $start = self::create($start_time);
-        $end = self::create($end_time);
+        $start = ($start_time instanceof DateTime) ? $start_time : self::create($start_time);
+        $end = ($end_time instanceof DateTime) ? $end_time : self::create($end_time);
         
         $formatted = $start->format('g:i A') . ' - ' . $end->format('g:i A');
         
