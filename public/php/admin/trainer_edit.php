@@ -83,35 +83,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $name = trim($_POST['name']);
         $email = trim($_POST['email']);
-    $phone_raw = trim($_POST['phone']);
-    $phone = format_phone_standard($phone_raw);
-    $specialization = $_POST['specialization'];
-    $bio = trim($_POST['bio']);
-    $emergency_contact_name = trim($_POST['emergency_contact_name']);
-    $emergency_contact_phone_raw = trim($_POST['emergency_contact_phone']);
-    $emergency_contact_phone = $emergency_contact_phone_raw === '' ? null : format_phone_standard($emergency_contact_phone_raw);
-    $status = $_POST['status'];
-    $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
+        $phone_raw = trim($_POST['phone']);
+        $phone = format_phone_standard($phone_raw);
+        $specialization = $_POST['specialization'];
+        $bio = trim($_POST['bio']);
+        $emergency_contact_name = trim($_POST['emergency_contact_name']);
+        $emergency_contact_phone_raw = trim($_POST['emergency_contact_phone']);
+        $emergency_contact_phone = $emergency_contact_phone_raw === '' ? null : format_phone_standard($emergency_contact_phone_raw);
+        $status = $_POST['status'];
+        $default_shift = $_POST['default_shift'] ?? 'morning';
+        $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
 
-    // Validate required fields
-    if (empty($name) || empty($email) || empty($specialization)) {
+        // Validate required fields
+        if (empty($name) || empty($email) || empty($specialization)) {
         $error = 'Please fill in all required fields.';
-    } elseif (!$phone) {
-        $error = 'Please enter a valid Philippine mobile number (e.g., +63 917 123 4567).';
-    } elseif ($emergency_contact_phone_raw !== '' && !$emergency_contact_phone) {
-        $error = 'Please enter a valid emergency contact number or leave it blank.';
-    } elseif (count($day_offs) !== 2) {
-        $error = 'You must select exactly 2 days off per week.';
-    } else {
-        // Check if email already exists (excluding current trainer)
-        $check_query = "SELECT id FROM trainers WHERE email = ? AND id != ? AND deleted_at IS NULL";
-        $stmt = $conn->prepare($check_query);
-        $stmt->bind_param("si", $email, $trainer_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $error = 'A trainer with this email already exists.';
+        } elseif (!$phone) {
+            $error = 'Please enter a valid Philippine mobile number (e.g., +63 917 123 4567).';
+        } elseif ($emergency_contact_phone_raw !== '' && !$emergency_contact_phone) {
+            $error = 'Please enter a valid emergency contact number or leave it blank.';
+        } elseif (count($day_offs) !== 2) {
+            $error = 'You must select exactly 2 days off per week.';
         } else {
             // Check if email already exists (excluding current trainer)
             $check_query = "SELECT id FROM trainers WHERE email = ? AND id != ? AND deleted_at IS NULL";
@@ -123,26 +114,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result->num_rows > 0) {
                 $error = 'A trainer with this email already exists.';
             } else {
-                // Handle photo upload securely
-                $photo = $trainer['photo'];
-                if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                    $upload_dir = '../../../uploads/trainers/';
-                    $uploadHandler = SecureFileUpload::imageUpload($upload_dir, 5);
+                    // Handle photo upload securely
+                    $photo = $trainer['photo'];
+                    if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                        $upload_dir = '../../../uploads/trainers/';
+                        $uploadHandler = SecureFileUpload::imageUpload($upload_dir, 5);
 
-                    $result = $uploadHandler->uploadFile($_FILES['photo']);
+                        $result = $uploadHandler->uploadFile($_FILES['photo']);
 
-                    if ($result['success']) {
-                        // Delete old photo if exists
-                        if (!empty($trainer['photo']) && file_exists($upload_dir . $trainer['photo'])) {
-                            unlink($upload_dir . $trainer['photo']);
+                        if ($result['success']) {
+                            // Delete old photo if exists
+                            if (!empty($trainer['photo']) && file_exists($upload_dir . $trainer['photo'])) {
+                                unlink($upload_dir . $trainer['photo']);
+                            }
+                            $photo = $result['filename'];
+                        } else {
+                            $error = $result['message'];
                         }
-                        $photo = $result['filename'];
-                    } else {
-                        $error = $result['message'];
                     }
-                }
 
-                if (empty($error)) {
+                    if (empty($error)) {
                     // Start transaction to update trainer, day-offs and shifts atomically
                     $conn->begin_transaction();
 

@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone = format_phone_standard($phone_raw);
     $specialization = $_POST['specialization'];
     $bio = trim($_POST['bio']);
+    $default_shift = $_POST['default_shift'] ?? 'morning';
     $emergency_contact_name = trim($_POST['emergency_contact_name']);
     $emergency_contact_phone_raw = trim($_POST['emergency_contact_phone']);
     $emergency_contact_phone = $emergency_contact_phone_raw === '' ? null : format_phone_standard($emergency_contact_phone_raw);
@@ -47,25 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Get day-offs from form
         $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
 
-    // Validate required fields
-    if (empty($name) || empty($email) || empty($specialization)) {
-        $error = 'Please fill in all required fields.';
-    } elseif (!$phone) {
-        $error = 'Please enter a valid Philippine mobile number (e.g., +63 917 123 4567).';
-    } elseif ($emergency_contact_phone_raw !== '' && !$emergency_contact_phone) {
-        $error = 'Please enter a valid emergency contact number or leave it blank.';
-    } elseif (count($day_offs) !== 2) {
-        $error = 'You must select exactly 2 days off per week.';
-    } else {
-        // Check if email already exists
-        $check_query = "SELECT id FROM trainers WHERE email = ? AND deleted_at IS NULL";
-        $stmt = $conn->prepare($check_query);
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            $error = 'A trainer with this email already exists.';
+        // Validate required fields
+        if (empty($name) || empty($email) || empty($specialization)) {
+            $error = 'Please fill in all required fields.';
+        } elseif (!$phone) {
+            $error = 'Please enter a valid Philippine mobile number (e.g., +63 917 123 4567).';
+        } elseif ($emergency_contact_phone_raw !== '' && !$emergency_contact_phone) {
+            $error = 'Please enter a valid emergency contact number or leave it blank.';
+        } elseif (count($day_offs) !== 2) {
+            $error = 'You must select exactly 2 days off per week.';
         } else {
             // Check if email already exists
             $check_query = "SELECT id FROM trainers WHERE email = ? AND deleted_at IS NULL";

@@ -21,18 +21,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
         $conn->begin_transaction();
 
         try {
-            // First, set all days as working days
+            // Update trainer_day_offs table (for backwards compatibility)
             $update_all = "UPDATE trainer_day_offs SET is_day_off = FALSE WHERE trainer_id = ?";
             $stmt = $conn->prepare($update_all);
             $stmt->bind_param("i", $trainer_id);
             $stmt->execute();
 
-            // Then mark selected days as day-offs
             if (!empty($day_offs)) {
                 $placeholders = implode(',', array_fill(0, count($day_offs), '?'));
                 $update_days = "UPDATE trainer_day_offs SET is_day_off = TRUE
                                WHERE trainer_id = ? AND day_of_week IN ($placeholders)";
                 $stmt = $conn->prepare($update_days);
+
+                $types = str_repeat('s', count($day_offs));
+                $params = array_merge([$trainer_id], $day_offs);
+                $stmt->bind_param("i$types", ...$params);
+                $stmt->execute();
+            }
+
+            // IMPORTANT: Update trainer_shifts table to reflect actual availability
+            // First, get the trainer's current shift patterns (before day-offs)
+            $get_shifts = "SELECT day_of_week, shift_type FROM trainer_shifts 
+                          WHERE trainer_id = ? AND shift_type != 'none'";
+            $stmt = $conn->prepare($get_shifts);
+            $stmt->bind_param("i", $trainer_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $original_shifts = [];
+            while ($row = $result->fetch_assoc()) {
+                $original_shifts[$row['day_of_week']] = $row['shift_type'];
+            }
+
+            // Set all shifts to active and restore original shift types
+            $update_shifts_all = "UPDATE trainer_shifts 
+                                 SET is_active = 1, 
+                                     shift_type = CASE 
+                                         WHEN shift_type = 'none' THEN 'morning'
+                                         ELSE shift_type 
+                                     END
+                                 WHERE trainer_id = ?";
+            $stmt = $conn->prepare($update_shifts_all);
+            $stmt->bind_param("i", $trainer_id);
+            $stmt->execute();
+
+            // Set day-off shifts to 'none' and inactive
+            if (!empty($day_offs)) {
+                $placeholders = implode(',', array_fill(0, count($day_offs), '?'));
+                $update_shifts_off = "UPDATE trainer_shifts 
+                                     SET shift_type = 'none', 
+                                         is_active = 0,
+                                         custom_start_time = NULL,
+                                         custom_end_time = NULL,
+                                         break_start_time = NULL,
+                                         break_end_time = NULL
+                                     WHERE trainer_id = ? AND day_of_week IN ($placeholders)";
+                $stmt = $conn->prepare($update_shifts_off);
 
                 $types = str_repeat('s', count($day_offs));
                 $params = array_merge([$trainer_id], $day_offs);
@@ -59,15 +102,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     }
 }
 
-// Get all active trainers with their day-offs
+// Get all active trainers with their day-offs (from trainer_shifts)
 $trainers_query = "
     SELECT t.id, t.name, t.email, t.specialization, t.photo, t.status,
-           GROUP_CONCAT(CASE WHEN td.is_day_off = TRUE THEN td.day_of_week END ORDER BY
-               FIELD(td.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
+           GROUP_CONCAT(CASE WHEN ts.shift_type = 'none' OR ts.is_active = 0 THEN ts.day_of_week END ORDER BY
+               FIELD(ts.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
            ) as day_offs,
-           COUNT(CASE WHEN td.is_day_off = TRUE THEN 1 END) as day_off_count
+           COUNT(CASE WHEN ts.shift_type = 'none' OR ts.is_active = 0 THEN 1 END) as day_off_count
     FROM trainers t
-    LEFT JOIN trainer_day_offs td ON t.id = td.trainer_id
+    LEFT JOIN trainer_shifts ts ON t.id = ts.trainer_id
     WHERE t.deleted_at IS NULL
     GROUP BY t.id, t.name, t.email, t.specialization, t.photo, t.status
     ORDER BY t.name ASC
@@ -75,7 +118,7 @@ $trainers_query = "
 
 $trainers_result = $conn->query($trainers_query);
 
-// Get statistics
+// Get statistics (from trainer_shifts)
 $stats_query = "
     SELECT
         COUNT(DISTINCT t.id) as total_trainers,
@@ -84,8 +127,8 @@ $stats_query = "
     FROM trainers t
     LEFT JOIN (
         SELECT trainer_id, COUNT(*) as day_off_count
-        FROM trainer_day_offs
-        WHERE is_day_off = TRUE
+        FROM trainer_shifts
+        WHERE shift_type = 'none' OR is_active = 0
         GROUP BY trainer_id
     ) dc ON t.id = dc.trainer_id
     WHERE t.deleted_at IS NULL
@@ -184,18 +227,21 @@ $stats = $conn->query($stats_query)->fetch_assoc();
             }
 
             while ($trainer = $trainers_result->fetch_assoc()) {
-                $day_offs_query = "SELECT day_of_week, is_day_off FROM trainer_day_offs WHERE trainer_id = ?";
-                $stmt = $conn->prepare($day_offs_query);
+                // Check trainer shifts to see actual availability
+                $shifts_query = "SELECT day_of_week, shift_type, is_active FROM trainer_shifts WHERE trainer_id = ?";
+                $stmt = $conn->prepare($shifts_query);
                 $stmt->bind_param("i", $trainer['id']);
                 $stmt->execute();
-                $day_offs_result = $stmt->get_result();
+                $shifts_result = $stmt->get_result();
 
-                while ($row = $day_offs_result->fetch_assoc()) {
-                    if ($row['is_day_off']) {
-                        $coverage[$row['day_of_week']]['off']++;
-                    } else {
+                while ($row = $shifts_result->fetch_assoc()) {
+                    if ($row['is_active'] && $row['shift_type'] !== 'none') {
+                        // Trainer is available (has active shift)
                         $coverage[$row['day_of_week']]['available']++;
                         $coverage[$row['day_of_week']]['trainers'][] = $trainer['name'];
+                    } else {
+                        // Trainer is off (inactive or 'none' shift)
+                        $coverage[$row['day_of_week']]['off']++;
                     }
                 }
             }
@@ -265,15 +311,16 @@ $stats = $conn->query($stats_query)->fetch_assoc();
         <div id="cardsView" class="view-container schedules-container">
             <?php if ($trainers_result->num_rows > 0): ?>
                 <?php while ($trainer = $trainers_result->fetch_assoc()):
-                    // Get detailed day-off information
-                    $day_offs_query = "SELECT day_of_week, is_day_off FROM trainer_day_offs WHERE trainer_id = ?";
+                    // Get detailed day-off information from trainer_shifts
+                    $day_offs_query = "SELECT day_of_week, shift_type, is_active FROM trainer_shifts WHERE trainer_id = ?";
                     $stmt = $conn->prepare($day_offs_query);
                     $stmt->bind_param("i", $trainer['id']);
                     $stmt->execute();
                     $day_offs_result = $stmt->get_result();
                     $schedule = [];
                     while ($row = $day_offs_result->fetch_assoc()) {
-                        $schedule[$row['day_of_week']] = $row['is_day_off'];
+                        // Day is off if shift_type is 'none' or is_active is 0
+                        $schedule[$row['day_of_week']] = ($row['shift_type'] == 'none' || $row['is_active'] == 0) ? 1 : 0;
                     }
 
                     // Check if exactly 2 days off
@@ -389,14 +436,15 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                         <?php
                         $trainers_result->data_seek(0); // Reset pointer
                         while ($trainer = $trainers_result->fetch_assoc()):
-                            $day_offs_query = "SELECT day_of_week, is_day_off FROM trainer_day_offs WHERE trainer_id = ?";
+                            $day_offs_query = "SELECT day_of_week, shift_type, is_active FROM trainer_shifts WHERE trainer_id = ?";
                             $stmt = $conn->prepare($day_offs_query);
                             $stmt->bind_param("i", $trainer['id']);
                             $stmt->execute();
                             $day_offs_result = $stmt->get_result();
                             $schedule = [];
                             while ($row = $day_offs_result->fetch_assoc()) {
-                                $schedule[$row['day_of_week']] = $row['is_day_off'];
+                                // Day is off if shift_type is 'none' or is_active is 0
+                                $schedule[$row['day_of_week']] = ($row['shift_type'] == 'none' || $row['is_active'] == 0) ? 1 : 0;
                             }
                             $is_compliant = $trainer['day_off_count'] == 2;
                         ?>
