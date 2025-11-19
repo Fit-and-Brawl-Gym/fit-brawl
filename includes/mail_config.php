@@ -304,13 +304,12 @@ function sendMemberBookingRescheduleOption(
         }
 
         $html .= "
-            <p>You can choose one of the following options:</p>
+            <p>You can choose to Reschedule or Cancel your session by clicking the link below or by going to your bookings section</p>
             <ul>";
 
         if ($trainer_id) {
             $html .= "
-                <li><a href='" . getenv('APP_URL') . "/member/reschedule.php?trainer_id=" . urlencode($trainer_id) . "&date=" . urlencode($date) . "&time=" . urlencode($time_range) . "'>Reschedule your session</a></li>
-                <li><a href='" . getenv('APP_URL') . "/member/cancel.php?trainer_id=" . urlencode($trainer_id) . "&date=" . urlencode($date) . "&time=" . urlencode($time_range) . "'>Cancel your session</a></li>";
+                <li><a href='localhost/fit-brawl/public/php/reservations.php?trainer_id=" . urlencode($trainer_id) . "&date=" . urlencode($date) . "&time=" . urlencode($time_range) . "'>Reschedule your session</a></li>";
         }
 
         $html .= "

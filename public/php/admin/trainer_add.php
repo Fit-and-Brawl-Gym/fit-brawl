@@ -162,17 +162,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // morning => 07:00:00 - 15:00:00, break 12:00:00 - 13:00:00
                         // afternoon => 11:00:00 - 19:00:00, break 15:00:00 - 16:00:00
                         // night => 14:00:00 - 22:00:00, break 18:00:00 - 19:00:00
-                        foreach ($days as $day) {
-                            // If it's a day-off, set shift to 'none'
-                            if (in_array($day, $day_offs, true)) {
-                                $is_active = 0;
-                                $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
-                                                VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
-                                $shift_stmt = $conn->prepare($shift_query);
-                                $shift_stmt->bind_param("isi", $trainer_id, $day, $is_active);
-                                $shift_stmt->execute();
-                                continue;
-                            }
+                            foreach ($days as $day) {
+                                $is_active = 1;
+                                if (in_array($day, $day_offs, true)) {
+                                    // day-off
+                                    $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
+                                                    VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
+                                    $shift_stmt = $conn->prepare($shift_query);
+                                    $shift_stmt->bind_param("isi", $trainer_id, $day, $is_active);
+                                    $shift_stmt->execute();
+                                    continue;
+                                }
 
                             // Otherwise apply default_shift (with break times)
                             if ($default_shift === 'morning') {
@@ -210,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 $shift_stmt->execute();
                             } else {
                                 // default_shift === 'none' (shouldn't reach here because day-offs handled above)
-                                $is_active = 0;
+                                $is_active = 1;
                                 $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
                                                 VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
                                 $shift_stmt = $conn->prepare($shift_query);
