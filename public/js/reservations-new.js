@@ -231,10 +231,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===================================
     // LOAD WEEKLY BOOKINGS COUNT (TIME-BASED)
     // ===================================
-    function loadWeeklyBookings() {
-        fetch('api/get_user_bookings.php')
-            .then(response => response.json())
-            .then(data => {
+    async function loadWeeklyBookings(retryCount = 0) {
+        try {
+            const response = await fetch('api/get_user_bookings.php');
+            
+            // Handle rate limiting with retry
+            if (response.status === 429 && retryCount < 3) {
+                const retryAfter = parseInt(response.headers.get('Retry-After') || '2');
+                const delay = Math.min(retryAfter * 1000, 2000 * Math.pow(2, retryCount));
+                console.warn(`⏳ Rate limited. Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return loadWeeklyBookings(retryCount + 1);
+            }
+            
+            const data = await response.json();
+            if (data.success) {
                 console.log('📊 Weekly bookings API response:', data);
                 if (data.success) {
                     // Get weekly usage from API response
@@ -282,10 +293,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 }
-            })
-            .catch(error => {
-                console.error('Error loading weekly bookings:', error);
-            });
+            }
+        } catch (error) {
+            console.error('Error loading weekly bookings:', error);
+        }
     }
 
     // Helper function to get week boundaries (Sunday to Saturday)
@@ -382,10 +393,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===================================
     // LOAD USER BOOKINGS
     // ===================================
-    function loadUserBookings() {
-        fetch('api/get_user_bookings.php')
-            .then(response => response.json())
-            .then(data => {
+    async function loadUserBookings(retryCount = 0) {
+        try {
+            const response = await fetch('api/get_user_bookings.php');
+            
+            // Handle rate limiting with retry
+            if (response.status === 429 && retryCount < 3) {
+                const retryAfter = parseInt(response.headers.get('Retry-After') || '2');
+                const delay = Math.min(retryAfter * 1000, 2000 * Math.pow(2, retryCount));
+                console.warn(`⏳ Rate limited. Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return loadUserBookings(retryCount + 1);
+            }
+            
+            const data = await response.json();
+            if (data.success) {
                 console.log('Bookings API Response:', data); // Debug log
                 if (data.success) {
                     console.log('Grouped bookings:', data.grouped); // Debug log
@@ -401,16 +423,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('cancelledBookings').innerHTML =
                         `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
                 }
-            })
-            .catch(error => {
-                console.error('Error loading bookings:', error);
+            } else {
+                console.error('API returned error:', data.message);
                 document.getElementById('upcomingBookings').innerHTML =
-                    '<p class="empty-message">Failed to load bookings</p>';
+                    `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
                 document.getElementById('pastBookings').innerHTML =
-                    '<p class="empty-message">Failed to load bookings</p>';
+                    `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
                 document.getElementById('cancelledBookings').innerHTML =
-                    '<p class="empty-message">Failed to load bookings</p>';
-            });
+                    `<p class="empty-message">${data.message || 'Failed to load bookings'}</p>`;
+            }
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+            document.getElementById('upcomingBookings').innerHTML =
+                '<p class="empty-message">Failed to load bookings</p>';
+            document.getElementById('pastBookings').innerHTML =
+                '<p class="empty-message">Failed to load bookings</p>';
+            document.getElementById('cancelledBookings').innerHTML =
+                '<p class="empty-message">Failed to load bookings</p>';
+        }
     }
 
     function renderBookings(grouped) {

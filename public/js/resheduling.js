@@ -196,6 +196,9 @@ window.openRescheduleModal = function(bookingId, element) {
         }
     }, 100);
 
+    // Populate current booking summary (including duration)
+    populateCurrentBookingSummary();
+
     // Finally show the modal
     const modal = document.getElementById('rescheduleModal');
     if (modal) {
@@ -1499,7 +1502,13 @@ function populateCurrentBookingSummary() {
     if (currentRescheduleBooking.id) {
         console.log('📊 Fetching booking duration for ID:', currentRescheduleBooking.id);
         fetch(`api/get_booking_details.php?booking_id=${currentRescheduleBooking.id}`)
-            .then(res => res.json())
+            .then(res => {
+                console.log('📊 Response status:', res.status, res.statusText);
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
             .then(data => {
                 console.log('📊 Booking details response:', data);
                 if (data.success && data.booking) {
@@ -1507,37 +1516,51 @@ function populateCurrentBookingSummary() {
                     
                     // Calculate duration from start_time and end_time
                     if (booking.start_time && booking.end_time) {
-                        const start = new Date(`2000-01-01 ${booking.start_time}`);
-                        const end = new Date(`2000-01-01 ${booking.end_time}`);
-                        const durationMinutes = Math.round((end - start) / (1000 * 60));
+                        console.log('📊 Raw times:', booking.start_time, 'to', booking.end_time);
                         
-                        console.log('📊 Calculated duration:', durationMinutes, 'minutes from', booking.start_time, 'to', booking.end_time);
-                        
-                        const hours = Math.floor(durationMinutes / 60);
-                        const mins = durationMinutes % 60;
-                        let durationText = '';
-                        
-                        if (hours > 0) {
-                            durationText = `${hours} hour${hours > 1 ? 's' : ''}`;
-                            if (mins > 0) durationText += ` ${mins} minutes`;
-                        } else {
-                            durationText = `${mins} minutes`;
-                        }
-                        
-                        console.log('📊 Duration text:', durationText);
-                        
-                        // Update both the original duration display and the current booking summary
-                        const originalDurationEl = document.getElementById('originalDuration');
-                        const currentDurationEl = document.getElementById('currentBookingDuration');
-                        
-                        if (originalDurationEl) {
-                            originalDurationEl.textContent = durationText;
-                            console.log('✅ Updated originalDuration to:', durationText);
-                        }
-                        
-                        if (currentDurationEl) {
-                            currentDurationEl.textContent = durationText;
-                            console.log('✅ Updated currentBookingDuration to:', durationText);
+                        try {
+                            // Parse as Date objects (handles full datetime strings)
+                            const startTime = new Date(booking.start_time);
+                            const endTime = new Date(booking.end_time);
+                            
+                            // Calculate duration in minutes
+                            const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+                            
+                            console.log('📊 Calculated duration:', durationMinutes, 'minutes');
+                            
+                            if (isNaN(durationMinutes) || durationMinutes <= 0) {
+                                throw new Error('Invalid duration calculated');
+                            }
+                            
+                            const hours = Math.floor(durationMinutes / 60);
+                            const mins = durationMinutes % 60;
+                            let durationText = '';
+                            
+                            if (hours > 0) {
+                                durationText = `${hours} hour${hours > 1 ? 's' : ''}`;
+                                if (mins > 0) durationText += ` ${mins} minutes`;
+                            } else {
+                                durationText = `${mins} minutes`;
+                            }
+                            
+                            console.log('📊 Duration text:', durationText);
+                            
+                            // Update both the original duration display and the current booking summary
+                            const originalDurationEl = document.getElementById('originalDuration');
+                            const currentDurationEl = document.getElementById('currentBookingDuration');
+                            
+                            if (originalDurationEl) {
+                                originalDurationEl.textContent = durationText;
+                                console.log('✅ Updated originalDuration to:', durationText);
+                            }
+                            
+                            if (currentDurationEl) {
+                                currentDurationEl.textContent = durationText;
+                                console.log('✅ Updated currentBookingDuration to:', durationText);
+                            }
+                        } catch (parseError) {
+                            console.error('❌ Error parsing time:', parseError);
+                            throw parseError;
                         }
                     } else {
                         // Fallback if no time data

@@ -1339,54 +1339,81 @@ function populateCurrentBookingSummary() {
 
     // Fetch actual booking duration from server
     if (currentRescheduleBooking.id) {
-        fetch(`api/get_booking_duration.php?booking_id=${currentRescheduleBooking.id}`)
-            .then(res => res.json())
+        console.log('Fetching booking details for ID:', currentRescheduleBooking.id);
+        fetch(`api/get_booking_details.php?booking_id=${currentRescheduleBooking.id}`)
+            .then(res => {
+                console.log('Response status:', res.status, res.statusText);
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
             .then(data => {
-                if (data.success && data.duration_minutes) {
-                    const hours = Math.floor(data.duration_minutes / 60);
-                    const mins = data.duration_minutes % 60;
-                    let durationText = '';
+                console.log('Booking details response:', data);
+                if (data.success && data.booking) {
+                    const booking = data.booking;
                     
-                    if (hours > 0) {
-                        durationText = `${hours} hour${hours > 1 ? 's' : ''}`;
-                        if (mins > 0) durationText += ` ${mins} minutes`;
+                    // Calculate duration from start_time and end_time
+                    if (booking.start_time && booking.end_time) {
+                        try {
+                            // Parse as Date objects (handles full datetime strings)
+                            const startTime = new Date(booking.start_time);
+                            const endTime = new Date(booking.end_time);
+                            
+                            // Calculate duration in minutes
+                            const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+                            
+                            if (isNaN(durationMinutes) || durationMinutes <= 0) {
+                                throw new Error(`Invalid duration: ${durationMinutes} minutes`);
+                            }
+                            
+                            const hours = Math.floor(durationMinutes / 60);
+                            const mins = durationMinutes % 60;
+                            let durationText = '';
+                            
+                            if (hours > 0) {
+                                durationText = `${hours} hour${hours > 1 ? 's' : ''}`;
+                                if (mins > 0) durationText += ` ${mins} minutes`;
+                            } else {
+                                durationText = `${mins} minutes`;
+                            }
+                            
+                            // Update both the original duration display and the current booking summary
+                            const originalDurationEl = document.getElementById('originalDuration');
+                            const currentDurationEl = document.getElementById('currentBookingDuration');
+                            
+                            if (originalDurationEl) {
+                                originalDurationEl.textContent = durationText;
+                            }
+                            
+                            if (currentDurationEl) {
+                                currentDurationEl.textContent = durationText;
+                            }
+                        } catch (parseError) {
+                            console.error('Error parsing time:', parseError);
+                            throw parseError;
+                        }
                     } else {
-                        durationText = `${mins} minutes`;
-                    }
-                    
-                    // Update both the original duration display and the current booking summary
-                    const originalDurationEl = document.getElementById('originalDuration');
-                    const currentDurationEl = document.getElementById('currentBookingDuration');
-                    
-                    if (originalDurationEl) {
-                        originalDurationEl.textContent = durationText;
-                    }
-                    
-                    if (currentDurationEl) {
-                        currentDurationEl.textContent = durationText;
+                        throw new Error('No time data available');
                     }
                 } else {
-                    // Fallback to 30 minutes
-                    const originalDurationEl = document.getElementById('originalDuration');
-                    const currentDurationEl = document.getElementById('currentBookingDuration');
-                    
-                    if (originalDurationEl) originalDurationEl.textContent = '30 minutes';
-                    if (currentDurationEl) currentDurationEl.textContent = '30 minutes';
+                    throw new Error('Invalid response');
                 }
             })
             .catch(err => {
+                console.error('Error fetching booking duration:', err);
                 const originalDurationEl = document.getElementById('originalDuration');
                 const currentDurationEl = document.getElementById('currentBookingDuration');
                 
-                if (originalDurationEl) originalDurationEl.textContent = '30 minutes';
-                if (currentDurationEl) currentDurationEl.textContent = '30 minutes';
+                if (originalDurationEl) originalDurationEl.textContent = 'N/A';
+                if (currentDurationEl) currentDurationEl.textContent = 'N/A';
             });
     } else {
         const originalDurationEl = document.getElementById('originalDuration');
         const currentDurationEl = document.getElementById('currentBookingDuration');
         
-        if (originalDurationEl) originalDurationEl.textContent = '30 minutes';
-        if (currentDurationEl) currentDurationEl.textContent = '30 minutes';
+        if (originalDurationEl) originalDurationEl.textContent = 'N/A';
+        if (currentDurationEl) currentDurationEl.textContent = 'N/A';
     }
 }
 

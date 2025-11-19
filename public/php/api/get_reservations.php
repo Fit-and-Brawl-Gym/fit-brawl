@@ -17,9 +17,9 @@ require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
-// Rate limiting - 60 requests per minute per IP (public endpoint, used frequently)
+// Rate limiting - 120 requests per minute per IP (public endpoint, called on every page load + booking recovery)
 $identifier = 'get_reservations:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 60, 60);
+ApiSecurityMiddleware::applyRateLimit($conn, $identifier, 120, 60);
 
 try {
     $year = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
