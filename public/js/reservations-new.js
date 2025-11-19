@@ -411,10 +411,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderBookings(grouped) {
-        console.log('Rendering bookings - upcoming:', grouped.upcoming?.length, 'today:', grouped.today?.length, 'past:', grouped.past?.length); // Debug log
+        console.log('Rendering bookings - upcoming:', grouped.upcoming?.length, 'today:', grouped.today?.length, 'past:', grouped.past?.length, 'blocked:', grouped.blocked?.length); // Debug log
 
         // Combine all bookings from server groups
-        const allBookings = [...(grouped.today || []), ...(grouped.upcoming || []), ...(grouped.past || [])];
+        const allBookings = [...(grouped.today || []), ...(grouped.upcoming || []), ...(grouped.past || []), ...(grouped.blocked || [])];
 
         // Get current date and time
         const now = new Date();
@@ -431,11 +431,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const upcomingList = [];
         const pastList = [];
         const cancelledList = [];
+        const blockedList = [];
 
         allBookings.forEach(booking => {
             // Separate cancelled bookings first
             if (booking.status === 'cancelled') {
                 cancelledList.push(booking);
+                return;
+            }
+
+            // Separate blocked bookings
+            if (booking.status === 'blocked') {
+                blockedList.push(booking);
                 return;
             }
 
@@ -534,6 +541,13 @@ document.addEventListener('DOMContentLoaded', function () {
         allBookingsData.upcoming = upcomingList;
         allBookingsData.past = pastList;
         allBookingsData.cancelled = cancelledList;
+        allBookingsData.blocked = blockedList;
+
+        // Show/hide blocked tab based on blocked bookings
+        const blockedTab = document.querySelector('.tab-blocked');
+        if (blockedTab) {
+            blockedTab.style.display = blockedList.length > 0 ? 'inline-block' : 'none';
+        }
 
         // Update stat cards with next upcoming session
         updateStatCards(upcomingList);
@@ -596,7 +610,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check if DSA utilities are available
         const useDSA = window.DSA || window.DSAUtils;
 
-        let filteredUpcoming, filteredPast, filteredCancelled;
+        let filteredUpcoming, filteredPast, filteredCancelled, filteredBlocked;
 
         if (useDSA) {
             // ═══════════════════════════════════════════════════════════════
@@ -624,6 +638,10 @@ document.addEventListener('DOMContentLoaded', function () {
             filteredCancelled = filterValue === 'all' ?
                 allBookingsData.cancelled :
                 filterBuilder.apply(allBookingsData.cancelled);
+
+            filteredBlocked = filterValue === 'all' ?
+                (allBookingsData.blocked || []) :
+                filterBuilder.apply(allBookingsData.blocked || []);
 
             console.log('✅ DSA FilterBuilder applied to bookings (optimized path)');
         } else {
@@ -653,6 +671,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 );
             }
 
+            filteredBlocked = allBookingsData.blocked || [];
+            if (filterValue !== 'all') {
+                filteredBlocked = (allBookingsData.blocked || []).filter(booking =>
+                    booking.class_type === filterValue
+                );
+            }
+
             console.log('⚠️ Using fallback filtering (DSA not available)');
         }
 
@@ -660,11 +685,13 @@ document.addEventListener('DOMContentLoaded', function () {
         renderBookingList('upcomingBookings', filteredUpcoming);
         renderBookingList('pastBookings', filteredPast);
         renderBookingList('cancelledBookings', filteredCancelled);
+        renderBookingList('blockedBookings', filteredBlocked);
 
         // Update the count badges (shows number of bookings in each category)
         document.getElementById('upcomingCount').textContent = filteredUpcoming.length;
         document.getElementById('pastCount').textContent = filteredPast.length;
         document.getElementById('cancelledCount').textContent = filteredCancelled.length;
+        document.getElementById('blockedCount').textContent = filteredBlocked.length;
     }
 
     function updateStatCards(upcomingList) {
@@ -917,6 +944,13 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <div class="booking-status-badge ongoing-badge">
                                         <i class="fas fa-play-circle"></i>
                                         <span>Ongoing Session</span>
+                                    </div>
+                                `;
+                            } else if (booking.status === 'blocked') {
+                                return `
+                                    <div class="booking-status-badge blocked-badge">
+                                        <i class="fas fa-ban"></i>
+                                        <span>Unavailable</span>
                                     </div>
                                 `;
                             } else if (booking.status === 'cancelled') {

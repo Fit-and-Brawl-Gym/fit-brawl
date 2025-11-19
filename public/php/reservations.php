@@ -624,7 +624,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                     Cancelled
                                     <span class="tab-count" id="cancelledCount">0</span>
                                 </button>
-                                <button class="tab-btn tab-blocked" data-tab="blocked">
+                                <button class="tab-btn tab-blocked" data-tab="blocked" style="display: none;">
                                     Unavailable
                                     <span class="tab-count" id="blockedCount">0</span>
                                 </button>

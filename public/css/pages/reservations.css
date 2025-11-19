@@ -3469,6 +3469,18 @@ body::before {
     font-size: var(--font-size-base);
 }
 
+.blocked-badge {
+    background: rgba(158, 158, 158, 0.2);
+    border: 2px solid rgba(117, 117, 117, 0.4);
+    color: #9e9e9e;
+    cursor: default;
+}
+
+.blocked-badge i {
+    color: #757575;
+    font-size: var(--font-size-base);
+}
+
 @keyframes pulse {
     0% {
         box-shadow: 0 0 0 0 rgba(0, 176, 255, 0.4);
