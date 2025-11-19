@@ -312,31 +312,45 @@ function filterEquipment() {
         const fuzzySearch = useDSA.FuzzySearch;
         const filterBuilder = new useDSA.FilterBuilder();
         
-        // Build filter conditions
+        // Build filter conditions (case-insensitive)
         if (selectedCategory !== 'all') {
-            filterBuilder.where('category', '===', selectedCategory);
+            filterBuilder.where((item) => item.category && item.category.toLowerCase() === selectedCategory.toLowerCase());
         }
         if (statusFilter !== 'all') {
-            filterBuilder.where('status', '===', statusFilter);
+            console.log('Adding status filter for:', statusFilter);
+            filterBuilder.where((item) => {
+                const result = item.status && item.status.toLowerCase() === statusFilter.toLowerCase();
+                if (!result) {
+                    console.log('Item status:', item.status, 'Expected:', statusFilter, 'Match:', result);
+                }
+                return result;
+            });
         }
         
         // Filter cards with DSA
         const cards = document.querySelectorAll('.equipment-card');
+        let matchCount = 0;
         cards.forEach(card => {
             const name = card.querySelector('.equipment-name').textContent;
             const category = (card.dataset.category || '').toString();
             const status = (card.dataset.status || '').toString();
             
             const equipmentData = { name, category, status };
+            console.log('Testing card:', name, 'Status:', status, 'Data:', equipmentData);
             
             // Apply DSA filter
             const passesFilter = filterBuilder.test(equipmentData);
+            console.log('Passes filter:', passesFilter);
+            
+            if (passesFilter) matchCount++;
             
             // Apply fuzzy search (more forgiving than includes())
             const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
             
             card.style.display = (matchesSearch && passesFilter) ? 'block' : 'none';
         });
+        
+        console.log('Total matches:', matchCount, '/', cards.length);
 
         // Filter table rows with DSA
         const rows = document.querySelectorAll('#tableView tbody tr[data-category]');

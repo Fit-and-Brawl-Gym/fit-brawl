@@ -321,9 +321,9 @@ function applyFilters() {
     const fuzzySearch = useDSA.FuzzySearch;  // Typo-tolerant search
     const filterBuilder = new useDSA.FilterBuilder();  // Efficient multi-filter
 
-    // Stage 1: Add status filter to FilterBuilder (if specific status selected)
+    // Stage 1: Add status filter to FilterBuilder (if specific status selected, case-insensitive)
     if (status !== 'all' && status !== '') {
-      filterBuilder.where('status', '===', status);
+      filterBuilder.where((item) => item.status && item.status.toLowerCase() === status.toLowerCase());
     }
 
     // Stage 2: Apply all filters using optimized approach

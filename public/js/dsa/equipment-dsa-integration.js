@@ -70,9 +70,9 @@ if (typeof DSA === 'undefined') {
     // ===================================
     
     /**
-     * Advanced filter for equipment
+     * Advanced filter for equipment (returns data, doesn't update DOM)
      */
-    window.filterEquipment = function(options = {}) {
+    window.filterEquipmentData = function(options = {}) {
         const {
             category = 'all',
             status = 'all',
@@ -82,14 +82,14 @@ if (typeof DSA === 'undefined') {
         const items = window.equipmentData || [];
         let filter = new DSA.FilterBuilder(items);
         
-        // Apply category filter
+        // Apply category filter (case-insensitive)
         if (category !== 'all') {
-            filter.where('category', '===', category);
+            filter.where((item) => item.category && item.category.toLowerCase() === category.toLowerCase());
         }
         
-        // Apply status filter
+        // Apply status filter (case-insensitive)
         if (status !== 'all') {
-            filter.where('status', '===', status);
+            filter.where((item) => item.status && item.status.toLowerCase() === status.toLowerCase());
         }
         
         // Apply search if provided
