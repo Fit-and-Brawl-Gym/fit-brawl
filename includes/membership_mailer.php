@@ -1,5 +1,27 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+$vendorAutoload = __DIR__ . '/../vendor/autoload.php';
+
+if (!file_exists($vendorAutoload)) {
+    error_log('membership_mailer.php: vendor/autoload.php not found. Email notifications are disabled until dependencies are installed.');
+
+    if (!function_exists('sendMembershipApplicationEmail')) {
+        function sendMembershipApplicationEmail($email, $name, $plan, $status = 'pending') {
+            error_log('sendMembershipApplicationEmail skipped: composer dependencies missing.');
+            return false;
+        }
+    }
+
+    if (!function_exists('sendMembershipDecisionEmail')) {
+        function sendMembershipDecisionEmail($email, $name, $plan, $accepted = false, $start_date = null, $end_date = null, $remarks = null, $perks = []) {
+            error_log('sendMembershipDecisionEmail skipped: composer dependencies missing.');
+            return false;
+        }
+    }
+
+    return;
+}
+
+require_once $vendorAutoload;
 include_once __DIR__ . '/env_loader.php';
 loadEnv(__DIR__ . '/env');
 // Email template helper
