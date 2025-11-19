@@ -3,6 +3,7 @@ require_once '../../../includes/init.php';
 require_once '../../../includes/file_upload_security.php';
 require_once '../../../includes/activity_logger.php';
 require_once '../../../includes/csrf_protection.php';
+require_once '../../../includes/phone_utils.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -58,17 +59,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $name = trim($_POST['name']);
         $email = trim($_POST['email']);
-    $phone = trim($_POST['phone']);
+    $phone_raw = trim($_POST['phone']);
+    $phone = format_phone_standard($phone_raw);
     $specialization = $_POST['specialization'];
     $bio = trim($_POST['bio']);
     $emergency_contact_name = trim($_POST['emergency_contact_name']);
-    $emergency_contact_phone = trim($_POST['emergency_contact_phone']);
+    $emergency_contact_phone_raw = trim($_POST['emergency_contact_phone']);
+    $emergency_contact_phone = $emergency_contact_phone_raw === '' ? null : format_phone_standard($emergency_contact_phone_raw);
     $status = $_POST['status'];
     $day_offs = isset($_POST['day_offs']) ? $_POST['day_offs'] : [];
 
     // Validate required fields
-    if (empty($name) || empty($email) || empty($phone) || empty($specialization)) {
+    if (empty($name) || empty($email) || empty($specialization)) {
         $error = 'Please fill in all required fields.';
+    } elseif (!$phone) {
+        $error = 'Please enter a valid Philippine mobile number (e.g., +63 917 123 4567).';
+    } elseif ($emergency_contact_phone_raw !== '' && !$emergency_contact_phone) {
+        $error = 'Please enter a valid emergency contact number or leave it blank.';
     } elseif (count($day_offs) !== 2) {
         $error = 'You must select exactly 2 days off per week.';
     } else {

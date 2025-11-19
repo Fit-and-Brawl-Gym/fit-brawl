@@ -9,6 +9,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/db_connect.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_security_middleware.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_rate_limiter.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/csrf_protection.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/phone_utils.php';
 $csrfToken = $_POST['csrf_token'] ?? '';
 if (!CSRFProtection::validateToken($csrfToken)) {
     ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid CSRF token.'], 403);
@@ -34,12 +35,17 @@ foreach ($required as $f) {
 $service = preg_replace('/[^a-z0-9_-]/i', '', $_POST['service']);
 $name = trim($_POST['name']);
 $email = trim($_POST['email']);
-$phone = trim($_POST['phone']);
+$phone_raw = trim($_POST['phone']);
+$phone = format_phone_standard($phone_raw);
 $serviceDate = trim($_POST['service_date']);
 
 // Validate email
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid email address.'], 400);
+}
+
+if (!$phone) {
+    ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid Philippine phone number. Use +63 9XX XXX XXXX format.'], 400);
 }
 
 // Basic date validation
