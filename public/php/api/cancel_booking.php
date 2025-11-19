@@ -21,6 +21,7 @@ require_once __DIR__ . '/../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
 require_once __DIR__ . '/../../../includes/input_validator.php';
 require_once '../../../includes/timezone_helper.php';
+require_once '../../../includes/booking_validator.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -71,6 +72,9 @@ try {
     // Initialize activity logger
     ActivityLogger::init($conn);
 
+    // Initialize booking validator
+    $validator = new BookingValidator($conn);
+
     // Validate cancellation (must be >24 hours before session)
     $validation = $validator->validateCancellation($booking_id, $user_id);
 
@@ -97,7 +101,7 @@ try {
             ur.booking_status,
             t.name AS trainer_name,
             u.username,
-            u.name AS user_name
+            u.username AS user_name
         FROM user_reservations ur
         JOIN trainers t ON ur.trainer_id = t.id
         JOIN users u ON ur.user_id = u.id

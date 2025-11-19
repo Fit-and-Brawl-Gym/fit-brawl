@@ -12,7 +12,8 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
     try {
         $sql = "SELECT id, name, category, status, description, image_path,
                        maintenance_start_date, maintenance_end_date, maintenance_reason
-                FROM equipment";
+                FROM equipment
+                WHERE status != 'Out of Order'";
         $result = $conn->query($sql);
 
         if (!$result) {

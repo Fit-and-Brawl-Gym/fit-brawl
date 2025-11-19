@@ -38,6 +38,10 @@ if (!isset($_POST['trainer_id']) || !isset($_POST['date'])) {
 $trainer_id = (int)$_POST['trainer_id'];
 $date = $_POST['date'];
 $class_type = $_POST['class_type'] ?? null;
+$exclude_booking_id = isset($_POST['exclude_booking_id']) ? (int)$_POST['exclude_booking_id'] : null;
+
+// Debug logging
+error_log("🔍 get_trainer_availability.php - exclude_booking_id: " . ($exclude_booking_id ?? 'NULL'));
 
 // Validate date format
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
@@ -203,19 +207,39 @@ $block_stmt->close();
 
 // Get existing bookings for this trainer on this date
 $booked_slots = [];
-$booking_stmt = $conn->prepare("
-    SELECT start_time, end_time, class_type, buffer_minutes
-    FROM user_reservations
-    WHERE trainer_id = ? 
-    AND DATE(start_time) = ?
-    AND booking_status = 'confirmed'
-    AND start_time IS NOT NULL
-    AND end_time IS NOT NULL
-    ORDER BY start_time
-");
-$booking_stmt->bind_param("is", $trainer_id, $date);
+
+// Build query with optional booking exclusion for reschedule scenarios
+if ($exclude_booking_id) {
+    $booking_stmt = $conn->prepare("
+        SELECT start_time, end_time, class_type, buffer_minutes
+        FROM user_reservations
+        WHERE trainer_id = ? 
+        AND DATE(start_time) = ?
+        AND booking_status = 'confirmed'
+        AND start_time IS NOT NULL
+        AND end_time IS NOT NULL
+        AND id != ?
+        ORDER BY start_time
+    ");
+    $booking_stmt->bind_param("isi", $trainer_id, $date, $exclude_booking_id);
+} else {
+    $booking_stmt = $conn->prepare("
+        SELECT start_time, end_time, class_type, buffer_minutes
+        FROM user_reservations
+        WHERE trainer_id = ? 
+        AND DATE(start_time) = ?
+        AND booking_status = 'confirmed'
+        AND start_time IS NOT NULL
+        AND end_time IS NOT NULL
+        ORDER BY start_time
+    ");
+    $booking_stmt->bind_param("is", $trainer_id, $date);
+}
+
 $booking_stmt->execute();
 $booking_result = $booking_stmt->get_result();
+
+error_log("🔍 Found " . $booking_result->num_rows . " bookings for trainer $trainer_id on $date" . ($exclude_booking_id ? " (excluding booking #$exclude_booking_id)" : ""));
 
 while ($booking = $booking_result->fetch_assoc()) {
     $buffer = $booking['buffer_minutes'] ?? 10;
@@ -313,5 +337,6 @@ echo json_encode([
     'available_count' => count($available_slots),
     'booked_slots' => $booked_slots,
     'booked_count' => count($booked_slots),
-    'admin_blocks' => $blocks
+    'admin_blocks' => $blocks,
+    'excluded_booking_id' => $exclude_booking_id
 ]);
