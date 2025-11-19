@@ -31,7 +31,7 @@ if (!$user_id) {
 
 
 $stmt = $conn->prepare("
-    SELECT request_status, plan_name, date_submitted, remarks
+    SELECT request_status, plan_name, date_submitted, remarks, payment_method
     FROM user_memberships
     WHERE user_id = ?
       AND request_status IN ('pending','rejected')
@@ -67,15 +67,26 @@ require_once '../../includes/header.php';
 
         <?php if ($status === 'pending'): ?>
             <div class="status-message pending">
-                <h2>Payment Submitted</h2>
-                <p>
-                    Thank you for submitting your payment for the
-                    <strong><?= $planName ?></strong> plan.
-                </p>
-                <p>
-                    Your request is currently <strong>pending admin approval</strong>.
-                    Please wait for confirmation before using your new plan.
-                </p>
+                <?php if (isset($membershipRequest['payment_method']) && $membershipRequest['payment_method'] === 'cash'): ?>
+                    <h2>Cash Payment Request Submitted</h2>
+                    <p>
+                        Your <strong><?= $planName ?></strong> membership request has been submitted. 
+                        Please visit the gym to complete your cash payment.
+                    </p>
+                    <p>
+                        Your membership will be activated once our staff confirms your payment.
+                    </p>
+                <?php else: ?>
+                    <h2>Payment Submitted</h2>
+                    <p>
+                        Thank you for submitting your payment for the
+                        <strong><?= $planName ?></strong> plan.
+                    </p>
+                    <p>
+                        Your request is currently <strong>pending admin approval</strong>.
+                        Please wait for confirmation before using your new plan.
+                    </p>
+                <?php endif; ?>
                 <p class="date-info">
                     <i class="fa-regular fa-calendar"></i>
                     Submitted on <?= $formattedDate ?>
@@ -90,10 +101,10 @@ require_once '../../includes/header.php';
                     <strong><?= $planName ?></strong> plan was <strong>rejected</strong>.
                 </p>
                 <?php if (!empty($membershipRequest['remarks'])): ?>
-                    <div style="background: rgba(255, 255, 255, 0.9); border-left: 4px solid #dc3545; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
-                        <p style="margin: 0; color: #333;">
-                            <strong style="color: #dc3545;">Reason for Rejection:</strong><br>
-                            <span style="color: #666; display: block; margin-top: 0.5rem;"><?= htmlspecialchars($membershipRequest['remarks']) ?></span>
+                    <div style="background: rgba(15, 79, 82, 0.5); border-left: 4px solid #dc3545; padding: 1rem; margin: 1rem 0; border-radius: 8px;">
+                        <p style="margin: 0; color: #fff;">
+                            <strong style="color: #ffcc00;">Reason for Rejection:</strong><br>
+                            <span style="color: #e0e0e0; display: block; margin-top: 0.5rem;"><?= htmlspecialchars($membershipRequest['remarks']) ?></span>
                         </p>
                     </div>
                 <?php endif; ?>
@@ -133,9 +144,15 @@ require_once '../../includes/header.php';
         <a href="loggedin-index.php" class="btn-home">
             <i class="fa-solid fa-house"></i> Return to Home
         </a>
-        <a href="membership.php" class="btn-secondary">
-            View Plans
-        </a>
+        <?php if ($membershipRequest && $status === 'rejected'): ?>
+            <a href="membership.php" class="btn-secondary">
+                <i class="fa-solid fa-rotate"></i> Resubmit or Choose New Plan
+            </a>
+        <?php elseif (!$membershipRequest || $status !== 'pending'): ?>
+            <a href="membership.php" class="btn-secondary">
+                View Plans
+            </a>
+        <?php endif; ?>
     </div>
 </main>
 
