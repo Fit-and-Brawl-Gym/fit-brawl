@@ -3413,7 +3413,7 @@ body::before {
 }
 
 .booking-status-badge {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-4);
@@ -4988,10 +4988,14 @@ body::before {
     }
     
     .booking-status-badge {
-        width: 100%;
-        justify-content: center;
-        display: flex;
+        width: auto;
+        display: inline-flex;
         padding: 0.5rem;
+    }
+
+    .booking-actions-cell {
+        display: flex !important;
+        justify-content: flex-start !important;
     }
 
     .booking-actions {

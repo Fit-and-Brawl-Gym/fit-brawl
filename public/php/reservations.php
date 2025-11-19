@@ -82,7 +82,7 @@ $additionalJS = [
     'https://cdn.jsdelivr.net/npm/flatpickr',
     '../js/dsa/dsa-utils.js?v=' . time(), // DSA Core Library
     '../js/time-selection-modern-v2.js?v=' . time(),
-    '../js/resheduling.js?v=4.0.' . time(),  // ← LOAD THIS FIRST
+    '../js/resheduling-fixed.js?v=' . time() . rand(1000, 9999),  // ← LOAD THIS FIRST
     '../js/reservations-new.js?v=' . time() . mt_rand(),  // ← LOAD THIS SECOND - RENAMED TO BYPASS CACHE
     '../js/dsa/reservations-dsa-integration.js?v=' . time() // DSA Integration Layer
 ];

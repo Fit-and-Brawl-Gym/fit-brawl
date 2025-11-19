@@ -625,15 +625,16 @@ class BookingValidator
 
     /**
      * Check if cancellation is allowed (> 24 hours before session)
+     * Supports both legacy (session_time) and time-based (start_time) bookings
      */
     public function validateCancellation($booking_id, $user_id)
     {
         $stmt = $this->conn->prepare("
-            SELECT booking_date, session_time, booking_status
+            SELECT booking_date, session_time, start_time, end_time, booking_status
             FROM user_reservations
             WHERE id = ? AND user_id = ?
         ");
-        $stmt->bind_param("is", $booking_id, $user_id);
+        $stmt->bind_param("ii", $booking_id, $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -645,19 +646,28 @@ class BookingValidator
         $booking = $result->fetch_assoc();
         $stmt->close();
 
-        if ($booking['booking_status'] !== 'confirmed') {
-            return ['valid' => false, 'message' => 'Booking is not in confirmed status'];
+        // Allow cancellation of pending or confirmed bookings
+        if (!in_array($booking['booking_status'], ['pending', 'confirmed'])) {
+            return ['valid' => false, 'message' => 'Booking cannot be cancelled'];
         }
 
-        // Get session start time based on session_time
-        $session_starts = [
-            'Morning' => '07:00:00',
-            'Afternoon' => '12:00:00',
-            'Evening' => '17:00:00'
-        ];
+        // Determine session start time (time-based vs legacy)
+        if (!empty($booking['start_time'])) {
+            // Time-based booking
+            $session_timestamp = strtotime($booking['start_time']);
+        } else {
+            // Legacy booking - use session_time
+            $session_starts = [
+                'Morning' => '07:00:00',
+                'Afternoon' => '12:00:00',
+                'Evening' => '17:00:00'
+            ];
+            
+            $session_time = $booking['session_time'] ?? 'Morning';
+            $session_datetime = $booking['booking_date'] . ' ' . $session_starts[$session_time];
+            $session_timestamp = strtotime($session_datetime);
+        }
 
-        $session_datetime = $booking['booking_date'] . ' ' . $session_starts[$booking['session_time']];
-        $session_timestamp = strtotime($session_datetime);
         $now_timestamp = time();
         $hours_until_session = ($session_timestamp - $now_timestamp) / 3600;
 

@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Modern Time Selection for Reschedule Modal
  * Mirrors time-selection-modern-v2.js functionality
  */
 
 window.RESCHEDULE_TEST = 'LOADED';
-console.log('🔥 RESCHEDULE JS FILE STARTED LOADING');
+console.log('ðŸ”¥ RESCHEDULE JS FILE STARTED LOADING');
 
 const RESCHEDULE_TRAINER_SHIFTS = {
     'Morning': { start: '07:00', end: '15:00', breakStart: '12:00', breakEnd: '13:00' },
@@ -60,9 +60,9 @@ function resetRescheduleModal() {
 }
 
 // OPEN modal
-console.log('🔥 DEFINING openRescheduleModal FUNCTION');
+console.log('ðŸ”¥ DEFINING openRescheduleModal FUNCTION');
 window.openRescheduleModal = function(bookingId, element) {
-    console.log('🔥 openRescheduleModal CALLED');
+    console.log('ðŸ”¥ openRescheduleModal CALLED');
     const bookingRow = element.closest('.booking-row');
     if (!bookingRow) {
         return;
@@ -1162,12 +1162,6 @@ function updateNewBookingSummary() {
     const formattedEndTime = formatRescheduleTime(endTime);
     const dateTimeStr = `${dateStr} ${formattedStartTime} - ${formattedEndTime}`;
 
-        dateTimeStr,
-        trainerName,
-        classType,
-        durationText
-    });
-
     // Update new booking display
     const newDateTimeEl = document.getElementById('newBookingDateTime');
     const newTrainerEl = document.getElementById('newBookingTrainer');
@@ -1377,12 +1371,6 @@ function updateNewBookingSummary() {
     const formattedStartTime = formatRescheduleTime(startTime);
     const formattedEndTime = formatRescheduleTime(endTime);
     const dateTimeStr = `${dateStr} ${formattedStartTime} - ${formattedEndTime}`;
-
-        dateTimeStr,
-        trainerName,
-        classType,
-        durationText
-    });
 
     // Update new booking display
     const newDateTimeEl = document.getElementById('newBookingDateTime');
