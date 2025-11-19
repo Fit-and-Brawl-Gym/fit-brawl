@@ -3128,7 +3128,8 @@ body::before {
 .bookings-list {
     display: none;
     width: 100%;
-    overflow-x: auto;
+    max-width: 100%;
+    overflow-x: hidden;
     padding-bottom: var(--spacing-2);
 }
 
@@ -3154,67 +3155,32 @@ body::before {
    BOOKINGS TABLE LAYOUT
    =================================== */
 
-.bookings-table {
+/* Bookings Grid Layout */
+.bookings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
     max-width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 12px;
-    table-layout: fixed;
-}
-
-.bookings-table thead th {
-    background: rgba(10, 35, 45, 0.8);
-    color: var(--color-accent);
-    padding: 12px 16px;
-    text-align: left;
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid rgba(255, 206, 0, 0.3);
-}
-
-.bookings-table thead th:first-child {
-    border-top-left-radius: var(--radius-base);
-    border-bottom-left-radius: var(--radius-base);
-}
-
-.bookings-table thead th:last-child {
-    border-top-right-radius: var(--radius-base);
-    border-bottom-right-radius: var(--radius-base);
+    overflow: hidden;
 }
 
 .booking-row {
+    display: grid;
+    grid-template-columns: 75px minmax(60px, 0.6fr) minmax(130px, 1.1fr) minmax(80px, 0.9fr) minmax(150px, 1.5fr) minmax(90px, 0.9fr) minmax(180px, 1.6fr);
+    gap: 10px;
+    align-items: center;
     background: rgba(26, 74, 82, 0.6);
-    transition: all 0.3s ease;
+    border: 2px solid rgba(213, 186, 43, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    max-width: 100%;
+    overflow: visible;
 }
 
 .booking-row:hover {
     background: rgba(26, 74, 82, 0.8);
-}
-
-.booking-row td {
-    padding: 16px;
-    vertical-align: middle;
-    border-top: 2px solid rgba(213, 186, 43, 0.2);
-    border-bottom: 2px solid rgba(213, 186, 43, 0.2);
-    background: inherit;
-    word-break: break-word;
-}
-
-.booking-row td:first-child {
-    border-left: 2px solid rgba(213, 186, 43, 0.2);
-    border-top-left-radius: var(--radius-lg);
-    border-bottom-left-radius: var(--radius-lg);
-}
-
-.booking-row td:last-child {
-    border-right: 2px solid rgba(213, 186, 43, 0.2);
-    border-top-right-radius: var(--radius-lg);
-    border-bottom-right-radius: var(--radius-lg);
-}
-
-.booking-row:hover td {
     border-color: var(--color-accent);
 }
 
@@ -3223,22 +3189,50 @@ body::before {
     background: rgba(26, 74, 82, 0.4);
 }
 
-.booking-date-cell {
-    width: 100px;
+.booking-row > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    overflow: visible;
 }
 
-.booking-class-cell {
+.booking-row .cell-label {
+    display: none;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.booking-row .cell-value {
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.booking-date-cell {
+    justify-content: center;
+    align-items: center;
+}
+
+.booking-class-cell .cell-value {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-light);
-    width: 120px;
 }
 
-.booking-time-cell,
-.booking-trainer-cell,
-.booking-day-cell {
+.booking-time-cell .cell-value,
+.booking-trainer-cell .cell-value,
+.booking-day-cell .cell-value {
     color: var(--color-text-muted);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .booking-time-cell i,
@@ -3247,6 +3241,22 @@ body::before {
     color: var(--color-accent);
     margin-right: 6px;
     font-size: 0.95em;
+}
+
+.booking-duration-cell .cell-value {
+    display: inline-block;
+}
+
+.booking-actions-cell {
+    justify-content: center;
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+}
+
+.booking-actions-cell .cell-value {
+    width: 100%;
+    overflow: visible;
 }
 
 .booking-duration-cell {
@@ -3263,24 +3273,30 @@ body::before {
 .booking-date-badge {
     background: linear-gradient(135deg, var(--color-accent) 0%, rgba(213, 186, 43, 0.8) 100%);
     border-radius: var(--radius-base);
-    padding: var(--spacing-3);
+    padding: 8px 10px;
     text-align: center;
-    display: inline-block;
-    min-width: 70px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 65px;
+    max-width: 65px;
+    gap: 2px;
 }
 
 .booking-day {
-    font-size: var(--font-size-2xl);
+    font-size: 1.5rem;
     font-weight: var(--font-weight-bold);
     color: var(--color-bg-dark);
     line-height: 1;
 }
 
 .booking-month {
-    font-size: var(--font-size-sm);
+    font-size: 0.75rem;
     font-weight: var(--font-weight-semibold);
     color: var(--color-bg-dark);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .duration-badge {
@@ -3958,11 +3974,12 @@ body::before {
 
 .booking-action-buttons {
     display: flex;
-    gap: var(--spacing-2);
-    flex-wrap: nowrap;
+    gap: 8px;
+    flex-wrap: wrap;
     justify-content: flex-start;
+    align-items: center;
     width: 100%;
-    min-width: 0;
+    min-width: 200px;
 }
 
 /* Reschedule Summary Comparison Layout */
@@ -5146,51 +5163,50 @@ body::before {
         border-spacing: 0;
     }
 
-    .bookings-table thead {
-        display: none;
-    }
-
-    .bookings-table tbody {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-3);
-    }
-
+    /* Mobile responsive grid */
     .booking-row {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 0;
     }
 
-    .booking-row td {
-        border: none;
+    .booking-row > div {
         padding: var(--spacing-3);
-        background-color: rgba(12, 36, 45, 0.65);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .booking-row td + td {
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    .booking-row > div:last-child {
+        border-bottom: none;
+    }
+
+    .booking-row .cell-label {
+        display: block;
+        margin-bottom: 4px;
     }
 
     .booking-date-cell {
         display: flex;
-        justify-content: flex-start;
-        margin-bottom: 0;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-3);
+        background: rgba(10, 20, 26, 0.5);
     }
 
-    .booking-time-cell,
-    .booking-duration-cell,
-    .booking-trainer-cell,
-    .booking-day-cell {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-2);
-        white-space: normal;
+    .booking-date-cell .cell-label {
+        display: none;
+    }
+
+    .booking-class-cell {
+        background: rgba(10, 20, 26, 0.3);
     }
 
     .booking-actions-cell {
         padding-top: var(--spacing-3);
         background: rgba(10, 20, 26, 0.8);
+    }
+
+    .booking-actions-cell .cell-label {
+        margin-bottom: var(--spacing-2);
     }
 
     .booking-status-badge,

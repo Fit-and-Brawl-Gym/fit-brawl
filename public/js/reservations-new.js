@@ -830,9 +830,8 @@ document.addEventListener('DOMContentLoaded', function () {
         today.setHours(0, 0, 0, 0);
 
         container.innerHTML = `
-            <table class="bookings-table">
-                <tbody>
-                    ${bookings.map(booking => {
+            <div class="bookings-grid">
+                ${bookings.map(booking => {
             // Debug log to check booking ID
             console.log('Rendering booking:', { id: booking.id, trainer: booking.trainer_name });
             
@@ -917,27 +916,36 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             return `
-                <tr class="booking-row ${booking.status === 'cancelled' ? 'cancelled' : ''}">
-                    <td class="booking-date-cell" data-label="Date">
+                <div class="booking-row ${booking.status === 'cancelled' ? 'cancelled' : ''}" data-booking-id="${booking.id}" data-trainer-id="${booking.trainer_id || ''}">
+                    <div class="booking-date-cell">
                         <div class="booking-date-badge">
                             <div class="booking-day">${new Date(booking.date).getDate()}</div>
                             <div class="booking-month">${new Date(booking.date).toLocaleString('en-US', { month: 'short' })}</div>
                         </div>
-                    </td>
-                    <td class="booking-class-cell" data-label="Class">${booking.class_type}</td>
-                    <td class="booking-time-cell" data-label="Time">
-                        <i class="fas fa-clock"></i> ${timeDisplay}
-                    </td>
-                    <td class="booking-duration-cell" data-label="Duration">
-                        <span class="duration-badge"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</span>
-                    </td>
-                    <td class="booking-trainer-cell" data-label="Trainer">
-                        <i class="fas fa-user"></i> ${booking.trainer_name}
-                    </td>
-                    <td class="booking-day-cell" data-label="Day">
-                        <i class="fas fa-calendar"></i> ${booking.day_of_week}
-                    </td>
-                    <td class="booking-actions-cell" data-label="Actions">
+                    </div>
+                    <div class="booking-class-cell">
+                        <span class="cell-label">Class</span>
+                        <span class="cell-value">${booking.class_type}</span>
+                    </div>
+                    <div class="booking-time-cell">
+                        <span class="cell-label">Time</span>
+                        <span class="cell-value"><i class="fas fa-clock"></i> ${timeDisplay}</span>
+                    </div>
+                    <div class="booking-duration-cell">
+                        <span class="cell-label">Duration</span>
+                        <span class="cell-value duration-badge"><i class="fas fa-hourglass-half"></i> ${durationDisplay}</span>
+                    </div>
+                    <div class="booking-trainer-cell">
+                        <span class="cell-label">Trainer</span>
+                        <span class="cell-value"><i class="fas fa-user"></i> ${booking.trainer_name}</span>
+                    </div>
+                    <div class="booking-day-cell">
+                        <span class="cell-label">Day</span>
+                        <span class="cell-value"><i class="fas fa-calendar"></i> ${booking.day_of_week}</span>
+                    </div>
+                    <div class="booking-actions-cell">
+                        <span class="cell-label">Actions</span>
+                        <div class="cell-value">
                         ${(() => {
                             if (isOngoing) {
                                 return `
@@ -987,12 +995,11 @@ document.addEventListener('DOMContentLoaded', function () {
                                 `;
                             }
                         })()}
-                    </td>
-                </tr>
+                        </div>
+                    </div>
+                </div>
             `;
         }).join('')}
-                </tbody>
-            </table>
         `;
     }
 
