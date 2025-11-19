@@ -31,7 +31,7 @@ if (!$user_id) {
 
 
 $stmt = $conn->prepare("
-    SELECT request_status, plan_name, date_submitted
+    SELECT request_status, plan_name, date_submitted, remarks
     FROM user_memberships
     WHERE user_id = ?
       AND request_status IN ('pending','rejected')
@@ -89,6 +89,14 @@ require_once '../../includes/header.php';
                     Your payment for the
                     <strong><?= $planName ?></strong> plan was <strong>rejected</strong>.
                 </p>
+                <?php if (!empty($membershipRequest['remarks'])): ?>
+                    <div style="background: rgba(255, 255, 255, 0.9); border-left: 4px solid #dc3545; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                        <p style="margin: 0; color: #333;">
+                            <strong style="color: #dc3545;">Reason for Rejection:</strong><br>
+                            <span style="color: #666; display: block; margin-top: 0.5rem;"><?= htmlspecialchars($membershipRequest['remarks']) ?></span>
+                        </p>
+                    </div>
+                <?php endif; ?>
                 <p>Please contact support or submit a new payment.</p>
                 <p class="date-info">
                     <i class="fa-regular fa-calendar"></i>

@@ -1497,57 +1497,71 @@ function populateCurrentBookingSummary() {
 
     // Fetch actual booking duration from server
     if (currentRescheduleBooking.id) {
-        fetch(`api/get_booking_duration.php?booking_id=${currentRescheduleBooking.id}`)
+        console.log('📊 Fetching booking duration for ID:', currentRescheduleBooking.id);
+        fetch(`api/get_booking_details.php?booking_id=${currentRescheduleBooking.id}`)
             .then(res => res.json())
             .then(data => {
-                if (data.success && data.duration_minutes) {
-                    const hours = Math.floor(data.duration_minutes / 60);
-                    const mins = data.duration_minutes % 60;
-                    let durationText = '';
+                console.log('📊 Booking details response:', data);
+                if (data.success && data.booking) {
+                    const booking = data.booking;
                     
-                    if (hours > 0) {
-                        durationText = `${hours} hour${hours > 1 ? 's' : ''}`;
-                        if (mins > 0) durationText += ` ${mins} minutes`;
+                    // Calculate duration from start_time and end_time
+                    if (booking.start_time && booking.end_time) {
+                        const start = new Date(`2000-01-01 ${booking.start_time}`);
+                        const end = new Date(`2000-01-01 ${booking.end_time}`);
+                        const durationMinutes = Math.round((end - start) / (1000 * 60));
+                        
+                        console.log('📊 Calculated duration:', durationMinutes, 'minutes from', booking.start_time, 'to', booking.end_time);
+                        
+                        const hours = Math.floor(durationMinutes / 60);
+                        const mins = durationMinutes % 60;
+                        let durationText = '';
+                        
+                        if (hours > 0) {
+                            durationText = `${hours} hour${hours > 1 ? 's' : ''}`;
+                            if (mins > 0) durationText += ` ${mins} minutes`;
+                        } else {
+                            durationText = `${mins} minutes`;
+                        }
+                        
+                        console.log('📊 Duration text:', durationText);
+                        
+                        // Update both the original duration display and the current booking summary
+                        const originalDurationEl = document.getElementById('originalDuration');
+                        const currentDurationEl = document.getElementById('currentBookingDuration');
+                        
+                        if (originalDurationEl) {
+                            originalDurationEl.textContent = durationText;
+                            console.log('✅ Updated originalDuration to:', durationText);
+                        }
+                        
+                        if (currentDurationEl) {
+                            currentDurationEl.textContent = durationText;
+                            console.log('✅ Updated currentBookingDuration to:', durationText);
+                        }
                     } else {
-                        durationText = `${mins} minutes`;
-                    }
-                    
-                    // Update both the original duration display and the current booking summary
-                    const originalDurationEl = document.getElementById('originalDuration');
-                    const currentDurationEl = document.getElementById('currentBookingDuration');
-                    
-                    if (originalDurationEl) {
-                        originalDurationEl.textContent = durationText;
-                    }
-                    
-                    if (currentDurationEl) {
-                        currentDurationEl.textContent = durationText;
+                        // Fallback if no time data
+                        console.error('❌ No start_time or end_time in booking data');
+                        throw new Error('No time data available');
                     }
                 } else {
-                    durationText = `${mins} minutes`;
+                    console.error('❌ Invalid API response:', data);
+                    throw new Error('Invalid response');
                 }
-
-                // Update both original summary fields
-                const originalDurationEl = document.getElementById('originalDuration');
-                const currentDurationEl = document.getElementById('currentBookingDuration');
-                if (originalDurationEl) originalDurationEl.textContent = durationText;
-                if (currentDurationEl) currentDurationEl.textContent = durationText;
-
-                // Also ensure the comparison column shows the same
-                const currentBookingDuration = document.getElementById('currentBookingDuration');
-                if (currentBookingDuration) currentBookingDuration.textContent = durationText;
             })
             .catch(err => {
+                console.error('❌ Error fetching booking duration:', err);
                 const originalDurationEl = document.getElementById('originalDuration');
                 const currentDurationEl = document.getElementById('currentBookingDuration');
-                if (originalDurationEl) originalDurationEl.textContent = '30 minutes';
-                if (currentDurationEl) currentDurationEl.textContent = '30 minutes';
+                if (originalDurationEl) originalDurationEl.textContent = 'N/A';
+                if (currentDurationEl) currentDurationEl.textContent = 'N/A';
             });
     } else {
+        console.warn('⚠️ No booking ID available for duration fetch');
         const originalDurationEl = document.getElementById('originalDuration');
         const currentDurationEl = document.getElementById('currentBookingDuration');
-        if (originalDurationEl) originalDurationEl.textContent = '30 minutes';
-        if (currentDurationEl) currentDurationEl.textContent = '30 minutes';
+        if (originalDurationEl) originalDurationEl.textContent = 'N/A';
+        if (currentDurationEl) currentDurationEl.textContent = 'N/A';
     }
 }
 
@@ -1840,6 +1854,10 @@ async function handleRescheduleFormSubmit(e) {
 
         if (data.success) {
             showToast('Reschedule successful!', 'success');
+            // Clear booking recovery state before reload
+            if (window.BookingRecovery) {
+                window.BookingRecovery.clearState();
+            }
             setTimeout(() => location.reload(), 800);
             closeRescheduleModal();
         } else {

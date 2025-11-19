@@ -45,6 +45,7 @@ if (isset($_SESSION['avatar'])) {
 $activeMembership = null;
 $membershipClassTypes = [];
 $gracePeriodDays = 3;
+$hasPendingMembership = false;
 
 if ($user_id) {
     $membership_query = "SELECT um.*, m.plan_name, m.class_type
@@ -68,6 +69,22 @@ if ($user_id) {
         }
     }
     $stmt->close();
+    
+    // Check for pending or rejected membership
+    $pending_query = "SELECT um.*, m.plan_name
+                      FROM user_memberships um
+                      LEFT JOIN memberships m ON um.plan_id = m.id
+                      WHERE um.user_id = ?
+                      AND um.request_status IN ('pending', 'rejected')
+                      ORDER BY um.date_submitted DESC
+                      LIMIT 1";
+    $pending_stmt = $conn->prepare($pending_query);
+    $pending_stmt->bind_param("i", $user_id);
+    $pending_stmt->execute();
+    $pending_result = $pending_stmt->get_result();
+    $pendingMembership = $pending_result->fetch_assoc();
+    $hasPendingMembership = !empty($pendingMembership);
+    $pending_stmt->close();
 }
 
 $pageTitle = "Scheduling - Fit and Brawl";
@@ -656,10 +673,32 @@ require_once __DIR__ . '/../../includes/header.php';
                 </div>
                 <h2>Get Started with a Membership</h2>
                 <p>To book training sessions, you need an active membership plan.</p>
-                <a href="membership.php" class="btn-cta">
-                    View Membership Plans
-                    <i class="fas fa-arrow-right"></i>
-                </a>
+                <?php if (!$hasPendingMembership): ?>
+                    <a href="membership.php" class="btn-cta">
+                        View Membership Plans
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                <?php elseif (isset($pendingMembership['request_status']) && $pendingMembership['request_status'] === 'rejected'): ?>
+                    <div style="background: rgba(220, 53, 69, 0.1); border: 1px solid #dc3545; border-radius: 8px; padding: 1.5rem; margin-top: 1rem;">
+                        <p style="color: #dc3545; font-weight: 600; margin: 0 0 1rem 0; font-size: 1.1rem;">
+                            <i class="fas fa-times-circle"></i> Membership Request Rejected
+                        </p>
+                        <p style="color: #333; margin: 0 0 1rem 0; background: white; padding: 1rem; border-radius: 4px; border-left: 3px solid #dc3545;">
+                            <strong style="color: #dc3545;">Reason:</strong><br>
+                            <span style="color: #666; display: block; margin-top: 0.5rem;">
+                                <?= !empty($pendingMembership['remarks']) ? htmlspecialchars($pendingMembership['remarks']) : 'No reason provided by admin.' ?>
+                            </span>
+                        </p>
+                        <a href="membership.php" class="btn-cta">
+                            Submit New Application
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <p style="color: #d5ba2b; font-weight: 600; margin-top: 1rem;">
+                        <i class="fas fa-clock"></i> Your membership payment is being processed. You'll be able to book sessions once it's confirmed.
+                    </p>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </div>

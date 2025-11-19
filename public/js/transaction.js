@@ -195,7 +195,15 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('plan', basePlan);
         formData.append('billing', urlParams.get('billing') || 'monthly');
         formData.append('payment_method', 'cash');
-        formData.append('csrf_token', window.CSRF_TOKEN || '');
+        
+        // Get CSRF token and validate
+        const csrfToken = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+        console.log('CSRF Token for cash payment:', csrfToken ? 'Present' : 'MISSING');
+        if (!csrfToken) {
+            alert('Your session expired. Please refresh the page.');
+            return;
+        }
+        formData.append('csrf_token', csrfToken);
 
         submitCashBtn.disabled = true;
         submitCashBtn.textContent = 'SUBMITTING...';
@@ -242,6 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Get CSRF token and add to form data
         const csrfToken = window.CSRF_TOKEN || document.querySelector('meta[name="csrf-token"]')?.content || '';
+        console.log('CSRF Token for online payment:', csrfToken ? 'Present' : 'MISSING');
+        console.log('Token value:', csrfToken);
         if (!csrfToken) {
             alert('Your session expired. Please refresh the page.');
             submitReceiptBtn.disabled = false;
@@ -249,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         formData.append('csrf_token', csrfToken);
+        console.log('CSRF token appended to FormData');
 
         if (selectedFile) {
             formData.append('receipt', selectedFile);
