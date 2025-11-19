@@ -97,7 +97,6 @@ function renderEquipment(items) {
     return `
       <div class="equipment-card ${isMaintenance ? 'maintenance-mode' : ''} ${isOutOfOrder ? 'out-of-order-mode' : ''}" data-id="${item.id}" data-status="${statusClass}" data-category="${categories.join(',')}">
         ${isMaintenance ? `<div class="maintenance-badge" tabindex="0"><i class="fas fa-tools"></i>${maintenanceTooltip}</div>` : ''}
-        ${isOutOfOrder ? `<div class="out-of-order-badge" tabindex="0"><i class="fas fa-times-circle"></i></div>` : ''}
         <div class="equipment-image-container">
           ${imageContent}
         </div>

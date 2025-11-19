@@ -406,14 +406,6 @@ body {
 /* Touch-friendly interactive elements - ONLY on actual mobile devices */
 @media (max-width: 480px) {
   /* Minimum touch target size - 44x44px for iOS, 48x48px for Android */
-  button,
-  a,
-  input[type="submit"],
-  input[type="button"],
-  select {
-    min-height: 44px;
-  }
-
   input[type="checkbox"],
   input[type="radio"] {
     min-width: 20px;
