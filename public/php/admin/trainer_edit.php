@@ -222,7 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         foreach ($days as $day) {
                             // If it's a day-off, set shift to 'none'
                             if (in_array($day, $day_offs, true)) {
-                                $is_active = 0;
+                                $is_active = 1;
                                 $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
                                                 VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
                                 $shift_stmt = $conn->prepare($shift_query);
@@ -267,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 $shift_stmt->execute();
                             } else {
                                 // default_shift === 'none' should rarely be used for non-day-off days, but handle it
-                                $is_active = 0;
+                                $is_active = 1;
                                 $shift_query = "INSERT INTO trainer_shifts (trainer_id, day_of_week, shift_type, custom_start_time, custom_end_time, break_start_time, break_end_time, is_active)
                                                 VALUES (?, ?, 'none', NULL, NULL, NULL, NULL, ?)";
                                 $shift_stmt = $conn->prepare($shift_query);
