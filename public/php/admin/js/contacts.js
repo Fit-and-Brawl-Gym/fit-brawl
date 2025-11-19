@@ -21,13 +21,22 @@ function setupEventListeners() {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             currentFilter = this.dataset.filter;
+            
+            // Remember expanded contacts before filtering
+            const expandedIds = getExpandedContactIds();
             filterAndRenderContacts();
+            // Restore expanded state
+            restoreExpandedContacts(expandedIds);
         });
     });
 
     // Search input
     document.getElementById('searchInput').addEventListener('input', function (e) {
+        // Remember expanded contacts before filtering
+        const expandedIds = getExpandedContactIds();
         filterAndRenderContacts(e.target.value);
+        // Restore expanded state
+        restoreExpandedContacts(expandedIds);
     });
 
     // Reply form submission
@@ -186,6 +195,22 @@ function toggleContactDetails(id) {
     row.classList.toggle('expanded');
 }
 
+// Get IDs of currently expanded contacts
+function getExpandedContactIds() {
+    const expandedRows = document.querySelectorAll('.contact-row.expanded');
+    return Array.from(expandedRows).map(row => parseInt(row.dataset.id));
+}
+
+// Restore expanded state for contacts
+function restoreExpandedContacts(ids) {
+    ids.forEach(id => {
+        const row = document.querySelector(`.contact-row[data-id="${id}"]`);
+        if (row) {
+            row.classList.add('expanded');
+        }
+    });
+}
+
 // Update statistics
 function updateStats() {
     const unreadCount = allContacts.filter(c => c.status === 'unread').length;
@@ -214,8 +239,15 @@ async function markAsRead(id) {
         const contact = allContacts.find(c => c.id === id);
         if (contact) contact.status = 'read';
 
+        // Remember expanded contacts before re-render
+        const expandedIds = getExpandedContactIds();
+        
         updateStats();
         filterAndRenderContacts(document.getElementById('searchInput').value);
+        
+        // Restore expanded state
+        restoreExpandedContacts(expandedIds);
+        
         showToast('Contact marked as read', 'success');
 
     } catch (error) {
@@ -245,8 +277,15 @@ async function markAsUnread(id) {
         const contact = allContacts.find(c => c.id === id);
         if (contact) contact.status = 'unread';
 
+        // Remember expanded contacts before re-render
+        const expandedIds = getExpandedContactIds();
+        
         updateStats();
         filterAndRenderContacts(document.getElementById('searchInput').value);
+        
+        // Restore expanded state
+        restoreExpandedContacts(expandedIds);
+        
         showToast('Contact marked as unread', 'success');
 
     } catch (error) {

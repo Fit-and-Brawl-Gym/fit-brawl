@@ -34,20 +34,27 @@ const specializationFilter = document.getElementById('specializationFilter');
 const statusFilter = document.getElementById('statusFilter');
 
 let searchTimeout;
-searchInput.addEventListener('input', () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 500);
-});
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            applyFilters();
+        }, 500);
+    });
+}
 
-specializationFilter.addEventListener('change', applyFilters);
-statusFilter.addEventListener('change', applyFilters);
+if (specializationFilter) {
+    specializationFilter.addEventListener('change', applyFilters);
+}
+
+if (statusFilter) {
+    statusFilter.addEventListener('change', applyFilters);
+}
 
 function applyFilters() {
-    const search = searchInput.value;
-    const specialization = specializationFilter.value;
-    const status = statusFilter.value;
+    const search = searchInput ? searchInput.value : '';
+    const specialization = specializationFilter ? specializationFilter.value : 'all';
+    const status = statusFilter ? statusFilter.value : 'all';
 
     const params = new URLSearchParams();
     if (search) params.append('search', search);
@@ -96,41 +103,49 @@ function closeDeleteModal() {
     document.getElementById('deleteModal').classList.remove('active');
 }
 
-document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
-    if (!trainerToDelete) return;
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', () => {
+        if (!trainerToDelete) return;
 
-    fetch('trainers.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `ajax=1&action=delete_trainer&trainer_id=${trainerToDelete}`
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + (data.error || 'Unknown error'));
-                closeDeleteModal();
-            }
+        fetch('trainers.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `ajax=1&action=delete_trainer&trainer_id=${trainerToDelete}`
         })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-            closeDeleteModal();
-        });
-});
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                    closeDeleteModal();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                closeDeleteModal();
+            });
+    });
+}
 
-// Close modal when clicking outside
-document.getElementById('deleteModal').addEventListener('click', (e) => {
-    if (e.target.id === 'deleteModal' || e.target.classList.contains('modal-overlay')) {
-        closeDeleteModal();
-    }
-});
+const deleteModal = document.getElementById('deleteModal');
+if (deleteModal) {
+    deleteModal.addEventListener('click', (e) => {
+        if (e.target.id === 'deleteModal' || e.target.classList.contains('modal-overlay')) {
+            closeDeleteModal();
+        }
+    });
+}
 
 // Enhance dropdown styling on focus/blur
-[specializationFilter, statusFilter].forEach(select => {
+[
+    specializationFilter,
+    statusFilter
+].filter(Boolean).forEach(select => {
     select.addEventListener('focus', () => {
         select.classList.add('focused');
     });

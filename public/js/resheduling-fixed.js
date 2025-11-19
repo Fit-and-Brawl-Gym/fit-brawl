@@ -99,6 +99,9 @@ window.openRescheduleModal = function(bookingId, element) {
     const form = document.getElementById('rescheduleForm');
     if (form) form.reset();
 
+    // Hide alert
+    hideRescheduleAlert();
+
     // Hide all optional sections
     const elementsToHide = [
         'rescheduleTimeSummary',
@@ -110,7 +113,10 @@ window.openRescheduleModal = function(bookingId, element) {
 
     elementsToHide.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
+        if (el) {
+            el.style.setProperty('display', 'none', 'important');
+            el.classList.add('hidden');
+        }
     });
 
     // Reset time selectors
@@ -230,7 +236,10 @@ function hideRescheduleSelectionContent() {
 
     // Show summary
     const summary = document.getElementById('rescheduleTimeSummary');
-    if (summary) summary.style.display = 'block';
+    if (summary) {
+        summary.classList.remove('hidden');
+        summary.style.setProperty('display', 'block', 'important');
+    }
 }   
 
 // ===== Proceed to Review Step =====
@@ -265,7 +274,10 @@ function showRescheduleSelectionContent() {
 
     // Hide summary
     const summary = document.getElementById('rescheduleTimeSummary');
-    if (summary) summary.style.display = 'none';
+    if (summary) {
+        summary.classList.add('hidden');
+        summary.style.setProperty('display', 'none', 'important');
+    }
 
     // Show current booking info
     document.querySelector('.original-booking-info').style.display = '';
@@ -440,6 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (rescheduleChangeTime) {
         rescheduleChangeTime.addEventListener('click', function(e) {
             e.preventDefault();
+            hideRescheduleAlert();
             showRescheduleSelectionContent();
         });
     }
@@ -679,7 +692,11 @@ function loadRescheduleTrainerAvailability() {
             </div>
         `;
     }
-    document.getElementById('rescheduleTimeSelectionLayout').style.display = 'none';
+    const timeLayout = document.getElementById('rescheduleTimeSelectionLayout');
+    if (timeLayout) {
+        timeLayout.classList.add('hidden');
+        timeLayout.style.setProperty('display', 'none', 'important');
+    }
 
     const formData = new FormData();
     formData.append('trainer_id', trainerId);
@@ -698,7 +715,11 @@ function loadRescheduleTrainerAvailability() {
 
             if (data.success && data.available_slots && data.available_slots.length > 0) {
                 if (banner) banner.style.display = 'none';
-                document.getElementById('rescheduleTimeSelectionLayout').style.display = 'grid';
+                const timeLayout = document.getElementById('rescheduleTimeSelectionLayout');
+                if (timeLayout) {
+                    timeLayout.classList.remove('hidden');
+                    timeLayout.style.setProperty('display', 'grid', 'important');
+                }
                 
                 // Update global rescheduleState instead of creating a local one
                 rescheduleState.startTime = null;
@@ -1578,16 +1599,47 @@ async function handleRescheduleFormSubmit(e) {
         const data = await res.json();
 
         if (data.success) {
-            showToast('Reschedule successful!', 'success');
-            setTimeout(() => location.reload(), 800);
-            closeRescheduleModal();
+            showRescheduleAlert('Reschedule successful!', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            showToast(data.message || 'Reschedule failed.', 'error');
+            showRescheduleAlert(data.message || 'Reschedule failed.', 'error');
         }
     } catch (err) {
-        showToast('Server error while updating booking.', 'error');
+        showRescheduleAlert('Server error while updating booking.', 'error');
     }
 }
+
+// Show alert in reschedule modal
+window.showRescheduleAlert = function(message, type = 'error') {
+    const alert = document.getElementById('rescheduleAlert');
+    const messageEl = alert.querySelector('.reschedule-alert-message');
+    
+    if (!alert || !messageEl) return;
+    
+    // Remove previous type classes
+    alert.classList.remove('error', 'success', 'warning');
+    
+    // Add new type class
+    alert.classList.add(type);
+    
+    // Set message
+    messageEl.textContent = message;
+    
+    // Show alert
+    alert.style.display = 'block';
+    
+    // Scroll to alert
+    alert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+// Hide alert in reschedule modal
+window.hideRescheduleAlert = function() {
+    const alert = document.getElementById('rescheduleAlert');
+    if (alert) {
+        alert.style.display = 'none';
+    }
+};
+
 // ===================================
 // INITIALIZATION
 // ===================================

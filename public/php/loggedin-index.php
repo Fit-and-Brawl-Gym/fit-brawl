@@ -353,10 +353,10 @@ $sessionHours = [
                 </div>
             </div>
 
-            <!-- Weekly Progress Card -->
+            <!-- Weekly Training Hours Card -->
             <div class="dashboard-card progress-card">
                 <div class="card-header">
-                    <h3><i class="fas fa-chart-line"></i> Weekly Progress</h3>
+                    <h3><i class="fas fa-clock"></i> Weekly Training Hours</h3>
                 </div>
                 <div class="card-body">
                     <div class="progress-stats">
@@ -381,7 +381,12 @@ $sessionHours = [
 
                             // Calculate hours used from weeklyBookings duration
                             $weekStart = new DateTime();
-                            $weekStart->modify('Sunday this week')->setTime(0, 0, 0);
+                            $dayOfWeek = (int)$weekStart->format('w'); // 0 (Sunday) to 6 (Saturday)
+                            if ($dayOfWeek > 0) {
+                                // If not Sunday, go back to previous Sunday
+                                $weekStart->modify("-$dayOfWeek days");
+                            }
+                            $weekStart->setTime(0, 0, 0);
                             $weekEnd = clone $weekStart;
                             $weekEnd->modify('+6 days')->setTime(23, 59, 59);
 
@@ -417,14 +422,18 @@ $sessionHours = [
                             </div>
                         </div>
                     </div>
-                    <?php if ($weeklyBookings > 0): ?>
+                    <?php if ($hoursUsed > 0): ?>
                         <div class="motivation-message">
-                            <?php if ($weeklyBookings >= 10): ?>
-                                <i class="fas fa-fire"></i> <span>You're on fire! Keep it up!</span>
-                            <?php elseif ($weeklyBookings >= 6): ?>
-                                <i class="fas fa-bolt"></i> <span>Great progress this week!</span>
+                            <?php 
+                            $usagePercent = ($totalMinutes / ($weeklyHourLimit * 60)) * 100;
+                            if ($usagePercent >= 80): ?>
+                                <i class="fas fa-fire"></i> <span>Excellent dedication this week!</span>
+                            <?php elseif ($usagePercent >= 50): ?>
+                                <i class="fas fa-bolt"></i> <span>Great training volume!</span>
+                            <?php elseif ($usagePercent >= 25): ?>
+                                <i class="fas fa-dumbbell"></i> <span>Keep up the momentum!</span>
                             <?php else: ?>
-                                <i class="fas fa-dumbbell"></i> <span>Let's keep pushing!</span>
+                                <i class="fas fa-star"></i> <span>Every hour counts!</span>
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>

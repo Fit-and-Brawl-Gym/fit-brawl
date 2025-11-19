@@ -2713,6 +2713,7 @@ body::before {
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    pointer-events: auto;
 }
 
 .trainer-card:hover:not(.unavailable):not(.booked) {
@@ -2732,6 +2733,7 @@ body::before {
 .trainer-card.booked {
     opacity: 0.5;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .trainer-status-badge {
@@ -3628,6 +3630,87 @@ body::before {
     background: transparent;
 }
 
+/* Reschedule Alert Styles */
+.reschedule-alert {
+    margin-bottom: var(--spacing-4);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reschedule-alert-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border: 2px solid;
+}
+
+.reschedule-alert.error .reschedule-alert-content {
+    background: rgba(244, 67, 54, 0.15);
+    border-color: #f44336;
+    color: #ff5252;
+}
+
+.reschedule-alert.success .reschedule-alert-content {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: #4CAF50;
+    color: #66bb6a;
+}
+
+.reschedule-alert.warning .reschedule-alert-content {
+    background: rgba(255, 152, 0, 0.15);
+    border-color: #ff9800;
+    color: #ffa726;
+}
+
+.reschedule-alert-icon {
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+}
+
+.reschedule-alert.error .reschedule-alert-icon::before {
+    content: "\f06a"; /* fa-exclamation-circle */
+}
+
+.reschedule-alert.success .reschedule-alert-icon::before {
+    content: "\f058"; /* fa-check-circle */
+}
+
+.reschedule-alert.warning .reschedule-alert-icon::before {
+    content: "\f071"; /* fa-exclamation-triangle */
+}
+
+.reschedule-alert-message {
+    flex: 1;
+    font-weight: var(--font-weight-semibold);
+}
+
+.reschedule-alert-close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: var(--spacing-1);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.reschedule-alert-close:hover {
+    opacity: 1;
+}
+
 .original-booking-info {
     background: rgba(26, 74, 82, 0.6);
     border: 1px solid rgba(255, 206, 0, 0.2);
@@ -3798,6 +3881,7 @@ body::before {
     margin-top: var(--spacing-4);
     padding-top: var(--spacing-4);
     border-top: 1px solid rgba(255, 206, 0, 0.2);
+    pointer-events: auto;
 }
 
 .btn-cancel,
@@ -3815,6 +3899,7 @@ body::before {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-2);
+    pointer-events: auto;
 }
 
 .btn-cancel {
@@ -3881,8 +3966,25 @@ body::before {
 }
 
 /* Reschedule Summary Comparison Layout */
+/* Utility class for hiding elements */
+.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
 .reschedule-time-summary {
     margin-top: var(--spacing-4);
+}
+
+.reschedule-time-summary[style*="display: none"],
+.reschedule-time-summary.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
 }
 
 .reschedule-summary-comparison {

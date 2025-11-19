@@ -182,7 +182,9 @@
 
 /* Action buttons */
 .btn-approve,
-.btn-reject {
+.approve-btn,
+.btn-reject,
+.reject-btn {
     padding: 8px 18px;
     border: none;
     border-radius: 6px;
@@ -199,7 +201,9 @@
 }
 
 .btn-approve::before,
-.btn-reject::before {
+.approve-btn::before,
+.btn-reject::before,
+.reject-btn::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -213,44 +217,54 @@
 }
 
 .btn-approve:hover::before,
-.btn-reject:hover::before {
+.approve-btn:hover::before,
+.btn-reject:hover::before,
+.reject-btn:hover::before {
     width: 300px;
     height: 300px;
 }
 
-.btn-approve {
+.btn-approve,
+.approve-btn {
     background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
     margin-right: 8px;
 }
 
-.btn-approve:hover {
+.btn-approve:hover,
+.approve-btn:hover {
     background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
 }
 
-.btn-approve:active {
+.btn-approve:active,
+.approve-btn:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);
 }
 
-.btn-reject {
+.btn-reject,
+.reject-btn {
     background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
 }
 
-.btn-reject:hover {
+.btn-reject:hover,
+.reject-btn:hover {
     background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
-.btn-reject:active {
+.btn-reject:active,
+.reject-btn:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
 }
 
 .btn-approve:hover,
-.btn-reject:hover {
+.approve-btn:hover,
+.btn-reject:hover,
+.reject-btn:hover {
     opacity: 0.9;
 }
 

@@ -84,30 +84,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
 
     // Soft delete trainer
     if (isset($_POST['action']) && $_POST['action'] === 'delete_trainer') {
-        $trainer_id = intval($_POST['trainer_id']);
+        $trainer_id = intval($_POST['trainer_id'] ?? 0);
 
-        // Get trainer name before deletion
-        $name_query = "SELECT name FROM trainers WHERE id = ?";
-        $stmt = $conn->prepare($name_query);
-        $stmt->bind_param("i", $trainer_id);
-        $stmt->execute();
-        $trainer_name = $stmt->get_result()->fetch_assoc()['name'] ?? 'Unknown';
+        if ($trainer_id <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid trainer ID.']);
+            exit;
+        }
 
-        $delete_query = "UPDATE trainers SET deleted_at = NOW() WHERE id = ?";
-        $stmt = $conn->prepare($delete_query);
-        $stmt->bind_param("i", $trainer_id);
-        $stmt->execute();
+        $transactionStarted = false;
 
-        // Log activity
-        $log_query = "INSERT INTO trainer_activity_log (trainer_id, admin_id, action, details) VALUES (?, ?, 'Deleted', 'Trainer soft-deleted')";
-        $stmt = $conn->prepare($log_query);
-        $stmt->bind_param("is", $trainer_id, $admin_id);
-        $stmt->execute();
+        try {
+            if (!$conn->begin_transaction()) {
+                throw new Exception('Unable to start database transaction: ' . $conn->error);
+            }
+            $transactionStarted = true;
 
-        // Log to main activity log
-        ActivityLogger::log('trainer_deleted', $trainer_name, $trainer_id, "Trainer '$trainer_name' (#$trainer_id) was deleted");
+            $info_stmt = $conn->prepare("SELECT name FROM trainers WHERE id = ? LIMIT 1");
+            if (!$info_stmt) {
+                throw new Exception('Failed to prepare trainer lookup: ' . $conn->error);
+            }
+            $info_stmt->bind_param("i", $trainer_id);
+            $info_stmt->execute();
+            $trainer_row = $info_stmt->get_result()->fetch_assoc();
+            $info_stmt->close();
 
-        echo json_encode(['success' => true]);
+            if (!$trainer_row) {
+                $conn->rollback();
+                $transactionStarted = false;
+                echo json_encode(['success' => false, 'error' => 'Trainer not found.']);
+                exit;
+            }
+
+            $trainer_name = $trainer_row['name'] ?? 'Unknown';
+
+            $delete_stmt = $conn->prepare("DELETE FROM trainers WHERE id = ?");
+            if (!$delete_stmt) {
+                throw new Exception('Failed to prepare trainer delete: ' . $conn->error);
+            }
+            $delete_stmt->bind_param("i", $trainer_id);
+            $delete_stmt->execute();
+
+            if ($delete_stmt->affected_rows <= 0) {
+                $delete_stmt->close();
+                $conn->rollback();
+                $transactionStarted = false;
+                echo json_encode(['success' => false, 'error' => 'Trainer could not be deleted.']);
+                exit;
+            }
+
+            $delete_stmt->close();
+            $conn->commit();
+            $transactionStarted = false;
+
+            ActivityLogger::log('trainer_deleted', $trainer_name, $trainer_id, "Trainer '$trainer_name' (#$trainer_id) permanently deleted");
+
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            if ($transactionStarted) {
+                $conn->rollback();
+                $transactionStarted = false;
+            }
+            error_log('Trainer delete failed: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Failed to delete trainer. Please try again.']);
+        }
         exit;
     }
 }
@@ -154,15 +195,8 @@ if ($specialization_filter !== 'all') {
     $types .= 's';
 }
 
-// Add status filter
-if ($status_filter !== 'all') {
-    $query .= " AND t.status = ?";
-    $params[] = $status_filter;
-    $types .= 's';
-}
-
 // Add sorting
-$allowed_sorts = ['name', 'email', 'specialization', 'status', 'created_at'];
+$allowed_sorts = ['name', 'email', 'specialization', 'created_at'];
 if (!in_array($sort_by, $allowed_sorts)) {
     $sort_by = 'name';
 }
@@ -186,11 +220,13 @@ $trainers_result = $stmt->get_result();
 
 // Get statistics - With soft delete check and error handling
 $stats_query = "SELECT
-                COUNT(*) as total_trainers,
-                SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) as active_trainers,
-                SUM(CASE WHEN status = 'Inactive' THEN 1 ELSE 0 END) as inactive_trainers,
-                SUM(CASE WHEN status = 'On Leave' THEN 1 ELSE 0 END) as on_leave_trainers
-                FROM trainers WHERE deleted_at IS NULL";
+                COUNT(DISTINCT t.id) as total_trainers,
+                COUNT(DISTINCT CASE WHEN ur.booking_date = CURDATE() THEN ur.id END) as sessions_today,
+                COUNT(DISTINCT CASE WHEN ur.booking_date > CURDATE() THEN ur.id END) as upcoming_sessions
+                FROM trainers t
+                LEFT JOIN user_reservations ur ON t.id = ur.trainer_id 
+                    AND ur.booking_status IN ('confirmed', 'completed')
+                WHERE t.deleted_at IS NULL";
 $stats_result = $conn->query($stats_query);
 
 if (!$stats_result) {
@@ -199,13 +235,22 @@ if (!$stats_result) {
 
 $stats = $stats_result->fetch_assoc();
 
+// Get count of trainers by specialization
+$spec_query = "SELECT 
+                SUM(CASE WHEN specialization = 'Boxing' THEN 1 ELSE 0 END) as boxing_count,
+                SUM(CASE WHEN specialization = 'MMA' THEN 1 ELSE 0 END) as mma_count,
+                SUM(CASE WHEN specialization = 'Muay Thai' THEN 1 ELSE 0 END) as muay_thai_count,
+                SUM(CASE WHEN specialization = 'Gym' THEN 1 ELSE 0 END) as gym_count
+                FROM trainers WHERE deleted_at IS NULL";
+$spec_result = $conn->query($spec_query);
+$specialization_stats = $spec_result->fetch_assoc();
+
 // Set defaults if no data
 if (!$stats) {
     $stats = [
         'total_trainers' => 0,
-        'active_trainers' => 0,
-        'inactive_trainers' => 0,
-        'on_leave_trainers' => 0
+        'sessions_today' => 0,
+        'upcoming_sessions' => 0
     ];
 }
 ?>
@@ -251,29 +296,11 @@ if (!$stats) {
             </div>
             <div class="stat-card">
                 <div class="stat-icon green">
-                    <i class="fas fa-user-check"></i>
+                    <i class="fas fa-calendar-day"></i>
                 </div>
                 <div class="stat-info">
-                    <h3><?= $stats['active_trainers'] ?></h3>
-                    <p>Active</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon red">
-                    <i class="fas fa-user-times"></i>
-                </div>
-                <div class="stat-info">
-                    <h3><?= $stats['inactive_trainers'] ?></h3>
-                    <p>Inactive</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon orange">
-                    <i class="fas fa-umbrella-beach"></i>
-                </div>
-                <div class="stat-info">
-                    <h3><?= $stats['on_leave_trainers'] ?></h3>
-                    <p>On Leave</p>
+                    <h3><?= $stats['sessions_today'] ?></h3>
+                    <p>Sessions Today</p>
                 </div>
             </div>
         </div>
@@ -295,13 +322,6 @@ if (!$stats) {
                 </option>
             </select>
 
-            <select id="statusFilter" class="filter-select">
-                <option value="all" <?= $status_filter === 'all' ? 'selected' : '' ?>>All Status</option>
-                <option value="Active" <?= $status_filter === 'Active' ? 'selected' : '' ?>>Active</option>
-                <option value="Inactive" <?= $status_filter === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
-                <option value="On Leave" <?= $status_filter === 'On Leave' ? 'selected' : '' ?>>On Leave</option>
-            </select>
-
             <div class="view-toggle">
                 <button class="view-btn active" data-view="table">
                     <i class="fas fa-table"></i>
@@ -320,26 +340,19 @@ if (!$stats) {
                         <tr>
                             <th>
                                 <a
-                                    href="?sort=name&order=<?= $sort_by === 'name' && $sort_order === 'ASC' ? 'DESC' : 'ASC' ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= $specialization_filter !== 'all' ? '&specialization=' . $specialization_filter : '' ?><?= $status_filter !== 'all' ? '&status=' . $status_filter : '' ?>">
+                                    href="?sort=name&order=<?= $sort_by === 'name' && $sort_order === 'ASC' ? 'DESC' : 'ASC' ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= $specialization_filter !== 'all' ? '&specialization=' . $specialization_filter : '' ?>">
                                     Name <?= $sort_by === 'name' ? ($sort_order === 'ASC' ? '↑' : '↓') : '' ?>
                                 </a>
                             </th>
                             <th>Contact</th>
                             <th>
                                 <a
-                                    href="?sort=specialization&order=<?= $sort_by === 'specialization' && $sort_order === 'ASC' ? 'DESC' : 'ASC' ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= $specialization_filter !== 'all' ? '&specialization=' . $specialization_filter : '' ?><?= $status_filter !== 'all' ? '&status=' . $status_filter : '' ?>">
+                                    href="?sort=specialization&order=<?= $sort_by === 'specialization' && $sort_order === 'ASC' ? 'DESC' : 'ASC' ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= $specialization_filter !== 'all' ? '&specialization=' . $specialization_filter : '' ?>">
                                     Specialization
                                     <?= $sort_by === 'specialization' ? ($sort_order === 'ASC' ? '↑' : '↓') : '' ?>
                                 </a>
                             </th>
-                            <th>Clients Today</th>
                             <th>Upcoming</th>
-                            <th>
-                                <a
-                                    href="?sort=status&order=<?= $sort_by === 'status' && $sort_order === 'ASC' ? 'DESC' : 'ASC' ?><?= !empty($search) ? '&search=' . urlencode($search) : '' ?><?= $specialization_filter !== 'all' ? '&specialization=' . $specialization_filter : '' ?><?= $status_filter !== 'all' ? '&status=' . $status_filter : '' ?>">
-                                    Status <?= $sort_by === 'status' ? ($sort_order === 'ASC' ? '↑' : '↓') : '' ?>
-                                </a>
-                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -373,18 +386,7 @@ if (!$stats) {
                                         </span>
                                     </td>
                                     <td>
-                                        <strong><?= $trainer['clients_today'] ?></strong> / 3 sessions
-                                    </td>
-                                    <td>
                                         <strong><?= $trainer['upcoming_bookings'] ?></strong> bookings
-                                    </td>
-                                    <td>
-                                        <span
-                                            class="status-badge status-<?= strtolower(str_replace(' ', '-', $trainer['status'])) ?>"
-                                            onclick="toggleStatus(<?= $trainer['id'] ?>)" style="cursor: pointer;"
-                                            title="Click to change status">
-                                            <?= htmlspecialchars($trainer['status']) ?>
-                                        </span>
                                     </td>
                                     <td>
                                         <div class="action-buttons">
@@ -407,7 +409,7 @@ if (!$stats) {
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
+                                <td colspan="6" style="text-align: center; padding: 40px; color: #999;">
                                     <i class="fas fa-inbox"
                                         style="font-size: 48px; margin-bottom: 12px; display: block;"></i>
                                     No trainers found
@@ -436,11 +438,6 @@ if (!$stats) {
                                 ?>
                                 <img src="<?= $trainerPhoto ?>"
                                     alt="<?= htmlspecialchars($trainer['name']) ?>" class="card-avatar">
-                                <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $trainer['status'])) ?>"
-                                    onclick="toggleStatus(<?= $trainer['id'] ?>)" style="cursor: pointer;"
-                                    title="Click to change status">
-                                    <?= htmlspecialchars($trainer['status']) ?>
-                                </span>
                             </div>
                             <div class="card-body">
                                 <h3><?= htmlspecialchars($trainer['name']) ?></h3>
@@ -456,10 +453,6 @@ if (!$stats) {
                                     <div class="info-item">
                                         <i class="fas fa-phone"></i>
                                         <span><?= htmlspecialchars($trainer['phone']) ?></span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-users"></i>
-                                        <span><?= $trainer['clients_today'] ?> clients today</span>
                                     </div>
                                     <div class="info-item">
                                         <i class="fas fa-calendar-check"></i>
