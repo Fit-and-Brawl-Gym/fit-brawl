@@ -591,12 +591,34 @@ function renderRescheduleTrainers(trainers) {
     const selectedDate = document.getElementById('rescheduleDate')?.value;
 
     trainersGrid.innerHTML = trainers.map(trainer => {
+        // Debug: Log trainer data to see what we're working with
+        console.log(`🔍 Trainer ${trainer.name}:`, {
+            status: trainer.status,
+            has_available_slots: trainer.has_available_slots,
+            booked_slot_count: trainer.booked_slot_count,
+            trainer_obj: trainer
+        });
+        
         // Check if shift has ended for today
         const shiftEnded = isRescheduleTrainerShiftEnded(trainer, selectedDate);
         // Check if shift start time has passed
         const shiftStartPassed = isRescheduleTrainerShiftStartPassed(trainer, selectedDate);
+        // Check if trainer is fully booked (no available slots)
+        // Check multiple indicators: explicit fully-booked status, has_available_slots flag, or booked_slot_count
+        const isFullyBooked = trainer.status === 'fully-booked' || 
+                             trainer.has_available_slots === false || 
+                             (trainer.booked_slot_count > 0 && !trainer.has_available_slots);
+        
+        console.log(`   → shiftEnded: ${shiftEnded}, shiftStartPassed: ${shiftStartPassed}, isFullyBooked: ${isFullyBooked}`);
+        
         // Mark unavailable if shift ended OR if shift start time hasn't passed yet (no available times)
-        const effectiveStatus = (shiftEnded || !shiftStartPassed) ? 'unavailable' : trainer.status;
+        let effectiveStatus = (shiftEnded || !shiftStartPassed) ? 'unavailable' : trainer.status;
+        // Override with fully-booked if applicable and not already unavailable
+        if (isFullyBooked && effectiveStatus !== 'unavailable') {
+            effectiveStatus = 'fully-booked';
+        }
+        
+        console.log(`   → Final effectiveStatus: ${effectiveStatus}`);
         
         const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
         const photoSrc = trainer.photo && trainer.photo !== 'account-icon.svg'
@@ -617,7 +639,16 @@ function renderRescheduleTrainers(trainers) {
             shiftTimeDisplay = `<p class="trainer-shift-time"><i class="fas fa-clock"></i> ${formatRescheduleShiftTime(shift.start)} - ${formatRescheduleShiftTime(shift.end)}</p>`;
         }
         
-        const statusText = (shiftEnded || !shiftStartPassed) ? 'Unavailable' : trainer.status;
+        let statusText = 'Available';
+        if (shiftEnded) {
+            statusText = 'Shift Ended';
+        } else if (!shiftStartPassed) {
+            statusText = 'Unavailable';
+        } else if (effectiveStatus === 'fully-booked') {
+            statusText = 'Fully Booked';
+        } else {
+            statusText = trainer.status.charAt(0).toUpperCase() + trainer.status.slice(1);
+        }
         
         return `
             <div class="trainer-card ${effectiveStatus}"
@@ -647,6 +678,11 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
     
     if (status === 'unavailable') {
         showToast('This trainer is not available for the selected date', 'warning');
+        return;
+    }
+
+    if (status === 'fully-booked') {
+        showToast('This trainer is fully booked with no available time slots', 'warning');
         return;
     }
 
@@ -734,9 +770,57 @@ function loadRescheduleTrainerAvailability() {
         formData.append('exclude_booking_id', currentRescheduleBooking.id);
     }
 
-    fetch('api/get_trainer_availability.php', { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(data => {
+    // Fetch both trainer availability and user bookings for conflict checking
+    Promise.all([
+        fetch('api/get_trainer_availability.php', { method: 'POST', body: formData }).then(res => res.json()),
+        fetch('api/get_user_bookings.php', { method: 'GET', credentials: 'same-origin' }).then(res => res.json())
+    ])
+        .then(([availabilityData, bookingsData]) => {
+            const data = availabilityData;
+            
+            // Filter user's bookings for the selected date, excluding current booking being rescheduled
+            let userBookingsOnDate = [];
+            if (bookingsData && bookingsData.success && bookingsData.bookings) {
+                console.log('📦 All user bookings received:', bookingsData.bookings.length);
+                console.log('🔍 Looking for bookings on date:', date);
+                console.log('🔍 Current reschedule booking ID:', currentRescheduleBooking?.id);
+                
+                // Log all bookings for debugging
+                bookingsData.bookings.forEach(b => {
+                    console.log(`  - Booking ${b.id}: ${b.date}, ${b.start_time}-${b.end_time}, status: ${b.status}`);
+                });
+                
+                userBookingsOnDate = bookingsData.bookings.filter(booking => {
+                    const dateMatch = booking.date === date;
+                    const statusOk = booking.status === 'confirmed';
+                    const notCurrentBooking = booking.id !== (currentRescheduleBooking?.id);
+                    const hasTime = booking.start_time && booking.end_time;
+                    
+                    if (!dateMatch) console.log(`  ❌ Booking ${booking.id}: date mismatch (${booking.date} !== ${date})`);
+                    if (!statusOk) console.log(`  ❌ Booking ${booking.id}: status not confirmed (${booking.status})`);
+                    if (!notCurrentBooking) console.log(`  ⏭️ Booking ${booking.id}: is current reschedule booking, skipping`);
+                    if (!hasTime) console.log(`  ❌ Booking ${booking.id}: missing time data`);
+                    
+                    return dateMatch && statusOk && notCurrentBooking && hasTime;
+                });
+                
+                console.log('✅ Loaded user bookings for conflict checking:', userBookingsOnDate.length, 'bookings');
+                if (userBookingsOnDate.length > 0) {
+                    console.log('📋 Existing bookings on', date, ':', userBookingsOnDate.map(b => `${b.start_time}-${b.end_time} (ID: ${b.id})`));
+                } else {
+                    console.log('ℹ️ No conflicting bookings found for', date);
+                }
+            } else {
+                console.warn('⚠️ Could not load user bookings for conflict checking:', bookingsData);
+            }
+            
+            // Store user bookings for conflict checking
+            if (!window.rescheduleUserBookings) {
+                window.rescheduleUserBookings = {};
+            }
+            window.rescheduleUserBookings[date] = userBookingsOnDate;
+            console.log('💾 Stored in window.rescheduleUserBookings["' + date + '"]:', userBookingsOnDate.length, 'bookings');
+            
             console.log('🔍 API Response:', data);
             console.log('🔍 Stored shift:', window.rescheduleSelectedTrainerShift);
 
@@ -897,6 +981,11 @@ function getRescheduleSlotStatus(slotTime, state, shift) {
         return 'unavailable';
     }
     
+    // Check if slot conflicts with user's existing bookings
+    if (selectedDate && hasUserBookingConflict(slotTime, selectedDate)) {
+        return 'booked';
+    }
+    
     if (isRescheduleBreakTime(slotTime, shift)) {
         return 'break';
     }
@@ -910,6 +999,58 @@ function getRescheduleSlotStatus(slotTime, state, shift) {
     }
 
     return 'available';
+}
+
+function hasUserBookingConflict(slotTime, date) {
+    // Check if this slot conflicts with user's other bookings on the same date
+    if (!window.rescheduleUserBookings || !window.rescheduleUserBookings[date]) {
+        return false;
+    }
+    
+    const userBookings = window.rescheduleUserBookings[date];
+    if (userBookings.length === 0) {
+        return false;
+    }
+    
+    const slotMinutes = parseRescheduleTime(slotTime);
+    
+    for (const booking of userBookings) {
+        const bookingStart = parseRescheduleTime(booking.start_time);
+        const bookingEnd = parseRescheduleTime(booking.end_time);
+        
+        // Check if slot falls within this booking's time range
+        if (slotMinutes >= bookingStart && slotMinutes < bookingEnd) {
+            console.log(`⚠️ Slot ${slotTime} (${slotMinutes} mins) conflicts with existing booking: ${booking.start_time} (${bookingStart} mins) - ${booking.end_time} (${bookingEnd} mins)`);
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function hasUserBookingRangeConflict(startMinutes, endMinutes, date) {
+    // Check if a time range (start to end) conflicts with user's existing bookings
+    if (!window.rescheduleUserBookings || !window.rescheduleUserBookings[date]) {
+        return false;
+    }
+    
+    const userBookings = window.rescheduleUserBookings[date];
+    
+    for (const booking of userBookings) {
+        const bookingStart = parseRescheduleTime(booking.start_time);
+        const bookingEnd = parseRescheduleTime(booking.end_time);
+        
+        // Check for any overlap between the proposed time range and existing booking
+        // Two ranges overlap if: (start1 < end2) AND (end1 > start2)
+        const hasOverlap = (startMinutes < bookingEnd) && (endMinutes > bookingStart);
+        
+        if (hasOverlap) {
+            console.log(`⚠️ Time range ${startMinutes}-${endMinutes} conflicts with existing booking: ${booking.start_time} - ${booking.end_time}`);
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 function isRescheduleBreakTime(time, shift) {
@@ -962,6 +1103,45 @@ function setupRescheduleTimePickers(state) {
 
     endSelect.innerHTML = '<option value="">Select start time first</option>';
     endSelect.disabled = true;
+    
+    // Check if ALL start times are unavailable by counting enabled vs disabled options
+    const enabledOptions = (startSlots.match(/<option value="[^"]+">/g) || []).length;
+    const disabledOptions = (startSlots.match(/disabled/g) || []).length;
+    
+    if (enabledOptions > 0 && disabledOptions === enabledOptions) {
+        // All options are disabled
+        const banner = document.getElementById('rescheduleAvailabilityBanner');
+        if (banner) {
+            banner.style.display = 'block';
+            banner.innerHTML = `
+                <div class="banner-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>⚠️ This trainer has no available time slots for the selected date (all times conflict with your existing bookings or are already booked)</span>
+                </div>
+            `;
+        }
+        // Disable the start select
+        startSelect.disabled = true;
+        
+        // Update the trainer card to show "Fully Booked" status
+        const trainerId = state.trainerId;
+        const trainerCard = document.querySelector(`.trainer-card[data-trainer-id="${trainerId}"]`);
+        if (trainerCard) {
+            console.log(`🔄 Updating trainer ${trainerId} card to fully-booked status`);
+            trainerCard.classList.remove('available');
+            trainerCard.classList.add('fully-booked');
+            trainerCard.dataset.trainerStatus = 'fully-booked';
+            
+            const statusBadge = trainerCard.querySelector('.trainer-status-badge');
+            if (statusBadge) {
+                statusBadge.className = 'trainer-status-badge fully-booked';
+                statusBadge.textContent = 'Fully Booked';
+            }
+        }
+    } else {
+        // Re-enable if it was previously disabled
+        startSelect.disabled = false;
+    }
 
     startSelect.addEventListener('change', (e) => {
         if (e.target.value) {
@@ -1055,6 +1235,7 @@ function generateRescheduleEndTimeOptions(state, shift) {
     const startMinutes = parseRescheduleTime(state.startTime);
     const minEndMinutes = startMinutes + 30;
     const shiftEndMinutes = parseRescheduleTime(shift.end);
+    const selectedDate = document.getElementById('rescheduleDate')?.value;
 
     const slots = [];
     for (let time = minEndMinutes; time <= shiftEndMinutes; time += 30) {
@@ -1065,8 +1246,11 @@ function generateRescheduleEndTimeOptions(state, shift) {
         const endMinutes = parseRescheduleTime(timeStr);
         const isDuringBreak = isRescheduleBreakTime(timeStr, shift);
         const hasConflict = checkRescheduleTimeRangeConflict(startMinutes, endMinutes, state.availableSlots);
+        
+        // Check if the time range conflicts with user's existing bookings
+        const hasUserConflict = selectedDate && hasUserBookingRangeConflict(startMinutes, endMinutes, selectedDate);
 
-        const isDisabled = isDuringBreak || hasConflict;
+        const isDisabled = isDuringBreak || hasConflict || hasUserConflict;
         const label = formatRescheduleTime(timeStr);
         const unavailableText = isDisabled ? ' (unavailable)' : '';
 
@@ -1545,8 +1729,17 @@ function updateNewBookingSummary() {
  */
 function parseRescheduleTime(timeStr) {
     if (!timeStr) return 0;
-    const parts = timeStr.split(':');
-    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    
+    // Extract time portion if this is a datetime string (e.g., "2025-11-21 17:00:00")
+    let time = timeStr;
+    if (timeStr.indexOf(' ') !== -1) {
+        time = timeStr.split(' ')[1]; // Get the time part after the space
+    }
+    
+    const parts = time.split(':');
+    const hours = parseInt(parts[0]) || 0;
+    const minutes = parseInt(parts[1]) || 0;
+    return hours * 60 + minutes;
 }
 
 /**
@@ -1680,8 +1873,49 @@ async function handleRescheduleFormSubmit(e) {
         const data = await res.json();
 
         if (data.success) {
+            // Clear booking recovery state aggressively
+            if (window.BookingRecovery) {
+                window.BookingRecovery.clearState();
+                console.log('✅ Cleared booking recovery state (1)');
+            }
+            
             showRescheduleAlert('Reschedule successful!', 'success');
-            setTimeout(() => location.reload(), 1500);
+            
+            // Close the modal
+            const modal = document.getElementById('rescheduleModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            
+            // Reload after a delay to allow state clearing to complete
+            setTimeout(() => {
+                // Triple-clear: clear localStorage and sessionStorage with all possible key names
+                try {
+                    const keysToRemove = [
+                        'booking_state',
+                        'bookingRecoveryState',
+                        'fit_brawl_booking_state',
+                        'fit_brawl_booking_session'
+                    ];
+                    
+                    keysToRemove.forEach(key => {
+                        localStorage.removeItem(key);
+                        sessionStorage.removeItem(key);
+                    });
+                    
+                    console.log('✅ Cleared all booking storage directly');
+                } catch (e) {
+                    console.error('Error clearing storage:', e);
+                }
+                
+                // Also use BookingRecovery API
+                if (window.BookingRecovery) {
+                    window.BookingRecovery.clearState();
+                    console.log('✅ Cleared booking recovery state (2)');
+                }
+                
+                location.reload();
+            }, 1500);
         } else {
             showRescheduleAlert(data.message || 'Reschedule failed.', 'error');
         }
