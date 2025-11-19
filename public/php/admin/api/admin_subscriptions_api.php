@@ -22,6 +22,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
+$method = $_SERVER['REQUEST_METHOD'];
 $adminId = $_SESSION['user_id'] ?? 'unknown';
 $isFetch = strtoupper($method) === 'GET';
 $rateLimitKey = ($isFetch ? 'admin_subscriptions_fetch:' : 'admin_subscriptions_action:') . $adminId;
@@ -38,8 +39,6 @@ if ($rateCheck['blocked']) {
 header('X-RateLimit-Limit: ' . $maxRequests);
 header('X-RateLimit-Remaining: ' . $rateCheck['remaining']);
 header('X-RateLimit-Reset: ' . (time() + $rateCheck['retry_after']));
-
-$method = $_SERVER['REQUEST_METHOD'];
 
 // APPROVE subscription
 if ($method === 'POST' && isset($_GET['action']) && $_GET['action'] === 'approve') {
