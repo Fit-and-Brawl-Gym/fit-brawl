@@ -18,10 +18,15 @@ let rescheduleState = {
     endTime: null,
     duration: null,
     trainerShift: 'Morning',
+    customShift: null,
     availableSlots: [], 
     currentWeekUsageMinutes: 0,
     weeklyLimitHours: 48
 };
+
+window.rescheduleSelectedTrainerName = null;
+window.rescheduleSelectedTrainerShift = null;
+window.rescheduleSelectedTrainerShiftData = null;
 // ===================================
 // RESCHEDULE MODAL FUNCTIONS
 // ===================================
@@ -619,6 +624,11 @@ function renderRescheduleTrainers(trainers) {
                  data-trainer-id="${trainer.id}"
                  data-trainer-name="${escapedName}"
                  data-trainer-status="${effectiveStatus}"
+                 data-trainer-shift="${trainer.shift || 'Morning'}"
+                 data-shift-start="${trainer.shift_start || ''}"
+                 data-shift-end="${trainer.shift_end || ''}"
+                 data-break-start="${trainer.break_start || ''}"
+                 data-break-end="${trainer.break_end || ''}"
                  onclick="selectRescheduleTrainer(${trainer.id}, '${escapedName}', '${effectiveStatus}')">
                 <span class="trainer-status-badge ${effectiveStatus}">${statusText}</span>
                 <img src="${photoSrc}"
@@ -657,6 +667,9 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
         trainerInput.value = trainerId;
     }
 
+    // Save trainer name for summary
+    window.rescheduleSelectedTrainerName = trainerName;
+
     document.querySelectorAll('#rescheduleTrainersGrid .trainer-card').forEach(card => {
         card.classList.remove('selected');
     });
@@ -664,6 +677,18 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
     const selectedCard = document.querySelector(`[data-trainer-id="${trainerId}"]`);
     if (selectedCard) {
         selectedCard.classList.add('selected');
+        
+        // Store shift data from card attributes
+        window.rescheduleSelectedTrainerShift = selectedCard.dataset.trainerShift;
+        window.rescheduleSelectedTrainerShiftData = {
+            shift_type: selectedCard.dataset.trainerShift,
+            shift_start: selectedCard.dataset.shiftStart,
+            shift_end: selectedCard.dataset.shiftEnd,
+            break_start: selectedCard.dataset.breakStart,
+            break_end: selectedCard.dataset.breakEnd
+        };
+        
+        console.log('🔍 Selected trainer shift:', window.rescheduleSelectedTrainerShift, window.rescheduleSelectedTrainerShiftData);
     }
 
     loadRescheduleTrainerAvailability();
@@ -712,6 +737,8 @@ function loadRescheduleTrainerAvailability() {
     fetch('api/get_trainer_availability.php', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
+            console.log('🔍 API Response:', data);
+            console.log('🔍 Stored shift:', window.rescheduleSelectedTrainerShift);
 
             if (data.success && data.available_slots && data.available_slots.length > 0) {
                 if (banner) banner.style.display = 'none';
@@ -725,11 +752,38 @@ function loadRescheduleTrainerAvailability() {
                 rescheduleState.startTime = null;
                 rescheduleState.endTime = null;
                 rescheduleState.duration = null;
-                rescheduleState.trainerShift = 'Morning';
+                // Use stored shift or fallback to Morning
+                rescheduleState.trainerShift = window.rescheduleSelectedTrainerShift || 'Morning';
                 rescheduleState.customShift = null;
                 rescheduleState.availableSlots = data.available_slots;
                 rescheduleState.currentWeekUsageMinutes = data.current_week_usage_minutes || 0;
                 rescheduleState.weeklyLimitHours = data.weekly_limit_hours || 48;
+
+                // Use API shift_info if available
+                if (data.shift_info && data.shift_info.start_time && data.shift_info.end_time) {
+                    rescheduleState.customShift = {
+                        start: data.shift_info.start_time.substring(0, 5),
+                        end: data.shift_info.end_time.substring(0, 5),
+                        breakStart: data.shift_info.break_start ? data.shift_info.break_start.substring(0, 5) : null,
+                        breakEnd: data.shift_info.break_end ? data.shift_info.break_end.substring(0, 5) : null
+                    };
+                    if (data.shift_info.shift_type) {
+                        rescheduleState.trainerShift = data.shift_info.shift_type.charAt(0).toUpperCase() + data.shift_info.shift_type.slice(1);
+                    }
+                } else if (window.rescheduleSelectedTrainerShiftData) {
+                    // Fallback to stored shift data
+                    const storedShift = window.rescheduleSelectedTrainerShiftData;
+                    if (storedShift.shift_start && storedShift.shift_end) {
+                        rescheduleState.customShift = {
+                            start: storedShift.shift_start,
+                            end: storedShift.shift_end,
+                            breakStart: storedShift.break_start || null,
+                            breakEnd: storedShift.break_end || null
+                        };
+                    }
+                }
+
+                console.log('🔍 Final rescheduleState:', rescheduleState);
 
                 buildRescheduleAvailabilityTimeline(rescheduleState, data);
                 setupRescheduleTimePickers(rescheduleState);

@@ -249,21 +249,46 @@ class BookingValidator
     {
         $day_of_week = date('l', strtotime($booking_date));
 
+        // Check trainer_shifts for day-offs (shift_type='none' OR is_active=0)
         $stmt = $this->conn->prepare("
-            SELECT is_day_off
-            FROM trainer_day_offs
-            WHERE trainer_id = ? AND day_of_week = ? AND is_day_off = 1
+            SELECT shift_type, is_active
+            FROM trainer_shifts
+            WHERE trainer_id = ? AND day_of_week = ?
         ");
         $stmt->bind_param("is", $trainer_id, $day_of_week);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
+            $shift = $result->fetch_assoc();
             $stmt->close();
-            return ['valid' => false, 'message' => 'Trainer is not available on ' . $day_of_week . 's'];
+            
+            // Day-off if shift_type is 'none' or is_active is 0
+            if ($shift['shift_type'] === 'none' || $shift['is_active'] == 0) {
+                return ['valid' => false, 'message' => 'Trainer is not available on ' . $day_of_week . 's'];
+            }
+            
+            return ['valid' => true];
         }
 
         $stmt->close();
+        
+        // Fallback: Check legacy trainer_day_offs table
+        $fallback_stmt = $this->conn->prepare("
+            SELECT is_day_off
+            FROM trainer_day_offs
+            WHERE trainer_id = ? AND day_of_week = ? AND is_day_off = 1
+        ");
+        $fallback_stmt->bind_param("is", $trainer_id, $day_of_week);
+        $fallback_stmt->execute();
+        $fallback_result = $fallback_stmt->get_result();
+
+        if ($fallback_result->num_rows > 0) {
+            $fallback_stmt->close();
+            return ['valid' => false, 'message' => 'Trainer is not available on ' . $day_of_week . 's'];
+        }
+
+        $fallback_stmt->close();
         return ['valid' => true];
     }
 

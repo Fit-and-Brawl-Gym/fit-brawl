@@ -25,6 +25,8 @@ let rescheduleState = {
 };
 
 window.rescheduleSelectedTrainerName = null;
+window.rescheduleSelectedTrainerShift = null;
+window.rescheduleSelectedTrainerShiftData = null;
 
 // ===================================
 // RESCHEDULE MODAL FUNCTIONS
@@ -62,6 +64,8 @@ function resetRescheduleModal() {
     const trainerInput = document.getElementById('rescheduleTrainerInput');
     if (trainerInput) trainerInput.value = '';
     window.rescheduleSelectedTrainerName = null;
+    window.rescheduleSelectedTrainerShift = null;
+    window.rescheduleSelectedTrainerShiftData = null;
 }
 
 // OPEN modal
@@ -719,6 +723,11 @@ function renderRescheduleTrainers(trainers) {
                  data-trainer-id="${trainer.id}"
                  data-trainer-name="${escapedName}"
                  data-trainer-status="${effectiveStatus}"
+                 data-trainer-shift="${trainer.shift || 'Morning'}"
+                 data-shift-start="${trainer.shift_start || ''}"
+                 data-shift-end="${trainer.shift_end || ''}"
+                 data-break-start="${trainer.break_start || ''}"
+                 data-break-end="${trainer.break_end || ''}"
                  onclick="selectRescheduleTrainer(${trainer.id}, '${escapedName}', '${effectiveStatus}')">
                 <span class="trainer-status-badge ${effectiveStatus}">${statusText}</span>
                 <img src="${photoSrc}"
@@ -783,11 +792,30 @@ window.selectRescheduleTrainer = function(trainerId, trainerName, status) {
 
     // Save trainer name for summary rendering (fallback if DOM changes)
     window.rescheduleSelectedTrainerName = trainerName;
-
-    // Visual selection: remove previous selection and set new one
+    
+    // Visual selection: remove previous selection first
     document.querySelectorAll('#rescheduleTrainersGrid .trainer-card').forEach(card => card.classList.remove('selected'));
+    
+    // Get the selected trainer card to extract shift data and set selection
     const selectedCard = document.querySelector(`#rescheduleTrainersGrid .trainer-card[data-trainer-id="${trainerId}"]`);
     if (selectedCard) {
+        // Store shift data attributes if they exist
+        window.rescheduleSelectedTrainerShift = selectedCard.dataset.trainerShift;
+        window.rescheduleSelectedTrainerShiftData = {
+            shift_type: selectedCard.dataset.trainerShift,
+            shift_start: selectedCard.dataset.shiftStart,
+            shift_end: selectedCard.dataset.shiftEnd,
+            break_start: selectedCard.dataset.breakStart,
+            break_end: selectedCard.dataset.breakEnd
+        };
+        
+        console.log('🔍 Selected trainer shift data:', {
+            shift: window.rescheduleSelectedTrainerShift,
+            shift_start: selectedCard.dataset.shiftStart,
+            shift_end: selectedCard.dataset.shiftEnd,
+            full_data: window.rescheduleSelectedTrainerShiftData
+        });
+        
         selectedCard.classList.add('selected');
         // ensure it's scrolled into view in the modal if necessary
         selectedCard.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -844,6 +872,8 @@ function loadRescheduleTrainerAvailability() {
     fetch('api/get_trainer_availability.php', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
+            console.log('🔍 API Response:', data);
+            console.log('🔍 Stored shift before processing:', window.rescheduleSelectedTrainerShift);
 
             if (data.success && data.available_slots && data.available_slots.length > 0) {
                 if (banner) banner.style.display = 'none';
@@ -853,23 +883,46 @@ function loadRescheduleTrainerAvailability() {
                 rescheduleState.startTime = null;
                 rescheduleState.endTime = null;
                 rescheduleState.duration = null;
-                rescheduleState.trainerShift = 'Morning';
+                // Use shift from stored trainer data or fallback to API data
+                rescheduleState.trainerShift = window.rescheduleSelectedTrainerShift || 'Morning';
                 rescheduleState.customShift = null;
                 rescheduleState.availableSlots = data.available_slots;
                 rescheduleState.currentWeekUsageMinutes = data.current_week_usage_minutes || 0;
                 rescheduleState.weeklyLimitHours = data.weekly_limit_hours || 48;
 
+                console.log('🔍 Initial rescheduleState.trainerShift:', rescheduleState.trainerShift);
+
                 if (data.shift_info && data.shift_info.start_time && data.shift_info.end_time) {
-                    state.customShift = {
+                    rescheduleState.customShift = {
                         start: normalizeToHHMM(data.shift_info.start_time) || data.shift_info.start_time,
                         end: normalizeToHHMM(data.shift_info.end_time) || data.shift_info.end_time,
                         breakStart: data.shift_info.break_start ? normalizeToHHMM(data.shift_info.break_start) : null,
                         breakEnd: data.shift_info.break_end ? normalizeToHHMM(data.shift_info.break_end) : null
                     };
+                    // Set trainer shift type from API data (this will override the stored shift if available)
+                    if (data.shift_info.shift_type) {
+                        rescheduleState.trainerShift = capitalizeFirstLetter(data.shift_info.shift_type);
+                    }
+                } else if (window.rescheduleSelectedTrainerShiftData) {
+                    // Fallback to stored shift data if API doesn't provide it
+                    const storedShift = window.rescheduleSelectedTrainerShiftData;
+                    if (storedShift.shift_start && storedShift.shift_end) {
+                        rescheduleState.customShift = {
+                            start: normalizeToHHMM(storedShift.shift_start) || storedShift.shift_start,
+                            end: normalizeToHHMM(storedShift.shift_end) || storedShift.shift_end,
+                            breakStart: storedShift.break_start ? normalizeToHHMM(storedShift.break_start) : null,
+                            breakEnd: storedShift.break_end ? normalizeToHHMM(storedShift.break_end) : null
+                        };
+                    }
                 }
 
-                buildRescheduleAvailabilityTimeline(state, data);
-                setupRescheduleTimePickers(state);
+                console.log('🔍 Final rescheduleState:', {
+                    trainerShift: rescheduleState.trainerShift,
+                    customShift: rescheduleState.customShift
+                });
+
+                buildRescheduleAvailabilityTimeline(rescheduleState, data);
+                setupRescheduleTimePickers(rescheduleState);
             } else {
                 if (banner) {
                     banner.style.display = 'block';

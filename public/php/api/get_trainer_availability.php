@@ -50,7 +50,7 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
 }
 
 // Verify trainer exists
-$trainer_stmt = $conn->prepare("SELECT id, specialization FROM trainers WHERE id = ? AND deleted_at IS NULL");
+$trainer_stmt = $conn->prepare("SELECT id, name, specialization FROM trainers WHERE id = ? AND deleted_at IS NULL");
 $trainer_stmt->bind_param("i", $trainer_id);
 $trainer_stmt->execute();
 $trainer_result = $trainer_stmt->get_result();
@@ -114,7 +114,7 @@ if ($shift_result->num_rows > 0) {
         $shift_times = [
             'morning' => ['07:00:00', '15:00:00'],    // 7am - 3pm
             'afternoon' => ['11:00:00', '19:00:00'],  // 11am - 7pm
-            'night' => ['15:00:00', '22:00:00']       // 3pm - 10pm
+            'night' => ['14:00:00', '22:00:00']       // 2pm - 10pm
         ];
         $shift_start_time = $shift_times[$shift['shift_type']][0];
         $shift_end_time = $shift_times[$shift['shift_type']][1];
@@ -329,6 +329,7 @@ while ($slot_start < $shift_end_dt) {
 echo json_encode([
     'success' => true,
     'trainer_id' => $trainer_id,
+    'trainer_name' => $trainer['name'],
     'date' => $date,
     'day_of_week' => $day_of_week,
     'specialization' => $trainer['specialization'],
