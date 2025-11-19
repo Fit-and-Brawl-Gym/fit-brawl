@@ -1673,12 +1673,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         trainersGrid.innerHTML = trainers.map(trainer => {
+            // Check if booking is for today
+            const today = new Date().toISOString().split('T')[0];
+            const isToday = bookingState.date === today;
+            
             // Check if shift has ended for today
-            const shiftEnded = isTrainerShiftEnded(trainer, bookingState.date);
+            const shiftEnded = isToday && isTrainerShiftEnded(trainer, bookingState.date);
             // Check if shift start time has passed
             const shiftStartPassed = isTrainerShiftStartPassed(trainer, bookingState.date);
-            // Mark unavailable if shift ended OR if shift start time hasn't passed yet (no available times)
-            const effectiveStatus = (shiftEnded || !shiftStartPassed) ? 'unavailable' : trainer.status;
+            // Use API-provided status (includes fully-booked)
+            let effectiveStatus = trainer.status;
+            // Override with unavailable if shift ended OR if shift start time hasn't passed yet (only for same-day)
+            if (shiftEnded || (isToday && !shiftStartPassed)) {
+                effectiveStatus = 'unavailable';
+            }
             
             // Escape HTML to prevent attribute breaking with quotes
             const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
@@ -1701,7 +1709,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 shiftTimeDisplay = `<p class="trainer-shift-time"><i class="fas fa-clock"></i> ${formatShiftTime(shift.start)} - ${formatShiftTime(shift.end)}</p>`;
             }
             
-            const statusText = (shiftEnded || !shiftStartPassed) ? 'Unavailable' : trainer.status;
+            // Display status text
+            let statusText = 'Available';
+            if (shiftEnded) {
+                statusText = 'Shift Ended';
+            } else if (isToday && !shiftStartPassed) {
+                statusText = 'Unavailable';
+            } else if (effectiveStatus === 'fully-booked') {
+                statusText = 'Fully Booked';
+            } else if (effectiveStatus === 'unavailable') {
+                statusText = 'Unavailable';
+            }
             
             return `
             <div class="trainer-card ${effectiveStatus}"
@@ -2415,6 +2433,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function prevStep() {
         if (bookingState.currentStep > 1) {
+            // Clear duration when going back from step 4 (time selection)
+            if (bookingState.currentStep === 4) {
+                // Clear selected times and duration
+                bookingState.startTime = null;
+                bookingState.endTime = null;
+                bookingState.durationMinutes = null;
+                
+                // Reset duration using the module's reset function
+                if (typeof resetDurationSelection === 'function') {
+                    resetDurationSelection();
+                }
+                
+                // Clear total duration display
+                const totalDurationDisplay = document.getElementById('totalDuration');
+                if (totalDurationDisplay) {
+                    totalDurationDisplay.textContent = '--';
+                }
+                
+                // Clear any selected time slots in UI
+                document.querySelectorAll('.time-slot.selected').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+            }
+            
             bookingState.currentStep--;
             updateWizardStep();
         }

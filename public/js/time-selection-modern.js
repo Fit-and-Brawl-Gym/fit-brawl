@@ -3,8 +3,27 @@
  * Implements professional scheduling interface similar to Calendly/Acuity
  */
 
-// Global variables for time selection
-let selectedDurationMinutes = 90; // Default 1.5 hours (recommended)
+// Global variables for time selection (exposed to window for cross-module access)
+window.selectedDurationMinutes = 90; // Default 1.5 hours (recommended)
+let selectedDurationMinutes = window.selectedDurationMinutes;
+
+/**
+ * Reset duration to default value
+ */
+function resetDurationSelection() {
+    selectedDurationMinutes = 90;
+    window.selectedDurationMinutes = 90;
+    
+    // Reset button states
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.duration === '90') {
+            btn.classList.add('active');
+        }
+    });
+    
+    updateDurationBadge();
+}
 
 /**
  * Initialize the modern time selection interface
@@ -13,6 +32,11 @@ function initializeModernTimeSelection() {
     console.log('Initializing modern time selection interface');
     
     const state = window.bookingState;
+    
+    // Reset duration if no time has been selected yet
+    if (!state.startTime) {
+        resetDurationSelection();
+    }
     
     // Setup duration selector buttons
     setupDurationSelector(state);
@@ -49,6 +73,7 @@ function setupDurationSelector(bookingStateRef) {
                 showCustomDurationInput(state);
             } else {
                 selectedDurationMinutes = parseInt(duration);
+                window.selectedDurationMinutes = selectedDurationMinutes;
                 updateDurationBadge();
                 generateModernTimeSlots(state);
             }
@@ -66,6 +91,7 @@ function showCustomDurationInput(bookingStateRef) {
         const minutes = parseInt(customDuration);
         if (minutes >= 30 && minutes <= 480) {
             selectedDurationMinutes = minutes;
+            window.selectedDurationMinutes = selectedDurationMinutes;
             updateDurationBadge();
             generateModernTimeSlots(state);
             
