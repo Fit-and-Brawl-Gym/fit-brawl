@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const helpfulCount = item.helpful_count || 0;
             const notHelpfulCount = item.not_helpful_count || 0;
             const userVote = item.user_vote || null;
+            const isTrainer = typeof USER_ROLE !== 'undefined' && USER_ROLE === 'trainer';
 
             const votingHTML = `
                 <div class="feedback-meta">
@@ -169,7 +170,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         <button class="vote-btn ${userVote === 'helpful' ? 'active' : ''}"
                                 data-feedback-id="${item.id}"
                                 data-vote-type="helpful"
-                                title="Mark as helpful">
+                                title="${isTrainer ? 'View only' : 'Mark as helpful'}"
+                                ${isTrainer ? 'disabled' : ''}>
                             <i class="fas fa-thumbs-up"></i>
                             Helpful
                             <span class="vote-count">${helpfulCount}</span>
@@ -177,7 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         <button class="vote-btn ${userVote === 'not_helpful' ? 'active' : ''}"
                                 data-feedback-id="${item.id}"
                                 data-vote-type="not_helpful"
-                                title="Mark as not helpful">
+                                title="${isTrainer ? 'View only' : 'Mark as not helpful'}"
+                                ${isTrainer ? 'disabled' : ''}>
                             <i class="fas fa-thumbs-down"></i>
                             <span class="vote-count">${notHelpfulCount}</span>
                         </button>
