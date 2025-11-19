@@ -76,6 +76,15 @@ try {
             $stmt->bind_param("i", $id);
             break;
 
+        case 'restore':
+            if (!$hasArchived) {
+                throw new Exception('Archive feature is not available. Please run the latest database migration.');
+            }
+            $sql = "UPDATE contact SET archived = 0 WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            break;
+
         case 'delete':
             // Soft delete
             $sql = "UPDATE contact SET deleted_at = NOW() WHERE id = ?";

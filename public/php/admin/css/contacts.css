@@ -70,6 +70,11 @@
     border-left: 3px solid var(--accent-color);
 }
 
+.contact-row.archived {
+    border-left: 3px dashed var(--admin-border-light);
+    opacity: 0.9;
+}
+
 /* Contact Header (Collapsed View) */
 .contact-header {
     display: grid;
@@ -142,6 +147,11 @@
 .contact-status-badge.read {
     background: rgba(0, 128, 0, 0.15);
     color: #00aa00;
+}
+
+.contact-status-badge.archived {
+    background: rgba(108, 117, 125, 0.15);
+    color: #6c757d;
 }
 
 /* Contact Details (Expanded View) */
@@ -290,6 +300,16 @@
 
 .btn-delete:hover {
     background: rgba(220, 53, 69, 0.2);
+}
+
+.btn-restore {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.btn-restore:hover {
+    background: rgba(0, 123, 255, 0.2);
 }
 
 /* Reply Modal */
@@ -489,6 +509,56 @@
 .unread-badge {
     color: var(--accent-color);
     font-weight: 700;
+}
+
+.archived-badge {
+    color: #6c757d;
+    font-weight: 700;
+}
+
+.stat-divider {
+    color: var(--text-muted);
+    margin: 0 0.5rem;
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 10000;
+}
+
+.toast {
+    min-width: 260px;
+    max-width: 360px;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast-success {
+    background: #198754;
+}
+
+.toast-error {
+    background: #dc3545;
+}
+
+.toast-info {
+    background: #0d6efd;
 }
 
 /* Responsive Design */

@@ -224,7 +224,7 @@ $stats_query = "SELECT
                 COUNT(DISTINCT CASE WHEN ur.booking_date = CURDATE() THEN ur.id END) as sessions_today,
                 COUNT(DISTINCT CASE WHEN ur.booking_date > CURDATE() THEN ur.id END) as upcoming_sessions
                 FROM trainers t
-                LEFT JOIN user_reservations ur ON t.id = ur.trainer_id 
+                LEFT JOIN user_reservations ur ON t.id = ur.trainer_id
                     AND ur.booking_status IN ('confirmed', 'completed')
                 WHERE t.deleted_at IS NULL";
 $stats_result = $conn->query($stats_query);
@@ -236,7 +236,7 @@ if (!$stats_result) {
 $stats = $stats_result->fetch_assoc();
 
 // Get count of trainers by specialization
-$spec_query = "SELECT 
+$spec_query = "SELECT
                 SUM(CASE WHEN specialization = 'Boxing' THEN 1 ELSE 0 END) as boxing_count,
                 SUM(CASE WHEN specialization = 'MMA' THEN 1 ELSE 0 END) as mma_count,
                 SUM(CASE WHEN specialization = 'Muay Thai' THEN 1 ELSE 0 END) as muay_thai_count,

@@ -48,6 +48,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 <span class="stat-divider">|</span>
                 <span class="stat-label">Unread:</span>
                 <strong id="unreadCount" class="unread-badge">0</strong>
+                <span class="stat-divider">|</span>
+                <span class="stat-label">Archived:</span>
+                <strong id="archivedCount" class="archived-badge">0</strong>
             </div>
         </div>
 
@@ -56,6 +59,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             <button class="tab active" data-filter="all">All</button>
             <button class="tab" data-filter="unread">Unread</button>
             <button class="tab" data-filter="read">Read</button>
+            <button class="tab" data-filter="archived">Archived</button>
         </div>
 
         <!-- Contacts List -->
@@ -121,6 +125,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/contacts.js"></script>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 </body>
 
 </html>

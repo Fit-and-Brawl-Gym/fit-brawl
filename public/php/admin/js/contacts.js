@@ -1,74 +1,76 @@
-let allContacts = [];
+let activeContacts = [];
+let archivedContacts = [];
 let currentFilter = 'all';
 let refreshInterval;
+let searchDebounce;
 
 const csrfMetaTag = document.querySelector('meta[name="csrf-token"]');
 const csrfToken = csrfMetaTag ? csrfMetaTag.getAttribute('content') : '';
 const csrfHeaders = csrfToken ? { 'X-CSRF-Token': csrfToken } : {};
+const toastContainer = document.getElementById('toastContainer');
 
-// Load contacts on page load
-document.addEventListener('DOMContentLoaded', function () {
-    loadContacts();
+document.addEventListener('DOMContentLoaded', () => {
+    loadContacts(false);
     setupEventListeners();
     startAutoRefresh();
 });
 
-// Setup event listeners
 function setupEventListeners() {
-    // Tab clicks
     document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function () {
+        tab.addEventListener('click', () => {
+            if (tab.classList.contains('active')) return;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            currentFilter = this.dataset.filter;
-            
-            // Remember expanded contacts before filtering
-            const expandedIds = getExpandedContactIds();
+            tab.classList.add('active');
+            currentFilter = tab.dataset.filter;
             filterAndRenderContacts();
-            // Restore expanded state
-            restoreExpandedContacts(expandedIds);
         });
     });
 
-    // Search input
-    document.getElementById('searchInput').addEventListener('input', function (e) {
-        // Remember expanded contacts before filtering
-        const expandedIds = getExpandedContactIds();
-        filterAndRenderContacts(e.target.value);
-        // Restore expanded state
-        restoreExpandedContacts(expandedIds);
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(() => filterAndRenderContacts(), 250);
+        });
+    }
 
-    // Reply form submission
-    document.getElementById('replyForm').addEventListener('submit', handleReplySubmit);
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) {
+        replyForm.addEventListener('submit', handleReplySubmit);
+    }
 }
 
-// Load contacts from API
-async function loadContacts() {
+async function loadContacts(preserveExpanded = true) {
+    const expandedIds = preserveExpanded ? getExpandedContactIds() : [];
+
     try {
-        const response = await fetch('api/get_contacts.php', {
-            headers: {
-                ...csrfHeaders
-            }
-        });
+        const response = await fetch('api/get_contacts.php', { headers: { ...csrfHeaders } });
         const text = await response.text();
-        console.log('Raw response:', text);
 
         let data;
         try {
             data = JSON.parse(text);
         } catch (e) {
-            console.error('JSON parse error:', e);
-            throw new Error('Server returned invalid JSON: ' + text.substring(0, 100));
+            throw new Error('Server returned invalid JSON: ' + text.substring(0, 120));
         }
 
         if (!data.success) {
-            throw new Error(data.message || 'Failed to load contacts');
+            throw new Error(data.message || 'Failed to load contacts.');
         }
 
-        allContacts = data.contacts;
-        updateStats();
-        renderContacts(allContacts);
+        const normalize = (contact) => ({
+            ...contact,
+            id: Number(contact.id),
+            status: contact.status && contact.status !== '' ? contact.status : 'unread',
+            phone_number: contact.phone_number || ''
+        });
+
+        activeContacts = (data.active_contacts ?? data.contacts ?? []).map(normalize);
+        archivedContacts = (data.archived_contacts ?? []).map(normalize);
+
+        updateStats(data);
+        filterAndRenderContacts();
+        restoreExpandedContacts(expandedIds);
 
     } catch (error) {
         console.error('Error loading contacts:', error);
@@ -76,56 +78,107 @@ async function loadContacts() {
     }
 }
 
-// Filter and render contacts
-function filterAndRenderContacts(searchTerm = '') {
-    let filtered = allContacts;
+function filterAndRenderContacts(explicitSearchTerm) {
+    const expandedIds = getExpandedContactIds();
+    const searchTerm = explicitSearchTerm !== undefined ? explicitSearchTerm : getSearchTerm();
+    const isArchivedView = currentFilter === 'archived';
 
-    // Filter by status
-    if (currentFilter !== 'all') {
-        filtered = filtered.filter(c => c.status === currentFilter);
+    let sourceList = isArchivedView ? archivedContacts : activeContacts;
+    let filtered = [...sourceList];
+
+    if (!isArchivedView && currentFilter !== 'all') {
+        filtered = filtered.filter(contact => contact.status === currentFilter);
     }
 
-    // Filter by search term
     if (searchTerm) {
-        const search = searchTerm.toLowerCase();
-        filtered = filtered.filter(c =>
-            (c.first_name + ' ' + c.last_name).toLowerCase().includes(search) ||
-            c.email.toLowerCase().includes(search)
-        );
+        const query = searchTerm.toLowerCase();
+        filtered = filtered.filter(contact => (
+            `${contact.first_name} ${contact.last_name}`.toLowerCase().includes(query) ||
+            contact.email.toLowerCase().includes(query)
+        ));
     }
 
-    renderContacts(filtered);
+    renderContacts(filtered, { isArchivedView });
+    restoreExpandedContacts(expandedIds);
 }
 
-// Render contacts list
-function renderContacts(contacts) {
+function renderContacts(contacts, options = {}) {
+    const { isArchivedView = false } = options;
     const container = document.getElementById('contactsList');
+
+    if (!container) return;
 
     if (contacts.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <i class="fa-solid fa-envelope-open-text"></i>
-                <h3>No Contacts Found</h3>
-                <p>No contact inquiries match your current filter</p>
+                <h3>${isArchivedView ? 'No Archived Contacts' : 'No Contacts Found'}</h3>
+                <p>${isArchivedView ? 'Archived messages will appear here.' : 'No contact inquiries match your current filter.'}</p>
             </div>
         `;
         return;
     }
 
-    container.innerHTML = contacts.map(contact => createContactRow(contact)).join('');
+    container.innerHTML = contacts
+        .map(contact => createContactRow(contact, { isArchivedView }))
+        .join('');
 }
 
-// Create individual contact row
-function createContactRow(contact) {
-    const fullName = `${contact.first_name} ${contact.last_name}`;
+function createContactRow(contact, options = {}) {
+    const { isArchivedView = false } = options;
+    const fullName = `${contact.first_name} ${contact.last_name}`.trim();
     const messagePreview = contact.message.length > 80
-        ? contact.message.substring(0, 80) + '...'
+        ? `${contact.message.substring(0, 80)}...`
         : contact.message;
     const dateFormatted = formatDate(contact.date_submitted);
-    const unreadClass = contact.status === 'unread' ? 'unread' : '';
+    const rowClasses = ['contact-row'];
+    if (contact.status === 'unread' && !isArchivedView) rowClasses.push('unread');
+    if (isArchivedView) rowClasses.push('archived');
+
+    const badgeClass = isArchivedView ? 'archived' : contact.status;
+    const badgeLabel = isArchivedView
+        ? `Archived${contact.status ? ' • ' + contact.status : ''}`
+        : contact.status;
+
+    const phoneDisplay = contact.phone_number
+        ? `<a href="tel:${contact.phone_number}">${escapeHtml(contact.phone_number)}</a>`
+        : 'N/A';
+
+    const actionsHtml = isArchivedView
+        ? `
+            <button class="btn-action btn-restore" onclick="restoreContact(${contact.id})">
+                <i class="fa-solid fa-rotate-left"></i>
+                Restore
+            </button>
+            <button class="btn-action btn-delete" onclick="deleteContact(${contact.id})">
+                <i class="fa-solid fa-trash"></i>
+                Delete
+            </button>
+        `
+        : `
+            <button class="btn-action btn-reply" onclick="openReplyModal(${contact.id}, '${escapeHtml(contact.email)}', '${escapeHtml(fullName)}')">
+                <i class="fa-solid fa-reply"></i>
+                Reply
+            </button>
+            ${contact.status === 'unread'
+                ? `<button class="btn-action btn-mark-read" onclick="markAsRead(${contact.id})">
+                        <i class="fa-solid fa-check"></i> Mark as Read
+                   </button>`
+                : `<button class="btn-action btn-mark-unread" onclick="markAsUnread(${contact.id})">
+                        <i class="fa-solid fa-envelope"></i> Mark as Unread
+                   </button>`}
+            <button class="btn-action btn-archive" onclick="archiveContact(${contact.id})">
+                <i class="fa-solid fa-box-archive"></i>
+                Archive
+            </button>
+            <button class="btn-action btn-delete" onclick="deleteContact(${contact.id})">
+                <i class="fa-solid fa-trash"></i>
+                Delete
+            </button>
+        `;
 
     return `
-        <div class="contact-row ${unreadClass}" data-id="${contact.id}">
+        <div class="${rowClasses.join(' ')}" data-id="${contact.id}">
             <div class="contact-header" onclick="toggleContactDetails(${contact.id})">
                 <div class="expand-icon">
                     <i class="fa-solid fa-chevron-right"></i>
@@ -136,229 +189,176 @@ function createContactRow(contact) {
                     <div class="contact-message-preview">${escapeHtml(messagePreview)}</div>
                 </div>
                 <div class="contact-date">${dateFormatted}</div>
-                <div class="contact-status-badge ${contact.status}">
-                    ${contact.status}
+                <div class="contact-status-badge ${badgeClass}">
+                    ${escapeHtml(badgeLabel)}
                 </div>
             </div>
             <div class="contact-details">
                 <div class="details-grid">
                     <div class="detail-item">
                         <span class="detail-label">Email</span>
-                        <span class="detail-value">
-                            <a href="mailto:${contact.email}">${escapeHtml(contact.email)}</a>
-                        </span>
+                        <span class="detail-value"><a href="mailto:${contact.email}">${escapeHtml(contact.email)}</a></span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Phone</span>
-                        <span class="detail-value">
-                            <a href="tel:${contact.phone_number}">${escapeHtml(contact.phone_number || 'N/A')}</a>
-                        </span>
+                        <span class="detail-value">${phoneDisplay}</span>
                     </div>
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Full Message</span>
                     <div class="full-message">${escapeHtml(contact.message)}</div>
                 </div>
-                <div class="details-actions">
-                    <button class="btn-action btn-reply" onclick="openReplyModal(${contact.id}, '${escapeHtml(contact.email)}', '${escapeHtml(fullName)}')">
-                        <i class="fa-solid fa-reply"></i>
-                        Reply
-                    </button>
-                    ${contact.status === 'unread' ? `
-                        <button class="btn-action btn-mark-read" onclick="markAsRead(${contact.id})">
-                            <i class="fa-solid fa-check"></i>
-                            Mark as Read
-                        </button>
-                    ` : `
-                        <button class="btn-action btn-mark-unread" onclick="markAsUnread(${contact.id})">
-                            <i class="fa-solid fa-envelope"></i>
-                            Mark as Unread
-                        </button>
-                    `}
-                    <button class="btn-action btn-archive" onclick="archiveContact(${contact.id})">
-                        <i class="fa-solid fa-box-archive"></i>
-                        Archive
-                    </button>
-                    <button class="btn-action btn-delete" onclick="deleteContact(${contact.id})">
-                        <i class="fa-solid fa-trash"></i>
-                        Delete
-                    </button>
-                </div>
+                <div class="details-actions">${actionsHtml}</div>
             </div>
         </div>
     `;
 }
 
-// Toggle contact details
 function toggleContactDetails(id) {
     const row = document.querySelector(`.contact-row[data-id="${id}"]`);
+    if (!row) return;
     row.classList.toggle('expanded');
 }
 
-// Get IDs of currently expanded contacts
 function getExpandedContactIds() {
-    const expandedRows = document.querySelectorAll('.contact-row.expanded');
-    return Array.from(expandedRows).map(row => parseInt(row.dataset.id));
+    return Array.from(document.querySelectorAll('.contact-row.expanded'))
+        .map(row => Number(row.dataset.id));
 }
 
-// Restore expanded state for contacts
 function restoreExpandedContacts(ids) {
     ids.forEach(id => {
         const row = document.querySelector(`.contact-row[data-id="${id}"]`);
-        if (row) {
-            row.classList.add('expanded');
-        }
+        if (row) row.classList.add('expanded');
     });
 }
 
-// Update statistics
-function updateStats() {
-    const unreadCount = allContacts.filter(c => c.status === 'unread').length;
-    document.getElementById('totalContacts').textContent = allContacts.length;
-    document.getElementById('unreadCount').textContent = unreadCount;
+function getSearchTerm() {
+    const input = document.getElementById('searchInput');
+    return input ? input.value.trim() : '';
 }
 
-// Mark as read
+function updateStats(serverData = {}) {
+    const totalEl = document.getElementById('totalContacts');
+    const unreadEl = document.getElementById('unreadCount');
+    const archivedEl = document.getElementById('archivedCount');
+
+    if (totalEl) totalEl.textContent = activeContacts.length;
+    if (unreadEl) unreadEl.textContent = serverData.unread_total ?? activeContacts.filter(c => c.status === 'unread').length;
+    if (archivedEl) archivedEl.textContent = archivedContacts.length;
+}
+
 async function markAsRead(id) {
-    try {
-        const response = await fetch('api/contact_actions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...csrfHeaders
-            },
-            body: JSON.stringify({ action: 'mark_read', id })
-        });
-
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to mark as read');
-        }
-
-        // Update local state
-        const contact = allContacts.find(c => c.id === id);
-        if (contact) contact.status = 'read';
-
-        // Remember expanded contacts before re-render
-        const expandedIds = getExpandedContactIds();
-        
-        updateStats();
-        filterAndRenderContacts(document.getElementById('searchInput').value);
-        
-        // Restore expanded state
-        restoreExpandedContacts(expandedIds);
-        
-        showToast('Contact marked as read', 'success');
-
-    } catch (error) {
-        console.error('Error:', error);
-        showToast('Failed to mark as read: ' + error.message, 'error');
-    }
+    await handleStatusChange('mark_read', id, 'read', 'Contact marked as read');
 }
 
-// Mark as unread
 async function markAsUnread(id) {
+    await handleStatusChange('mark_unread', id, 'unread', 'Contact marked as unread');
+}
+
+async function handleStatusChange(action, id, newStatus, successMessage) {
     try {
-        const response = await fetch('api/contact_actions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...csrfHeaders
-            },
-            body: JSON.stringify({ action: 'mark_unread', id })
-        });
-
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to mark as unread');
+        await performContactAction(action, id);
+        const contactEntry = findContactEntry(id);
+        if (contactEntry) {
+            contactEntry.list[contactEntry.index].status = newStatus;
         }
-
-        // Update local state
-        const contact = allContacts.find(c => c.id === id);
-        if (contact) contact.status = 'unread';
-
-        // Remember expanded contacts before re-render
-        const expandedIds = getExpandedContactIds();
-        
+        filterAndRenderContacts();
         updateStats();
-        filterAndRenderContacts(document.getElementById('searchInput').value);
-        
-        // Restore expanded state
-        restoreExpandedContacts(expandedIds);
-        
-        showToast('Contact marked as unread', 'success');
-
+        showToast(successMessage, 'success');
     } catch (error) {
-        console.error('Error:', error);
-        showToast('Failed to mark as unread: ' + error.message, 'error');
+        console.error(error);
+        showToast(error.message, 'error');
     }
 }
 
-// Archive contact
 async function archiveContact(id) {
-    if (!confirm('Are you sure you want to archive this contact?')) return;
-
     try {
-        const response = await fetch('api/contact_actions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...csrfHeaders
-            },
-            body: JSON.stringify({ action: 'archive', id })
-        });
-
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to archive contact');
-        }
-
-        // Remove from local state
-        allContacts = allContacts.filter(c => c.id !== id);
-
+        await performContactAction('archive', id);
+        moveContactBetweenLists(id, true);
+        filterAndRenderContacts();
         updateStats();
-        filterAndRenderContacts(document.getElementById('searchInput').value);
-        showToast('Contact archived successfully', 'success');
-
+        showToast('Contact archived.', 'success');
     } catch (error) {
-        console.error('Error:', error);
+        console.error(error);
         showToast('Failed to archive contact: ' + error.message, 'error');
     }
 }
 
-// Delete contact
+async function restoreContact(id) {
+    try {
+        await performContactAction('restore', id);
+        moveContactBetweenLists(id, false);
+        filterAndRenderContacts();
+        updateStats();
+        showToast('Contact restored.', 'success');
+    } catch (error) {
+        console.error(error);
+        showToast('Failed to restore contact: ' + error.message, 'error');
+    }
+}
+
 async function deleteContact(id) {
-    if (!confirm('Are you sure you want to delete this contact? This action cannot be undone.')) return;
+    if (!confirm('Delete this contact permanently?')) return;
 
     try {
-        const response = await fetch('api/contact_actions.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...csrfHeaders
-            },
-            body: JSON.stringify({ action: 'delete', id })
-        });
-
-        const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to delete contact');
-        }
-
-        // Remove from local state
-        allContacts = allContacts.filter(c => c.id !== id);
-
+        await performContactAction('delete', id);
+        extractContact(id);
+        filterAndRenderContacts();
         updateStats();
-        filterAndRenderContacts(document.getElementById('searchInput').value);
-        showToast('Contact deleted successfully', 'success');
-
+        showToast('Contact deleted.', 'success');
     } catch (error) {
-        console.error('Error:', error);
+        console.error(error);
         showToast('Failed to delete contact: ' + error.message, 'error');
     }
 }
 
-// Open reply modal
+function moveContactBetweenLists(id, toArchive) {
+    const extracted = extractContact(id);
+    if (!extracted) return;
+    if (toArchive) {
+        archivedContacts.unshift(extracted.contact);
+    } else {
+        activeContacts.unshift(extracted.contact);
+    }
+}
+
+function extractContact(id) {
+    const entry = findContactEntry(id);
+    if (!entry) return null;
+    const [contact] = entry.list.splice(entry.index, 1);
+    return { contact, fromArchived: entry.isArchived };
+}
+
+function findContactEntry(id) {
+    const numericId = Number(id);
+    let index = activeContacts.findIndex(c => c.id === numericId);
+    if (index !== -1) {
+        return { list: activeContacts, index, isArchived: false };
+    }
+    index = archivedContacts.findIndex(c => c.id === numericId);
+    if (index !== -1) {
+        return { list: archivedContacts, index, isArchived: true };
+    }
+    return null;
+}
+
+async function performContactAction(action, id) {
+    const response = await fetch('api/contact_actions.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...csrfHeaders
+        },
+        body: JSON.stringify({ action, id })
+    });
+
+    const data = await response.json();
+    if (!data.success) {
+        throw new Error(data.message || 'Action failed.');
+    }
+    return data;
+}
+
 function openReplyModal(contactId, email, name) {
     document.getElementById('replyContactId').value = contactId;
     document.getElementById('replyTo').value = email;
@@ -367,16 +367,15 @@ function openReplyModal(contactId, email, name) {
     document.getElementById('replyModal').classList.add('active');
 }
 
-// Close reply modal
 function closeReplyModal() {
     const modal = document.getElementById('replyModal');
     const form = document.getElementById('replyForm');
-    const submitButton = form.querySelector('button[type="submit"]');
+    if (!modal || !form) return;
 
     modal.classList.remove('active');
     form.reset();
 
-    // Reset submit button state
+    const submitButton = form.querySelector('button[type="submit"]');
     if (submitButton) {
         submitButton.disabled = false;
         submitButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Reply';
@@ -385,37 +384,27 @@ function closeReplyModal() {
     }
 }
 
-// Handle reply form submission
 async function handleReplySubmit(e) {
     e.preventDefault();
 
-    // Get the submit button
     const submitButton = e.target.querySelector('button[type="submit"]');
     const originalButtonHtml = submitButton.innerHTML;
-
-    // Prevent multiple submissions
-    if (submitButton.disabled) {
-        return;
-    }
+    if (submitButton.disabled) return;
 
     const contactId = document.getElementById('replyContactId').value;
     const to = document.getElementById('replyTo').value;
     const subject = document.getElementById('replySubject').value;
     const message = document.getElementById('replyMessage').value;
     const sendCopy = document.getElementById('includeCopy').checked;
-
-    // Get original message for context
-    const contact = allContacts.find(c => c.id == contactId);
-    const originalMessage = contact ? contact.message : '';
+    const contactEntry = findContactEntry(Number(contactId));
+    const originalMessage = contactEntry ? contactEntry.list[contactEntry.index].message : '';
 
     try {
-        // Disable button and show loading state
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
         submitButton.style.cursor = 'not-allowed';
         submitButton.style.opacity = '0.6';
 
-        // Add timeout to fetch request (30 seconds for email sending)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
 
@@ -437,49 +426,32 @@ async function handleReplySubmit(e) {
                 }),
                 signal: controller.signal
             });
-        } catch (fetchError) {
+        } finally {
             clearTimeout(timeoutId);
-            if (fetchError.name === 'AbortError') {
-                throw new Error('Request timed out. The email might still be sending. Please check your sent emails.');
-            }
-            throw new Error('Network error: Unable to connect to server. Please check your connection and try again.');
         }
 
-        clearTimeout(timeoutId);
-
-        // Check if response is OK
         if (!response.ok) {
-            throw new Error(`Server error (${response.status}): ${response.statusText}`);
+            throw new Error(`Server error (${response.status})`);
         }
 
-        // Get the response text first to debug JSON parsing issues
         const text = await response.text();
-        console.log('Reply response:', text);
-
         let data;
         try {
             data = JSON.parse(text);
-        } catch (e) {
-            console.error('JSON parse error:', e);
-            console.error('Raw response:', text);
-            throw new Error('Invalid server response. Please check the browser console for details.');
+        } catch (error) {
+            throw new Error('Invalid server response.');
         }
 
         if (!data.success) {
-            throw new Error(data.message || 'Failed to send reply');
+            throw new Error(data.message || 'Failed to send reply.');
         }
 
         closeReplyModal();
-        showToast('Reply sent successfully!', 'success');
-
-        // Mark as read automatically after reply
-        await markAsRead(parseInt(contactId));
+        showToast('Reply sent successfully.', 'success');
+        await markAsRead(Number(contactId));
 
     } catch (error) {
-        console.error('Error sending reply:', error);
         showToast('Failed to send reply: ' + error.message, 'error');
-
-        // Re-enable button on error
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonHtml;
         submitButton.style.cursor = 'pointer';
@@ -487,17 +459,14 @@ async function handleReplySubmit(e) {
     }
 }
 
-// Auto-refresh contacts every 30 seconds
 function startAutoRefresh() {
-    refreshInterval = setInterval(() => {
-        loadContacts();
-    }, 30000); // 30 seconds
+    refreshInterval = setInterval(() => loadContacts(), 30000);
 }
 
-// Helper functions
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
+    if (isNaN(date)) return dateString;
     return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -515,7 +484,9 @@ function escapeHtml(text) {
 }
 
 function showError(message) {
-    document.getElementById('contactsList').innerHTML = `
+    const container = document.getElementById('contactsList');
+    if (!container) return;
+    container.innerHTML = `
         <div class="empty-state">
             <i class="fa-solid fa-exclamation-triangle" style="color: #e74c3c;"></i>
             <h3>Error</h3>
@@ -525,6 +496,20 @@ function showError(message) {
 }
 
 function showToast(message, type = 'info') {
-    // Simple alert for now - can be replaced with a toast library
-    alert(message);
+    if (!toastContainer) {
+        alert(message);
+        return;
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('visible'));
+
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 250);
+    }, 3500);
 }

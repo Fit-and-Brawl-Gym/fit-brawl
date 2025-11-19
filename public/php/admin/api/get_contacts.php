@@ -21,49 +21,70 @@ $adminId = $user['user_id'];
 ApiSecurityMiddleware::applyRateLimit($conn, 'admin_get_contacts:' . $adminId, 30, 60);
 
 try {
-    // Check if status column exists (might not have run migration yet)
+    // Detect status and archived columns (for backward compatibility)
     $columns = $conn->query("SHOW COLUMNS FROM contact");
     $hasStatus = false;
+    $hasArchived = false;
     while ($col = $columns->fetch_assoc()) {
         if ($col['Field'] === 'status') {
             $hasStatus = true;
-            break;
+        }
+        if ($col['Field'] === 'archived') {
+            $hasArchived = true;
         }
     }
 
-    if ($hasStatus) {
-        // Get non-archived contacts with status
-        $sql = "SELECT id, first_name, last_name, email, phone_number, message, status, date_submitted
-                FROM contact
-                WHERE (archived = 0 OR archived IS NULL)
-                AND deleted_at IS NULL
-                ORDER BY
-                    CASE WHEN status = 'unread' THEN 0 ELSE 1 END,
-                    date_submitted DESC";
-    } else {
-        // Fallback if status column doesn't exist yet
-        $sql = "SELECT id, first_name, last_name, email, phone_number, message,
-                'unread' as status, date_submitted
-                FROM contact
-                ORDER BY date_submitted DESC";
+    $statusSelect = $hasStatus ? 'status' : "'unread' AS status";
+    $orderBy = $hasStatus
+        ? "CASE WHEN status = 'unread' THEN 0 ELSE 1 END, date_submitted DESC"
+        : "date_submitted DESC";
+
+    $activeSql = "SELECT id, first_name, last_name, email, phone_number, message, {$statusSelect}, date_submitted
+                  FROM contact
+                  WHERE " . ($hasArchived ? '(archived = 0 OR archived IS NULL) AND ' : '') . "deleted_at IS NULL
+                  ORDER BY {$orderBy}";
+
+    $activeResult = $conn->query($activeSql);
+    if (!$activeResult) {
+        throw new Exception('Active contacts query failed: ' . $conn->error);
     }
 
-    $result = $conn->query($sql);
-
-    if (!$result) {
-        throw new Exception('Query failed: ' . $conn->error);
+    $activeContacts = [];
+    while ($row = $activeResult->fetch_assoc()) {
+        $activeContacts[] = $row;
     }
 
-    $contacts = [];
-    while ($row = $result->fetch_assoc()) {
-        $contacts[] = $row;
+    $archivedContacts = [];
+    if ($hasArchived) {
+        $archivedSql = "SELECT id, first_name, last_name, email, phone_number, message, {$statusSelect}, date_submitted
+                        FROM contact
+                        WHERE archived = 1 AND deleted_at IS NULL
+                        ORDER BY date_submitted DESC";
+
+        $archivedResult = $conn->query($archivedSql);
+        if (!$archivedResult) {
+            throw new Exception('Archived contacts query failed: ' . $conn->error);
+        }
+
+        while ($row = $archivedResult->fetch_assoc()) {
+            $archivedContacts[] = $row;
+        }
     }
+
+    $unreadCount = $hasStatus
+        ? array_reduce($activeContacts, fn($carry, $contact) => $carry + ($contact['status'] === 'unread' ? 1 : 0), 0)
+        : count($activeContacts);
 
     ApiSecurityMiddleware::sendJsonResponse([
         'success' => true,
-        'contacts' => $contacts,
-        'total' => count($contacts),
-        'has_status_column' => $hasStatus
+        'contacts' => $activeContacts, // backward compatibility
+        'active_contacts' => $activeContacts,
+        'archived_contacts' => $archivedContacts,
+        'total_active' => count($activeContacts),
+        'total_archived' => count($archivedContacts),
+        'unread_total' => $unreadCount,
+        'has_status_column' => $hasStatus,
+        'has_archived_column' => $hasArchived
     ], 200);
 
 } catch (Exception $e) {
