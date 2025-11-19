@@ -350,7 +350,7 @@ function renderFeedbackTable(feedbacks) {
 
     tbody.innerHTML = feedbacks.map(feedback => `
         <tr>
-            <td><strong>${escapeHtml(feedback.name || 'Anonymous')}</strong></td>
+            <td><strong>${escapeHtml(feedback.username || 'Anonymous')}</strong></td>
             <td class="table-message" title="${escapeHtml(feedback.message || 'No message')}">${escapeHtml(feedback.message || 'No message')}</td>
             <td>
                 <span class="table-rating">${'⭐'.repeat(feedback.rating || 0)}</span>
@@ -403,7 +403,8 @@ document.querySelectorAll('.view-btn').forEach(btn => {
             const currentFilter = document.getElementById('dateFilter').value;
             fetch('api/get_feedback.php')
                 .then(res => res.json())
-                .then(feedbacks => {
+                .then(data => {
+                    const feedbacks = data.feedbacks || [];
                     const filtered = filterByDate(feedbacks, currentFilter);
                     renderFeedbackTable(filtered);
                 });
@@ -415,7 +416,8 @@ document.querySelectorAll('.view-btn').forEach(btn => {
             const currentFilter = document.getElementById('dateFilter').value;
             fetch('api/get_feedback.php')
                 .then(res => res.json())
-                .then(feedbacks => {
+                .then(data => {
+                    const feedbacks = data.feedbacks || [];
                     const filtered = filterByDate(feedbacks, currentFilter);
                     updateStats(feedbacks);
                     renderFeedback(filtered);
@@ -433,7 +435,8 @@ document.getElementById('dateFilter').addEventListener('change', function() {
     if (tableView.classList.contains('active')) {
         fetch('api/get_feedback.php')
             .then(res => res.json())
-            .then(feedbacks => {
+            .then(data => {
+                const feedbacks = data.feedbacks || [];
                 const filtered = filterByDate(feedbacks, this.value);
                 renderFeedbackTable(filtered);
             });
