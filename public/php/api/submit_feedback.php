@@ -47,6 +47,10 @@ try {
         'email' => [
             'type' => 'email',
             'required' => false
+        ],
+        'post_anonymous' => [
+            'type' => 'string',
+            'required' => false
         ]
     ], $data);
 
@@ -61,34 +65,55 @@ try {
     $validatedData = $validation['data'];
     $message = $validatedData['message'];
 
+    // Debug logging
+    error_log("Validated Data: " . print_r($validatedData, true));
+    error_log("post_anonymous value: " . ($validatedData['post_anonymous'] ?? 'NOT SET'));
+    error_log("post_anonymous type: " . gettype($validatedData['post_anonymous'] ?? null));
+
     // Check if user is logged in
     $isLoggedIn = isset($_SESSION['user_id']);
 
     if ($isLoggedIn) {
         // Logged-in user submission
         $user_id = $_SESSION['user_id'];
+        $postAnonymous = isset($validatedData['post_anonymous']) && $validatedData['post_anonymous'] === 'true';
+        error_log("postAnonymous boolean: " . ($postAnonymous ? 'TRUE' : 'FALSE'));
 
-        // Get user info from database
-        $stmt = $conn->prepare("SELECT username, avatar FROM users WHERE id = ?");
-        $stmt->bind_param("s", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($row = $result->fetch_assoc()) {
-            $username = $row['username'];
-            $email = $_SESSION['email'] ?? '';
-
-            // Determine avatar
-            if (empty($row['avatar']) || $row['avatar'] === 'account-icon.svg') {
-                $avatar = "../../images/account-icon.svg";
-            } else {
-                $avatar = $row['avatar'];
+        if ($postAnonymous) {
+            // User chose to post anonymously
+            // Get anonymous count
+            if (!isset($_SESSION['anonymous_index'])) {
+                $_SESSION['anonymous_index'] = 1;
             }
+            $username = "Anonymous " . $_SESSION['anonymous_index'];
+            $_SESSION['anonymous_index']++;
+            $email = "anonymous@fitxbrawl.com";
+            $avatar = "../../images/account-icon.svg";
+            // Set user_id to null for anonymous
+            $user_id = null;
         } else {
-            throw new Exception('User not found');
-        }
+            // Get user info from database
+            $stmt = $conn->prepare("SELECT username, avatar FROM users WHERE id = ?");
+            $stmt->bind_param("s", $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        $stmt->close();
+            if ($row = $result->fetch_assoc()) {
+                $username = $row['username'];
+                $email = $_SESSION['email'] ?? '';
+
+                // Determine avatar
+                if (empty($row['avatar']) || $row['avatar'] === 'account-icon.svg') {
+                    $avatar = "../../images/account-icon.svg";
+                } else {
+                    $avatar = $row['avatar'];
+                }
+            } else {
+                throw new Exception('User not found');
+            }
+
+            $stmt->close();
+        }
 
     } else {
         // Non-logged in user submission

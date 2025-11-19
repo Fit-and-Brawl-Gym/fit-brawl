@@ -738,6 +738,90 @@ main {
     margin-top: var(--spacing-1);
 }
 
+.form-group-checkbox {
+    margin-top: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
+    padding: var(--spacing-3);
+    background: rgba(255, 206, 0, 0.05);
+    border: 1px solid rgba(255, 206, 0, 0.2);
+    border-radius: var(--radius-md);
+    transition: var(--transition-base);
+}
+
+.form-group-checkbox:hover {
+    background: rgba(255, 206, 0, 0.08);
+    border-color: rgba(255, 206, 0, 0.3);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    color: var(--color-text-light);
+    user-select: none;
+    font-weight: var(--font-weight-medium);
+    position: relative;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    accent-color: var(--color-accent);
+    flex-shrink: 0;
+    border-radius: 4px;
+    transition: var(--transition-base);
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 206, 0, 0.3);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+    content: '\2713';
+    display: block;
+    text-align: center;
+    color: var(--color-primary);
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 18px;
+}
+
+.checkbox-label input[type="checkbox"]:hover {
+    border-color: var(--color-accent);
+    background: rgba(255, 206, 0, 0.15);
+}
+
+.checkbox-label span {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.checkbox-label span::before {
+    content: '\f507';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: var(--font-size-base);
+    color: var(--color-accent);
+    opacity: 0.7;
+}
+
+.checkbox-label:hover {
+    color: var(--color-accent);
+}
+
+.checkbox-label:hover span::before {
+    opacity: 1;
+}
+
 .char-counter #charCount {
     color: var(--color-accent);
     font-weight: var(--font-weight-semibold);

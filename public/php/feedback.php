@@ -299,8 +299,7 @@ require_once '../../includes/header.php';
                         <option value="Brawler">Brawler</option>
                         <option value="Champion">Champion</option>
                         <option value="Clash">Clash</option>
-                        <option value="Resolution Regular">Resolution Regular</option>
-                        <option value="Resolution Student">Resolution Student</option>
+                        <option value="Resolution">Resolution</option>
                     </select>
                 </div>
 
@@ -372,7 +371,13 @@ require_once '../../includes/header.php';
                         $displayName = mb_substr($displayName, 0, 22) . '...';
                     }
                     ?>
-                    <span>Posting as: <strong><?= $displayName ?></strong></span>
+                    <span>Posting as: <strong id="postingAsName"><?= $displayName ?></strong></span>
+                </div>
+                <div class="form-group-checkbox">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="postAnonymous" name="post_anonymous">
+                        <span>Post as Anonymous</span>
+                    </label>
                 </div>
             <?php endif; ?>
 

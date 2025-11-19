@@ -396,6 +396,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Anonymous checkbox toggle
+    const postAnonymousCheckbox = document.getElementById('postAnonymous');
+    const postingAsName = document.getElementById('postingAsName');
+    
+    if (postAnonymousCheckbox && postingAsName) {
+        const originalName = postingAsName.textContent;
+        
+        postAnonymousCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                postingAsName.textContent = 'Anonymous User';
+            } else {
+                postingAsName.textContent = originalName;
+            }
+        });
+    }
+
     // Character counter
     if (messageTextarea && charCountSpan) {
         messageTextarea.addEventListener('input', function () {
@@ -428,8 +444,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 message: formData.get('message'),
                 name: formData.get('name') || '',
                 email: formData.get('email') || '',
+                post_anonymous: formData.get('post_anonymous') === 'on' ? 'true' : 'false',
                 csrf_token: csrfToken
             };
+
+            // Debug logging
+            console.log('Form data being sent:', data);
+            console.log('post_anonymous checkbox value:', formData.get('post_anonymous'));
 
             // Validate message
             if (!data.message || data.message.trim().length === 0) {

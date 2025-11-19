@@ -125,8 +125,7 @@ require_once '../../../includes/trainer_header.php';
                         <option value="Brawler">Brawler</option>
                         <option value="Champion">Champion</option>
                         <option value="Clash">Clash</option>
-                        <option value="Resolution Regular">Resolution Regular</option>
-                        <option value="Resolution Student">Resolution Student</option>
+                        <option value="Resolution">Resolution</option>
                     </select>
                 </div>
 
