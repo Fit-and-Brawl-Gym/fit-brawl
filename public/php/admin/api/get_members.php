@@ -3,7 +3,6 @@
 session_start();
 require_once __DIR__ . '/../../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
-require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -17,9 +16,8 @@ if (!$user) {
     exit; // Already sent response
 }
 
-// Rate limiting for admin read endpoints - 30 requests per minute per admin
+// Admin-only endpoint; no rate limiting necessary
 $adminId = $user['user_id'];
-ApiSecurityMiddleware::applyRateLimit($conn, 'admin_get_members:' . $adminId, 30, 60);
 
 try {
     // Check if table exists

@@ -3,7 +3,6 @@
 session_start();
 require_once __DIR__ . '/../../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
-require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -13,9 +12,8 @@ if (!$user) {
     exit; // Already sent response
 }
 
-// Rate limiting for admin read endpoints - 30 requests per minute per admin
+// Admin endpoints do not need rate limiting
 $adminId = $user['user_id'];
-ApiSecurityMiddleware::applyRateLimit($conn, 'admin_get_feedback:' . $adminId, 30, 60);
 
 // Check if is_visible column exists
 $checkColumn = $conn->query("SHOW COLUMNS FROM feedback LIKE 'is_visible'");

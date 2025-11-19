@@ -3,7 +3,6 @@
 session_start();
 require_once __DIR__ . '/../../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
-require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 require_once __DIR__ . '/../../../../includes/input_validator.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
@@ -18,9 +17,8 @@ if (!$user) {
     exit; // Already sent response
 }
 
-// Rate limiting for admin read endpoints - 30 requests per minute per admin
+// Admins can query freely; no rate limiting
 $adminId = $user['user_id'];
-ApiSecurityMiddleware::applyRateLimit($conn, 'admin_get_member_history:' . $adminId, 30, 60);
 
 // Validate and sanitize input
 $validation = ApiSecurityMiddleware::validateInput([

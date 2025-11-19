@@ -4,7 +4,6 @@
 session_start();
 require_once __DIR__ . '/../../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
-require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 
 ApiSecurityMiddleware::setSecurityHeaders();
 
@@ -14,9 +13,8 @@ if (!$user) {
     exit; // Already sent response
 }
 
-// Rate limiting for debug endpoint - 10 requests per minute per admin
+// Admin-only endpoint; no rate limiting
 $adminId = $user['user_id'];
-ApiSecurityMiddleware::applyRateLimit($conn, 'admin_debug_feedback:' . $adminId, 10, 60);
 
 $debug = [];
 

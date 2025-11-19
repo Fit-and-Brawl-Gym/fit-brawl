@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../../../../includes/init.php';
 require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
-require_once __DIR__ . '/../../../../includes/api_rate_limiter.php';
 require_once __DIR__ . '/../../../../includes/input_validator.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
 
@@ -24,9 +23,8 @@ if (!$user) {
     exit; // Already sent response
 }
 
-// Rate limiting for admin APIs - 20 requests per minute per admin
+// Admin access only; no rate limiting
 $adminId = $user['user_id'];
-ApiSecurityMiddleware::applyRateLimit($conn, 'admin_contact_api:' . $adminId, 20, 60);
 
 $action = $_GET['action'] ?? '';
 
