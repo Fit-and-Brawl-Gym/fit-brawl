@@ -170,6 +170,31 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Pagination Controls -->
+            <div class="pagination-wrapper" id="paginationContainer">
+                <div class="pagination-info">
+                    <label for="itemsPerPageSelect">Items per page:</label>
+                    <select id="itemsPerPageSelect" class="items-per-page-select">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                
+                <div class="pagination-controls">
+                    <button id="prevPageBtn" class="btn-pagination" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span class="page-info">
+                        Page <span id="currentPageSpan">1</span> of <span id="totalPagesSpan">1</span>
+                    </span>
+                    <button id="nextPageBtn" class="btn-pagination" disabled>
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </main>
 

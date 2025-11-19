@@ -8,6 +8,10 @@ let allMemberships = [];
 let filteredMemberships = [];
 let membershipHashTable = new Map();
 
+// Pagination State
+let currentPage = 1;
+let itemsPerPage = 10;
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
@@ -37,6 +41,11 @@ function initializeEventListeners() {
     document.getElementById('searchFilter').addEventListener('input', applyFilters);
     document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
     document.getElementById('showExpiredToggle').addEventListener('change', toggleExpired);
+
+    // Pagination
+    document.getElementById('itemsPerPageSelect').addEventListener('change', handleItemsPerPageChange);
+    document.getElementById('prevPageBtn').addEventListener('click', () => goToPage(currentPage - 1));
+    document.getElementById('nextPageBtn').addEventListener('click', () => goToPage(currentPage + 1));
 
     // Close modals on outside click
     window.addEventListener('click', function(event) {
@@ -101,14 +110,18 @@ function applyFilters() {
     const expiration = document.getElementById('expirationFilter').value;
     const paymentStatus = document.getElementById('paymentStatusFilter').value;
     const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+    const showExpired = document.getElementById('showExpiredToggle').checked;
 
     filteredMemberships = allMemberships.filter(membership => {
+        // Check if expired (unless showing expired)
+        const daysRemaining = calculateDaysRemaining(membership.end_date);
+        if (!showExpired && daysRemaining < 0) return false;
+
         // Billing Type Filter
         if (billingType && membership.billing_type !== billingType) return false;
 
         // Expiration Filter
         if (expiration) {
-            const daysRemaining = calculateDaysRemaining(membership.end_date);
             if (expiration === 'expiring_soon' && (daysRemaining < 0 || daysRemaining > 7)) return false;
             if (expiration === 'this_month' && (daysRemaining < 0 || daysRemaining > 30)) return false;
         }
@@ -155,15 +168,60 @@ async function toggleExpired() {
 }
 
 /**
+ * Handle items per page change
+ */
+function handleItemsPerPageChange(e) {
+    itemsPerPage = parseInt(e.target.value);
+    currentPage = 1; // Reset to first page
+    renderMembershipsTable();
+}
+
+/**
+ * Go to specific page
+ */
+function goToPage(page) {
+    const totalPages = Math.ceil(filteredMemberships.length / itemsPerPage);
+    if (page < 1 || page > totalPages) return;
+    
+    currentPage = page;
+    renderMembershipsTable();
+}
+
+/**
+ * Update pagination controls
+ */
+function updatePaginationControls(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    // Update showing count
+    document.getElementById('showingCount').textContent = totalItems === 0 ? 0 : `${startItem}-${endItem}`;
+    document.getElementById('totalCount').textContent = totalItems;
+    
+    // Update page info
+    document.getElementById('currentPageSpan').textContent = totalPages === 0 ? 0 : currentPage;
+    document.getElementById('totalPagesSpan').textContent = totalPages;
+    
+    // Update button states
+    document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+    document.getElementById('nextPageBtn').disabled = currentPage >= totalPages || totalPages === 0;
+    
+    // Show/hide pagination
+    const paginationContainer = document.getElementById('paginationContainer');
+    if (totalPages <= 1) {
+        paginationContainer.style.display = 'none';
+    } else {
+        paginationContainer.style.display = 'flex';
+    }
+}
+
+/**
  * Render memberships table
  */
 function renderMembershipsTable() {
     const tbody = document.getElementById('membershipsTableBody');
     
-    // Update counts
-    document.getElementById('showingCount').textContent = filteredMemberships.length;
-    document.getElementById('totalCount').textContent = allMemberships.length;
-
     if (filteredMemberships.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -172,10 +230,32 @@ function renderMembershipsTable() {
                 </td>
             </tr>
         `;
+        updatePaginationControls(0);
         return;
     }
 
-    tbody.innerHTML = filteredMemberships.map(membership => createMembershipRow(membership)).join('');
+    // Sort by start date (descending) - latest memberships first
+    const sortedMemberships = [...filteredMemberships].sort((a, b) => {
+        const dateA = new Date(a.start_date);
+        const dateB = new Date(b.start_date);
+        return dateB - dateA; // Newest first
+    });
+
+    // Calculate pagination
+    const totalPages = Math.ceil(sortedMemberships.length / itemsPerPage);
+    
+    // Reset to page 1 if current page is out of bounds
+    if (currentPage > totalPages) {
+        currentPage = Math.max(1, totalPages);
+    }
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedMemberships = sortedMemberships.slice(startIndex, endIndex);
+
+    tbody.innerHTML = paginatedMemberships.map(membership => createMembershipRow(membership)).join('');
+    
+    updatePaginationControls(sortedMemberships.length);
 }
 
 /**

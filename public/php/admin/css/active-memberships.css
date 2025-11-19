@@ -648,6 +648,91 @@
     background: #5a6268;
 }
 
+/* Pagination */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--admin-gap-lg);
+    padding-top: var(--admin-gap-lg);
+    border-top: 1px solid var(--admin-input-border);
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-gap-sm);
+}
+
+.pagination-info label {
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-text-secondary);
+    font-weight: var(--admin-font-weight-medium);
+}
+
+.items-per-page-select {
+    padding: 6px 32px 6px 12px;
+    border: 1px solid var(--admin-input-border);
+    border-radius: var(--admin-radius-md);
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-text-primary);
+    background: white;
+    cursor: pointer;
+    transition: border-color var(--admin-transition-fast);
+}
+
+.items-per-page-select:hover {
+    border-color: var(--admin-primary);
+}
+
+.items-per-page-select:focus {
+    outline: none;
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(45, 125, 210, 0.1);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-gap-md);
+}
+
+.page-info {
+    font-size: var(--admin-font-size-sm);
+    color: var(--admin-text-secondary);
+    font-weight: var(--admin-font-weight-medium);
+}
+
+.btn-pagination {
+    padding: 8px 16px;
+    border: 1px solid var(--admin-input-border);
+    border-radius: var(--admin-radius-md);
+    background: white;
+    color: var(--admin-text-primary);
+    font-size: var(--admin-font-size-sm);
+    font-weight: var(--admin-font-weight-medium);
+    cursor: pointer;
+    transition: all var(--admin-transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-pagination:hover:not(:disabled) {
+    background: var(--admin-primary);
+    color: white;
+    border-color: var(--admin-primary);
+}
+
+.btn-pagination:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-pagination i {
+    font-size: 12px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .filters-group {
@@ -672,5 +757,15 @@
 
     .data-table {
         min-width: 800px;
+    }
+
+    .pagination-wrapper {
+        flex-direction: column;
+        gap: var(--admin-gap-md);
+    }
+
+    .pagination-controls {
+        width: 100%;
+        justify-content: center;
     }
 }

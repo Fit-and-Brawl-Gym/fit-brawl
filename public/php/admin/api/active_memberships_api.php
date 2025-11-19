@@ -48,10 +48,11 @@ switch ($action) {
                 )";
         
         if (!$includeExpired) {
-            // Only active memberships (not expired)
-            $query .= " AND um.membership_status = 'active'";
+            // Only active memberships (not expired) - filter by actual end date
+            $query .= " AND um.end_date >= CURDATE()";
         }
         
+        // Order by end date to show expiring soon first
         $query .= " ORDER BY um.end_date ASC";
         
         $stmt = $conn->prepare($query);
