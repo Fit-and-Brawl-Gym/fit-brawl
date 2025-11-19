@@ -165,6 +165,7 @@ require_once '../../../includes/trainer_header.php';
     const IMAGES_PATH = "<?= IMAGES_PATH ?>";
     const UPLOADS_PATH = "<?= UPLOADS_PATH ?>";
     const PUBLIC_PATH = "<?= PUBLIC_PATH ?>";
+    const USER_ROLE = "<?= $_SESSION['role'] ?? 'guest' ?>";
 </script>
 <script src="<?= PUBLIC_PATH ?>/js/feedback.js?v=<?= time() ?>"></script>
 
