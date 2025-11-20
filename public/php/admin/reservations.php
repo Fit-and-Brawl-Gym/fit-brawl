@@ -270,10 +270,10 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         <div class="bulk-actions" id="bulkActionsBar">
             <span id="selectedCount">0 selected</span>
             <button class="btn-complete">
-                <i class="fa-solid fa-check"></i> Mark Complete
+                <i class="fa-solid fa-check"></i> Mark as Complete
             </button>
             <button class="btn-cancel">
-                <i class="fa-solid fa-xmark"></i> Cancel Selected
+                Cancel Reservation
             </button>
         </div>
 

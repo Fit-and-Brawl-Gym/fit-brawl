@@ -131,25 +131,25 @@ body {
 }
 
 .input-group {
+    display: flex;
     position: relative;
     margin-bottom: var(--spacing-6);
 }
 
 .input-group i {
     position: absolute;
-    left: var(--spacing-4);
     top: 50%;
     transform: translateY(-50%);
     color: var(--color-text-muted);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
     width: full;
+    cursor: pointer;
 }
 
 .input-container {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1rem;
-    gap: 2rem;
+    gap: 1rem;
 }
 
 input {
@@ -162,6 +162,7 @@ input {
     color: white;
     outline: none;
     border: none;
+    width: 90%;
 }
 
 .input-group input:focus {
@@ -169,11 +170,22 @@ input {
     border-color: var(--color-accent);
 }
 
+.password-container {
+    position: relative;
+}
+
+#togglePassword {
+    position: absolute;
+    top: 50%;
+    right: 25px;
+    width: auto;
+}
+
 .form-options {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-8);
+    margin-bottom: var(--spacing-4);
     font-size: var(--font-size-sm);
 }
 
@@ -187,6 +199,7 @@ input {
 .checkbox-container input {
     margin: 0 var(--spacing-3);
     scale: 1.2;
+    width: auto;
 }
 
 .forgot-password {
@@ -281,12 +294,25 @@ input {
 }
 
 @media (max-width: 768px) {
+    body {
+        overflow: auto;
+    }
+
     .hero-title {
         font-size: var(--font-size-6xl);
     }
 
     .login-hero {
         padding: var(--spacing-8);
+    }
+
+    .hero-content {
+        display: none;
+    }
+
+    .login-modal {
+        width: auto;
+        margin: 4rem 1rem;
     }
 }
 
@@ -301,6 +327,7 @@ input {
 }
 
 @media (max-width: 480px) {
+
     .login-hero {
         padding: var(--spacing-6);
     }

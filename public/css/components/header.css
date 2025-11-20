@@ -26,7 +26,6 @@ header {
 
 .nav-links {
     display: flex;
-    align-items: center;
     gap: 2rem;
 }
 
@@ -161,5 +160,74 @@ header {
 @media screen and (max-width: 768px) {
     .nav-bar {
         display: none;
+    }
+
+    .hamburger-menu {
+        display: block;
+    }
+
+    header {
+        padding: 1rem;
+    }
+}
+
+/* Mobile nav overlay & panel for hamburger menu */
+.mobile-nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: flex-end;
+    align-items: stretch;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+}
+
+.mobile-nav-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile-nav-panel {
+    width: 200px;
+    max-width: 85%;
+    background: var(--color-bg-dark);
+    color: var(--color-text-white);
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.2);
+    transform: translateX(100%);
+    transition: transform 260ms ease;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.mobile-nav-overlay.open .mobile-nav-panel {
+    transform: translateX(0);
+}
+
+.mobile-nav-panel .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mobile-nav-panel .nav-links li a {
+    padding: 0.75rem 0.5rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mobile-nav-panel .account-dropdown .dropdown-menu {
+    position: static;
+    box-shadow: none;
+    background: transparent;
+}
+
+@media screen and (min-width: 768px) {
+    .nav-links {
+        align-items: center;
     }
 }

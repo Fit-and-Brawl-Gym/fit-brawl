@@ -223,13 +223,14 @@ body {
 }
 
 .input-group i:not(.eye-toggle) {
-  position: absolute;
-  left: var(--spacing-4);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-lg);
-  pointer-events: none;
+    position: absolute;
+    left: var(--spacing-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
+    pointer-events: none;
+    z-index: 99;
 }
 
 /* Eye toggle icon - always visible regardless of eye/eye-slash state */
@@ -517,11 +518,21 @@ input {
 }
 
 @media (max-width: 1024px) {
-  .signup-hero {
-    flex-direction: column;
-    text-align: center;
-    padding: var(--spacing-10);
-  }
+    .signup-hero {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--spacing-10);
+    }
+
+    .hero-content {
+        display: none;
+    }
+
+    .signup-modal {
+        width: auto;
+        margin: 4rem 1rem;
+        padding: 1rem;
+    }
 
     .password-requirements-modal {
         position: absolute !important;

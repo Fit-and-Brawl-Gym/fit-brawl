@@ -153,7 +153,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <h3 class="plan-name">RESOLUTION</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN GYM</p>
                         <div class="plan-price">2,200 PHP <span>/MONTH</span></div>
-                        <div class="plan-savings">(Save 1,400 PHP)</div>
+                        <div class="plan-savings">Save 1,400 PHP</div>
                         <ul class="plan-features">
                             <li>Gym Equipment Access with Face Recognition</li>
                             <li>Shower Access</li>
@@ -166,7 +166,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <h3 class="plan-name">BRAWLER</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN MUAY THAI</p>
                         <div class="plan-price">11,500 PHP <span>/MONTH</span></div>
-                        <div class="plan-savings">(Save 3,500 PHP)</div>
+                        <div class="plan-savings">Save 3,500 PHP</div>
                         <ul class="plan-features">
                             <li>Muay Thai Training with Professional Coaches</li>
                             <li>MMA Area Access</li>
@@ -200,7 +200,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <h3 class="plan-name">CHAMPION</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN BOXING</p>
                         <div class="plan-price">7,000 PHP <span>/MONTH</span></div>
-                        <div class="plan-savings">(Save 3,500 PHP)</div>
+                        <div class="plan-savings">Save 3,500 PHP</div>
                         <ul class="plan-features">
                             <li>Boxing Training with Professional Coaches</li>
                             <li>MMA Area Access</li>
@@ -215,7 +215,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <h3 class="plan-name">CLASH</h3>
                         <p class="plan-subtitle">MEMBERSHIP IN MMA</p>
                         <div class="plan-price">13,500 PHP <span>/MONTH</span></div>
-                        <div class="plan-savings">(Save 4,500 PHP)</div>
+                        <div class="plan-savings">Save 4,500 PHP</div>
                         <ul class="plan-features">
                             <li>MMA Training with Professional Coaches</li>
                             <li>MMA Area Access</li>
@@ -256,7 +256,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                         <span class="plan-name-header">RESOLUTION</span>
                                         <span class="plan-subtitle-header">Gym Access</span>
                                         <span class="plan-price-header">2,200&nbsp;PHP<small>/month</small></span>
-                                        <span class="plan-savings-header">(Save 1,400)</span>
+                                        <span class="plan-savings-header">Save 1,400</span>
                                     </div>
                                 </th>
                                 <th class="plan-column">
@@ -264,7 +264,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                         <span class="plan-name-header">BRAWLER</span>
                                         <span class="plan-subtitle-header">Muay Thai</span>
                                         <span class="plan-price-header">11,500&nbsp;PHP<small>/month</small></span>
-                                        <span class="plan-savings-header">(Save 3,500)</span>
+                                        <span class="plan-savings-header">Save 3,500</span>
                                     </div>
                                 </th>
                                 <th class="plan-column featured-column">
@@ -280,7 +280,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                         <span class="plan-name-header">CHAMPION</span>
                                         <span class="plan-subtitle-header">Boxing</span>
                                         <span class="plan-price-header">7,000&nbsp;PHP<small>/month</small></span>
-                                        <span class="plan-savings-header">(Save 3,500)</span>
+                                        <span class="plan-savings-header">Save 3,500</span>
                                     </div>
                                 </th>
                                 <th class="plan-column">
@@ -288,7 +288,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                         <span class="plan-name-header">CLASH</span>
                                         <span class="plan-subtitle-header">MMA</span>
                                         <span class="plan-price-header">13,500&nbsp;PHP<small>/month</small></span>
-                                        <span class="plan-savings-header">(Save 4,500)</span>
+                                        <span class="plan-savings-header">Save 4,500</span>
                                     </div>
                                 </th>
                             </tr>
@@ -569,7 +569,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <!-- Contact Button -->
             <div class="contact-cta">
                 <p class="contact-text">Still unsure?</p>
-                <a href="contact.php" class="contact-btn">CONTACT US NOW<span class="exclamation-mark">!</span></a>
+                <a href="contact.php" class="contact-btn">Get Sample Quotation</a>
             </div>
         </section>
 

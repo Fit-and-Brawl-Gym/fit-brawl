@@ -21,10 +21,8 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to right,
-            rgba(0, 47, 63, 0.95) 0%,
-            rgba(0, 47, 63, 0.85) 50%,
-            rgba(0, 47, 63, 0.7) 100%);
+    background: var(--color-bg-dark);
+    opacity: 0.9;
     z-index: -10;
     pointer-events: none;
 }
@@ -376,8 +374,8 @@ body::before {
     font-weight: var(--font-weight-black);
     color: var(--color-white);
     text-transform: uppercase;
-    margin-bottom: var(--spacing-2);
     letter-spacing: 1.5px;
+    margin: 0;
 }
 
 .plan-subtitle {
@@ -385,15 +383,16 @@ body::before {
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: var(--spacing-6);
+    /* margin-bottom: var(--spacing-6); */
     font-weight: var(--font-weight-semibold);
+    margin: 0;
 }
 
 .plan-price {
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-black);
     color: var(--color-accent);
-    margin-bottom: var(--spacing-6);
+    margin-bottom: var(--spacing-2);
     display: flex;
     align-items: baseline;
     gap: var(--spacing-2);
@@ -407,13 +406,20 @@ body::before {
 
 .plan-savings {
     font-size: var(--font-size-sm);
-    color: #4caf50;
+    /* color: #4caf50; */
+    color: white;
+    background: #388d3a;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
     font-weight: var(--font-weight-bold);
     text-align: center;
     margin-top: -var(--spacing-4);
     margin-bottom: var(--spacing-4);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    position: absolute;
+    top: 30px;
+    right: 25px;
 }
 
 .featured-price {
@@ -540,7 +546,7 @@ body::before {
 .comparison-section {
     max-width: 1400px;
     margin: var(--spacing-16) auto;
-    padding: 0 var(--spacing-6);
+    padding: 2rem var(--spacing-6);
 }
 
 .comparison-header {
@@ -549,23 +555,22 @@ body::before {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-3);
 }
 
 .comparison-title {
     font-family: var(--font-family-display);
     font-size: var(--font-size-5xl);
     font-weight: var(--font-weight-black);
-    color: var(--color-white);
+    color: var(--color-accent);
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin: 0 0 var(--spacing-3);
+    margin: 0;
 }
 
 .comparison-subtitle {
     font-size: var(--font-size-xl);
     color: rgba(255, 255, 255, 0.7);
-    margin: 0 0 var(--spacing-6);
+    margin: 0;
     font-weight: var(--font-weight-normal);
 }
 
@@ -599,7 +604,6 @@ body::before {
     backdrop-filter: blur(15px);
     border: 2px solid rgba(255, 206, 0, 0.2);
     border-radius: var(--radius-2xl);
-    padding: var(--spacing-4);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     position: relative;
 }
@@ -667,10 +671,10 @@ body::before {
 }
 
 .comparison-table th.feature-column {
-    text-align: left;
+    text-align: center;
     width: 180px;
     font-family: var(--font-family-display);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-black);
     color: var(--color-accent);
     text-transform: uppercase;
@@ -852,7 +856,7 @@ body::before {
 .pricing-section {
     max-width: 1200px;
     margin: var(--spacing-16) auto var(--spacing-8);
-    padding: 0 var(--spacing-20);
+    padding: 2rem var(--spacing-20);
 }
 
 .pricing-header {
@@ -878,13 +882,12 @@ body::before {
 /* Pricing Title */
 .pricing-title {
     font-family: var(--font-family-display);
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-4xl);
     color: var(--color-accent);
     text-align: center;
     text-transform: uppercase;
-    padding: var(--spacing-5) var(--spacing-4);
-    margin: 0 0 var(--spacing-2) 0;
     letter-spacing: 2px;
+    margin: 0;
 }
 
 .pricing-subtitle {
@@ -894,8 +897,8 @@ body::before {
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin: 0 0 var(--spacing-6) 0;
     font-weight: var(--font-weight-medium);
+    margin: 0;
 }
 
 /* Services Grid Layout */
@@ -911,7 +914,6 @@ body::before {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--spacing-6);
-    padding: var(--spacing-8) 0;
     margin-bottom: var(--spacing-8);
 }
 
@@ -1236,27 +1238,25 @@ body::before {
 }
 
 .contact-text {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-6xl);
     color: rgba(255, 255, 255, 0.8);
     font-weight: var(--font-weight-normal);
-    margin-bottom: var(--spacing-8);
-    font-family: var(--font-family-primary);
-    line-height: 1.6;
+    font-family: var(--font-family-display);
+    margin: 0;
 }
 
 .contact-btn {
     display: inline-block;
     background: linear-gradient(135deg, var(--color-accent) 0%, #ffd700 100%);
     color: var(--color-fog);
-    padding: var(--spacing-5) var(--spacing-16);
+    padding: var(--spacing-5) var(--spacing-8);
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     border-radius: var(--radius-xl);
-    font-family: var(--font-family-display);
+    font-family: var(--font-family-primary);
     transition: var(--transition-base);
     box-shadow: 0 8px 24px rgba(255, 206, 0, 0.3);
     border: none;
-    text-transform: uppercase;
     letter-spacing: 1px;
 }
 
