@@ -2,113 +2,95 @@ document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.querySelector('.hamburger-menu');
     const navBar = document.querySelector('.nav-bar');
 
-    if (hamburger && navBar) {
-        // Function to close the menu
-        function closeMenu() {
-            hamburger.classList.remove('active');
-            navBar.classList.remove('active');
-            // Re-enable body scrolling
-            document.body.style.overflow = '';
-        }
+    if (!hamburger || !navBar) return;
 
-        // Function to open the menu
-        function openMenu() {
-            hamburger.classList.add('active');
-            navBar.classList.add('active');
-            // Prevent body scrolling when menu is open
-            document.body.style.overflow = 'hidden';
-        }
+    // Create mobile overlay/panel elements (created on demand)
+    function createMobileNav() {
+        // Overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'mobile-nav-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
 
-        // Toggle menu when hamburger is clicked
-        hamburger.addEventListener('click', function(event) {
-            event.stopPropagation();
-            if (navBar.classList.contains('active')) {
-                closeMenu();
-            } else {
-                openMenu();
+        // Panel
+        const panel = document.createElement('aside');
+        panel.className = 'mobile-nav-panel';
+        panel.setAttribute('tabindex', '-1');
+
+        // Clone navBar contents into panel
+        // Use a shallow clone of the innerHTML to preserve links and structure
+        panel.innerHTML = navBar.innerHTML;
+
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+
+        // Add close handler when clicking overlay outside panel
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                closeMobileNav(overlay);
             }
         });
 
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const isClickInsideNav = navBar.contains(event.target);
-            const isClickOnHamburger = hamburger.contains(event.target);
+        // Close on ESC
+        function onKey(e) {
+            if (e.key === 'Escape') closeMobileNav(overlay);
+        }
+        document.addEventListener('keydown', onKey);
 
-            if (!isClickInsideNav && !isClickOnHamburger && navBar.classList.contains('active')) {
-                closeMenu();
-            }
-        });
-
-        // Close menu when scrolling (using wheel event to detect scroll attempts even when body overflow is hidden)
-        let scrollTimeout;
-        window.addEventListener('scroll', function() {
-            if (navBar.classList.contains('active')) {
-                // Clear any existing timeout
-                clearTimeout(scrollTimeout);
-
-                // Close menu immediately on scroll
-                closeMenu();
-            }
-        }, { passive: true });
-
-        // Also listen for wheel events (fires even when scrolling is prevented)
-        window.addEventListener('wheel', function(event) {
-            if (navBar.classList.contains('active')) {
-                // Check if the wheel event is outside the nav menu
-                const isWheelInsideNav = navBar.contains(event.target);
-                if (!isWheelInsideNav) {
-                    closeMenu();
-                }
-            }
-        }, { passive: true });
-
-        // Close menu on touch scroll (for mobile)
-        let touchStartY = 0;
-        let touchStartX = 0;
-        document.addEventListener('touchstart', function(event) {
-            if (navBar.classList.contains('active')) {
-                touchStartY = event.touches[0].clientY;
-                touchStartX = event.touches[0].clientX;
-            }
-        }, { passive: true });
-
-        document.addEventListener('touchmove', function(event) {
-            if (navBar.classList.contains('active')) {
-                const touchEndY = event.touches[0].clientY;
-                const touchEndX = event.touches[0].clientX;
-                const deltaY = Math.abs(touchEndY - touchStartY);
-                const deltaX = Math.abs(touchEndX - touchStartX);
-
-                // If there's significant vertical or horizontal movement, close menu
-                if (deltaY > 10 || deltaX > 10) {
-                    const isTouchInsideNav = navBar.contains(event.target);
-                    if (!isTouchInsideNav) {
-                        closeMenu();
-                    }
-                }
-            }
-        }, { passive: true });
-
-        // Close menu when clicking on a nav link
-        const navLinks = navBar.querySelectorAll('a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                closeMenu();
+        // Close when links inside panel are clicked
+        panel.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', function() {
+                closeMobileNav(overlay);
             });
         });
 
-        // Close menu on ESC key press
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && navBar.classList.contains('active')) {
-                closeMenu();
-            }
-        });
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
 
-        // Close menu when window is resized to desktop size
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768 && navBar.classList.contains('active')) {
-                closeMenu();
-            }
+        // Focus the panel for accessibility
+        window.setTimeout(() => panel.focus(), 50);
+
+        return { overlay, onKey };
+    }
+
+    function openMobileNav() {
+        // If overlay already exists, do nothing
+        if (document.querySelector('.mobile-nav-overlay')) return;
+        const { overlay } = createMobileNav();
+        // allow CSS transition
+        window.requestAnimationFrame(() => overlay.classList.add('open'));
+        hamburger.classList.add('active');
+    }
+
+    function closeMobileNav(overlay) {
+        const el = overlay || document.querySelector('.mobile-nav-overlay');
+        if (!el) return;
+        el.classList.remove('open');
+        hamburger.classList.remove('active');
+        document.body.style.overflow = '';
+        // Remove overlay after transition
+        el.addEventListener('transitionend', function onEnd() {
+            el.removeEventListener('transitionend', onEnd);
+            if (el.parentNode) el.parentNode.removeChild(el);
         });
     }
+
+    // Toggle when hamburger clicked
+    hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const overlay = document.querySelector('.mobile-nav-overlay');
+        if (overlay) {
+            closeMobileNav(overlay);
+        } else {
+            openMobileNav();
+        }
+    });
+
+    // Close if window resized to desktop width
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            if (overlay) closeMobileNav(overlay);
+        }
+    });
 });

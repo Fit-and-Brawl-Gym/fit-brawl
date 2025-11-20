@@ -41,14 +41,6 @@ require_once '../../includes/header.php';
     <!--Main-->
     <main class="forgot-password-main">
         <section class="forgot-password-hero">
-            <div class="hero-content">
-                <div class="hero-line"></div>
-                <h1 class="hero-title">
-                    STRONG TODAY <span class="yellow">  STRONGER </span> TOMORROW
-                </h1>
-                <div class="hero-underline"></div>
-            </div>
-
             <div class="forgot-password-modal">
                 <div class="modal-header">
                     <h2>Enter email to verify your account</h2>
@@ -59,7 +51,7 @@ require_once '../../includes/header.php';
                 <?php endif; ?>
 
                 <form class="forgot-password-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-                    <h3>A LITTLE STEPBACK BEFORE THE BEST VERSION OF YOU!</h3>
+                    <h3>Enter your registered email address to proceed with the password reset.</h3>
 
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
@@ -71,5 +63,3 @@ require_once '../../includes/header.php';
             </div>
         </section>
     </main>
-
-<?php require_once '../../includes/footer.php'; ?>

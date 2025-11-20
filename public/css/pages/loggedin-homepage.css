@@ -135,7 +135,7 @@ body::before {
   border-radius: var(--radius-2xl);
   display: flex;
   align-items: center;
-  gap: var(--spacing-6);
+  gap: var(--spacing-4);
   box-shadow: 0 8px 32px rgba(255, 206, 0, 0.4), 0 0 60px rgba(255, 206, 0, 0.2);
   transition: var(--transition-base);
   position: relative;
@@ -177,8 +177,8 @@ body::before {
 
 .card-icon {
   background: rgba(0, 0, 0, 0.2);
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   border-radius: var(--radius-2xl);
   display: flex;
   align-items: center;
@@ -682,12 +682,12 @@ body::before {
   .action-card {
     flex-direction: column;
     text-align: center;
-    padding: var(--spacing-6);
+    padding: var(--spacing-4);
   }
 
   .card-icon {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
   }
 
   .card-icon i {

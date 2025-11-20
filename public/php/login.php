@@ -114,7 +114,9 @@ function test_input($data)
 $pageTitle = "Login - Fit and Brawl";
 $currentPage = "login";
 $additionalCSS = [PUBLIC_PATH . "/css/pages/login.css?v=" . time()];
-$additionalJS = [PUBLIC_PATH . "/js/hamburger-menu.js"];
+$additionalJS = [PUBLIC_PATH . 
+        "/js/hamburger-menu.js", 
+         PUBLIC_PATH . "/js/password-validation.js"];
 
 // Include header
 require_once __DIR__ . '/../../includes/header.php';
@@ -145,9 +147,12 @@ require_once __DIR__ . '/../../includes/header.php';
                 <div class="input-container">
                     <input type="text" name="email" placeholder="Username or Email"
                         value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
-
-                    <input type="password" name="password" id="password" placeholder="Password" required>
-
+                    
+                    <div class="password-container input-group">
+                        <input type="password" id="passwordInput" name="password" placeholder="Password" required>
+                        <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
+                    </div>
+            
                 </div>
 
                 <div class="form-options">

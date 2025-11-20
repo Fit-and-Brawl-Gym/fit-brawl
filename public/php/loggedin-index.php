@@ -302,12 +302,14 @@ $sessionHours = [
                     <i class="fas fa-calendar-plus"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Book a Session</h2>
-                    <p>Schedule your next training session</p>
-                </div>
-                     <a href="<?= htmlspecialchars($membershipLink) ?>" class="card-btn">
-                        Book Now <i class="fas fa-arrow-right"></i>
+                    <a href=<?= htmlspecialchars($membershipLink) ?>>
+                        <h2>Book a Session</h2>
+                        <p>Schedule your next training session</p>
                     </a>
+                </div>
+                     <!-- <a href="<?= htmlspecialchars($membershipLink) ?>" class="card-btn">
+                        Book Now <i class="fas fa-arrow-right"></i>
+                    </a> -->
                     </div>
             </div>
    

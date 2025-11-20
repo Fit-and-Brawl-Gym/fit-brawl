@@ -306,10 +306,10 @@ require_once __DIR__ . '/../../includes/header.php';
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn-save">
-                        <i class="fas fa-save"></i> Save Changes
+                        Save Changes
                     </button>
                     <button type="button" class="btn-cancel" id="cancelEditBtn">
-                        <i class="fas fa-times"></i> Cancel
+                        Cancel
                     </button>
                 </div>
             </form>
