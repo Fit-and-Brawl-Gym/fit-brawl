@@ -23,29 +23,47 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initializeEventListeners() {
     // Add Membership Modal
-    document.getElementById('addMembershipBtn').addEventListener('click', openAddMembershipModal);
-    document.getElementById('closeAddMembershipModal').addEventListener('click', closeAddMembershipModal);
-    document.getElementById('cancelAddMembership').addEventListener('click', closeAddMembershipModal);
-    document.getElementById('addMembershipForm').addEventListener('submit', handleAddMembership);
+    const addMembershipBtn = document.getElementById('addMembershipBtn');
+    const closeAddMembershipModalBtn = document.getElementById('closeAddMembershipModal');
+    const cancelAddMembershipBtn = document.getElementById('cancelAddMembership');
+    const addMembershipForm = document.getElementById('addMembershipForm');
+
+    if (addMembershipBtn) addMembershipBtn.addEventListener('click', openAddMembershipModal);
+    if (closeAddMembershipModalBtn) closeAddMembershipModalBtn.addEventListener('click', closeAddMembershipModal);
+    if (cancelAddMembershipBtn) cancelAddMembershipBtn.addEventListener('click', closeAddMembershipModal);
+    if (addMembershipForm) addMembershipForm.addEventListener('submit', handleAddMembership);
 
     // Payment History Modal
-    document.getElementById('closePaymentHistoryModal').addEventListener('click', closePaymentHistoryModal);
+    const closePaymentHistoryModalBtn = document.getElementById('closePaymentHistoryModal');
+    if (closePaymentHistoryModalBtn) closePaymentHistoryModalBtn.addEventListener('click', closePaymentHistoryModal);
 
     // Details Panel
-    document.getElementById('closeDetailsPanel').addEventListener('click', closeDetailsPanel);
+    const closeDetailsPanelBtn = document.getElementById('closeDetailsPanel');
+    if (closeDetailsPanelBtn) closeDetailsPanelBtn.addEventListener('click', closeDetailsPanel);
 
     // Filters
-    document.getElementById('billingTypeFilter').addEventListener('change', applyFilters);
-    document.getElementById('expirationFilter').addEventListener('change', applyFilters);
-    document.getElementById('paymentStatusFilter').addEventListener('change', applyFilters);
-    document.getElementById('searchFilter').addEventListener('input', applyFilters);
-    document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
-    document.getElementById('showExpiredToggle').addEventListener('change', toggleExpired);
+    const billingTypeFilter = document.getElementById('billingTypeFilter');
+    const expirationFilter = document.getElementById('expirationFilter');
+    const paymentStatusFilter = document.getElementById('paymentStatusFilter');
+    const searchFilter = document.getElementById('searchFilter');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    const showExpiredToggle = document.getElementById('showExpiredToggle');
+
+    if (billingTypeFilter) billingTypeFilter.addEventListener('change', applyFilters);
+    if (expirationFilter) expirationFilter.addEventListener('change', applyFilters);
+    if (paymentStatusFilter) paymentStatusFilter.addEventListener('change', applyFilters);
+    if (searchFilter) searchFilter.addEventListener('input', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
+    if (showExpiredToggle) showExpiredToggle.addEventListener('change', toggleExpired);
 
     // Pagination
-    document.getElementById('itemsPerPageSelect').addEventListener('change', handleItemsPerPageChange);
-    document.getElementById('prevPageBtn').addEventListener('click', () => goToPage(currentPage - 1));
-    document.getElementById('nextPageBtn').addEventListener('click', () => goToPage(currentPage + 1));
+    const itemsPerPageSelect = document.getElementById('itemsPerPageSelect');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+
+    if (itemsPerPageSelect) itemsPerPageSelect.addEventListener('change', handleItemsPerPageChange);
+    if (prevPageBtn) prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+    if (nextPageBtn) nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
 
     // Close modals on outside click
     window.addEventListener('click', function(event) {
