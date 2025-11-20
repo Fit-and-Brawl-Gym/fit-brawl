@@ -1879,6 +1879,9 @@ async function handleRescheduleFormSubmit(e) {
                 console.log('✅ Cleared booking recovery state (1)');
             }
             
+            // Store flag to show toast after reload
+            sessionStorage.setItem('showRescheduleToast', 'true');
+            
             showRescheduleAlert('Reschedule successful!', 'success');
             
             // Close the modal
@@ -1960,6 +1963,14 @@ window.hideRescheduleAlert = function() {
 // ===================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if we should show reschedule success toast
+    if (sessionStorage.getItem('showRescheduleToast') === 'true') {
+        sessionStorage.removeItem('showRescheduleToast');
+        setTimeout(() => {
+            showToast('Booking rescheduled successfully!', 'success');
+        }, 100);
+    }
+    
     const rescheduleForm = document.getElementById('rescheduleForm');
     if (rescheduleForm) {
         rescheduleForm.addEventListener('submit', handleRescheduleFormSubmit);
