@@ -629,12 +629,12 @@
 }
 
 .btn-primary {
-    background: var(--admin-primary);
+    background: var(--admin-btn-primary-bg);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #0056b3;
+    background: var(--admin-btn-primary-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
 }
