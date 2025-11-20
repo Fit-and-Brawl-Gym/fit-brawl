@@ -167,6 +167,7 @@ require_once '../../includes/header.php';
 
         <div class="transaction-box">
             <form id="subscriptionForm" class="subscription-form">
+                <?= CSRFProtection::getTokenField(); ?>
                 <input type="hidden" name="service" value="<?php echo $service; ?>">
                 <div class="transaction-content">
                     <!-- Left Column -->

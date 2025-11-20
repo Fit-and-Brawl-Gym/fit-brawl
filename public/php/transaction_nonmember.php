@@ -343,6 +343,14 @@ require_once '../../includes/header.php';
             e.preventDefault();
 
             const formData = new FormData(this);
+            
+            // Ensure CSRF token is included (should already be from hidden field)
+            if (!formData.has('csrf_token')) {
+                const csrfInput = this.querySelector('input[name="csrf_token"]');
+                if (csrfInput) {
+                    formData.append('csrf_token', csrfInput.value);
+                }
+            }
 
             // Show loading state
             const btn = document.getElementById('generateReceiptBtn');
