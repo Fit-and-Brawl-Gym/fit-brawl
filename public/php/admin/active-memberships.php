@@ -30,9 +30,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 <h1>Active Memberships</h1>
                 <p class="subtitle">Monitor and manage active member subscriptions</p>
             </div>
-            <button class="btn btn-primary" id="addMembershipBtn">
-                <i class="fas fa-user-plus"></i> Add Membership
-            </button>
         </header>
 
         <!-- Stats Cards -->
