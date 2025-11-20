@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../../includes/config.php';
 require_once '../../includes/db_connect.php';
 require_once '../../includes/file_upload_security.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
@@ -29,9 +30,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $username = test_input($_POST['username']);
     $email = test_input($_POST['email']);
-    $currentPassword = test_input($_POST['current_password']);
-    $newPassword = test_input($_POST['new_password']);
-    $confirmPassword = test_input($_POST['confirm_password']);
+    $currentPassword = test_input($_POST['current_password'] ?? '');
+    $newPassword = test_input($_POST['new_password'] ?? '');
+    $confirmPassword = test_input($_POST['confirm_password'] ?? '');
     $removeAvatar = isset($_POST['remove_avatar']) && $_POST['remove_avatar'] === '1';
     $passwordHistoryContext = null;
 
@@ -140,7 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Encrypt email before updating
-    $encryptedEmail = Encryption::encrypt($email);
+    try {
+        $encryptedEmail = Encryption::encrypt($email);
+    } catch (Exception $e) {
+        error_log('Encryption error in update_profile.php: ' . $e->getMessage());
+        $_SESSION['error'] = 'System error: Unable to process profile update. Please contact support.';
+        header("Location: $profileRedirect");
+        exit;
+    }
 
     // Build update query
     if (!empty($newPassword) && $avatar) {
@@ -250,6 +258,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 function test_input($data)
 {
+    if ($data === null) {
+        return '';
+    }
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
