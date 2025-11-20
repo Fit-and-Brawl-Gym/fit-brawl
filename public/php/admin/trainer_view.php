@@ -3,66 +3,66 @@ require_once '../../../includes/init.php';
 
 // Only admins can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../login.php");
-    exit();
+  header('Location: ../login.php');
+  exit();
 }
 
 // Get trainer ID
 $trainer_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if (!$trainer_id) {
-    header('Location: trainers.php');
-    exit;
+  header('Location: trainers.php');
+  exit();
 }
 
-// Fetch trainer details with stats
+// 1. FETCH TRAINER DETAILS & STATS
+// Fixed: Removed JOIN reservations table. Uses user_reservations directly.
 $query = "SELECT t.*,
           (SELECT COUNT(DISTINCT ur.user_id)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date = CURDATE()) as clients_today,
+           AND ur.booking_date = CURDATE()) as clients_today,
           (SELECT COUNT(*)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'confirmed'
-           AND ur.date >= CURDATE()) as upcoming_bookings,
+           AND ur.booking_date >= CURDATE()) as upcoming_bookings,
           (SELECT COUNT(*)
            FROM user_reservations ur
-           JOIN reservations r ON ur.reservation_id = r.id
-           WHERE r.trainer_id = t.id
+           WHERE ur.trainer_id = t.id
            AND ur.booking_status = 'completed') as total_sessions
           FROM trainers t
           WHERE t.id = ? AND t.deleted_at IS NULL";
+
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $trainer_id);
+$stmt->bind_param('i', $trainer_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $trainer = $result->fetch_assoc();
 
 if (!$trainer) {
-    header('Location: trainers.php?error=notfound');
-    exit;
+  header('Location: trainers.php?error=notfound');
+  exit();
 }
 
-// Fetch upcoming sessions
-$sessions_query = "SELECT r.*, ur.user_id, ur.booking_status, u.username, u.email
-                   FROM reservations r
-                   JOIN user_reservations ur ON ur.reservation_id = r.id
+// 2. FETCH UPCOMING SESSIONS
+// Fixed: Removed JOIN reservations. Selects booking_date and session_time directly.
+$sessions_query = "SELECT ur.*, u.username, u.email, u.avatar
+                   FROM user_reservations ur
                    JOIN users u ON u.id = ur.user_id
-                   WHERE r.trainer_id = ?
+                   WHERE ur.trainer_id = ?
                    AND ur.booking_status = 'confirmed'
-                   AND r.date >= CURDATE()
-                   ORDER BY r.date ASC, r.start_time ASC
+                   AND ur.booking_date >= CURDATE()
+                   ORDER BY ur.booking_date ASC, ur.session_time ASC
                    LIMIT 10";
+
 $stmt = $conn->prepare($sessions_query);
-$stmt->bind_param("i", $trainer_id);
+$stmt->bind_param('i', $trainer_id);
 $stmt->execute();
 $sessions_result = $stmt->get_result();
 
-// Fetch activity log
+// 3. FETCH ACTIVITY LOG
 $log_query = "SELECT tal.*, u.username as admin_username
               FROM trainer_activity_log tal
               LEFT JOIN users u ON u.id = tal.admin_id
@@ -70,9 +70,16 @@ $log_query = "SELECT tal.*, u.username as admin_username
               ORDER BY tal.timestamp DESC
               LIMIT 20";
 $stmt = $conn->prepare($log_query);
-$stmt->bind_param("i", $trainer_id);
+$stmt->bind_param('i', $trainer_id);
 $stmt->execute();
 $log_result = $stmt->get_result();
+
+// Helper: Session Time Map
+$session_map = [
+  'Morning' => '7:00 AM - 11:00 AM',
+  'Afternoon' => '1:00 PM - 5:00 PM',
+  'Evening' => '6:00 PM - 10:00 PM',
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -88,11 +95,10 @@ $log_result = $stmt->get_result();
 </head>
 
 <body>
-    <!-- Sidebar -->
+<main>
     <?php include 'admin_sidebar.php'; ?>
 
-    <!-- Main Content -->
-    <main class="admin-main">
+    <div class="admin-main">
         <div class="page-header">
             <div>
                 <h1>Trainer Details</h1>
@@ -109,22 +115,35 @@ $log_result = $stmt->get_result();
         </div>
 
         <div class="trainer-view-container">
-            <!-- Left Column: Profile -->
             <div class="trainer-profile-section">
                 <div class="profile-card">
                     <div class="profile-header">
-                        <img src="../../../images/account-icon.svg"
-                            alt="<?= htmlspecialchars($trainer['name']) ?>" class="profile-avatar">
-                        <span class="status-badge status-<?= strtolower(str_replace(' ', '-', $trainer['status'])) ?>">
+                        <?php $photoPath = !empty($trainer['photo'])
+                          ? '../../../uploads/trainers/' .
+                            htmlspecialchars($trainer['photo'])
+                          : '../../../images/account-icon.svg'; ?>
+                        <img src="<?= $photoPath ?>" 
+                             alt="<?= htmlspecialchars($trainer['name']) ?>" 
+                             class="profile-avatar"
+                             onerror="this.src='../../../images/account-icon.svg'">
+                        
+                        <span class="status-badge status-<?= strtolower(
+                          str_replace(' ', '-', $trainer['status']),
+                        ) ?>">
                             <?= htmlspecialchars($trainer['status']) ?>
                         </span>
                     </div>
 
-                    <h2 class="profile-name"><?= htmlspecialchars($trainer['name']) ?></h2>
+                    <h2 class="profile-name"><?= htmlspecialchars(
+                      $trainer['name'],
+                    ) ?></h2>
                     <p class="profile-specialization">
-                        <span
-                            class="specialization-badge <?= strtolower(str_replace(' ', '-', $trainer['specialization'])) ?>">
-                            <?= htmlspecialchars($trainer['specialization']) ?> Specialist
+                        <span class="specialization-badge <?= strtolower(
+                          str_replace(' ', '-', $trainer['specialization']),
+                        ) ?>">
+                            <?= htmlspecialchars(
+                              $trainer['specialization'],
+                            ) ?> Specialist
                         </span>
                     </p>
 
@@ -133,23 +152,37 @@ $log_result = $stmt->get_result();
                             <i class="fas fa-envelope"></i>
                             <div>
                                 <label>Email</label>
-                                <span><?= htmlspecialchars($trainer['email']) ?></span>
+                                <span><?= htmlspecialchars(
+                                  $trainer['email'],
+                                ) ?></span>
                             </div>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-phone"></i>
                             <div>
                                 <label>Phone</label>
-                                <span><?= htmlspecialchars($trainer['phone']) ?></span>
+                                <span><?= htmlspecialchars(
+                                  $trainer['phone'],
+                                ) ?></span>
                             </div>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-user-shield"></i>
                             <div>
                                 <label>Emergency Contact</label>
-                                <span><?= !empty($trainer['emergency_contact_name']) ? htmlspecialchars($trainer['emergency_contact_name']) : '-' ?></span>
-                                <?php if (!empty($trainer['emergency_contact_phone'])): ?>
-                                    <small><?= htmlspecialchars($trainer['emergency_contact_phone']) ?></small>
+                                <span><?= !empty(
+                                  $trainer['emergency_contact_name']
+                                )
+                                  ? htmlspecialchars(
+                                    $trainer['emergency_contact_name'],
+                                  )
+                                  : '-' ?></span>
+                                <?php if (
+                                  !empty($trainer['emergency_contact_phone'])
+                                ): ?>
+                                    <small><?= htmlspecialchars(
+                                      $trainer['emergency_contact_phone'],
+                                    ) ?></small>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -157,7 +190,10 @@ $log_result = $stmt->get_result();
                             <i class="fas fa-calendar-alt"></i>
                             <div>
                                 <label>Joined</label>
-                                <span><?= date('M d, Y', strtotime($trainer['created_at'])) ?></span>
+                                <span><?= date(
+                                  'M d, Y',
+                                  strtotime($trainer['created_at']),
+                                ) ?></span>
                             </div>
                         </div>
                     </div>
@@ -165,12 +201,13 @@ $log_result = $stmt->get_result();
                     <?php if (!empty($trainer['bio'])): ?>
                         <div class="profile-bio">
                             <h4>About</h4>
-                            <p><?= nl2br(htmlspecialchars($trainer['bio'])) ?></p>
+                            <p><?= nl2br(
+                              htmlspecialchars($trainer['bio']),
+                            ) ?></p>
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- Stats Cards -->
                 <div class="stats-cards">
                     <div class="stat-card-small">
                         <i class="fas fa-users"></i>
@@ -196,9 +233,7 @@ $log_result = $stmt->get_result();
                 </div>
             </div>
 
-            <!-- Right Column: Sessions & Activity -->
             <div class="trainer-activity-section">
-                <!-- Upcoming Sessions -->
                 <div class="section-card">
                     <h3 class="section-title">
                         <i class="fas fa-calendar-week"></i>
@@ -206,24 +241,44 @@ $log_result = $stmt->get_result();
                     </h3>
                     <div class="sessions-list">
                         <?php if ($sessions_result->num_rows > 0): ?>
-                            <?php while ($session = $sessions_result->fetch_assoc()): ?>
+                            <?php while (
+                              $session = $sessions_result->fetch_assoc()
+                            ): ?>
                                 <div class="session-item">
                                     <div class="session-date">
                                         <div class="date-badge">
-                                            <span class="day"><?= date('d', strtotime($session['date'])) ?></span>
-                                            <span class="month"><?= date('M', strtotime($session['date'])) ?></span>
+                                            <span class="day"><?= date(
+                                              'd',
+                                              strtotime(
+                                                $session['booking_date'],
+                                              ),
+                                            ) ?></span>
+                                            <span class="month"><?= date(
+                                              'M',
+                                              strtotime(
+                                                $session['booking_date'],
+                                              ),
+                                            ) ?></span>
                                         </div>
                                     </div>
                                     <div class="session-details">
-                                        <h4><?= htmlspecialchars($session['class_type']) ?></h4>
+                                        <h4><?= htmlspecialchars(
+                                          $session['class_type'],
+                                        ) ?></h4>
                                         <p class="session-time">
                                             <i class="fas fa-clock"></i>
-                                            <?= date('g:i A', strtotime($session['start_time'])) ?> -
-                                            <?= date('g:i A', strtotime($session['end_time'])) ?>
+                                            <?= htmlspecialchars(
+                                              $session['session_time'],
+                                            ) ?>
+                                            <span style="color:#777; font-size:0.85em;">(<?= $session_map[
+                                              $session['session_time']
+                                            ] ?? '' ?>)</span>
                                         </p>
                                         <p class="session-user">
                                             <i class="fas fa-user"></i>
-                                            <?= htmlspecialchars($session['username']) ?>
+                                            <?= htmlspecialchars(
+                                              $session['username'],
+                                            ) ?>
                                         </p>
                                     </div>
                                 </div>
@@ -234,7 +289,6 @@ $log_result = $stmt->get_result();
                     </div>
                 </div>
 
-                <!-- Activity Log -->
                 <div class="section-card">
                     <h3 class="section-title">
                         <i class="fas fa-history"></i>
@@ -247,15 +301,25 @@ $log_result = $stmt->get_result();
                                     <div class="timeline-marker"></div>
                                     <div class="timeline-content">
                                         <div class="timeline-header">
-                                            <strong><?= htmlspecialchars($log['action']) ?></strong>
-                                            <span
-                                                class="timeline-time"><?= date('M d, Y g:i A', strtotime($log['timestamp'])) ?></span>
+                                            <strong><?= htmlspecialchars(
+                                              $log['action'],
+                                            ) ?></strong>
+                                            <span class="timeline-time"><?= date(
+                                              'M d, Y g:i A',
+                                              strtotime($log['timestamp']),
+                                            ) ?></span>
                                         </div>
                                         <?php if (!empty($log['details'])): ?>
-                                            <p class="timeline-details"><?= htmlspecialchars($log['details']) ?></p>
+                                            <p class="timeline-details"><?= htmlspecialchars(
+                                              $log['details'],
+                                            ) ?></p>
                                         <?php endif; ?>
-                                        <?php if (!empty($log['admin_username'])): ?>
-                                            <p class="timeline-admin">by <?= htmlspecialchars($log['admin_username']) ?></p>
+                                        <?php if (
+                                          !empty($log['admin_username'])
+                                        ): ?>
+                                            <p class="timeline-admin">by <?= htmlspecialchars(
+                                              $log['admin_username'],
+                                            ) ?></p>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -267,8 +331,8 @@ $log_result = $stmt->get_result();
                 </div>
             </div>
         </div>
-    </main>
-    <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
+    </div>
+</main>
+<script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
-
 </html>
