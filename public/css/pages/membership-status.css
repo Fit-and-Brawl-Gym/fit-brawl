@@ -16,8 +16,9 @@ main {
 }
 
 h2 {
-    margin-bottom: var(--spacing-4);
     color: var(--color-accent);
+    font-size: var(--font-size-4xl);
+    margin: 0;
 }
 
 p {
@@ -26,7 +27,7 @@ p {
 }
 
 .status-message.pending {
-    border-left: 6px solid var(--color-warning);
+    /* border-left: 6px solid var(--color-warning); */
     padding-left: var(--spacing-4);
 }
 

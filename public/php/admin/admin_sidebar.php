@@ -24,11 +24,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <div class="nav-section-title">Membership Management</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/users.php" class="<?= $current_page == 'users.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-id-card"></i>
-            <span>Memberships</span>
+            <span>Members</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/subscriptions.php" class="<?= $current_page == 'subscriptions.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-credit-card"></i>
-            <span>Subscriptions</span>
+            <span>Manage Subscriptions</span>
         </a>
 
         <!-- TRAINER & SCHEDULE MANAGEMENT -->
@@ -36,26 +36,26 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainers.php"
             class="<?= in_array($current_page, ['trainers.php', 'trainer_add.php', 'trainer_edit.php', 'trainer_view.php']) ? 'active' : '' ?>">
             <i class="fa-solid fa-dumbbell"></i>
-            <span>Trainers</span>
+            <span>Trainer Accounts</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainer-schedules.php" class="<?= $current_page == 'trainer-schedules.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-calendar-xmark"></i>
-            <span>Schedule Blocks</span>
+            <span>Trainer Schedules</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/reservations.php" class="<?= $current_page == 'reservations.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-calendar-check"></i>
-            <span>Reservations</span>
+            <span>Trainer Reservations</span>
         </a>
 
         <!-- FACILITY MANAGEMENT -->
         <div class="nav-section-title">Facility Management</div>
         <a href="<?= PUBLIC_PATH ?>/php/admin/equipment.php" class="<?= $current_page == 'equipment.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-tools"></i>
-            <span>Equipment</span>
+            <span>Gym Equipments</span>
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/products.php" class="<?= $current_page == 'products.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-shopping-bag"></i>
-            <span>Products</span>
+            <span>Manage Products</span>
         </a>
 
         <!-- COMMUNICATIONS -->
@@ -70,7 +70,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a> -->
         <a href="<?= PUBLIC_PATH ?>/php/admin/contacts.php" class="<?= $current_page == 'contacts.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-envelope"></i>
-            <span>Contacts</span>
+            <span>Inquiries</span>
         </a>
 
         <!-- SYSTEM -->

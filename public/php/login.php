@@ -29,6 +29,7 @@ if (SessionManager::isLoggedIn()) {
 }
 
 $error = '';
+$rememberedEmail = '';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = test_input($_POST['email'] ?? '');
@@ -62,23 +63,50 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $_SESSION['role'] = $user['role'];
                     $_SESSION['avatar'] = $user['avatar'];
 
-                    // Remember Me
+                    // Remember Me - Save email/username for pre-fill
                     if (isset($_POST['remember'])) {
                         try {
                             $token = bin2hex(random_bytes(32));
                             $token_hash = password_hash($token, PASSWORD_DEFAULT);
 
+                            // First, delete any existing tokens for this user
+                            $deleteStmt = $conn->prepare("DELETE FROM remember_password WHERE user_id = ?");
+                            if ($deleteStmt) {
+                                $deleteStmt->bind_param("i", $user['id']);
+                                $deleteStmt->execute();
+                                $deleteStmt->close();
+                            }
+
+                            // Insert new token
                             $stmtToken = $conn->prepare("INSERT INTO remember_password (user_id, token_hash) VALUES (?, ?)");
                             if ($stmtToken) {
                                 $stmtToken->bind_param("is", $user['id'], $token_hash);
                                 if ($stmtToken->execute()) {
-                                    $_SESSION['remember_password'] = $token;
+                                    // Set cookie for email/username to pre-fill login form
+                                    setcookie('remembered_email', $email, [
+                                        'expires' => time() + (30 * 24 * 60 * 60), // 30 days
+                                        'path' => '/',
+                                        'secure' => isset($_SERVER['HTTPS']),
+                                        'httponly' => true,
+                                        'samesite' => 'Lax'
+                                    ]);
                                 }
                                 $stmtToken->close();
                             }
                         } catch (Exception $e) {
                             // Log error but don't fail login if remember me fails
                             error_log("Remember me token error: " . $e->getMessage());
+                        }
+                    } else {
+                        // User didn't check "Remember Me" - clear the cookie if it exists
+                        if (isset($_COOKIE['remembered_email'])) {
+                            setcookie('remembered_email', '', [
+                                'expires' => time() - 3600,
+                                'path' => '/',
+                                'secure' => isset($_SERVER['HTTPS']),
+                                'httponly' => true,
+                                'samesite' => 'Lax'
+                            ]);
                         }
                     }
 
@@ -146,7 +174,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
                 <div class="input-container">
                     <input type="text" name="email" placeholder="Username or Email"
-                        value="<?= htmlspecialchars($_COOKIE['email'] ?? '') ?>" required>
+                        value="<?= htmlspecialchars($_COOKIE['remembered_email'] ?? '') ?>" required>
                     
                     <div class="password-container input-group">
                         <input type="password" id="passwordInput" name="password" placeholder="Password" required>
@@ -157,7 +185,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
                 <div class="form-options">
                     <label class="checkbox-container">
-                        <input type="checkbox" id="remember" name="remember">
+                        <input type="checkbox" id="remember" name="remember" <?= isset($_COOKIE['remembered_email']) ? 'checked' : '' ?>>
                         <span class="checkmark"></span>
                         Remember me
                     </label>
