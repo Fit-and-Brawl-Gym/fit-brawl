@@ -128,9 +128,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     <button class="filter-tab" data-status="active">
                         <i class="fas fa-check-circle"></i> Active
                     </button>
-                    <button class="filter-tab" data-status="suspended">
-                        <i class="fas fa-pause-circle"></i> Suspended
-                    </button>
                     <button class="filter-tab" data-status="pending">
                         <i class="fas fa-circle"></i> Pending
                     </button>

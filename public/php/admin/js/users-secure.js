@@ -265,7 +265,6 @@ let roleIndex = {
 
 let statusIndex = {
     'active': new Set(),
-    'suspended': new Set(),
     'locked': new Set(),
     'pending': new Set()
 };
@@ -413,7 +412,7 @@ function buildDataStructures() {
     userHashTable.clear();
     searchTrie.clear();
     roleIndex = { 'member': new Set(), 'trainer': new Set(), 'admin': new Set() };
-    statusIndex = { 'active': new Set(), 'suspended': new Set(), 'locked': new Set(), 'pending': new Set() };
+    statusIndex = { 'active': new Set(), 'locked': new Set(), 'pending': new Set() };
     verifiedIndex = { verified: new Set(), unverified: new Set() };
     membershipIndex = { active: new Set(), expired: new Set() };
     
@@ -705,14 +704,6 @@ function createUserRow(user) {
                     <button onclick="editUser('${user.id}')" class="action-btn action-btn-secondary" title="Edit User">
                         <i class="fa-solid fa-edit"></i>
                     </button>
-                    ${user.account_status === 'suspended' 
-                        ? `<button onclick="activateUser('${user.id}')" class="action-btn action-btn-success" title="Activate">
-                            <i class="fa-solid fa-check"></i>
-                           </button>`
-                        : `<button onclick="suspendUser('${user.id}')" class="action-btn action-btn-warning" title="Suspend">
-                            <i class="fa-solid fa-ban"></i>
-                           </button>`
-                    }
                     <button onclick="resetPassword('${user.id}')" class="action-btn action-btn-secondary" title="Reset Password">
                         <i class="fa-solid fa-key"></i>
                     </button>
@@ -736,7 +727,6 @@ function getRoleBadge(role) {
 function getStatusBadge(status) {
     const badges = {
         'active': '<span class="badge badge-active"><i class="fa-solid fa-circle-check"></i> Active</span>',
-        'suspended': '<span class="badge badge-suspended"><i class="fa-solid fa-circle-pause"></i> Suspended</span>',
         'locked': '<span class="badge badge-locked"><i class="fa-solid fa-lock"></i> Locked</span>',
         'pending': '<span class="badge badge-pending"><i class="fa-solid fa-circle-dot"></i> Pending</span>'
     };
@@ -930,38 +920,6 @@ async function resetPassword(userId) {
     } catch (error) {
         console.error('Error resetting password:', error);
         alert('Failed to reset password: ' + (error.message || 'Network error. Please check your connection and try again.'));
-    }
-}
-
-// Suspend user with O(1) lookup
-async function suspendUser(userId) {
-    const user = userHashTable.get(userId);
-    if (!user) {
-        alert('User not found');
-        return;
-    }
-
-    const reason = prompt(`Enter reason for suspending ${user.full_name}:`);
-    if (!reason) return;
-
-    try {
-        const response = await fetch('api/admin_users_api.php?action=suspendUser', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, reason })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            alert('✓ User suspended successfully');
-            await refreshSingleUser(userId);
-        } else {
-            alert('Error: ' + data.message);
-        }
-    } catch (error) {
-        console.error('Error suspending user:', error);
-        alert('Failed to suspend user');
     }
 }
 
@@ -1162,7 +1120,6 @@ function showEditModal(user) {
                                 <label>Account Status</label>
                                 <select id="edit_status" class="form-control">
                                     <option value="active" ${user.account_status === 'active' ? 'selected' : ''}>Active</option>
-                                    <option value="suspended" ${user.account_status === 'suspended' ? 'selected' : ''}>Suspended</option>
                                     <option value="locked" ${user.account_status === 'locked' ? 'selected' : ''}>Locked</option>
                                     <option value="pending" ${user.account_status === 'pending' ? 'selected' : ''}>Pending</option>
                                 </select>
@@ -1370,7 +1327,6 @@ function logPerformanceMetrics() {
     });
     console.log('Status distribution:', {
         active: statusIndex.active?.size || 0,
-        suspended: statusIndex.suspended?.size || 0,
         locked: statusIndex.locked?.size || 0,
         pending: statusIndex.pending?.size || 0
     });
