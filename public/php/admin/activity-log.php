@@ -73,6 +73,23 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
             font-size: 14px;
             min-width: 180px;
         }
+
+            /* Wrap long emails in Target User column */
+            .wrap-email {
+                word-break: break-all;
+                white-space: normal;
+                max-width: 180px;
+                line-height: 1.3;
+            }
+
+            /* Wrap or truncate long admin names */
+              .wrap-admin {
+                  max-width: 140px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                  word-break: break-all;
+              }
     </style>
 </head>
 
@@ -131,18 +148,18 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
 
         <!-- Activity Table -->
         <section class="logs">
-            <table>
-                <thead>
-                    <tr>
-                        <th width="40"></th>
-                        <th>Admin</th>
-                        <th>Action</th>
-                        <th>Target User</th>
-                        <th>Details</th>
-                        <th>Date & Time</th>
-                    </tr>
-                </thead>
-                <tbody>
+                <table style="table-layout: fixed; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 48px;"></th>
+                            <th style="width: 140px;">Admin</th>
+                            <th style="width: 140px;">Action</th>
+                            <th style="width: 140px;">Target User</th>
+                            <th style="width: 1fr;">Details</th>
+                            <th style="width: 160px;">Date & Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     <?php if (!empty($activities)): ?>
                         <?php foreach ($activities as $activity):
                             $iconData = ActivityLogger::getActivityIcon($activity['action_type']);
@@ -152,9 +169,9 @@ $activities = ActivityLogger::getActivities($limit, $actionFilter, $dateFilter);
                                     <i class="fa-solid <?= $iconData['icon'] ?>"
                                         style="color: <?= $iconData['color'] ?>; font-size: 18px;"></i>
                                 </td>
-                                <td><strong><?= htmlspecialchars($activity['admin_name']) ?></strong></td>
-                                <td><?= ucwords(str_replace('_', ' ', $activity['action_type'])) ?></td>
-                                <td><?= htmlspecialchars($activity['target_user'] ?? '-') ?></td>
+                                <td class="wrap-admin"><strong><?= htmlspecialchars($activity['admin_name']) ?></strong></td>
+                                    <td><?= ucwords(str_replace('_', ' ', $activity['action_type'])) ?></td>
+                                    <td class="wrap-email"><?= htmlspecialchars($activity['target_user'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($activity['details']) ?></td>
                                 <td style="color: #666; font-size: 13px;">
                                     <?php

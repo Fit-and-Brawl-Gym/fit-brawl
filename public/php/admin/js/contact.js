@@ -1,3 +1,7 @@
+// Helper to get CSRF token from hidden input
+function getCSRFToken() {
+    return document.getElementById('csrf_token')?.value || '';
+}
 async function loadContacts() {
     const res = await fetch('api/admin_contacts_api.php?action=fetch');
     const data = await res.json();
@@ -32,7 +36,7 @@ async function loadContacts() {
 async function markRead(id) {
     await fetch('api/admin_contacts_api.php?action=mark_read', {
         method: 'POST',
-        body: new URLSearchParams({ id })
+        body: new URLSearchParams({ id, csrf_token: getCSRFToken() })
     });
     loadContacts();
 }
@@ -41,7 +45,7 @@ async function deleteInquiry(id) {
     if (!confirm('Delete this inquiry?')) return;
     await fetch('api/admin_contacts_api.php?action=delete', {
         method: 'POST',
-        body: new URLSearchParams({ id })
+        body: new URLSearchParams({ id, csrf_token: getCSRFToken() })
     });
     loadContacts();
 }
@@ -54,7 +58,7 @@ function openReply(email) {
 
     fetch('api/admin_contacts_api.php?action=reply', {
         method: 'POST',
-        body: new URLSearchParams({ email, subject, message })
+        body: new URLSearchParams({ email, subject, message, csrf_token: getCSRFToken() })
     }).then(res => res.json())
         .then(data => alert(data.msg))
         .then(() => loadContacts());
