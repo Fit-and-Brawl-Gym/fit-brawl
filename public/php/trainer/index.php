@@ -28,33 +28,35 @@ $upcoming_bookings = [];
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
 
-    // Get trainer details from trainers table based on user email/name
-    $trainer_query = "SELECT id, name, specialization FROM trainers WHERE name = ? OR LOWER(name) = LOWER(?)";
+    // Get trainer details from trainers table based on user email
+    $trainer_query = "SELECT id, name, specialization FROM trainers WHERE email = ? AND status = 'Active' LIMIT 1";
     $stmt = $conn->prepare($trainer_query);
     if ($stmt) {
-        $username = $_SESSION['name'] ?? '';
-        $stmt->bind_param("ss", $username, $username);
+        $trainer_email = $_SESSION['email'] ?? '';
+        $stmt->bind_param("s", $trainer_email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($row = $result->fetch_assoc()) {
             $trainer_id = $row['id'];
             $trainer_name = $row['name'];
+        } else {
+            // Debug helper if no match found
+            error_log("Trainer not found for email: " . $trainer_email);
         }
         $stmt->close();
     }
 
     // Fetch upcoming bookings (next 5 bookings starting from today)
     if ($trainer_id) {
-        $upcoming_query = "SELECT r.*, u.name as member_name, u.email as member_email,
-                          ct.class_name as class_type
-                          FROM reservations r
-                          JOIN users u ON r.user_id = u.id
-                          LEFT JOIN class_types ct ON r.class_type_id = ct.id
-                          WHERE r.trainer_id = ?
-                          AND r.reservation_date >= CURDATE()
-                          AND r.booking_status = 'confirmed'
-                          ORDER BY r.reservation_date ASC, r.start_time ASC
+        $upcoming_query = "SELECT ur.*, u.username as member_name, u.email as member_email
+                          FROM user_reservations ur
+                          JOIN users u ON ur.user_id = u.id
+                          WHERE ur.trainer_id = ?
+                          AND ur.booking_date >= CURDATE()
+                          AND ur.booking_status = 'confirmed'
+                          ORDER BY ur.booking_date ASC,
+                                   FIELD(ur.session_time, 'Morning', 'Afternoon', 'Evening')
                           LIMIT 5";
         $stmt = $conn->prepare($upcoming_query);
         if ($stmt) {
@@ -68,6 +70,13 @@ if (isset($_SESSION['user_id'])) {
         }
     }
 }
+
+// Define session time ranges
+$sessionRanges = [
+    'Morning'   => '7-11 AM',
+    'Afternoon' => '1-5 PM',
+    'Evening'   => '6-10 PM'
+];
 
 // Set variables for header
 $pageTitle = "Home - Fit and Brawl Trainer";
@@ -91,11 +100,11 @@ $additionalCSS = [PUBLIC_PATH . "/css/pages/loggedin-homepage.css", PUBLIC_PATH 
                                 <div class="card-header">
                                     <span class="card-date">
                                         <i class="fas fa-calendar"></i>
-                                        <?= date('M j, Y', strtotime($booking['reservation_date'])) ?>
+                                        <?= date('M j, Y', strtotime($booking['booking_date'])) ?>
                                     </span>
                                     <span class="card-time">
                                         <i class="fas fa-clock"></i>
-                                        <?= date('g:i A', strtotime($booking['start_time'])) ?>
+                                        <?= htmlspecialchars($booking['session_time'] . ' (' . ($sessionRanges[$booking['session_time']] ?? 'N/A') . ')') ?>
                                     </span>
                                 </div>
                                 <div class="card-body">

@@ -57,8 +57,22 @@ try {
             $update_stmt->close();
         }
 
+        // Get updated counts after removal
+        $count_stmt = $conn->prepare("SELECT helpful_count, not_helpful_count FROM feedback WHERE id = ?");
+        $count_stmt->bind_param("i", $feedback_id);
+        $count_stmt->execute();
+        $counts = $count_stmt->get_result()->fetch_assoc();
+        $count_stmt->close();
+
         $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Vote removed']);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => 'Vote removed',
+            'helpful_count' => (int)$counts['helpful_count'],
+            'not_helpful_count' => (int)$counts['not_helpful_count'],
+            'user_vote' => null
+        ]);
         exit;
     }
 
@@ -111,8 +125,8 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Vote recorded',
-        'helpful_count' => $counts['helpful_count'],
-        'not_helpful_count' => $counts['not_helpful_count'],
+        'helpful_count' => (int)$counts['helpful_count'],
+        'not_helpful_count' => (int)$counts['not_helpful_count'],
         'user_vote' => $vote_type
     ]);
 
