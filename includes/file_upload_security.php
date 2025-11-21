@@ -126,7 +126,8 @@ class SecureFileUpload {
     private function reprocessImage($filePath, $mimeType) {
         // Check if GD extension is available
         if (!extension_loaded('gd')) {
-            error_log('GD extension not loaded - skipping image reprocessing');
+            error_log('WARNING: GD extension not loaded - EXIF metadata stripping skipped for: ' . basename($filePath));
+            error_log('To enable EXIF stripping, enable GD extension in php.ini and restart Apache');
             return ['success' => true]; // Don't fail upload if GD unavailable
         }
 
@@ -190,6 +191,7 @@ class SecureFileUpload {
                 return ['success' => false, 'message' => 'Failed to reprocess image'];
             }
 
+            error_log("SUCCESS: EXIF metadata stripped from image: " . basename($filePath) . " ({$width}x{$height})");
             return ['success' => true, 'message' => 'Image reprocessed successfully'];
 
         } catch (Exception $e) {

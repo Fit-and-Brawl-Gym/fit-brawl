@@ -70,6 +70,7 @@ function initializeEventListeners() {
         const addModal = document.getElementById('addMembershipModal');
         const historyModal = document.getElementById('paymentHistoryModal');
 
+
         if (event.target === addModal) {
             closeAddMembershipModal();
         }
@@ -284,7 +285,7 @@ function createMembershipRow(membership) {
     const statusBadge = getStatusBadge(membership, daysRemaining);
     const daysRemainingClass = getDaysRemainingClass(daysRemaining);
     const paymentBadge = getPaymentBadge(membership);
-    const avatar = membership.profile_image
+    const avatar = membership.profile_image 
         ? `<img src="${IMAGES_PATH}/${membership.profile_image}" alt="${membership.name}" class="user-avatar">`
         : `<img src="${IMAGES_PATH}/account-icon.svg" alt="${membership.name}" class="user-avatar">`;
 

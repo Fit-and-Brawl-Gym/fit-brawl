@@ -62,8 +62,10 @@ class Trie {
     insert(word, userId) {
         if (!word) return;
 
+
         word = word.toLowerCase();
         let node = this.root;
+
 
         for (const char of word) {
             if (!node.children.has(char)) {
@@ -72,6 +74,7 @@ class Trie {
             node = node.children.get(char);
             node.userIds.add(userId); // Track all users with this prefix
         }
+
 
         node.isEndOfWord = true;
     }
@@ -83,8 +86,10 @@ class Trie {
     searchPrefix(prefix) {
         if (!prefix) return new Set();
 
+
         prefix = prefix.toLowerCase();
         let node = this.root;
+
 
         for (const char of prefix) {
             if (!node.children.has(char)) {
@@ -92,6 +97,7 @@ class Trie {
             }
             node = node.children.get(char);
         }
+
 
         return node.userIds;
     }
@@ -123,11 +129,13 @@ class BinarySearchTree {
     insert(user, compareKey) {
         const newNode = new BSTNode(user, compareKey);
 
+
         if (!this.root) {
             this.root = newNode;
             this.size++;
             return;
         }
+
 
         this._insertNode(this.root, newNode);
         this.size++;
@@ -189,6 +197,7 @@ class MinHeap {
         if (this.heap.length === 0) return null;
         if (this.heap.length === 1) return this.heap.pop();
 
+
         const min = this.heap[0];
         this.heap[0] = this.heap.pop();
         this._bubbleDown(0);
@@ -199,6 +208,7 @@ class MinHeap {
         while (index > 0) {
             const parentIndex = Math.floor((index - 1) / 2);
             if (this.compareFunction(this.heap[index], this.heap[parentIndex]) >= 0) break;
+
 
             [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]];
             index = parentIndex;
@@ -212,16 +222,22 @@ class MinHeap {
             const rightChild = 2 * index + 2;
 
             if (leftChild < this.heap.length &&
+
+            if (leftChild < this.heap.length &&
                 this.compareFunction(this.heap[leftChild], this.heap[smallest]) < 0) {
                 smallest = leftChild;
             }
+
+            if (rightChild < this.heap.length &&
 
             if (rightChild < this.heap.length &&
                 this.compareFunction(this.heap[rightChild], this.heap[smallest]) < 0) {
                 smallest = rightChild;
             }
 
+
             if (smallest === index) break;
+
 
             [this.heap[index], this.heap[smallest]] = [this.heap[smallest], this.heap[index]];
             index = smallest;
@@ -665,11 +681,11 @@ function createUserRow(user) {
 
     // Determine avatar source with proper path logic
     let avatarSrc = '../../../images/account-icon.svg'; // Default icon
-
-    if (user.avatar &&
-        user.avatar !== 'account-icon.svg' &&
-        user.avatar !== 'account-icon-white.svg' &&
-        user.avatar !== 'default-avatar.png' &&
+    
+    if (user.avatar && 
+        user.avatar !== 'account-icon.svg' && 
+        user.avatar !== 'account-icon-white.svg' && 
+        user.avatar !== 'default-avatar.png' && 
         user.avatar.trim() !== '') {
         // User has uploaded a custom avatar
         avatarSrc = `../../../uploads/avatars/${user.avatar}`;
@@ -679,7 +695,7 @@ function createUserRow(user) {
         <tr>
             <td>
                 <div class="user-cell">
-                    <img src="${avatarSrc}" alt="${escapeHtml(user.full_name)}" class="user-avatar" onerror="this.src='../../../images/account-icon.svg'">
+                    <img src="${avatarSrc}" alt="${escapeHtml(user.full_name)}" class="user-avatar" onerror="this.src='${IMAGES_PATH}/account-icon.svg'">
                     <div class="user-info">
                         <div class="user-name">${escapeHtml(user.full_name)}</div>
                         <div class="user-username">@${escapeHtml(user.username)}</div>
