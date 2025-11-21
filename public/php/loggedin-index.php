@@ -301,11 +301,17 @@ $sessionHours = [
                 <i class="fas fa-calendar-plus"></i>
             </div>
             <div class="card-content">
-                <h2>Book a Session</h2>
-                <p>Schedule your next training session</p>
+                <h2><?= $hasActiveMembership ? 'Book a Session' : 'Get Started' ?></h2>
+                <p><?= $hasActiveMembership ? 'Schedule your next training session' : 'Get a membership to start booking sessions' ?></p>
             </div>
             <a href="<?= htmlspecialchars($membershipLink) ?>" class="card-btn">
-                Book Now <i class="fas fa-arrow-right"></i>
+                <?php if ($hasActiveMembership): ?>
+                    Book Now <i class="fas fa-arrow-right"></i>
+                <?php elseif ($hasAnyRequest): ?>
+                    View Status <i class="fas fa-clock"></i>
+                <?php else: ?>
+                    View Plans <i class="fas fa-ticket-alt"></i>
+                <?php endif; ?>
             </a>
         </div>
 
