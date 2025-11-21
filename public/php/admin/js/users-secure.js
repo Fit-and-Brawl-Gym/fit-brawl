@@ -61,10 +61,10 @@ class Trie {
      */
     insert(word, userId) {
         if (!word) return;
-        
+
         word = word.toLowerCase();
         let node = this.root;
-        
+
         for (const char of word) {
             if (!node.children.has(char)) {
                 node.children.set(char, new TrieNode());
@@ -72,7 +72,7 @@ class Trie {
             node = node.children.get(char);
             node.userIds.add(userId); // Track all users with this prefix
         }
-        
+
         node.isEndOfWord = true;
     }
 
@@ -82,17 +82,17 @@ class Trie {
      */
     searchPrefix(prefix) {
         if (!prefix) return new Set();
-        
+
         prefix = prefix.toLowerCase();
         let node = this.root;
-        
+
         for (const char of prefix) {
             if (!node.children.has(char)) {
                 return new Set();
             }
             node = node.children.get(char);
         }
-        
+
         return node.userIds;
     }
 
@@ -122,13 +122,13 @@ class BinarySearchTree {
 
     insert(user, compareKey) {
         const newNode = new BSTNode(user, compareKey);
-        
+
         if (!this.root) {
             this.root = newNode;
             this.size++;
             return;
         }
-        
+
         this._insertNode(this.root, newNode);
         this.size++;
     }
@@ -188,7 +188,7 @@ class MinHeap {
     extractMin() {
         if (this.heap.length === 0) return null;
         if (this.heap.length === 1) return this.heap.pop();
-        
+
         const min = this.heap[0];
         this.heap[0] = this.heap.pop();
         this._bubbleDown(0);
@@ -199,7 +199,7 @@ class MinHeap {
         while (index > 0) {
             const parentIndex = Math.floor((index - 1) / 2);
             if (this.compareFunction(this.heap[index], this.heap[parentIndex]) >= 0) break;
-            
+
             [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]];
             index = parentIndex;
         }
@@ -210,19 +210,19 @@ class MinHeap {
             let smallest = index;
             const leftChild = 2 * index + 1;
             const rightChild = 2 * index + 2;
-            
-            if (leftChild < this.heap.length && 
+
+            if (leftChild < this.heap.length &&
                 this.compareFunction(this.heap[leftChild], this.heap[smallest]) < 0) {
                 smallest = leftChild;
             }
-            
-            if (rightChild < this.heap.length && 
+
+            if (rightChild < this.heap.length &&
                 this.compareFunction(this.heap[rightChild], this.heap[smallest]) < 0) {
                 smallest = rightChild;
             }
-            
+
             if (smallest === index) break;
-            
+
             [this.heap[index], this.heap[smallest]] = [this.heap[smallest], this.heap[index]];
             index = smallest;
         }
@@ -363,7 +363,7 @@ async function loadEditableFields() {
     try {
         const response = await fetch('api/admin_users_api.php?action=getEditableFields');
         const data = await response.json();
-        
+
         if (data.success) {
             editableFields = data.fields;
         }
@@ -387,10 +387,10 @@ async function loadUsers() {
         }
 
         allUsers = data.users;
-        
+
         // Build efficient data structures for O(1) lookups
         buildDataStructures();
-        
+
         updateStatCards();
         applyFilters();
 
@@ -407,7 +407,7 @@ async function loadUsers() {
  */
 function buildDataStructures() {
     console.time('Building DSA structures');
-    
+
     // Clear existing structures
     userHashTable.clear();
     searchTrie.clear();
@@ -415,14 +415,14 @@ function buildDataStructures() {
     statusIndex = { 'active': new Set(), 'locked': new Set(), 'pending': new Set() };
     verifiedIndex = { verified: new Set(), unverified: new Set() };
     membershipIndex = { active: new Set(), expired: new Set() };
-    
+
     // Build all indexes in single pass - O(n)
     for (const user of allUsers) {
         const userId = user.id;
-        
+
         // HashTable for O(1) user lookup by ID
         userHashTable.insert(userId, user);
-        
+
         // Trie for O(m) prefix search (m = prefix length)
         if (user.full_name) {
             searchTrie.insert(user.full_name, userId);
@@ -433,24 +433,24 @@ function buildDataStructures() {
         if (user.email) {
             searchTrie.insert(user.email, userId);
         }
-        
+
         // Role index for O(1) role filtering
         if (roleIndex[user.role]) {
             roleIndex[user.role].add(userId);
         }
-        
+
         // Status index for O(1) status filtering
         if (statusIndex[user.account_status]) {
             statusIndex[user.account_status].add(userId);
         }
-        
+
         // Verified index for O(1) verification filtering
         if (user.is_verified == 1) {
             verifiedIndex.verified.add(userId);
         } else {
             verifiedIndex.unverified.add(userId);
         }
-        
+
         // Membership index for O(1) membership filtering
         // Check if user has active membership/subscription
         if (user.membership_status === 'active' || user.membership_status === 'Active') {
@@ -459,7 +459,7 @@ function buildDataStructures() {
             membershipIndex.expired.add(userId);
         }
     }
-    
+
     console.timeEnd('Building DSA structures');
     console.log('Index Stats:', {
         totalUsers: userHashTable.size,
@@ -491,47 +491,47 @@ function updateStatCards() {
  */
 function applyFilters() {
     console.time('Filtering with DSA');
-    
+
     // Start with all user IDs
     let resultSet = new Set(userHashTable.table.keys());
-    
+
     // Apply role filter using index - O(1) lookup
     if (currentFilters.role !== 'all') {
         resultSet = setIntersection(resultSet, roleIndex[currentFilters.role] || new Set());
     }
-    
+
     // Apply status filter using index - O(1) lookup
     if (currentFilters.status !== 'all') {
         resultSet = setIntersection(resultSet, statusIndex[currentFilters.status] || new Set());
     }
-    
+
     // Apply verified filter using index - O(1) lookup
     if (currentFilters.verified !== 'all') {
         const verifiedSet = currentFilters.verified == '1' ? verifiedIndex.verified : verifiedIndex.unverified;
         resultSet = setIntersection(resultSet, verifiedSet);
     }
-    
+
     // Apply membership filter using index - O(1) lookup
     if (currentFilters.membership !== 'all') {
         const membershipSet = currentFilters.membership === 'active' ? membershipIndex.active : membershipIndex.expired;
         resultSet = setIntersection(resultSet, membershipSet);
     }
-    
+
     // Apply search filter using Trie - O(p) where p is prefix length
     if (currentFilters.search && currentFilters.search.trim()) {
         const searchResults = searchTrie.searchPrefix(currentFilters.search.trim());
         resultSet = setIntersection(resultSet, searchResults);
     }
-    
+
     // Convert result set to user objects using HashTable - O(k)
     filteredUsers = Array.from(resultSet).map(userId => userHashTable.get(userId));
-    
+
     console.timeEnd('Filtering with DSA');
     console.log(`Filtered ${filteredUsers.length} users from ${userHashTable.size} total`);
-    
+
     // Apply sorting
     sortUsers();
-    
+
     // Render
     renderUsersTable();
 }
@@ -541,16 +541,16 @@ function applyFilters() {
  */
 function setIntersection(setA, setB) {
     const result = new Set();
-    
+
     // Iterate through smaller set for efficiency
     const [smaller, larger] = setA.size < setB.size ? [setA, setB] : [setB, setA];
-    
+
     for (const item of smaller) {
         if (larger.has(item)) {
             result.add(item);
         }
     }
-    
+
     return result;
 }
 
@@ -561,9 +561,9 @@ function setIntersection(setA, setB) {
  */
 function sortUsers() {
     console.time('Sorting');
-    
+
     const LARGE_DATASET_THRESHOLD = 1000;
-    
+
     if (filteredUsers.length < LARGE_DATASET_THRESHOLD) {
         // Use native TimSort for smaller datasets
         filteredUsers.sort((a, b) => {
@@ -583,24 +583,24 @@ function sortUsers() {
     } else {
         // Use BST for larger datasets
         sortedBST = new BinarySearchTree(getCompareFunctionForSort());
-        
+
         for (const user of filteredUsers) {
             const compareKey = getCompareKeyForUser(user);
             sortedBST.insert(user, compareKey);
         }
-        
+
         // Extract sorted results from BST
         const sortedResults = [];
         sortedBST.inOrderTraversal(user => sortedResults.push(user));
-        
+
         // Reverse if descending order
         if (currentFilters.sort.includes('desc')) {
             sortedResults.reverse();
         }
-        
+
         filteredUsers = sortedResults;
     }
-    
+
     console.timeEnd('Sorting');
 }
 
@@ -662,24 +662,28 @@ function createUserRow(user) {
     const statusBadge = getStatusBadge(user.account_status);
     const verifiedBadge = getVerifiedBadge(user.is_verified);
     const membershipBadge = getMembershipBadge(user.membership_status);
-    
+
     // Determine avatar source with proper path logic
-    let avatarSrc = '../../../images/account-icon.svg'; // Default icon
-    
-    if (user.avatar && 
-        user.avatar !== 'account-icon.svg' && 
-        user.avatar !== 'account-icon-white.svg' && 
-        user.avatar !== 'default-avatar.png' && 
-        user.avatar.trim() !== '') {
-        // User has uploaded a custom avatar
-        avatarSrc = `../../../uploads/avatars/${user.avatar}`;
+    // For trainers, prioritize trainer_photo over user avatar
+    let avatarSrc = `${IMAGES_PATH}/account-icon.svg`; // Default
+
+    if (user.role === 'trainer' && user.trainer_photo && user.trainer_photo.trim() !== '') {
+        // Trainer with photo from trainers table
+        avatarSrc = `${BASE_PATH}/uploads/trainers/${user.trainer_photo}`;
+    } else if (user.avatar &&
+               user.avatar !== 'account-icon.svg' &&
+               user.avatar !== 'account-icon-white.svg' &&
+               user.avatar !== 'default-avatar.png' &&
+               user.avatar.trim() !== '') {
+        // User with custom avatar from users table
+        avatarSrc = `${BASE_PATH}/uploads/avatars/${user.avatar}`;
     }
 
     return `
         <tr>
             <td>
                 <div class="user-cell">
-                    <img src="${avatarSrc}" alt="${escapeHtml(user.full_name)}" class="user-avatar" onerror="this.src='../../../images/account-icon.svg'">
+                    <img src="${avatarSrc}" alt="${escapeHtml(user.full_name)}" class="user-avatar" onerror="this.src='${IMAGES_PATH}/account-icon.svg'">
                     <div class="user-info">
                         <div class="user-name">${escapeHtml(user.full_name)}</div>
                         <div class="user-username">@${escapeHtml(user.username)}</div>
@@ -755,12 +759,12 @@ async function viewUserDetails(userId) {
     try {
         // Check cache first - O(1)
         const cachedUser = userHashTable.get(userId);
-        
+
         if (cachedUser) {
             // Show basic info immediately from cache
             showUserDetailsPanel(cachedUser, null);
         }
-        
+
         // Fetch full details including activity
         const response = await fetch(`api/admin_users_api.php?action=getUserDetails&user_id=${userId}`);
         const data = await response.json();
@@ -772,7 +776,7 @@ async function viewUserDetails(userId) {
 
         // Update cache
         userHashTable.insert(userId, data.user);
-        
+
         // Update panel with full details
         showUserDetailsPanel(data.user, data.recent_activity);
     } catch (error) {
@@ -960,12 +964,12 @@ async function activateUser(userId) {
 async function saveUserProfile(userId, updates) {
     // Check if role is being changed using HashTable - O(1)
     const user = userHashTable.get(userId);
-    
+
     if (!user) {
         alert('User not found');
         return;
     }
-    
+
     if (updates.role && user.role !== updates.role) {
         // Generate security code for role change
         await generateAndShowSecurityCode(userId, updates);
@@ -1014,7 +1018,7 @@ async function submitUserUpdate(userId, updates) {
         if (data.success) {
             alert('✓ User profile updated successfully');
             closeEditModal();
-            
+
             // Optimized update: Refresh single user instead of reloading all
             await refreshSingleUser(userId);
         } else {
@@ -1082,7 +1086,7 @@ function closeSecurityCodeModal() {
 
 async function confirmWithSecurityCode(userId, updates) {
     const code = document.getElementById('securityCodeInput').value.trim();
-    
+
     if (!code) {
         alert('Please enter the security code');
         return;
@@ -1210,21 +1214,21 @@ async function refreshSingleUser(userId) {
         if (data.success) {
             const oldUser = userHashTable.get(userId);
             const newUser = data.user;
-            
+
             // Update in allUsers array
             const index = allUsers.findIndex(u => u.id === userId);
             if (index !== -1) {
                 allUsers[index] = newUser;
             }
-            
+
             // Update HashTable
             userHashTable.insert(userId, newUser);
-            
+
             // Update indexes if role/status/verified changed
             if (oldUser) {
                 updateIndexesForUser(oldUser, newUser);
             }
-            
+
             // Reapply filters and render
             updateStatCards();
             applyFilters();
@@ -1241,24 +1245,24 @@ async function refreshSingleUser(userId) {
  */
 function updateIndexesForUser(oldUser, newUser) {
     const userId = newUser.id;
-    
+
     // Update role index
     if (oldUser.role !== newUser.role) {
         roleIndex[oldUser.role]?.delete(userId);
         roleIndex[newUser.role]?.add(userId);
     }
-    
+
     // Update status index
     if (oldUser.account_status !== newUser.account_status) {
         statusIndex[oldUser.account_status]?.delete(userId);
         statusIndex[newUser.account_status]?.add(userId);
     }
-    
+
     // Update verified index
     if (oldUser.is_verified !== newUser.is_verified) {
         const oldVerified = oldUser.is_verified == 1;
         const newVerified = newUser.is_verified == 1;
-        
+
         if (oldVerified !== newVerified) {
             if (oldVerified) {
                 verifiedIndex.verified.delete(userId);
@@ -1269,10 +1273,10 @@ function updateIndexesForUser(oldUser, newUser) {
             }
         }
     }
-    
+
     // Update Trie if searchable fields changed
-    if (oldUser.full_name !== newUser.full_name || 
-        oldUser.username !== newUser.username || 
+    if (oldUser.full_name !== newUser.full_name ||
+        oldUser.username !== newUser.username ||
         oldUser.email !== newUser.email) {
         // Rebuild Trie (only needed when search fields change)
         buildSearchTrie();
@@ -1284,10 +1288,10 @@ function updateIndexesForUser(oldUser, newUser) {
  */
 function buildSearchTrie() {
     searchTrie.clear();
-    
+
     for (const user of allUsers) {
         const userId = user.id;
-        
+
         if (user.full_name) {
             searchTrie.insert(user.full_name, userId);
         }

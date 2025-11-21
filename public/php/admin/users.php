@@ -172,7 +172,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     </select>
                 </div>
             </div>
-            
+
             <div class="table-container">
                 <table class="users-table" id="usersTable">
                     <thead>
@@ -215,6 +215,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         </div>
     </div>
 
+    <script>
+        const PUBLIC_PATH = '<?= PUBLIC_PATH ?>';
+        const IMAGES_PATH = '<?= IMAGES_PATH ?>';
+        const BASE_PATH = '<?= BASE_PATH ?>';
+    </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/users-secure.js"></script>
 </body>
