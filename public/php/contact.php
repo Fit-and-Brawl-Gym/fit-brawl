@@ -164,8 +164,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (empty($phoneNum)) {
         $phoneErr = "Phone number is required";
-    } elseif (!preg_match("/^[0-9]{10,15}$/", $phoneNum)) {
-        $phoneErr = "Invalid phone number format";
+    } elseif (!preg_match("/^9[0-9]{9}$/", $phoneNum)) {
+        $phoneErr = "Phone number must start with 9 and be 10 digits";
     }
 
     if (empty($message)) {
@@ -330,9 +330,12 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <i class="fas fa-phone"></i>
                                     Phone Number <span class="required">*</span>
                                 </label>
-                                <input type="tel" id="phone" name="phone" placeholder="09123456789"
-                                    value="<?= htmlspecialchars($phoneNum) ?>"
-                                    class="<?= !empty($phoneErr) ? 'error' : '' ?>">
+                                <div class="phone-input-wrapper <?= !empty($phoneErr) ? 'error' : '' ?>">
+                                    <span class="phone-prefix">+63</span>
+                                    <input type="tel" id="phone" name="phone" placeholder="9123456789"
+                                        value="<?= htmlspecialchars($phoneNum) ?>" maxlength="10" pattern="9[0-9]{9}"
+                                        title="Phone number must start with 9 and be 10 digits">
+                                </div>
                                 <?php if (!empty($phoneErr)): ?>
                                     <span class="error-message"><?= htmlspecialchars($phoneErr) ?></span>
                                 <?php endif; ?>
@@ -344,8 +347,12 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <i class="fas fa-phone"></i>
                                 Phone Number <span class="required">*</span>
                             </label>
-                            <input type="tel" id="phone" name="phone" placeholder="09123456789"
-                                value="<?= htmlspecialchars($phoneNum) ?>" class="<?= !empty($phoneErr) ? 'error' : '' ?>">
+                            <div class="phone-input-wrapper <?= !empty($phoneErr) ? 'error' : '' ?>">
+                                <span class="phone-prefix">+63</span>
+                                <input type="tel" id="phone" name="phone" placeholder="9123456789"
+                                    value="<?= htmlspecialchars($phoneNum) ?>" maxlength="10" pattern="9[0-9]{9}"
+                                    title="Phone number must start with 9 and be 10 digits">
+                            </div>
                             <?php if (!empty($phoneErr)): ?>
                                 <span class="error-message"><?= htmlspecialchars($phoneErr) ?></span>
                             <?php endif; ?>
@@ -375,5 +382,66 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </div>
 </main>
+
+<script>
+// Phone number input validation and formatting
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('phone');
+    
+    if (phoneInput) {
+        // Only allow numbers
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            
+            // Remove all non-digit characters
+            value = value.replace(/\D/g, '');
+            
+            // Ensure it starts with 9
+            if (value.length > 0 && value[0] !== '9') {
+                value = '9' + value;
+            }
+            
+            // Limit to 10 digits
+            if (value.length > 10) {
+                value = value.substring(0, 10);
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Prevent non-numeric keypresses
+        phoneInput.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            if (!/[0-9]/.test(char)) {
+                e.preventDefault();
+            }
+        });
+        
+        // Auto-add 9 if empty and user starts typing
+        phoneInput.addEventListener('focus', function(e) {
+            if (e.target.value === '') {
+                e.target.value = '9';
+            }
+        });
+        
+        // Validate on blur
+        phoneInput.addEventListener('blur', function(e) {
+            const value = e.target.value;
+            if (value === '9' || value === '') {
+                e.target.value = '';
+            } else if (value.length < 10) {
+                e.target.setCustomValidity('Phone number must be 10 digits starting with 9');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        });
+        
+        // Clear custom validity on input
+        phoneInput.addEventListener('input', function(e) {
+            e.target.setCustomValidity('');
+        });
+    }
+});
+</script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

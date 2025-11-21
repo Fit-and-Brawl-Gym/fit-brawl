@@ -123,37 +123,29 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
       <div class="card">
         <div class="card-icon">
           <i class="fa-solid fa-users"></i>
+          <h2><?= $totalMembers ?></h2>
+
         </div>
-        <h2><?= $totalMembers ?></h2>
         <p>Total Members</p>
       </div>
       <div class="card">
         <div class="card-icon">
           <i class="fa-solid fa-dumbbell"></i>
+          <h2><?= $totalTrainers ?></h2>
         </div>
-        <h2><?= $totalTrainers ?></h2>
         <p>Active Trainers</p>
       </div>
       <div class="card <?= $pendingSubs > 0 ? "has-pending" : "" ?>">
         <div class="card-icon">
           <i class="fa-solid fa-clock"></i>
+          <h2><?= $pendingSubs ?></h2>
         </div>
-        <h2><?= $pendingSubs ?></h2>
-        <p>Pending Subscriptions</p>
+        <p>Membership Requests</p>
         <?php if ($pendingSubs > 0): ?>
           <a href="subscriptions.php" class="card-action">Review Now →</a>
         <?php endif; ?>
       </div>
-      <div class="card <?= $pendingRes > 0 ? "has-pending" : "" ?>">
-        <div class="card-icon">
-          <i class="fa-solid fa-calendar-check"></i>
-        </div>
-        <h2><?= $pendingRes ?></h2>
-        <p>Pending Reservations</p>
-        <?php if ($pendingRes > 0): ?>
-          <a href="reservations.php" class="card-action">Review Now →</a>
-        <?php endif; ?>
-      </div>
+
       <?php
       // Get unread contact count
       $unreadContacts = 0;
@@ -169,8 +161,9 @@ if ($conn->query("SHOW TABLES LIKE 'reservations'")->num_rows) {
           : "" ?>">
         <div class="card-icon">
           <i class="fa-solid fa-envelope"></i>
+          <h2><?= $unreadContacts ?></h2>
+
         </div>
-        <h2><?= $unreadContacts ?></h2>
         <p>Unread Messages</p>
         <?php if ($unreadContacts > 0): ?>
           <a href="contacts.php" class="card-action">View Messages →</a>

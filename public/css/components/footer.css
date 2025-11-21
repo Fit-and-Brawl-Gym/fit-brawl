@@ -7,7 +7,6 @@ footer {
 }
 
 .footer-contents {
-.footer-contents {
     display: flex;
     justify-content: space-around;
     width: 90dvw;
@@ -20,17 +19,8 @@ footer {
 footer p {
     margin: 0;
     padding: 0;
-footer p {
-    margin: 0;
-    padding: 0;
 }
 
-.copyright {
-    background-color: var(--color-accent);
-    color: black;
-    width: 100%;
-    text-align: center;
-    padding: 1rem 0;
 .copyright {
     background-color: var(--color-accent);
     color: black;
@@ -45,18 +35,18 @@ footer p {
     gap: 0.5rem;
 }
 
-.footer-menu-list p {
+/* .footer-menu-list p {
     margin: 0;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-}
-
+} */
+/* 
 .footer-menu-list p {
     margin: 0;
     padding: 0;
-}
-}
+} */
+
 
 @media screen and (max-width: 900px) {
     .footer-contents {

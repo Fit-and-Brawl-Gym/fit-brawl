@@ -304,6 +304,58 @@ textarea {
   line-height: var(--line-height-relaxed);
 }
 
+/* Phone Input with Prefix */
+.phone-input-wrapper {
+  display: flex;
+  align-items: center;
+  width: 90%;
+  border: 1px solid rgba(255, 206, 0, 0.15);
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  overflow: hidden;
+  transition: var(--transition-base);
+}
+
+.phone-input-wrapper:focus-within {
+  border-color: rgba(255, 206, 0, 0.4);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 15px rgba(255, 206, 0, 0.15);
+}
+
+.phone-input-wrapper.error {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.phone-prefix {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-3) var(--spacing-4) var(--spacing-3) var(--spacing-4);
+  color: var(--color-accent);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  background: rgba(255, 206, 0, 0.1);
+  border-right: 1px solid rgba(255, 206, 0, 0.15);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.phone-input-wrapper input {
+  flex: 1;
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  margin: 0;
+}
+
+.phone-input-wrapper input:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
 .error-message {
   font-size: var(--font-size-xs);
   color: #fca5a5;

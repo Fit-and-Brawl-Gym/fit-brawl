@@ -104,13 +104,14 @@ $session_map = [
                 <h1>Trainer Details</h1>
                 <p class="subtitle">View trainer information and activity</p>
             </div>
-            <div style="display: flex; gap: 12px;">
-                <a href="trainer_edit.php?id=<?= $trainer_id ?>" class="btn-primary">
-                    <i class="fas fa-edit"></i> Edit Trainer
-                </a>
+            <div class="page-header-buttons">
                 <a href="trainers.php" class="btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back
                 </a>
+                <a href="trainer_edit.php?id=<?= $trainer_id ?>" class="btn-primary">
+                    <i class="fas fa-edit"></i> Edit Trainer
+                </a>
+               
             </div>
         </div>
 

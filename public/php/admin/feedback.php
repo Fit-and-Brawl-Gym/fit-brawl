@@ -42,8 +42,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                         <i class="fa-solid fa-comments"></i>
                     </div>
                     <div class="stat-content">
-                        <span>Total</span>
                         <strong id="totalCount">0</strong>
+                        <span>Total</span>
                     </div>
                 </div>
                 <div class="stat-item">
@@ -51,8 +51,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                         <i class="fa-solid fa-eye"></i>
                     </div>
                     <div class="stat-content">
-                        <span>Visible</span>
                         <strong id="visibleCount">0</strong>
+                        <span>Visible</span>
                     </div>
                 </div>
                 <div class="stat-item">
@@ -60,8 +60,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                         <i class="fa-solid fa-eye-slash"></i>
                     </div>
                     <div class="stat-content">
-                        <span>Hidden</span>
                         <strong id="hiddenCount">0</strong>
+                        <span>Hidden</span>
+
                     </div>
                 </div>
             </div>

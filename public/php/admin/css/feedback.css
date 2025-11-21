@@ -51,8 +51,8 @@
 }
 
 .stat-icon.hidden {
-    background: var(--admin-status-bg-warning);
-    color: var(--admin-icon-color-yellow);
+    background:#b8b8b81a;
+    color: #373737;
 }
 
 .stat-content span {
@@ -121,7 +121,6 @@
     box-shadow: var(--admin-shadow-card);
     transition: all var(--admin-transition-base) ease;
     position: relative;
-    border-left: 4px solid transparent;
 }
 
 .feedback-card:hover {
@@ -268,8 +267,8 @@
 }
 
 .btn-hide {
-    background: var(--admin-status-bg-warning);
-    color: var(--admin-icon-color-yellow);
+    background:#b8b8b81a;
+    color: #373737;
 }
 
 .btn-hide:hover {

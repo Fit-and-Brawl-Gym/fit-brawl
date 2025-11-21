@@ -4,28 +4,10 @@
 
 .cards {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--admin-gap-lg);
     margin-bottom: var(--admin-section-margin);
-}
-
-/* Responsive: stack on smaller screens */
-@media (max-width: 1400px) {
-    .cards {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (max-width: 900px) {
-    .cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 600px) {
-    .cards {
-        grid-template-columns: 1fr;
-    }
+    width: 100%;
 }
 
 .card {
@@ -40,6 +22,8 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+    justify-content: center;
+    min-height: 200px;
 }
 
 .card:hover {
@@ -65,6 +49,10 @@
     margin-bottom: 1rem;
     opacity: 0.8;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
 }
 
 .card:hover .card-icon {
@@ -97,7 +85,7 @@
 }
 
 .card.has-unread .card-icon {
-    animation: shake 0.5s infinite;
+    animation: pulse 2s infinite;
 }
 
 @keyframes shake {
@@ -163,4 +151,66 @@
 
 .logs tbody tr:hover {
     background: var(--admin-table-row-hover);
+}
+
+/* =========================== */
+/* RESPONSIVE CARDS            */
+/* =========================== */
+
+/* Tablet View: 2 cards per row */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile View: 1 card per row */
+@media (max-width: 768px) {
+    .cards {
+        grid-template-columns: 1fr;
+        gap: var(--admin-gap-md);
+    }
+
+    .card {
+        min-height: 180px;
+    }
+
+    .card h2 {
+        font-size: var(--admin-font-size-4xl);
+    }
+
+    .card-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* Small Mobile: Extra compact */
+@media (max-width: 480px) {
+    .cards {
+        gap: var(--admin-gap-sm);
+    }
+
+    .card {
+        padding: 1.25rem;
+        min-height: 160px;
+    }
+
+    .card h2 {
+        font-size: var(--admin-font-size-3xl);
+    }
+
+    .card p {
+        font-size: var(--admin-font-size-sm);
+    }
+
+    .card-icon {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-action {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
 }

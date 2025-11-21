@@ -63,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate required fields
     if (empty($name) || empty($email) || empty($phone) || empty($specialization)) {
         $error = 'Please fill in all required fields.';
+    } elseif (!preg_match("/^9[0-9]{9}$/", $phone)) {
+        $error = 'Phone number must start with 9 and be 10 digits (e.g., 9171234567).';
     } elseif (count($day_offs) !== 2) {
         $error = 'You must select exactly 2 days off per week.';
     } else {
@@ -237,8 +239,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-row">
                         <div class="form-group">
                             <label for="phone">Phone Number <span class="required">*</span></label>
-                            <input type="tel" id="phone" name="phone" placeholder="+63-917-XXX-XXXX" required
-                                value="<?= htmlspecialchars($trainer['phone']) ?>">
+                            <div class="phone-input-wrapper">
+                                <span class="phone-prefix">+63</span>
+                                <input type="tel" id="phone" name="phone" placeholder="9123456789"
+                                    value="<?= htmlspecialchars($trainer['phone']) ?>" required
+                                    maxlength="10" pattern="9[0-9]{9}"
+                                    title="Phone number must start with 9 and be 10 digits">
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -402,6 +409,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Initialize count
             updateDayOffCount();
+
+            // Phone number validation
+            const phoneInput = document.getElementById('phone');
+            
+            if (phoneInput) {
+                // Only allow numbers
+                phoneInput.addEventListener('input', function(e) {
+                    let value = e.target.value;
+                    
+                    // Remove all non-digit characters
+                    value = value.replace(/\D/g, '');
+                    
+                    // Ensure it starts with 9
+                    if (value.length > 0 && value[0] !== '9') {
+                        value = '9' + value;
+                    }
+                    
+                    // Limit to 10 digits
+                    if (value.length > 10) {
+                        value = value.substring(0, 10);
+                    }
+                    
+                    e.target.value = value;
+                });
+                
+                // Prevent non-numeric keypresses
+                phoneInput.addEventListener('keypress', function(e) {
+                    const char = String.fromCharCode(e.which);
+                    if (!/[0-9]/.test(char)) {
+                        e.preventDefault();
+                    }
+                });
+                
+                // Auto-add 9 if empty and user starts typing
+                phoneInput.addEventListener('focus', function(e) {
+                    if (e.target.value === '') {
+                        e.target.value = '9';
+                    }
+                });
+                
+                // Validate on blur
+                phoneInput.addEventListener('blur', function(e) {
+                    const value = e.target.value;
+                    if (value === '9' || value === '') {
+                        e.target.value = '';
+                    } else if (value.length < 10) {
+                        e.target.setCustomValidity('Phone number must be 10 digits starting with 9');
+                    } else {
+                        e.target.setCustomValidity('');
+                    }
+                });
+                
+                // Clear custom validity on input
+                phoneInput.addEventListener('input', function(e) {
+                    e.target.setCustomValidity('');
+                });
+            }
         });
     </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>

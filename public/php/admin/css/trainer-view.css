@@ -308,22 +308,19 @@
 /* Page Header */
 .page-header {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 24px;
     margin-bottom: 24px;
     flex-wrap: wrap;
 }
 
-.page-header>div {
-    flex: 1 1 0;
-    min-width: 200px;
-}
 
 .page-header a.btn-primary,
 .page-header a.btn-secondary {
     margin-bottom: 4px;
     white-space: nowrap;
+    text-decoration: none;
 }
 
 /* Month Dropdown Styles */
