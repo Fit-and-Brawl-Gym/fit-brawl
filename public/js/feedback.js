@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
     const planFilter = document.getElementById('planFilter');
     const sortFilter = document.getElementById('sortFilter');
-
+    const helpfulCount = document.getElementById('helpfulCount');
+    
     let feedbackData = [];
     let searchTimeout = null;
 
