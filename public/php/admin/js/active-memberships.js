@@ -13,7 +13,7 @@ let currentPage = 1;
 let itemsPerPage = 10;
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeEventListeners();
     loadMemberships();
 });
@@ -66,9 +66,10 @@ function initializeEventListeners() {
     if (nextPageBtn) nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
 
     // Close modals on outside click
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         const addModal = document.getElementById('addMembershipModal');
         const historyModal = document.getElementById('paymentHistoryModal');
+
 
         if (event.target === addModal) {
             closeAddMembershipModal();
@@ -284,14 +285,8 @@ function createMembershipRow(membership) {
     const statusBadge = getStatusBadge(membership, daysRemaining);
     const daysRemainingClass = getDaysRemainingClass(daysRemaining);
     const paymentBadge = getPaymentBadge(membership);
-
-    // Check if avatar exists and is not the default icon
-    const hasCustomAvatar = membership.profile_image &&
-                           membership.profile_image !== 'account-icon-white.svg' &&
-                           membership.profile_image !== 'account-icon.svg';
-
-    const avatar = hasCustomAvatar
-        ? `<img src="${BASE_PATH}/uploads/avatars/${membership.profile_image}" alt="${membership.name}" class="user-avatar" onerror="this.src='${IMAGES_PATH}/account-icon.svg'">`
+    const avatar = membership.profile_image 
+        ? `<img src="${IMAGES_PATH}/${membership.profile_image}" alt="${membership.name}" class="user-avatar">`
         : `<img src="${IMAGES_PATH}/account-icon.svg" alt="${membership.name}" class="user-avatar">`;
 
     return `
