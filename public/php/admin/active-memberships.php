@@ -167,7 +167,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Pagination Controls -->
             <div class="pagination-wrapper" id="paginationContainer">
                 <div class="pagination-info">
@@ -179,7 +179,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                         <option value="100">100</option>
                     </select>
                 </div>
-                
+
                 <div class="pagination-controls">
                     <button id="prevPageBtn" class="btn-pagination" disabled>
                         <i class="fas fa-chevron-left"></i> Previous
@@ -317,6 +317,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     <script>
         const PUBLIC_PATH = '<?= PUBLIC_PATH ?>';
         const IMAGES_PATH = '<?= IMAGES_PATH ?>';
+        const BASE_PATH = '<?= BASE_PATH ?>';
     </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/active-memberships.js"></script>
