@@ -68,7 +68,7 @@
     margin: 0 0 4px 0;
     color: #222;
     font-weight: var(--admin-font-weight-bold);
-    text-align: center;
+    text`-align: center;
 }
 
 .stat-info p {

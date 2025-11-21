@@ -3560,30 +3560,41 @@ body::before {
 }
 
 .btn-cancel-booking {
-    padding: 0.4rem 0.75rem;
-    background: #f44336;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
     border: none;
     border-radius: var(--radius-base);
     color: #fff;
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: center;
+    gap: 0.4rem;
+    min-width: 110px;
+    height: 36px;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.2);
 }
 
 .btn-cancel-booking:hover {
-    background: #d32f2f;
+    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.btn-cancel-booking:active {
+    transform: translateY(0);
 }
 
 .btn-cancel-booking:disabled {
-    background: #666;
+    background: linear-gradient(135deg, #999 0%, #666 100%);
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.6;
+    box-shadow: none;
+    transform: none;
 }
 
 .booking-status-badge {
@@ -3672,12 +3683,15 @@ body::before {
 .blocked-booking-actions {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-2);
+    gap: 0.75rem;
+    width: 100%;
 }
 
 .blocked-booking-actions .booking-action-buttons {
     display: flex;
-    gap: var(--spacing-2);
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 @keyframes pulse {
@@ -4150,8 +4164,8 @@ body::before {
 }
 
 .btn-reschedule-booking {
-    padding: 0.4rem 0.75rem;
-    background: rgba(33, 150, 243, 0.8);
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
     border: none;
     border-radius: var(--radius-base);
     color: #fff;
@@ -4159,20 +4173,29 @@ body::before {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: center;
+    gap: 0.4rem;
     transition: all var(--transition-base);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     white-space: nowrap;
+    min-width: 110px;
+    height: 36px;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
 }
 
 .btn-reschedule-booking:hover {
-    background: rgba(33, 150, 243, 1);
+    background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+}
+
+.btn-reschedule-booking:active {
+    transform: translateY(0);
 }
 
 .booking-action-buttons {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
     flex-wrap: wrap;
     justify-content: flex-start;
     align-items: center;
@@ -5087,8 +5110,29 @@ body::before {
     }
 }
 
-/* Tablet view - scroll horizontally */
+/* Tablet view - improved responsiveness */
 @media (max-width: 1024px) and (min-width: 769px) {
+    .bookings-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-3);
+    }
+
+    .bookings-filter {
+        width: 100%;
+    }
+
+    .bookings-tabs {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .tab-btn {
+        flex: 1 1 auto;
+        min-width: 120px;
+        justify-content: center;
+    }
+
     .bookings-table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -5101,21 +5145,31 @@ body::before {
     }
 
     .booking-actions-cell {
-        min-width: 220px;
-        max-width: 220px;
-        padding: 0.5rem;
+        min-width: 240px;
+        max-width: 240px;
+        padding: 0.75rem;
     }
 
     .booking-action-buttons {
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         gap: 0.5rem;
+        justify-content: center;
     }
 
     .btn-reschedule-booking,
     .btn-cancel-booking {
         font-size: 0.8rem;
-        padding: 0.4rem 0.6rem;
-        white-space: nowrap;
+        padding: 0.45rem 0.85rem;
+        min-width: 100px;
+        height: 34px;
+    }
+
+    .booking-item {
+        gap: var(--spacing-3);
+    }
+
+    .booking-date-badge {
+        min-width: 70px;
     }
 }
 
@@ -5123,42 +5177,91 @@ body::before {
 @media (max-width: 768px) {
     .my-bookings-section {
         padding: var(--spacing-3);
+        border-radius: var(--radius-base);
     }
 
-    .bookings-header {
+    .section-header {
+        gap: var(--spacing-3);
+        margin-bottom: var(--spacing-3);
+        padding-bottom: var(--spacing-2);
+    }
+
+    .section-title {
+        font-size: var(--font-size-lg);
+    }
+
+    .bookings-controls {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: var(--spacing-3);
     }
 
     .bookings-filter {
         width: 100%;
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .bookings-filter select {
+    .filter-label {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .class-filter-dropdown {
         width: 100%;
     }
 
-    .bookings-stats {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: var(--spacing-2);
-    }
-
-    .stat-card {
-        padding: var(--spacing-2);
-        font-size: 0.9rem;
-    }
-
     .bookings-tabs {
-        flex-wrap: wrap;
-        gap: var(--spacing-2);
+        width: 100%;
+        gap: 0.5rem;
+        justify-content: space-between;
     }
 
-    .tab-button {
+    .tab-btn {
         flex: 1 1 auto;
-        min-width: 100px;
-        padding: var(--spacing-2) var(--spacing-3);
-        font-size: 0.875rem;
+        min-width: 0;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .tab-count {
+        font-size: 0.7rem;
+    }
+
+    .booking-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-3);
+        padding: var(--spacing-3);
+    }
+
+    .booking-date-badge {
+        align-self: center;
+        min-width: 80px;
+        padding: var(--spacing-2);
+    }
+
+    .booking-details {
+        text-align: center;
+    }
+
+    .booking-class {
+        font-size: var(--font-size-lg);
+        margin-bottom: var(--spacing-2);
+    }
+
+    .booking-info {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .booking-info span {
+        width: 100%;
+        justify-content: center;
     }
 
     .booking-card {
@@ -5438,7 +5541,12 @@ body::before {
     }
 
     .my-bookings-section {
-        padding: var(--spacing-3);
+        padding: var(--spacing-2);
+    }
+
+    .section-title {
+        font-size: var(--font-size-base);
+        flex-wrap: wrap;
     }
 
     .bookings-header h2 {
@@ -5446,8 +5554,17 @@ body::before {
     }
 
     .bookings-tabs {
-        flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.4rem;
+    }
+
+    .tab-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.7rem;
+        min-width: 0;
+    }
+
+    .tab-count {
+        font-size: 0.65rem;
     }
 
     .tab-button {
@@ -5457,9 +5574,14 @@ body::before {
         padding: 0.75rem;
     }
 
-    .booking-date-badge {
-        min-width: 60px;
+    .booking-item {
         padding: var(--spacing-2);
+        gap: var(--spacing-2);
+    }
+
+    .booking-date-badge {
+        min-width: 70px;
+        padding: 0.5rem;
     }
 
     .booking-date-badge .booking-day {
@@ -5467,15 +5589,54 @@ body::before {
     }
 
     .booking-date-badge .booking-month {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
+    }
+
+    .booking-class {
+        font-size: var(--font-size-base);
     }
 
     .booking-title {
         font-size: 1rem;
     }
 
+    .booking-info {
+        font-size: 0.8rem;
+        gap: 0.4rem;
+    }
+
+    .booking-info span {
+        gap: 0.3rem;
+    }
+
     .booking-info-item {
-        font-size: 0.875rem;
+        font-size: 0.8rem;
+    }
+
+    /* Action buttons on mobile */
+    .booking-action-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .btn-reschedule-booking,
+    .btn-cancel-booking {
+        width: 100%;
+        min-width: 100%;
+        height: 38px;
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        justify-content: center;
+    }
+
+    .blocked-booking-actions {
+        gap: 0.5rem;
+    }
+
+    .blocked-booking-actions .booking-action-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
     /* Stack status indicators vertically on very small screens */
@@ -5487,6 +5648,11 @@ body::before {
     .duration-badge {
         font-size: 0.75rem;
         padding: 4px 8px;
+    }
+
+    .booking-status-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.75rem;
     }
 
     /* Smaller table font */
