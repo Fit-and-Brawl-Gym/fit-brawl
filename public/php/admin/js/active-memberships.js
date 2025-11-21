@@ -13,7 +13,7 @@ let currentPage = 1;
 let itemsPerPage = 10;
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeEventListeners();
     loadMemberships();
 });
@@ -66,10 +66,10 @@ function initializeEventListeners() {
     if (nextPageBtn) nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
 
     // Close modals on outside click
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         const addModal = document.getElementById('addMembershipModal');
         const historyModal = document.getElementById('paymentHistoryModal');
-        
+
         if (event.target === addModal) {
             closeAddMembershipModal();
         }
@@ -86,16 +86,16 @@ async function loadMemberships() {
     try {
         const showExpired = document.getElementById('showExpiredToggle').checked;
         const response = await fetch(`${PUBLIC_PATH}/php/admin/api/active_memberships_api.php?action=getMemberships&include_expired=${showExpired}`);
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API Error Response:', errorText);
             throw new Error('Failed to fetch memberships: ' + response.status);
         }
-        
+
         const data = await response.json();
         console.log('API Response:', data);
-        
+
         if (data.success) {
             allMemberships = data.data;
             buildHashTable();
@@ -200,7 +200,7 @@ function handleItemsPerPageChange(e) {
 function goToPage(page) {
     const totalPages = Math.ceil(filteredMemberships.length / itemsPerPage);
     if (page < 1 || page > totalPages) return;
-    
+
     currentPage = page;
     renderMembershipsTable();
 }
@@ -212,19 +212,19 @@ function updatePaginationControls(totalItems) {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-    
+
     // Update showing count
     document.getElementById('showingCount').textContent = totalItems === 0 ? 0 : `${startItem}-${endItem}`;
     document.getElementById('totalCount').textContent = totalItems;
-    
+
     // Update page info
     document.getElementById('currentPageSpan').textContent = totalPages === 0 ? 0 : currentPage;
     document.getElementById('totalPagesSpan').textContent = totalPages;
-    
+
     // Update button states
     document.getElementById('prevPageBtn').disabled = currentPage <= 1;
     document.getElementById('nextPageBtn').disabled = currentPage >= totalPages || totalPages === 0;
-    
+
     // Show/hide pagination
     const paginationContainer = document.getElementById('paginationContainer');
     if (totalPages <= 1) {
@@ -239,7 +239,7 @@ function updatePaginationControls(totalItems) {
  */
 function renderMembershipsTable() {
     const tbody = document.getElementById('membershipsTableBody');
-    
+
     if (filteredMemberships.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -261,18 +261,18 @@ function renderMembershipsTable() {
 
     // Calculate pagination
     const totalPages = Math.ceil(sortedMemberships.length / itemsPerPage);
-    
+
     // Reset to page 1 if current page is out of bounds
     if (currentPage > totalPages) {
         currentPage = Math.max(1, totalPages);
     }
-    
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedMemberships = sortedMemberships.slice(startIndex, endIndex);
 
     tbody.innerHTML = paginatedMemberships.map(membership => createMembershipRow(membership)).join('');
-    
+
     updatePaginationControls(sortedMemberships.length);
 }
 
@@ -284,7 +284,7 @@ function createMembershipRow(membership) {
     const statusBadge = getStatusBadge(membership, daysRemaining);
     const daysRemainingClass = getDaysRemainingClass(daysRemaining);
     const paymentBadge = getPaymentBadge(membership);
-    const avatar = membership.profile_image 
+    const avatar = membership.profile_image
         ? `<img src="${IMAGES_PATH}/${membership.profile_image}" alt="${membership.name}" class="user-avatar">`
         : `<img src="${IMAGES_PATH}/account-icon.svg" alt="${membership.name}" class="user-avatar">`;
 
@@ -357,15 +357,15 @@ function getStatusBadge(membership, daysRemaining) {
     if (daysRemaining < 0 && !isInGracePeriod(membership.end_date)) {
         return '<span class="badge badge-expired"><i class="fas fa-times-circle"></i> Expired</span>';
     }
-    
+
     if (isInGracePeriod(membership.end_date)) {
         return '<span class="badge badge-grace-period"><i class="fas fa-exclamation-triangle"></i> Grace Period</span>';
     }
-    
+
     if (daysRemaining <= 7 && daysRemaining >= 0) {
         return '<span class="badge badge-expiring-soon"><i class="fas fa-clock"></i> Expiring Soon</span>';
     }
-    
+
     return '<span class="badge badge-active"><i class="fas fa-check-circle"></i> Active</span>';
 }
 
@@ -409,17 +409,17 @@ function updateStatCards(stats) {
 async function viewMembershipDetails(membershipId) {
     const panel = document.getElementById('detailsPanel');
     const content = document.getElementById('detailsContent');
-    
+
     panel.classList.add('active');
     content.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading details...</div>';
 
     try {
         const response = await fetch(`${PUBLIC_PATH}/php/admin/api/active_memberships_api.php?action=getMembershipDetails&id=${membershipId}`);
-        
+
         if (!response.ok) throw new Error('Failed to fetch details');
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             renderMembershipDetails(data.data);
         } else {
@@ -439,7 +439,7 @@ function renderMembershipDetails(data) {
     const membership = data.membership;
     const user = data.user;
     const daysRemaining = calculateDaysRemaining(membership.end_date);
-    
+
     content.innerHTML = `
         <div class="detail-section">
             <h4>Member Information</h4>
@@ -579,17 +579,17 @@ function closeDetailsPanel() {
 async function viewPaymentHistory(membershipId) {
     const modal = document.getElementById('paymentHistoryModal');
     const tbody = document.getElementById('paymentHistoryTableBody');
-    
+
     modal.classList.add('active');
     tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading payment history...</td></tr>';
 
     try {
         const response = await fetch(`${PUBLIC_PATH}/php/admin/api/active_memberships_api.php?action=getPaymentHistory&id=${membershipId}`);
-        
+
         if (!response.ok) throw new Error('Failed to fetch payment history');
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             renderPaymentHistory(data.data);
         } else {
@@ -606,7 +606,7 @@ async function viewPaymentHistory(membershipId) {
  */
 function renderPaymentHistory(payments) {
     const tbody = document.getElementById('paymentHistoryTableBody');
-    
+
     if (payments.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No payment records found</td></tr>';
         return;
