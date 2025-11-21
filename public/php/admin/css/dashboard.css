@@ -55,6 +55,10 @@
     background: var(--admin-gradient-orange);
 }
 
+.stat-icon.purple {
+    background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+}
+
 .stat-info {
     flex: 1;
 }
@@ -64,6 +68,7 @@
     margin: 0 0 4px 0;
     color: #222;
     font-weight: var(--admin-font-weight-bold);
+    text-align: center;
 }
 
 .stat-info p {
@@ -143,7 +148,7 @@
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: var(--admin-gap-md);
     }
-    
+
     .stat-card {
         padding: 1rem;
     }
