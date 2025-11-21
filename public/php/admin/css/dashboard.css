@@ -65,7 +65,7 @@
 
 .stat-info h3 {
     font-size: var(--admin-font-size-3xl);
-    margin: 0 0 4px 0;       
+    margin: 0 0 4px 0;
     color: #222;
     font-weight: var(--admin-font-weight-bold);
     text-align: center;
@@ -75,6 +75,7 @@
     margin: 0;
     color: var(--admin-text-muted);
     font-size: var(--admin-font-size-md);
+    text-align: center;
 }
 
 /* Alert Cards with Actions */
