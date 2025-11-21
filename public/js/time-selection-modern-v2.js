@@ -69,7 +69,11 @@ function loadModernTrainerAvailability(bookingStateRef) {
                     // Store availability data
                     state.trainerShift = trainer.shift || 'Morning';
                     state.trainerName = trainer.name || '';
-                    state.trainerAvatar = trainer.avatar || '';
+                    // Fix: Use 'photo' field and construct proper path
+                    const photo = trainer.photo || trainer.avatar || '';
+                    state.trainerAvatar = photo && photo !== 'account-icon.svg' 
+                        ? `/fit-brawl/uploads/trainers/${photo}`
+                        : `/fit-brawl/images/account-icon.svg`;
                     state.trainerSpecialization = trainer.specialization || '';
                     state.availableSlots = trainer.available_slots || [];
                     state.currentWeekUsageMinutes = data.current_week_usage_minutes || 0;
@@ -149,7 +153,7 @@ function buildAvailabilityTimeline(state, trainer) {
             <div class="trainer-info-card">
                 <div class="trainer-avatar">
                     ${state.trainerAvatar ? 
-                        `<img src="${state.trainerAvatar}" alt="${state.trainerName || 'Trainer'}" />` : 
+                        `<img src="${state.trainerAvatar}" alt="${state.trainerName || 'Trainer'}" onerror="this.onerror=null; this.src='/fit-brawl/images/account-icon.svg';" />` : 
                         `<i class="fas fa-user-circle"></i>`
                     }
                 </div>

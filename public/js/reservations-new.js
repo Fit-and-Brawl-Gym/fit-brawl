@@ -768,9 +768,28 @@ document.addEventListener('DOMContentLoaded', function () {
         const isToday = bookingDate.getTime() === today.getTime();
         const isTomorrow = bookingDate.getTime() === tomorrow.getTime();
 
+        // Check if booking is blocked/unavailable
+        const isBlocked = nextBooking.trainer_available === 0 || nextBooking.status === 'unavailable';
+
+        // Get parent stat cards to add/remove urgent styling
+        const classCard = upcomingClassEl?.closest('.stat-card');
+        const dateCard = upcomingDateEl?.closest('.stat-card');
+        const trainerCard = upcomingTrainerEl?.closest('.stat-card');
+
         // Update class name
         if (upcomingClassEl) {
-            upcomingClassEl.textContent = nextBooking.class_type;
+            if (isBlocked) {
+                upcomingClassEl.innerHTML = `
+                    <div class="urgent-booking-alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>URGENT ACTION NEEDED</span>
+                    </div>
+                `;
+                if (classCard) classCard.classList.add('stat-card-urgent');
+            } else {
+                upcomingClassEl.textContent = nextBooking.class_type;
+                if (classCard) classCard.classList.remove('stat-card-urgent');
+            }
         }
 
         // Update date info
@@ -790,35 +809,61 @@ document.addEventListener('DOMContentLoaded', function () {
                 timeInfo = nextBooking.session_time;
             }
 
-            if (isToday) {
-                dateText = `Today, ${timeInfo}`;
-            } else if (isTomorrow) {
-                dateText = `Tomorrow, ${timeInfo}`;
+            if (isBlocked) {
+                upcomingDateEl.innerHTML = `
+                    <div class="urgent-booking-message">
+                        <i class="fas fa-clock"></i>
+                        Trainer unavailable - reschedule within 24 hours
+                    </div>
+                `;
+                if (dateCard) dateCard.classList.add('stat-card-urgent');
             } else {
-                dateText = `${bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeInfo}`;
+                if (isToday) {
+                    dateText = `Today, ${timeInfo}`;
+                } else if (isTomorrow) {
+                    dateText = `Tomorrow, ${timeInfo}`;
+                } else {
+                    dateText = `${bookingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeInfo}`;
+                }
+                upcomingDateEl.textContent = dateText;
+                if (dateCard) dateCard.classList.remove('stat-card-urgent');
             }
-            upcomingDateEl.textContent = dateText;
         }
 
         // Update trainer info
         if (upcomingTrainerEl) {
-            upcomingTrainerEl.textContent = nextBooking.trainer_name;
+            if (isBlocked) {
+                upcomingTrainerEl.innerHTML = `
+                    <div class="trainer-unavailable">
+                        <i class="fas fa-ban"></i>
+                        <span>${nextBooking.trainer_name}</span>
+                    </div>
+                `;
+                if (trainerCard) trainerCard.classList.add('stat-card-unavailable');
+            } else {
+                upcomingTrainerEl.textContent = nextBooking.trainer_name;
+                if (trainerCard) trainerCard.classList.remove('stat-card-unavailable');
+            }
         }
 
         if (trainerSubtextEl) {
-            // Show duration for time-based bookings
-            if (nextBooking.start_time && nextBooking.end_time) {
-                const startTime = new Date(nextBooking.start_time);
-                const endTime = new Date(nextBooking.end_time);
-                const durationMinutes = (endTime - startTime) / 1000 / 60;
-                const hours = Math.floor(durationMinutes / 60);
-                const minutes = durationMinutes % 60;
-                const durationDisplay = hours > 0
-                    ? (minutes > 0 ? `${hours}h ${minutes}m session` : `${hours}h session`)
-                    : `${minutes}m session`;
-                trainerSubtextEl.textContent = durationDisplay;
+            if (isBlocked) {
+                trainerSubtextEl.innerHTML = '<span class="trainer-status-unavailable"><i class="fas fa-circle"></i> Unavailable</span>';
             } else {
-                trainerSubtextEl.textContent = '-';
+                // Show duration for time-based bookings
+                if (nextBooking.start_time && nextBooking.end_time) {
+                    const startTime = new Date(nextBooking.start_time);
+                    const endTime = new Date(nextBooking.end_time);
+                    const durationMinutes = (endTime - startTime) / 1000 / 60;
+                    const hours = Math.floor(durationMinutes / 60);
+                    const minutes = durationMinutes % 60;
+                    const durationDisplay = hours > 0
+                        ? (minutes > 0 ? `${hours}h ${minutes}m session` : `${hours}h session`)
+                        : `${minutes}m session`;
+                    trainerSubtextEl.textContent = durationDisplay;
+                } else {
+                    trainerSubtextEl.textContent = '-';
+                }
             }
         }
     }
@@ -1687,8 +1732,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
             // Use uploaded photo if available, otherwise use default account icon
             const photoSrc = trainer.photo && trainer.photo !== 'account-icon.svg'
-                ? `../../uploads/trainers/${trainer.photo}`
-                : `../../images/account-icon.svg`;
+                ? `/fit-brawl/uploads/trainers/${trainer.photo}`
+                : `/fit-brawl/images/account-icon.svg`;
             
             // Format shift times
             let shiftTimeDisplay = '';
@@ -1726,7 +1771,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <img src="${photoSrc}"
                      alt="${escapedName}"
                      class="trainer-photo ${trainer.photo && trainer.photo !== 'account-icon.svg' ? '' : 'default-icon'}"
-                     onerror="this.onerror=null; this.src='../../images/account-icon.svg'; this.classList.add('default-icon');">
+                     onerror="this.onerror=null; this.src='/fit-brawl/images/account-icon.svg'; this.classList.add('default-icon');">
                 <h3 class="trainer-name">${trainer.name}</h3>
                 <p class="trainer-specialty">${trainer.specialization}</p>
                 ${shiftTimeDisplay}

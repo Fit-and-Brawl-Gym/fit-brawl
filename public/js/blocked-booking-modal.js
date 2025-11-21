@@ -148,14 +148,22 @@ function generateBookingCard(booking) {
 }
 
 async function rescheduleBlockedBooking(bookingId) {
-    // Close modal
+    // Close blocked booking modal
     const modal = document.getElementById('blockedBookingModal');
     if (modal) {
-        modal.remove();
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
     }
 
-    // Redirect to reservations page with reschedule mode
-    window.location.href = `/fit-brawl/public/php/reservations.php?reschedule=${bookingId}&from_blocked=true`;
+    // Check if openRescheduleModal function exists (from resheduling-fixed.js or resheduling.js)
+    if (typeof window.openRescheduleModal === 'function') {
+        // Call the reschedule modal directly
+        window.openRescheduleModal(bookingId);
+    } else {
+        // Fallback: redirect to reservations page with reschedule parameter
+        console.warn('openRescheduleModal not found, redirecting to reservations page');
+        window.location.href = `/fit-brawl/public/php/reservations.php?reschedule=${bookingId}&from_blocked=true`;
+    }
 }
 
 async function cancelBlockedBooking(bookingId) {
