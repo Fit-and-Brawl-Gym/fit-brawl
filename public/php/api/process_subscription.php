@@ -1,338 +1,326 @@
 <?php
-// Start output buffering to catch any unwanted output
+// Start output buffering
 ob_start();
-
 session_start();
 
 require_once '../../../includes/db_connect.php';
 
-// Check if file_upload_security exists, if not, skip it
-$uploadSecurityExists = file_exists('../../../includes/file_upload_security.php');
+// 1. Security & Env Loading
+$uploadSecurityExists = file_exists(
+  '../../../includes/file_upload_security.php',
+);
 if ($uploadSecurityExists) {
-    require_once '../../../includes/file_upload_security.php';
+  require_once '../../../includes/file_upload_security.php';
 }
 
-// Clear any output that might have been generated
-ob_end_clean();
+$envLoaderPath = __DIR__ . '/../../../includes/env_loader.php';
+if (file_exists($envLoaderPath)) {
+  require_once $envLoaderPath;
+  if (function_exists('loadEnv')) {
+    loadEnv(__DIR__ . '/../../../.env');
+  }
+}
 
+ob_end_clean();
 header('Content-Type: application/json');
 
-// Check login
+// 2. Basic Validation
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Please login first']);
-    exit;
+  echo json_encode(['success' => false, 'message' => 'Please login first']);
+  exit();
 }
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+  echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+  exit();
 }
 
 $user_id = $_SESSION['user_id'];
-$plan = isset($_POST['plan']) ? strtolower(trim($_POST['plan'])) : '';
-$billing = isset($_POST['billing']) ? $_POST['billing'] : 'monthly';
-$name = trim($_POST['name'] ?? '');
-$country = trim($_POST['country'] ?? '');
-$address = trim($_POST['address'] ?? '');
+$plan = $_POST['plan'] ?? '';
+$billing = $_POST['billing'] ?? 'monthly';
+$name = $_POST['name'] ?? '';
+$country = $_POST['country'] ?? '';
+$address = $_POST['address'] ?? '';
 
-// Validate required fields
 if (empty($plan) || empty($name) || empty($country) || empty($address)) {
-    echo json_encode(['success' => false, 'message' => 'All fields are required']);
-    exit;
+  echo json_encode([
+    'success' => false,
+    'message' => 'All fields are required',
+  ]);
+  exit();
 }
 
-// Validate and upload file securely
-if (!isset($_FILES['receipt']) || $_FILES['receipt']['error'] !== UPLOAD_ERR_OK) {
-    echo json_encode(['success' => false, 'message' => 'Please upload a payment receipt']);
-    exit;
+// 3. File Upload
+if (
+  !isset($_FILES['receipt']) ||
+  $_FILES['receipt']['error'] !== UPLOAD_ERR_OK
+) {
+  echo json_encode([
+    'success' => false,
+    'message' => 'Please upload a payment receipt',
+  ]);
+  exit();
 }
 
 $uploadDir = __DIR__ . '/../../../uploads/receipts/';
-
-// Create directory if it doesn't exist
 if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0755, true);
+  mkdir($uploadDir, 0755, true);
 }
 
-// Handle file upload with or without SecureFileUpload class
-// Check if finfo_open function exists (required by SecureFileUpload)
-if ($uploadSecurityExists && class_exists('SecureFileUpload') && function_exists('finfo_open')) {
-    $uploadHandler = SecureFileUpload::receiptUpload($uploadDir, 10);
-    $result = $uploadHandler->uploadFile($_FILES['receipt']);
-
-    if (!$result['success']) {
-        echo json_encode(['success' => false, 'message' => $result['message']]);
-        exit;
-    }
-
-    $filename = 'receipt_' . $user_id . '_' . time() . '.' . pathinfo($result['filename'], PATHINFO_EXTENSION);
-    $uploadPath = $uploadDir . $filename;
-    rename($result['path'], $uploadPath);
+// Upload Logic
+if (
+  $uploadSecurityExists &&
+  class_exists('SecureFileUpload') &&
+  function_exists('finfo_open')
+) {
+  $uploadHandler = SecureFileUpload::receiptUpload($uploadDir, 10);
+  $result = $uploadHandler->uploadFile($_FILES['receipt']);
+  if (!$result['success']) {
+    echo json_encode(['success' => false, 'message' => $result['message']]);
+    exit();
+  }
+  $filename =
+    'receipt_' .
+    $user_id .
+    '_' .
+    time() .
+    '.' .
+    pathinfo($result['filename'], PATHINFO_EXTENSION);
+  $uploadPath = $uploadDir . $filename;
+  rename($result['path'], $uploadPath);
 } else {
-    // Simple file upload without security class
-    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-    $fileType = $_FILES['receipt']['type'];
-    $fileSize = $_FILES['receipt']['size'];
-
-    if (!in_array($fileType, $allowedTypes)) {
-        echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, and PDF are allowed.']);
-        exit;
-    }
-
-    if ($fileSize > 10 * 1024 * 1024) {
-        echo json_encode(['success' => false, 'message' => 'File size must be less than 10MB']);
-        exit;
-    }
-
-    $extension = pathinfo($_FILES['receipt']['name'], PATHINFO_EXTENSION);
-    $filename = 'receipt_' . $user_id . '_' . time() . '.' . $extension;
-    $uploadPath = $uploadDir . $filename;
-
-    if (!move_uploaded_file($_FILES['receipt']['tmp_name'], $uploadPath)) {
-        echo json_encode(['success' => false, 'message' => 'Failed to upload file']);
-        exit;
-    }
+  // Fallback Simple Upload
+  $allowed = ['image/jpeg', 'image/png', 'application/pdf'];
+  if (!in_array($_FILES['receipt']['type'], $allowed)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid file type']);
+    exit();
+  }
+  $filename =
+    'receipt_' .
+    $user_id .
+    '_' .
+    time() .
+    '.' .
+    pathinfo($_FILES['receipt']['name'], PATHINFO_EXTENSION);
+  $uploadPath = $uploadDir . $filename;
+  move_uploaded_file($_FILES['receipt']['tmp_name'], $uploadPath);
 }
 
-// Plan mapping
+// =========================================================
+// AI CLASSIFICATION (GROQ VERSION)
+// =========================================================
+// Check for GROQ key first, fallback to GEMINI if that's all we have
+$apiKey = getenv('GROQ_API_KEY') ?: getenv('GEMINI_API_KEY');
+
+if ($apiKey) {
+  require_once __DIR__ . '/../../../includes/ReceiptVerifier.php';
+
+  $verifier = new ReceiptVerifier($apiKey);
+  $result = $verifier->classify($uploadPath);
+
+  // STRICT CHECK: Must be a receipt AND have high confidence
+  if ($result['is_receipt'] === false || $result['confidence'] < 0.6) {
+    // Delete invalid file
+    if (file_exists($uploadPath)) {
+      unlink($uploadPath);
+    }
+
+    $reason = $result['reason'] ?? 'Image verification failed.';
+    echo json_encode([
+      'success' => false,
+      'message' => "Invalid Proof of Payment: $reason",
+    ]);
+    exit();
+  }
+}
+// =========================================================
+// END AI
+// =========================================================
+
+// 4. Database Logic
 $planMapping = [
-    'gladiator' => 1,
-    'brawler' => 2,
-    'champion' => 3,
-    'clash' => 4,
-    'resolution-regular' => 5,
-    'resolution-student' => 6
+  'gladiator' => 1,
+  'brawler' => 2,
+  'champion' => 3,
+  'clash' => 4,
+  'resolution-regular' => 5,
+  'resolution-student' => 6,
 ];
+$plan_id = $planMapping[strtolower($plan)] ?? 0;
 
-if (!isset($planMapping[$plan])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid membership plan: ' . htmlspecialchars($plan)]);
-    exit;
+if ($plan_id === 0) {
+  echo json_encode(['success' => false, 'message' => 'Invalid plan']);
+  exit();
 }
 
-$plan_id = $planMapping[$plan];
-
-// Fetch membership info if it exists
-$stmt = $conn->prepare("SELECT * FROM memberships WHERE id = ?");
-$stmt->bind_param("i", $plan_id);
+// Fetch Membership Details
+$stmt = $conn->prepare('SELECT * FROM memberships WHERE id = ?');
+$stmt->bind_param('i', $plan_id);
 $stmt->execute();
 $membership = $stmt->get_result()->fetch_assoc();
 
-// If resolution plans are not in DB, create a temporary plan name
 if (!$membership) {
-    if ($plan === 'resolution-student') {
-        $membership = ['plan_name' => 'Resolution Student'];
-    } elseif ($plan === 'resolution-regular') {
-        $membership = ['plan_name' => 'Resolution Regular'];
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Membership plan not found']);
-        exit;
-    }
+  if (strpos($plan, 'resolution') !== false) {
+    $membership = ['plan_name' => ucwords(str_replace('-', ' ', $plan))];
+  } else {
+    echo json_encode(['success' => false, 'message' => 'Plan not found']);
+    exit();
+  }
 }
 
-$check_existing = $conn->prepare("
-    SELECT * FROM user_memberships
-    WHERE user_id = ?
-    ORDER BY id DESC
-    LIMIT 1
-");
-$check_existing->bind_param("i", $user_id);
-$check_existing->execute();
-$existing = $check_existing->get_result()->fetch_assoc();
+// Check Existing Pending Request
+$check = $conn->prepare(
+  'SELECT * FROM user_memberships WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+);
+$check->bind_param('i', $user_id);
+$check->execute();
+$existing = $check->get_result()->fetch_assoc();
 
 if ($existing && $existing['request_status'] === 'pending') {
-    echo json_encode(['success' => false, 'message' => 'Upgrade or membership request already pending approval.']);
-    exit;
+  echo json_encode([
+    'success' => false,
+    'message' => 'Request already pending',
+  ]);
+  exit();
 }
 
-// Calculate dates based on billing type
+// Calculate Dates
 $start_date = date('Y-m-d');
-if ($billing === 'quarterly') {
-    $end_date = date('Y-m-d', strtotime('+3 months'));
-    $duration = 90;
-} else {
-    // Default to monthly
-    $end_date = date('Y-m-d', strtotime('+1 month'));
-    $duration = 30;
-}
+$end_date =
+  $billing === 'quarterly'
+    ? date('Y-m-d', strtotime('+3 months'))
+    : date('Y-m-d', strtotime('+1 month'));
+$duration = $billing === 'quarterly' ? 90 : 30;
 
-// Define source table and ID (set to NULL if not applicable)
+// Define Source Columns (Handling DB Schema Variations)
 $source_table = null;
 $source_id = null;
+$has_source_columns =
+  $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'source_table'")
+    ->num_rows > 0;
 
 if ($existing && $existing['membership_status'] === 'active') {
-    // Check if the table has source_table and source_id columns
-    $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'source_table'");
-    $has_source_columns = $columns_check->num_rows > 0;
+  // UPGRADE
+  $sql =
+    "UPDATE user_memberships SET plan_id=?, name=?, country=?, permanent_address=?, plan_name=?, qr_proof=?, start_date=?, end_date=?, billing_type=?, request_status='pending', duration=?";
+  if ($has_source_columns) {
+    $sql .= ', source_table=?, source_id=?';
+  }
+  $sql .= ' WHERE user_id=? AND id=?';
 
-    if ($has_source_columns) {
-        $update_query = "
-        UPDATE user_memberships
-        SET
-            plan_id = ?,
-            name = ?,
-            country = ?,
-            permanent_address = ?,
-            plan_name = ?,
-            qr_proof = ?,
-            start_date = ?,
-            end_date = ?,
-            billing_type = ?,
-            membership_status = 'active',
-            request_status = 'pending',
-            duration = ?,
-            source_table = ?,
-            source_id = ?
-        WHERE user_id = ? AND id = ?
-        ";
-
-        $stmt = $conn->prepare($update_query);
-        $stmt->bind_param(
-            "issssssssissii",
-            $plan_id,
-            $name,
-            $country,
-            $address,
-            $membership['plan_name'],
-            $filename,
-            $start_date,
-            $end_date,
-            $billing,
-            $duration,
-            $source_table,
-            $source_id,
-            $user_id,
-            $existing['id']
-        );
-    } else {
-        $update_query = "
-        UPDATE user_memberships
-        SET
-            plan_id = ?,
-            name = ?,
-            country = ?,
-            permanent_address = ?,
-            plan_name = ?,
-            qr_proof = ?,
-            start_date = ?,
-            end_date = ?,
-            billing_type = ?,
-            membership_status = 'active',
-            request_status = 'pending',
-            duration = ?
-        WHERE user_id = ? AND id = ?
-        ";
-
-        $stmt = $conn->prepare($update_query);
-        $stmt->bind_param(
-            "issssssssiis",
-            $plan_id,
-            $name,
-            $country,
-            $address,
-            $membership['plan_name'],
-            $filename,
-            $start_date,
-            $end_date,
-            $billing,
-            $duration,
-            $user_id,
-            $existing['id']
-        );
-    }
-
-    $action = 'upgrade';
+  $stmt = $conn->prepare($sql);
+  if ($has_source_columns) {
+    $stmt->bind_param(
+      'issssssssiissii',
+      $plan_id,
+      $name,
+      $country,
+      $address,
+      $membership['plan_name'],
+      $filename,
+      $start_date,
+      $end_date,
+      $billing,
+      $duration,
+      $source_table,
+      $source_id,
+      $user_id,
+      $existing['id'],
+    );
+  } else {
+    $stmt->bind_param(
+      'issssssssiis',
+      $plan_id,
+      $name,
+      $country,
+      $address,
+      $membership['plan_name'],
+      $filename,
+      $start_date,
+      $end_date,
+      $billing,
+      $duration,
+      $user_id,
+      $existing['id'],
+    );
+  }
+  $action = 'upgrade';
 } else {
-    // Check if the table has source_table and source_id columns
-    $columns_check = $conn->query("SHOW COLUMNS FROM user_memberships LIKE 'source_table'");
-    $has_source_columns = $columns_check->num_rows > 0;
+  // NEW SUBSCRIPTION
+  $sql =
+    'INSERT INTO user_memberships (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration';
+  if ($has_source_columns) {
+    $sql .= ', source_table, source_id';
+  }
+  $sql .= ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?";
+  if ($has_source_columns) {
+    $sql .= ', ?, ?';
+  }
+  $sql .= ')';
 
-    if ($has_source_columns) {
-        // Insert into user_memberships with source columns
-        $insert_query = "
-        INSERT INTO user_memberships
-        (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration, source_table, source_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?, ?, ?)
-        ";
-
-        $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param(
-            "iissssssssisi",
-            $user_id,
-            $plan_id,
-            $name,
-            $country,
-            $address,
-            $membership['plan_name'],
-            $filename,
-            $start_date,
-            $end_date,
-            $billing,
-            $duration,
-            $source_table,
-            $source_id
-        );
-    } else {
-        // Insert into user_memberships without source columns
-        $insert_query = "
-        INSERT INTO user_memberships
-        (user_id, plan_id, name, country, permanent_address, plan_name, qr_proof, start_date, end_date, billing_type, membership_status, request_status, duration)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', 'pending', ?)
-        ";
-
-        $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param(
-            "iissssssssi",
-            $user_id,
-            $plan_id,
-            $name,
-            $country,
-            $address,
-            $membership['plan_name'],
-            $filename,
-            $start_date,
-            $end_date,
-            $billing,
-            $duration
-        );
-    }
-
-    $action = 'new';
+  $stmt = $conn->prepare($sql);
+  if ($has_source_columns) {
+    $stmt->bind_param(
+      'iissssssssisi',
+      $user_id,
+      $plan_id,
+      $name,
+      $country,
+      $address,
+      $membership['plan_name'],
+      $filename,
+      $start_date,
+      $end_date,
+      $billing,
+      $duration,
+      $source_table,
+      $source_id,
+    );
+  } else {
+    $stmt->bind_param(
+      'iissssssssi',
+      $user_id,
+      $plan_id,
+      $name,
+      $country,
+      $address,
+      $membership['plan_name'],
+      $filename,
+      $start_date,
+      $end_date,
+      $billing,
+      $duration,
+    );
+  }
+  $action = 'new';
 }
 
-// Execute
 if ($stmt->execute()) {
-    // Attempt to send acknowledgement email to the user
-    try {
-        // fetch user email and username
-        $userStmt = $conn->prepare("SELECT email, username FROM users WHERE id = ? LIMIT 1");
-        if ($userStmt) {
-            $userStmt->bind_param('i', $user_id);
-            $userStmt->execute();
-            $userRow = $userStmt->get_result()->fetch_assoc();
-            $userStmt->close();
-
-            if ($userRow && !empty($userRow['email'])) {
-                include_once __DIR__ . '/../../../includes/membership_mailer.php';
-                // Send application acknowledgement (status pending)
-                sendMembershipApplicationEmail($userRow['email'], $userRow['username'] ?? $name, $membership['plan_name'] ?? $plan, 'pending');
-            }
-        }
-    } catch (Exception $e) {
-        error_log('Failed to send membership application email: ' . $e->getMessage());
+  // Send Email
+  try {
+    include_once __DIR__ . '/../../../includes/membership_mailer.php';
+    $userQ = $conn->query(
+      "SELECT email, username FROM users WHERE id=$user_id",
+    );
+    if ($u = $userQ->fetch_assoc()) {
+      sendMembershipApplicationEmail(
+        $u['email'],
+        $u['username'],
+        $membership['plan_name'],
+        'pending',
+      );
     }
+  } catch (Exception $e) {
+  }
 
-    echo json_encode([
-        'success' => true,
-        'message' => $action === 'upgrade'
-            ? 'Your existing membership has been upgraded and is now pending admin approval.'
-            : 'Your subscription has been submitted for review. Please wait for admin approval.',
-        'membership' => [
-            'plan' => $membership['plan_name'],
-            'end_date' => $end_date,
-            'billing_type' => $billing,
-            'status' => 'pending'
-        ]
-    ]);
+  echo json_encode([
+    'success' => true,
+    'message' => 'Subscription submitted for review.',
+    'membership' => ['status' => 'pending', 'plan' => $membership['plan_name']],
+  ]);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $stmt->error]);
+  echo json_encode([
+    'success' => false,
+    'message' => 'Database error: ' . $stmt->error,
+  ]);
 }
+?>
