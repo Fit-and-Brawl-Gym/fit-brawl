@@ -677,7 +677,7 @@ body::before {
 .modal-header h2 {
     font-family: var(--font-family-display);
     color: var(--color-accent);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-4xl);
     margin: 0;
 }
 
@@ -708,10 +708,11 @@ body::before {
 
 .modal-instruction {
     color: var(--color-text-light);
-    margin-bottom: var(--spacing-5);
     text-align: center;
     line-height: var(--line-height-relaxed);
     font-size: var(--font-size-sm);
+    margin: 0;
+    padding-bottom: 1rem;
 }
 
 .file-upload-area {
@@ -784,8 +785,9 @@ body::before {
 
 .modal-actions {
     display: flex;
-    flex-direction: column;
     gap: var(--spacing-3);
+    justify-content: center;
+    align-items: center;
 }
 
 .submit-receipt-btn,
@@ -799,13 +801,9 @@ body::before {
     transition: var(--transition-base);
     border: none;
     font-size: var(--font-size-sm);
+    margin-top: 1rem;
 }
 
-.submit-receipt-btn {
-    margin-top: var(--spacing-3);
-    background: var(--color-accent);
-    color: var(--color-primary);
-}
 
 .submit-receipt-btn:disabled {
     opacity: 0.5;

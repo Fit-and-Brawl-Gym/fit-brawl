@@ -1,25 +1,60 @@
 // Show success notification
-function showNotification(message, type = 'success') {
+function showNotification(message, type = 'success', persistent = false) {
+  // Remove any existing notifications first
+  const existingNotification = document.querySelector('.notification');
+  if (existingNotification) {
+    existingNotification.style.animation = 'slideOut 300ms ease';
+    setTimeout(() => existingNotification.remove(), 300);
+  }
+  
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
-  notification.textContent = message;
+  
+  // Set background color based on type
+  let bgColor = '#28a745'; // success - green
+  if (type === 'error') bgColor = '#dc3545'; // error - red
+  if (type === 'info') bgColor = '#17a2b8'; // info - blue
+  if (type === 'warning') bgColor = '#ffc107'; // warning - yellow
+  
+  // Add spinner icon for persistent info notifications
+  let icon = '';
+  if (persistent && type === 'info') {
+    icon = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>';
+  }
+  
+  notification.innerHTML = icon + message;
   notification.style.cssText = `
     position: fixed;
     top: 20px;
     right: 20px;
     padding: 16px 20px;
-    background: ${type === 'success' ? '#28a745' : '#dc3545'};
+    background: ${bgColor};
     color: white;
     border-radius: 6px;
     z-index: 3000;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     animation: slideIn 300ms ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
   `;
-  document.body.appendChild(notification);
+  
+  // Wait a tiny bit to ensure old notification is removed
   setTimeout(() => {
-    notification.style.animation = 'slideOut 300ms ease';
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
+    document.body.appendChild(notification);
+    
+    // Auto-dismiss after 3 seconds if not persistent
+    if (!persistent) {
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.style.animation = 'slideOut 300ms ease';
+          setTimeout(() => notification.remove(), 300);
+        }
+      }, 3000);
+    }
+  }, 350);
+  
+  return notification;
 }
 
 // Add CSS animations if not already present
@@ -192,9 +227,13 @@ async function executeAction() {
   // Save action and id before closing modal (closeModal resets these to null)
   const action = currentAction;
   const actionId = currentId;
+  const actionText = action === 'approve' ? 'approving' : 'rejecting';
   
   // Close modal immediately for better UX
   closeModal();
+
+  // Show persistent "Processing..." notification with spinner
+  showNotification(`Processing ${actionText} subscription...`, 'info', true);
 
   try {
     const response = await fetch(`api/admin_subscriptions_api.php?action=${action}`, {
@@ -205,10 +244,9 @@ async function executeAction() {
     const result = await response.json();
 
     if (result.success) {
-      // Show success notification
-      const actionText = action === 'approve' ? 'approved' : 'rejected';
-
-      showNotification(result.message || `Subscription ${actionText} successfully`, 'success');
+      // Show success notification (this will replace the processing notification)
+      const completedText = action === 'approve' ? 'approved' : 'rejected';
+      showNotification(result.message || `Subscription ${completedText} successfully`, 'success');
       
       // Reload only the tables that exist on this page
       loadSubscriptions('processing', 'processingTableBody');

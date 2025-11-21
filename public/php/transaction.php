@@ -468,11 +468,11 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
 
         <div class="modal-actions">
-            <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
-                SUBMIT RECEIPT
-            </button>
             <button type="button" class="modal-cancel-btn" id="cancelReceiptBtn">
                 Cancel
+            </button>
+            <button type="button" class="submit-receipt-btn" id="submitReceiptBtn" disabled>
+                Submit Receipt
             </button>
         </div>
     </div>

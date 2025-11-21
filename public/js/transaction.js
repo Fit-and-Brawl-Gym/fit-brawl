@@ -1,3 +1,80 @@
+// Toast notification function
+function showNotification(message, type = 'success', persistent = false) {
+    // Remove any existing notifications first
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.style.animation = 'slideOut 300ms ease';
+        setTimeout(() => existingNotification.remove(), 300);
+    }
+
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+
+    // Set background color based on type
+    let bgColor = '#28a745'; // success - green
+    if (type === 'error') bgColor = '#dc3545'; // error - red
+    if (type === 'info') bgColor = '#17a2b8'; // info - blue
+    if (type === 'warning') bgColor = '#ffc107'; // warning - yellow
+
+    // Add spinner icon for persistent info notifications
+    let icon = '';
+    if (persistent && type === 'info') {
+        icon = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>';
+    }
+
+    notification.innerHTML = icon + message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 20px;
+        background: ${bgColor};
+        color: white;
+        border-radius: 6px;
+        z-index: 3000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 300ms ease;
+        font-weight: 500;
+        display: flex;
+        width: 20%;
+        align-items: center;
+    `;
+
+    // Wait a tiny bit to ensure old notification is removed
+    setTimeout(() => {
+        document.body.appendChild(notification);
+
+        // Auto-dismiss after 3 seconds if not persistent
+        if (!persistent) {
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOut 300ms ease';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 3000);
+        }
+    }, 350);
+
+    return notification;
+}
+
+// Add CSS animations if not already present
+if (!document.getElementById('notification-styles')) {
+    const style = document.createElement('style');
+    style.id = 'notification-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
     const receiptModal = document.getElementById('receiptModal');
@@ -61,8 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFileSelect(file) {
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-        if (!validTypes.includes(file.type)) return alert('Invalid file type.');
-        if (file.size > 10 * 1024 * 1024) return alert('File must be under 10MB.');
+        if (!validTypes.includes(file.type)) {
+            showNotification('Invalid file type. Please upload a JPEG, PNG, or PDF file.', 'error');
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            showNotification('File must be under 10MB. Please choose a smaller file.', 'error');
+            return;
+        }
 
         selectedFile = file;
         fileName.textContent = file.name;
@@ -130,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('receipt', selectedFile);
         } else {
             console.error('No file selected');
-            alert('Please upload a receipt');
+            showNotification('Please upload a payment receipt', 'warning');
             return;
         }
 
@@ -142,6 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         submitReceiptBtn.disabled = true;
         submitReceiptBtn.textContent = 'SUBMITTING...';
+
+        // Show persistent processing notification
+        showNotification('Submitting your subscription...', 'info', true);
 
         console.log('Making fetch request to: api/process_subscription.php');
 
@@ -161,27 +247,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Parsed JSON:', data);
 
                     if (data.success) {
-                        const msg = document.createElement('div');
-                        msg.className = 'success-message';
-                        msg.textContent = 'Subscription submitted! Redirecting...';
-                        document.body.appendChild(msg);
+                        showNotification('Subscription submitted successfully! Redirecting...', 'success');
                         setTimeout(() => window.location.href = 'membership-status.php', 2000);
                     } else {
-                        alert('Error: ' + data.message);
+                        showNotification('Error: ' + data.message, 'error');
                         submitReceiptBtn.disabled = false;
                         submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
                     }
                 } catch (e) {
                     console.error('JSON parse error:', e);
                     console.error('Response was:', text);
-                    alert('Server error: Invalid response format');
+                    showNotification('Server error: Invalid response format', 'error');
                     submitReceiptBtn.disabled = false;
                     submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
                 }
             })
             .catch(err => {
                 console.error('Fetch error:', err);
-                alert('An error occurred. Please try again.');
+                showNotification('An error occurred. Please try again.', 'error');
                 submitReceiptBtn.disabled = false;
                 submitReceiptBtn.textContent = 'SUBMIT RECEIPT';
             });
