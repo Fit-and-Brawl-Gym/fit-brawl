@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
         trainerShiftInfo: null,
         availableSlots: []
     };
-    
+
     // Expose bookingState globally for recovery system
     window.bookingState = bookingState;
 
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function loadWeeklyBookings(retryCount = 0) {
         try {
             const response = await fetch('api/get_user_bookings.php');
-            
+
             // Handle rate limiting with retry
             if (response.status === 429 && retryCount < 3) {
                 const retryAfter = parseInt(response.headers.get('Retry-After') || '2');
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return loadWeeklyBookings(retryCount + 1);
             }
-            
+
             const data = await response.json();
             if (data.success) {
                 console.log('📊 Weekly bookings API response:', data);
@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function loadUserBookings(retryCount = 0) {
         try {
             const response = await fetch('api/get_user_bookings.php');
-            
+
             // Handle rate limiting with retry
             if (response.status === 429 && retryCount < 3) {
                 const retryAfter = parseInt(response.headers.get('Retry-After') || '2');
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return loadUserBookings(retryCount + 1);
             }
-            
+
             const data = await response.json();
             if (data.success) {
                 console.log('Bookings API Response:', data); // Debug log
@@ -888,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ${bookings.map(booking => {
             // Debug log to check booking ID
             console.log('Rendering booking:', { id: booking.id, trainer: booking.trainer_name });
-            
+
             // Determine if this booking can actually be cancelled based on current time and 12-hour policy
             const bookingDate = new Date(booking.date + 'T00:00:00');
 
@@ -1126,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const formData = new FormData();
         formData.append('booking_id', bookingId);
         formData.append('csrf_token', csrfToken);
-        
+
         // Add from_blocked parameter if this is a blocked booking
         if (isBlockedBooking) {
             formData.append('from_blocked', 'true');
@@ -1399,7 +1399,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         bookingState.date = dateStr;
-        
+
         // Save state after date selection
         if (window.BookingRecovery) {
             window.BookingRecovery.saveState(bookingState);
@@ -1716,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Check if booking is for today
             const today = new Date().toISOString().split('T')[0];
             const isToday = bookingState.date === today;
-            
+
             // Check if shift has ended for today
             const shiftEnded = isToday && isTrainerShiftEnded(trainer, bookingState.date);
             // Check if shift start time has passed
@@ -1727,14 +1727,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (shiftEnded || (isToday && !shiftStartPassed)) {
                 effectiveStatus = 'unavailable';
             }
-            
+
             // Escape HTML to prevent attribute breaking with quotes
             const escapedName = trainer.name.replace(/'/g, '&#39;').replace(/\"/g, '&quot;');
             // Use uploaded photo if available, otherwise use default account icon
             const photoSrc = trainer.photo && trainer.photo !== 'account-icon.svg'
                 ? `/fit-brawl/uploads/trainers/${trainer.photo}`
                 : `/fit-brawl/images/account-icon.svg`;
-            
+
             // Format shift times
             let shiftTimeDisplay = '';
             if (trainer.shift_start && trainer.shift_end) {
@@ -1748,7 +1748,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const shift = defaultShifts[trainer.shift] || defaultShifts['Morning'];
                 shiftTimeDisplay = `<p class="trainer-shift-time"><i class="fas fa-clock"></i> ${formatShiftTime(shift.start)} - ${formatShiftTime(shift.end)}</p>`;
             }
-            
+
             // Display status text
             let statusText = 'Available';
             if (shiftEnded) {
@@ -1760,7 +1760,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else if (effectiveStatus === 'unavailable') {
                 statusText = 'Unavailable';
             }
-            
+
             return `
             <div class="trainer-card ${effectiveStatus}"
                  data-trainer-id="${trainer.id}"
@@ -2057,12 +2057,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(error => {
                     console.error('Error in booking process (catch block):', error);
-                    
+
                     // Save state on error for recovery
                     if (window.BookingRecovery) {
                         window.BookingRecovery.saveState(bookingState);
                     }
-                    
+
                     showToast('[BOOKING] An error occurred. Your progress has been saved.', 'error');
                     button.disabled = false;
                     button.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
@@ -2384,7 +2384,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Add new selection
                 classCard.classList.add('selected');
                 bookingState.classType = classCard.dataset.class;
-                
+
                 // Save state after class selection
                 if (window.BookingRecovery) {
                     window.BookingRecovery.saveState(bookingState);
@@ -2412,7 +2412,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 trainerCard.classList.add('selected');
                 bookingState.trainerId = trainerCard.dataset.trainerId;
                 bookingState.trainerName = trainerCard.dataset.trainerName;
-                
+
                 // Save state after trainer selection
                 if (window.BookingRecovery) {
                     window.BookingRecovery.saveState(bookingState);
@@ -2479,24 +2479,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 bookingState.startTime = null;
                 bookingState.endTime = null;
                 bookingState.durationMinutes = null;
-                
+
                 // Reset duration using the module's reset function
                 if (typeof resetDurationSelection === 'function') {
                     resetDurationSelection();
                 }
-                
+
                 // Clear total duration display
                 const totalDurationDisplay = document.getElementById('totalDuration');
                 if (totalDurationDisplay) {
                     totalDurationDisplay.textContent = '--';
                 }
-                
+
                 // Clear any selected time slots in UI
                 document.querySelectorAll('.time-slot.selected').forEach(slot => {
                     slot.classList.remove('selected');
                 });
             }
-            
+
             bookingState.currentStep--;
             updateWizardStep();
         }
@@ -2606,11 +2606,65 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // getCsrfToken is already defined at line 171 - removed duplicate
-    
+
     // Expose necessary functions globally for recovery system
     window.updateWizardStep = updateWizardStep;
     window.loadTrainers = loadTrainers;
     window.initializeModernTimeSelection = initializeModernTimeSelection;
     window.loadModernTrainerAvailability = loadModernTrainerAvailability;
     window.updateSummary = updateSummary;
+
+    // Check for scroll-to-booking parameter from blocked booking modal
+    const urlParams = new URLSearchParams(window.location.search);
+    const scrollToBookingId = urlParams.get('scroll_to_booking');
+    const fromBlocked = urlParams.get('from_blocked');
+
+    if (scrollToBookingId && fromBlocked === 'true') {
+        // Wait for bookings to load, then scroll to My Bookings section
+        setTimeout(() => {
+            console.log('Scrolling to My Bookings section for booking:', scrollToBookingId);
+
+            // Find the My Bookings section
+            const myBookingsSection = document.querySelector('.booking-lists-section') ||
+                                     document.getElementById('bookingLists') ||
+                                     document.querySelector('.booking-section');
+
+            if (myBookingsSection) {
+                // Scroll to the section smoothly
+                myBookingsSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+
+                // Wait a bit for scroll, then try to highlight the specific booking card
+                setTimeout(() => {
+                    const bookingCard = document.querySelector(`[data-booking-id="${scrollToBookingId}"]`);
+                    if (bookingCard) {
+                        // Highlight the booking card
+                        bookingCard.style.outline = '3px solid #e74c3c';
+                        bookingCard.style.outlineOffset = '4px';
+                        bookingCard.style.transition = 'all 0.3s ease';
+
+                        // Scroll to the specific card
+                        bookingCard.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+
+                        // Remove highlight after a few seconds
+                        setTimeout(() => {
+                            bookingCard.style.outline = '';
+                            bookingCard.style.outlineOffset = '';
+                        }, 5000);
+                    }
+
+                    // Clean up URL parameters
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, newUrl);
+                }, 1000);
+            } else {
+                console.warn('My Bookings section not found');
+            }
+        }, 1500);
+    }
 });

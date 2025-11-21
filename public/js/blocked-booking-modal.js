@@ -33,12 +33,12 @@ function showBlockedBookingsModal(blockedBookings) {
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
+
                 <div class="blocked-booking-body">
                     <div class="urgent-notice">
                         <p>
                             <i class="fas fa-info-circle"></i>
-                            The following booking(s) are no longer available due to trainer scheduling changes. 
+                            The following booking(s) are no longer available due to trainer scheduling changes.
                             Please reschedule or cancel within 24 hours, or they will be automatically cancelled.
                         </p>
                     </div>
@@ -75,38 +75,38 @@ function closeBlockedBookingModal() {
 }
 
 function generateBookingCard(booking) {
-    const trainerPhoto = booking.trainer_photo && booking.trainer_photo !== 'account-icon.svg' 
-        ? `/fit-brawl/uploads/trainers/${booking.trainer_photo}` 
+    const trainerPhoto = booking.trainer_photo && booking.trainer_photo !== 'account-icon.svg'
+        ? `/fit-brawl/uploads/trainers/${booking.trainer_photo}`
         : '/fit-brawl/images/account-icon.svg';
 
     const bookingDate = new Date(booking.booking_date);
     const startTime = new Date(booking.start_time);
     const endTime = new Date(booking.end_time);
 
-    const formattedDate = bookingDate.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    const formattedDate = bookingDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
 
-    const formattedStartTime = startTime.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
+    const formattedStartTime = startTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
         minute: '2-digit',
-        hour12: true 
+        hour12: true
     });
 
-    const formattedEndTime = endTime.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
+    const formattedEndTime = endTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
         minute: '2-digit',
-        hour12: true 
+        hour12: true
     });
 
     return `
         <div class="blocked-booking-item" data-booking-id="${booking.id}">
             <div class="booking-trainer-info">
-                <img src="${trainerPhoto}" 
-                     alt="${booking.trainer_name}" 
+                <img src="${trainerPhoto}"
+                     alt="${booking.trainer_name}"
                      class="booking-trainer-photo"
                      onerror="this.src='/fit-brawl/images/account-icon.svg'">
                 <div class="booking-trainer-name">${booking.trainer_name}</div>
@@ -155,15 +155,9 @@ async function rescheduleBlockedBooking(bookingId) {
         setTimeout(() => modal.remove(), 300);
     }
 
-    // Check if openRescheduleModal function exists (from resheduling-fixed.js or resheduling.js)
-    if (typeof window.openRescheduleModal === 'function') {
-        // Call the reschedule modal directly
-        window.openRescheduleModal(bookingId);
-    } else {
-        // Fallback: redirect to reservations page with reschedule parameter
-        console.warn('openRescheduleModal not found, redirecting to reservations page');
-        window.location.href = `/fit-brawl/public/php/reservations.php?reschedule=${bookingId}&from_blocked=true`;
-    }
+    // Redirect to reservations page with scroll-to-booking parameter
+    console.log('Redirecting to reservations page to show booking:', bookingId);
+    window.location.href = `/fit-brawl/public/php/reservations.php?scroll_to_booking=${bookingId}&from_blocked=true`;
 }
 
 async function cancelBlockedBooking(bookingId) {
@@ -174,7 +168,7 @@ async function cancelBlockedBooking(bookingId) {
     try {
         // Get CSRF token
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        
+
         // Create form data
         const formData = new FormData();
         formData.append('booking_id', bookingId);
@@ -190,7 +184,7 @@ async function cancelBlockedBooking(bookingId) {
 
         if (data.success) {
             showToast('Booking cancelled successfully', 'success');
-            
+
             // Remove the booking card
             const bookingCard = document.querySelector(`[data-booking-id="${bookingId}"]`);
             if (bookingCard) {

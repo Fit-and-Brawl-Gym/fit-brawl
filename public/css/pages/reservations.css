@@ -575,7 +575,6 @@ body::before {
 
 .stat-card:hover {
     border-color: rgba(255, 206, 0, 0.3);
-    transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -662,7 +661,6 @@ body::before {
 
 .urgent-booking-alert i {
     font-size: 18px;
-    animation: shake 0.5s infinite;
 }
 
 .urgent-booking-message {
@@ -712,7 +710,6 @@ body::before {
 
 .trainer-status-unavailable i {
     font-size: 8px;
-    animation: blink 1.5s infinite;
 }
 
 /* Animations */
@@ -740,27 +737,6 @@ body::before {
     }
     50% {
         opacity: 0.8;
-    }
-}
-
-@keyframes shake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-    25% {
-        transform: translateX(-2px);
-    }
-    75% {
-        transform: translateX(2px);
-    }
-}
-
-@keyframes blink {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.3;
     }
 }
 
@@ -5091,24 +5067,24 @@ body::before {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     .bookings-table {
         min-width: 900px;
         table-layout: fixed;
         width: 100%;
     }
-    
+
     .booking-actions-cell {
         min-width: 220px;
         max-width: 220px;
         padding: 0.5rem;
     }
-    
+
     .booking-action-buttons {
         flex-wrap: nowrap;
         gap: 0.5rem;
     }
-    
+
     .btn-reschedule-booking,
     .btn-cancel-booking {
         font-size: 0.8rem;
@@ -5184,17 +5160,17 @@ body::before {
         align-items: flex-start;
         gap: var(--spacing-2);
     }
-    
+
     /* Responsive bookings table - card layout */
     .bookings-table {
         display: block;
         width: 100%;
     }
-    
+
     .bookings-table tbody {
         display: block;
     }
-    
+
     .bookings-table tr.booking-row {
         display: block;
         margin-bottom: 1rem;
@@ -5203,7 +5179,7 @@ body::before {
         padding: 1rem;
         background: rgba(255, 255, 255, 0.02);
     }
-    
+
     .bookings-table td {
         display: block !important;
         padding: 0 !important;
@@ -5211,18 +5187,18 @@ body::before {
         text-align: left;
         width: 100% !important;
     }
-    
+
     .booking-date-cell {
         display: flex !important;
         align-items: flex-start;
         margin-bottom: 1rem;
         padding: 0 !important;
     }
-    
+
     .booking-date-cell::before {
         display: none !important;
     }
-    
+
     .booking-date-badge {
         display: flex;
         flex-direction: column;
@@ -5233,19 +5209,19 @@ body::before {
         padding: 0.5rem;
         min-width: 60px;
     }
-    
+
     .booking-date-badge .booking-day {
         font-size: 1.75rem;
         font-weight: 700;
         line-height: 1;
     }
-    
+
     .booking-date-badge .booking-month {
         font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
     }
-    
+
     .booking-class-cell,
     .booking-time-cell,
     .booking-duration-cell,
@@ -5257,7 +5233,7 @@ body::before {
         background: rgba(255, 255, 255, 0.03);
         border-radius: 6px;
     }
-    
+
     .booking-class-cell::before,
     .booking-time-cell::before,
     .booking-duration-cell::before,
@@ -5270,50 +5246,50 @@ body::before {
         display: block;
         margin-bottom: 0.35rem;
     }
-    
+
     .booking-class-cell,
     .booking-trainer-cell,
     .booking-day-cell {
         font-size: 0.95rem;
     }
-    
+
     .booking-time-cell i,
     .booking-duration-cell i,
     .booking-trainer-cell i,
     .booking-day-cell i {
         margin-right: 0.25rem;
     }
-    
+
     .duration-badge {
         display: inline-flex;
         align-items: center;
         gap: 0.25rem;
     }
-    
+
     .booking-actions-cell {
         margin-top: 0.5rem;
         padding-top: 0.5rem;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
     .booking-actions-cell::before {
         display: none !important;
     }
-    
+
     .booking-action-buttons {
         display: flex !important;
         flex-direction: column !important;
         gap: 0.5rem;
         width: 100%;
     }
-    
+
     .btn-reschedule-booking,
     .btn-cancel-booking {
         width: 100% !important;
         justify-content: center;
         margin: 0 !important;
     }
-    
+
     .booking-status-badge {
         width: auto;
         display: inline-flex;
@@ -5416,25 +5392,25 @@ body::before {
     .reservations-page {
         padding-bottom: var(--spacing-4);
     }
-    
+
     .page-header-section {
         padding: var(--spacing-4) var(--spacing-3);
     }
-    
+
     .page-title {
         font-size: 1.5rem;
     }
-    
+
     .page-subtitle {
         font-size: 0.875rem;
     }
-    
+
     .membership-status-bar {
         flex-direction: column;
         gap: var(--spacing-2);
         padding: var(--spacing-3);
     }
-    
+
     .my-bookings-section {
         padding: var(--spacing-3);
     }
@@ -5486,27 +5462,27 @@ body::before {
         font-size: 0.75rem;
         padding: 4px 8px;
     }
-    
+
     /* Smaller table font */
     .bookings-table {
         font-size: 0.85rem;
     }
-    
+
     .bookings-table td {
         font-size: 0.85rem;
         padding: 0.4rem 0;
     }
-    
+
     .bookings-table td::before {
         font-size: 0.75rem;
         min-width: 70px;
     }
-    
+
     .booking-status-badge {
         font-size: 0.75rem;
         padding: 0.4rem 0.6rem;
     }
-    
+
     .booking-status-badge span {
         display: inline;
     }
@@ -5518,6 +5494,7 @@ body::before {
 
 .no-membership-cta {
     background: linear-gradient(135deg, rgba(10, 35, 45, 0.95) 0%, rgba(0, 25, 35, 0.98) 100%);
+    -webkit-backdrop-filter: blur(15px);
     backdrop-filter: blur(15px);
     border: 2px solid rgba(213, 186, 43, 0.3);
     border-radius: 20px;
@@ -5525,7 +5502,7 @@ body::before {
     text-align: center;
     max-width: 600px;
     margin: 80px auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
                 0 0 0 1px rgba(213, 186, 43, 0.1),
                 inset 0 1px 0 rgba(255, 255, 255, 0.05);
     position: relative;
@@ -5539,9 +5516,9 @@ body::before {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(213, 186, 43, 0.5) 50%, 
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(213, 186, 43, 0.5) 50%,
         transparent 100%);
 }
 
