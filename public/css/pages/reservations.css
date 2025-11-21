@@ -2877,6 +2877,32 @@ body::before {
 
 /* Note: "Shift Ended" uses unavailable class but different text */
 
+/* Unavailable overlay for trainer cards */
+.unavailable-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+.unavailable-overlay i {
+    font-size: 3rem;
+    color: #f44336;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.trainer-card.disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 .trainer-photo {
     width: 70px;
     height: 70px;

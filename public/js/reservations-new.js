@@ -1590,6 +1590,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===================================
     // STEP 4: LOAD TRAINERS
     // ===================================
+    // Auto-refresh interval for same-day bookings
+    let trainerRefreshInterval = null;
+
     function loadTrainers() {
         const { date, classType } = bookingState;
         const trainersGrid = document.getElementById('trainersGrid');
@@ -1598,6 +1601,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!trainersGrid) {
             console.error('trainersGrid element not found');
             return;
+        }
+
+        // Clear any existing refresh interval
+        if (trainerRefreshInterval) {
+            clearInterval(trainerRefreshInterval);
+            trainerRefreshInterval = null;
         }
 
         // Validate required data
@@ -1611,6 +1620,35 @@ document.addEventListener('DOMContentLoaded', function () {
         // Use "Morning" as default to check general availability (actual time validation happens in step 4)
         const session = 'Morning';
 
+        // Set up auto-refresh for same-day bookings (refresh every minute)
+        const today = new Date().toISOString().split('T')[0];
+        if (date === today) {
+            trainerRefreshInterval = setInterval(() => {
+                // Only refresh if still on step 3
+                if (bookingState.currentStep === 3) {
+                    console.log('Auto-refreshing trainer availability...');
+                    loadTrainersWithoutInterval(); // Load without setting up new interval
+                }
+            }, 60000); // Refresh every 60 seconds
+        }
+
+        performTrainerFetch(trainersGrid, capacityInfo, date, session, classType);
+    }
+
+    // Helper function to load trainers without setting up interval (for auto-refresh)
+    function loadTrainersWithoutInterval() {
+        const { date, classType } = bookingState;
+        const trainersGrid = document.getElementById('trainersGrid');
+        const capacityInfo = document.getElementById('facilityCapacityInfo');
+
+        if (!trainersGrid || !date || !classType) return;
+
+        const session = 'Morning';
+        performTrainerFetch(trainersGrid, capacityInfo, date, session, classType);
+    }
+
+    // Actual fetch function
+    function performTrainerFetch(trainersGrid, capacityInfo, date, session, classType) {
         trainersGrid.innerHTML = '<p class="loading-text">Loading trainers...</p>';
         if (capacityInfo) {
             capacityInfo.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Checking availability...</span>';
@@ -1762,11 +1800,11 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             return `
-            <div class="trainer-card ${effectiveStatus}"
+            <div class="trainer-card ${effectiveStatus} ${effectiveStatus === 'unavailable' || effectiveStatus === 'fully-booked' ? 'disabled' : ''}"
                  data-trainer-id="${trainer.id}"
                  data-trainer-name="${escapedName}"
                  data-trainer-status="${effectiveStatus}"
-                 onclick="selectTrainer(${trainer.id}, this.dataset.trainerName, this.dataset.trainerStatus)">
+                 ${effectiveStatus !== 'unavailable' && effectiveStatus !== 'fully-booked' ? `onclick="selectTrainer(${trainer.id}, this.dataset.trainerName, this.dataset.trainerStatus)"` : 'style="cursor: not-allowed; opacity: 0.6;"'}>
                 <span class="trainer-status-badge ${effectiveStatus}">${statusText}</span>
                 <img src="${photoSrc}"
                      alt="${escapedName}"
@@ -1775,6 +1813,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <h3 class="trainer-name">${trainer.name}</h3>
                 <p class="trainer-specialty">${trainer.specialization}</p>
                 ${shiftTimeDisplay}
+                ${effectiveStatus === 'unavailable' || shiftEnded ? '<div class="unavailable-overlay"><i class="fas fa-ban"></i></div>' : ''}
             </div>
         `;
         }).join('');
@@ -1820,12 +1859,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     window.selectTrainer = function (trainerId, trainerName, status) {
-        if (status === 'unavailable') {
+        // Double-check trainer availability at selection time (in case time has passed since page load)
+        const trainerCard = document.querySelector(`[data-trainer-id="${trainerId}"]`);
+        const currentStatus = trainerCard ? trainerCard.dataset.trainerStatus : status;
+
+        if (currentStatus === 'unavailable' || status === 'unavailable') {
             showToast('This trainer is not available for the selected session', 'warning');
             return;
         }
 
-        if (status === 'booked') {
+        if (currentStatus === 'booked' || status === 'booked') {
             showToast('This trainer is fully booked for your selected time. Please select a different time slot or choose another trainer.', 'warning');
             return;
         }
