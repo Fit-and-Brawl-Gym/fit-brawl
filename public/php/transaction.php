@@ -7,20 +7,33 @@ SessionManager::initialize();
 
 // Check if user is logged in
 if (!SessionManager::isLoggedIn()) {
-    header('Location: login.php');
-    exit;
+  header('Location: login.php');
+  exit();
 }
 
-// Check if user already has an active membership - if so, redirect them
 $user_id = $_SESSION['user_id'] ?? null;
 $hasActiveMembership = false;
+$userName = '';
 
+// 1. Fetch User Details & Check Membership
 if ($user_id) {
-    $gracePeriodDays = 3;
-    $today = date('Y-m-d');
+  // Fetch Username for Auto-fill
+  $userStmt = $conn->prepare('SELECT username FROM users WHERE id = ?');
+  if ($userStmt) {
+    $userStmt->bind_param('i', $user_id);
+    $userStmt->execute();
+    $userStmt->bind_result($dbUsername);
+    if ($userStmt->fetch()) {
+      $userName = $dbUsername;
+    }
+    $userStmt->close();
+  }
 
-    // Check for active membership
-    $stmt = $conn->prepare("
+  // Check for active membership
+  $gracePeriodDays = 3;
+  $today = date('Y-m-d');
+
+  $stmt = $conn->prepare("
         SELECT plan_name, end_date
         FROM user_memberships
         WHERE user_id = ?
@@ -30,29 +43,178 @@ if ($user_id) {
         LIMIT 1
     ");
 
-    if ($stmt) {
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+  if ($stmt) {
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        if ($row = $result->fetch_assoc()) {
-            $endDate = $row['end_date'];
-            $expiryWithGrace = date('Y-m-d', strtotime($endDate . " +$gracePeriodDays days"));
+    if ($row = $result->fetch_assoc()) {
+      $endDate = $row['end_date'];
+      $expiryWithGrace = date(
+        'Y-m-d',
+        strtotime($endDate . " +$gracePeriodDays days"),
+      );
 
-            if ($expiryWithGrace >= $today) {
-                $hasActiveMembership = true;
-            }
-        }
-        $stmt->close();
+      if ($expiryWithGrace >= $today) {
+        $hasActiveMembership = true;
+      }
     }
+    $stmt->close();
+  }
 }
 
 // If user has active membership, redirect to membership page with message
 if ($hasActiveMembership) {
-    $_SESSION['plan_error'] = "You already have an active membership. To change or upgrade your plan, please visit the gym in person.";
-    header('Location: membership.php');
-    exit;
+  $_SESSION['plan_error'] =
+    'You already have an active membership. To change or upgrade your plan, please visit the gym in person.';
+  header('Location: membership.php');
+  exit();
 }
+
+// 2. Define Country List (Cleaner than hardcoding HTML)
+$countries = [
+  'Afghanistan',
+  'Albania',
+  'Algeria',
+  'Andorra',
+  'Angola',
+  'Argentina',
+  'Armenia',
+  'Australia',
+  'Austria',
+  'Azerbaijan',
+  'Bahamas',
+  'Bahrain',
+  'Bangladesh',
+  'Barbados',
+  'Belarus',
+  'Belgium',
+  'Belize',
+  'Benin',
+  'Bhutan',
+  'Bolivia',
+  'Bosnia and Herzegovina',
+  'Botswana',
+  'Brazil',
+  'Brunei',
+  'Bulgaria',
+  'Burkina Faso',
+  'Burundi',
+  'Cambodia',
+  'Cameroon',
+  'Canada',
+  'Chile',
+  'China',
+  'Colombia',
+  'Costa Rica',
+  'Croatia',
+  'Cuba',
+  'Cyprus',
+  'Czech Republic',
+  'Denmark',
+  'Dominican Republic',
+  'Ecuador',
+  'Egypt',
+  'El Salvador',
+  'Estonia',
+  'Ethiopia',
+  'Fiji',
+  'Finland',
+  'France',
+  'Georgia',
+  'Germany',
+  'Ghana',
+  'Greece',
+  'Guatemala',
+  'Haiti',
+  'Honduras',
+  'Hong Kong SAR',
+  'Hungary',
+  'Iceland',
+  'India',
+  'Indonesia',
+  'Iran',
+  'Iraq',
+  'Ireland',
+  'Israel',
+  'Italy',
+  'Jamaica',
+  'Japan',
+  'Jordan',
+  'Kazakhstan',
+  'Kenya',
+  'Kuwait',
+  'Laos',
+  'Latvia',
+  'Lebanon',
+  'Lithuania',
+  'Luxembourg',
+  'Malaysia',
+  'Malta',
+  'Mexico',
+  'Moldova',
+  'Monaco',
+  'Mongolia',
+  'Morocco',
+  'Mozambique',
+  'Myanmar',
+  'Namibia',
+  'Nepal',
+  'Netherlands',
+  'New Zealand',
+  'Nicaragua',
+  'Nigeria',
+  'North Macedonia',
+  'Norway',
+  'Oman',
+  'Pakistan',
+  'Panama',
+  'Paraguay',
+  'Peru',
+  'Philippines',
+  'Poland',
+  'Portugal',
+  'Qatar',
+  'Romania',
+  'Russia',
+  'Rwanda',
+  'San Marino',
+  'Saudi Arabia',
+  'Senegal',
+  'Serbia',
+  'Singapore',
+  'Slovakia',
+  'Slovenia',
+  'South Africa',
+  'South Korea',
+  'Spain',
+  'Sri Lanka',
+  'Sudan',
+  'Sweden',
+  'Switzerland',
+  'Syria',
+  'Taiwan',
+  'Tajikistan',
+  'Tanzania',
+  'Thailand',
+  'Togo',
+  'Trinidad and Tobago',
+  'Tunisia',
+  'Turkey',
+  'Turkmenistan',
+  'Uganda',
+  'Ukraine',
+  'United Arab Emirates',
+  'United Kingdom',
+  'United States',
+  'Uruguay',
+  'Uzbekistan',
+  'Venezuela',
+  'Vietnam',
+  'Yemen',
+  'Zambia',
+  'Zimbabwe',
+];
 
 // Get plan details from URL parameters or session
 $plan = isset($_GET['plan']) ? $_GET['plan'] : 'gladiator';
@@ -60,107 +222,118 @@ $billing = isset($_GET['billing']) ? $_GET['billing'] : 'monthly';
 
 // Plan configurations
 $plans = [
-    'brawler' => [
-        'name' => 'BRAWLER PLAN',
-        'monthly' => 11500,
-        'quarterly' => 32775, // 3 months with 5% off: (11500 * 3) * 0.95
-        'has_discount' => true,
-        'discount_percent' => 5,
-        'benefits' => [
-            'Muay Thai Training with Professional Coaches',
-            'MMA Area Access',
-            'Free Orientation and Fitness Assessment',
-            'Shower Access',
-            'Locker Access'
-        ]
+  'brawler' => [
+    'name' => 'BRAWLER PLAN',
+    'monthly' => 11500,
+    'quarterly' => 32775,
+    'has_discount' => true,
+    'discount_percent' => 5,
+    'benefits' => [
+      'Muay Thai Training with Professional Coaches',
+      'MMA Area Access',
+      'Free Orientation and Fitness Assessment',
+      'Shower Access',
+      'Locker Access',
     ],
-    'gladiator' => [
-        'name' => 'GLADIATOR PLAN',
-        'monthly' => 14500,
-        'quarterly' => 36540, // 3 months with 16% off: (14500 * 3) * 0.84
-        'has_discount' => true,
-        'discount_percent' => 16,
-        'benefits' => [
-            'Boxing Training with Professional Coaches',
-            'MMA Training with Professional Coaches',
-            'Boxing and MMA Area Access',
-            'Gym Equipment Access',
-            'Jakuzi Access',
-            'Shower Access',
-            'Locker Access'
-        ]
+  ],
+  'gladiator' => [
+    'name' => 'GLADIATOR PLAN',
+    'monthly' => 14500,
+    'quarterly' => 36540,
+    'has_discount' => true,
+    'discount_percent' => 16,
+    'benefits' => [
+      'Boxing Training with Professional Coaches',
+      'MMA Training with Professional Coaches',
+      'Boxing and MMA Area Access',
+      'Gym Equipment Access',
+      'Jakuzi Access',
+      'Shower Access',
+      'Locker Access',
     ],
-    'champion' => [
-        'name' => 'CHAMPION PLAN',
-        'monthly' => 7000,
-        'quarterly' => 19950, // 3 months with 5% off: (7000 * 3) * 0.95
-        'has_discount' => true,
-        'discount_percent' => 5,
-        'benefits' => [
-            'Boxing Training with Professional Coaches',
-            'MMA Area Access',
-            'Free Orientation and Fitness Assessment',
-            'Shower Access',
-            'Locker Access'
-        ]
+  ],
+  'champion' => [
+    'name' => 'CHAMPION PLAN',
+    'monthly' => 7000,
+    'quarterly' => 19950,
+    'has_discount' => true,
+    'discount_percent' => 5,
+    'benefits' => [
+      'Boxing Training with Professional Coaches',
+      'MMA Area Access',
+      'Free Orientation and Fitness Assessment',
+      'Shower Access',
+      'Locker Access',
     ],
-    'clash' => [
-        'name' => 'CLASH PLAN',
-        'monthly' => 13500,
-        'quarterly' => 38475, // 3 months with 5% off: (13500 * 3) * 0.95
-        'has_discount' => true,
-        'discount_percent' => 5,
-        'benefits' => [
-            'MMA Training with Professional Coaches',
-            'MMA Area Access',
-            'Free Orientation and Fitness Assessment',
-            'Shower Access',
-            'Locker Access'
-        ]
+  ],
+  'clash' => [
+    'name' => 'CLASH PLAN',
+    'monthly' => 13500,
+    'quarterly' => 38475,
+    'has_discount' => true,
+    'discount_percent' => 5,
+    'benefits' => [
+      'MMA Training with Professional Coaches',
+      'MMA Area Access',
+      'Free Orientation and Fitness Assessment',
+      'Shower Access',
+      'Locker Access',
     ],
-    'resolution-regular' => [
-        'name' => 'RESOLUTION PLAN',
-        'monthly' => 2200,
-        'quarterly' => 6270, // 3 months with 5% off: (2200 * 3) * 0.95
-        'has_discount' => true,
-        'discount_percent' => 5,
-        'benefits' => [
-            'Gym Equipment Access with Face Recognition',
-            'Shower Access',
-            'Locker Access'
-        ]
-    ]
+  ],
+  'resolution-regular' => [
+    'name' => 'RESOLUTION PLAN',
+    'monthly' => 2200,
+    'quarterly' => 6270,
+    'has_discount' => true,
+    'discount_percent' => 5,
+    'benefits' => [
+      'Gym Equipment Access with Face Recognition',
+      'Shower Access',
+      'Locker Access',
+    ],
+  ],
 ];
 
 $selectedPlan = $plans[$plan];
-$price = $billing === 'quarterly' ? $selectedPlan['quarterly'] : $selectedPlan['monthly'];
+$price =
+  $billing === 'quarterly'
+    ? $selectedPlan['quarterly']
+    : $selectedPlan['monthly'];
 $monthlyPrice = $selectedPlan['monthly'];
 $quarterlyPrice = $selectedPlan['quarterly'];
 
 // Calculate next payment date
-$nextPayment = $billing === 'quarterly' ? date('F d, Y', strtotime('+3 months')) : date('F d, Y', strtotime('+1 month'));
+$nextPayment =
+  $billing === 'quarterly'
+    ? date('F d, Y', strtotime('+3 months'))
+    : date('F d, Y', strtotime('+1 month'));
 
 // Helper function to format plan name with styled parentheses
 function formatPlanName($planName)
 {
-    // Check if the plan name contains parentheses
-    if (preg_match('/(.*?)\s*\((.*?)\)/', $planName, $matches)) {
-        $baseName = trim($matches[1]);
-        $variant = trim($matches[2]);
-        return $baseName . ' <span class="plan-variant-parens">(</span>' . $variant . '<span class="plan-variant-parens">)</span>';
-    }
-    return $planName;
+  if (preg_match('/(.*?)\s*\((.*?)\)/', $planName, $matches)) {
+    $baseName = trim($matches[1]);
+    $variant = trim($matches[2]);
+    return $baseName .
+      ' <span class="plan-variant-parens">(</span>' .
+      $variant .
+      '<span class="plan-variant-parens">)</span>';
+  }
+  return $planName;
 }
 
 // Determine avatar source for logged-in users
 $avatarSrc = '../../images/account-icon.svg';
 if (isset($_SESSION['email']) && isset($_SESSION['avatar'])) {
-    $hasCustomAvatar = $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
-    $avatarSrc = $hasCustomAvatar ? "../../uploads/avatars/" . htmlspecialchars($_SESSION['avatar']) : "../../images/account-icon.svg";
+  $hasCustomAvatar =
+    $_SESSION['avatar'] !== 'default-avatar.png' && !empty($_SESSION['avatar']);
+  $avatarSrc = $hasCustomAvatar
+    ? '../../uploads/avatars/' . htmlspecialchars($_SESSION['avatar'])
+    : '../../images/account-icon.svg';
 }
 
-$pageTitle = "Transaction - Fit and Brawl";
-$currentPage = "transaction";
+$pageTitle = 'Transaction - Fit and Brawl';
+$currentPage = 'transaction';
 $additionalCSS = ['../css/pages/transaction.css?v=' . time()];
 $additionalJS = ['../js/transaction.js'];
 ?>
@@ -168,12 +341,9 @@ $additionalJS = ['../js/transaction.js'];
     const monthlyPrice = <?php echo json_encode($monthlyPrice); ?>;
     const quarterlyPrice = <?php echo json_encode($quarterlyPrice); ?>;
 </script>
-<?php
-// Include header
-require_once __DIR__ . '/../../includes/header.php';
-?>
+<?php // Include header
+require_once __DIR__ . '/../../includes/header.php'; ?>
 
-<!--Main-->
 <main class="transaction-page">
     <div class="transaction-container">
         <h1 class="transaction-title">COMPLETE YOUR SUBSCRIPTION</h1>
@@ -181,157 +351,32 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="transaction-box">
             <form id="subscriptionForm" class="subscription-form">
                 <div class="transaction-content">
-                    <!-- Left Column -->
                     <div class="transaction-left">
                         <div class="form-group">
                             <label for="name">Name</label>
-                            <input type="text" id="name" name="name" placeholder="Juan Dela Cruz" required>
+                            <input type="text" id="name" name="name" 
+                                   value="<?php echo htmlspecialchars(
+                                     $userName,
+                                   ); ?>" 
+                                   placeholder="Juan Dela Cruz" required>
                         </div>
 
                         <div class="form-group">
                             <label for="country">Country</label>
                             <select id="country" name="country" required>
-                                <option value="Afghanistan">Afghanistan</option>
-                                <option value="Albania">Albania</option>
-                                <option value="Algeria">Algeria</option>
-                                <option value="Andorra">Andorra</option>
-                                <option value="Angola">Angola</option>
-                                <option value="Argentina">Argentina</option>
-                                <option value="Armenia">Armenia</option>
-                                <option value="Australia">Australia</option>
-                                <option value="Austria">Austria</option>
-                                <option value="Azerbaijan">Azerbaijan</option>
-                                <option value="Bahamas">Bahamas</option>
-                                <option value="Bahrain">Bahrain</option>
-                                <option value="Bangladesh">Bangladesh</option>
-                                <option value="Barbados">Barbados</option>
-                                <option value="Belarus">Belarus</option>
-                                <option value="Belgium">Belgium</option>
-                                <option value="Belize">Belize</option>
-                                <option value="Benin">Benin</option>
-                                <option value="Bhutan">Bhutan</option>
-                                <option value="Bolivia">Bolivia</option>
-                                <option value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
-                                <option value="Botswana">Botswana</option>
-                                <option value="Brazil">Brazil</option>
-                                <option value="Brunei">Brunei</option>
-                                <option value="Bulgaria">Bulgaria</option>
-                                <option value="Burkina Faso">Burkina Faso</option>
-                                <option value="Burundi">Burundi</option>
-                                <option value="Cambodia">Cambodia</option>
-                                <option value="Cameroon">Cameroon</option>
-                                <option value="Canada">Canada</option>
-                                <option value="Chile">Chile</option>
-                                <option value="China">China</option>
-                                <option value="Colombia">Colombia</option>
-                                <option value="Costa Rica">Costa Rica</option>
-                                <option value="Croatia">Croatia</option>
-                                <option value="Cuba">Cuba</option>
-                                <option value="Cyprus">Cyprus</option>
-                                <option value="Czech Republic">Czech Republic</option>
-                                <option value="Denmark">Denmark</option>
-                                <option value="Dominican Republic">Dominican Republic</option>
-                                <option value="Ecuador">Ecuador</option>
-                                <option value="Egypt">Egypt</option>
-                                <option value="El Salvador">El Salvador</option>
-                                <option value="Estonia">Estonia</option>
-                                <option value="Ethiopia">Ethiopia</option>
-                                <option value="Fiji">Fiji</option>
-                                <option value="Finland">Finland</option>
-                                <option value="France">France</option>
-                                <option value="Georgia">Georgia</option>
-                                <option value="Germany">Germany</option>
-                                <option value="Ghana">Ghana</option>
-                                <option value="Greece">Greece</option>
-                                <option value="Guatemala">Guatemala</option>
-                                <option value="Haiti">Haiti</option>
-                                <option value="Honduras">Honduras</option>
-                                <option value="Hong Kong SAR">Hong Kong SAR</option>
-                                <option value="Hungary">Hungary</option>
-                                <option value="Iceland">Iceland</option>
-                                <option value="India">India</option>
-                                <option value="Indonesia">Indonesia</option>
-                                <option value="Iran">Iran</option>
-                                <option value="Iraq">Iraq</option>
-                                <option value="Ireland">Ireland</option>
-                                <option value="Israel">Israel</option>
-                                <option value="Italy">Italy</option>
-                                <option value="Jamaica">Jamaica</option>
-                                <option value="Japan">Japan</option>
-                                <option value="Jordan">Jordan</option>
-                                <option value="Kazakhstan">Kazakhstan</option>
-                                <option value="Kenya">Kenya</option>
-                                <option value="Kuwait">Kuwait</option>
-                                <option value="Laos">Laos</option>
-                                <option value="Latvia">Latvia</option>
-                                <option value="Lebanon">Lebanon</option>
-                                <option value="Lithuania">Lithuania</option>
-                                <option value="Luxembourg">Luxembourg</option>
-                                <option value="Malaysia">Malaysia</option>
-                                <option value="Malta">Malta</option>
-                                <option value="Mexico">Mexico</option>
-                                <option value="Moldova">Moldova</option>
-                                <option value="Monaco">Monaco</option>
-                                <option value="Mongolia">Mongolia</option>
-                                <option value="Morocco">Morocco</option>
-                                <option value="Mozambique">Mozambique</option>
-                                <option value="Myanmar">Myanmar</option>
-                                <option value="Namibia">Namibia</option>
-                                <option value="Nepal">Nepal</option>
-                                <option value="Netherlands">Netherlands</option>
-                                <option value="New Zealand">New Zealand</option>
-                                <option value="Nicaragua">Nicaragua</option>
-                                <option value="Nigeria">Nigeria</option>
-                                <option value="North Macedonia">North Macedonia</option>
-                                <option value="Norway">Norway</option>
-                                <option value="Oman">Oman</option>
-                                <option value="Pakistan">Pakistan</option>
-                                <option value="Panama">Panama</option>
-                                <option value="Paraguay">Paraguay</option>
-                                <option value="Peru">Peru</option>
-                                <option value="Philippines" selected>Philippines</option>
-                                <option value="Poland">Poland</option>
-                                <option value="Portugal">Portugal</option>
-                                <option value="Qatar">Qatar</option>
-                                <option value="Romania">Romania</option>
-                                <option value="Russia">Russia</option>
-                                <option value="Rwanda">Rwanda</option>
-                                <option value="San Marino">San Marino</option>
-                                <option value="Saudi Arabia">Saudi Arabia</option>
-                                <option value="Senegal">Senegal</option>
-                                <option value="Serbia">Serbia</option>
-                                <option value="Singapore">Singapore</option>
-                                <option value="Slovakia">Slovakia</option>
-                                <option value="Slovenia">Slovenia</option>
-                                <option value="South Africa">South Africa</option>
-                                <option value="South Korea">South Korea</option>
-                                <option value="Spain">Spain</option>
-                                <option value="Sri Lanka">Sri Lanka</option>
-                                <option value="Sudan">Sudan</option>
-                                <option value="Sweden">Sweden</option>
-                                <option value="Switzerland">Switzerland</option>
-                                <option value="Syria">Syria</option>
-                                <option value="Taiwan">Taiwan</option>
-                                <option value="Tajikistan">Tajikistan</option>
-                                <option value="Tanzania">Tanzania</option>
-                                <option value="Thailand">Thailand</option>
-                                <option value="Togo">Togo</option>
-                                <option value="Trinidad and Tobago">Trinidad and Tobago</option>
-                                <option value="Tunisia">Tunisia</option>
-                                <option value="Turkey">Turkey</option>
-                                <option value="Turkmenistan">Turkmenistan</option>
-                                <option value="Uganda">Uganda</option>
-                                <option value="Ukraine">Ukraine</option>
-                                <option value="United Arab Emirates">United Arab Emirates</option>
-                                <option value="United Kingdom">United Kingdom</option>
-                                <option value="United States">United States</option>
-                                <option value="Uruguay">Uruguay</option>
-                                <option value="Uzbekistan">Uzbekistan</option>
-                                <option value="Venezuela">Venezuela</option>
-                                <option value="Vietnam">Vietnam</option>
-                                <option value="Yemen">Yemen</option>
-                                <option value="Zambia">Zambia</option>
-                                <option value="Zimbabwe">Zimbabwe</option>
+                                <?php foreach ($countries as $countryName): ?>
+                                    <option value="<?php echo htmlspecialchars(
+                                      $countryName,
+                                    ); ?>" 
+                                        <?php echo $countryName ===
+                                        'Philippines'
+                                          ? 'selected'
+                                          : ''; ?>>
+                                        <?php echo htmlspecialchars(
+                                          $countryName,
+                                        ); ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
 
@@ -349,26 +394,34 @@ require_once __DIR__ . '/../../includes/header.php';
                         </div>
                     </div>
 
-                    <!-- Right Column -->
                     <div class="transaction-right">
-                        <!-- Billing Options -->
                         <div class="billing-toggle">
                             <label class="billing-option">
-                                <input type="radio" name="billing" value="monthly" <?php echo $billing === 'monthly' ? 'checked' : ''; ?> data-billing="monthly">
+                                <input type="radio" name="billing" value="monthly" <?php echo $billing ===
+                                'monthly'
+                                  ? 'checked'
+                                  : ''; ?> data-billing="monthly">
                                 <div class="billing-label">
                                     <div class="radio-custom"></div>
                                     <div class="billing-info">
                                         <div class="billing-title">Pay monthly</div>
-                                        <div class="billing-price"><?php echo number_format($monthlyPrice); ?>PHP/month
+                                        <div class="billing-price"><?php echo number_format(
+                                          $monthlyPrice,
+                                        ); ?>PHP/month
                                         </div>
                                     </div>
                                 </div>
                             </label>
 
                             <label class="billing-option">
-                                <input type="radio" name="billing" value="quarterly" <?php echo $billing === 'quarterly' ? 'checked' : ''; ?> data-billing="quarterly">
+                                <input type="radio" name="billing" value="quarterly" <?php echo $billing ===
+                                'quarterly'
+                                  ? 'checked'
+                                  : ''; ?> data-billing="quarterly">
                                 <?php if ($selectedPlan['has_discount']): ?>
-                                    <span class="discount-badge"><?php echo $selectedPlan['discount_percent']; ?>%
+                                    <span class="discount-badge"><?php echo $selectedPlan[
+                                      'discount_percent'
+                                    ]; ?>%
                                         OFF</span>
                                 <?php endif; ?>
                                 <div class="billing-label">
@@ -376,25 +429,36 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <div class="billing-info">
                                         <div class="billing-title">Pay quarterly</div>
                                         <div class="billing-price">
-                                            <?php if ($billing === 'quarterly' && $selectedPlan['has_discount']): ?>
+                                            <?php if (
+                                              $billing === 'quarterly' &&
+                                              $selectedPlan['has_discount']
+                                            ): ?>
                                                 <span
-                                                    class="original-price"><?php echo number_format($monthlyPrice * 3); ?>PHP</span>
+                                                    class="original-price"><?php echo number_format(
+                                                      $monthlyPrice * 3,
+                                                    ); ?>PHP</span>
                                             <?php endif; ?>
-                                            <?php echo number_format($quarterlyPrice); ?>PHP/quarter
+                                            <?php echo number_format(
+                                              $quarterlyPrice,
+                                            ); ?>PHP/quarter
                                         </div>
                                     </div>
                                 </div>
                             </label>
                         </div>
 
-                        <!-- Plan Card with Headband -->
                         <div class="plan-card-transaction">
                             <div class="plan-header-headband">
-                                <h2 class="plan-name"><?php echo formatPlanName($selectedPlan['name']); ?></h2>
+                                <h2 class="plan-name"><?php echo formatPlanName(
+                                  $selectedPlan['name'],
+                                ); ?></h2>
                                 <div class="plan-price">
                                     <span class="price-amount"><?php echo $price; ?></span>
                                     <span
-                                        class="price-period">/<?php echo $billing === 'quarterly' ? 'QUARTER' : 'MONTH'; ?></span>
+                                        class="price-period">/<?php echo $billing ===
+                                        'quarterly'
+                                          ? 'QUARTER'
+                                          : 'MONTH'; ?></span>
                                 </div>
                             </div>
 
@@ -402,7 +466,10 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <p class="next-payment">Next payment on <strong><?php echo $nextPayment; ?></strong></p>
 
                                 <ul class="benefits-list">
-                                    <?php foreach ($selectedPlan['benefits'] as $benefit): ?>
+                                    <?php foreach (
+                                      $selectedPlan['benefits']
+                                      as $benefit
+                                    ): ?>
                                         <li>
                                             <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none">
                                                 <path
@@ -416,7 +483,6 @@ require_once __DIR__ . '/../../includes/header.php';
                             </div>
                         </div>
 
-                        <!-- Action Buttons - Moved here -->
                         <div class="transaction-actions">
                             <button type="button" class="confirm-payment-btn" id="confirmPaymentBtn">
                                 CONFIRM PAYMENT
@@ -439,7 +505,6 @@ require_once __DIR__ . '/../../includes/header.php';
     </div>
 </main>
 
-<!-- Receipt Upload Modal -->
 <div class="modal-overlay" id="receiptModalOverlay"></div>
 <div class="receipt-modal" id="receiptModal">
     <div class="modal-header">
