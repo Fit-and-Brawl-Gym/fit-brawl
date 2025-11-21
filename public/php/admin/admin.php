@@ -69,46 +69,60 @@ if ($unread_query && $unread_row = $unread_query->fetch_assoc()) {
   $unreadContacts = $unread_row['count'];
 }
 
-// Get total registered members
-$totalMembers = 0;
-$members_query = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'member'");
-if ($members_query && $members_row = $members_query->fetch_assoc()) {
-  $totalMembers = $members_row['count'];
+// Get total revenue for this month (calculated based on plan pricing)
+$monthlyRevenue = 0;
+$planPricing = [
+  'Gladiator' => ['monthly' => 14500, 'quarterly' => 43500],
+  'Clash' => ['monthly' => 13500, 'quarterly' => 40500],
+  'Brawler' => ['monthly' => 11500, 'quarterly' => 34500],
+  'Champion' => ['monthly' => 7000, 'quarterly' => 21000],
+  'Resolution Regular' => ['monthly' => 2200, 'quarterly' => 6600],
+  'Resolution' => ['monthly' => 2200, 'quarterly' => 6600]
+];
+
+$revenue_query = $conn->query("
+  SELECT plan_name, billing_type
+  FROM user_memberships
+  WHERE request_status = 'approved'
+  AND MONTH(start_date) = MONTH(CURDATE())
+  AND YEAR(start_date) = YEAR(CURDATE())
+");
+
+if ($revenue_query) {
+  while ($row = $revenue_query->fetch_assoc()) {
+    $planName = $row['plan_name'];
+    $billingType = $row['billing_type'];
+    $amount = $planPricing[$planName][$billingType] ?? 14500;
+    $monthlyRevenue += $amount;
+  }
 }
 
-// Get total equipment count
-$totalEquipment = 0;
-$equipment_query = $conn->query("SELECT COUNT(*) as count FROM equipment");
-if ($equipment_query && $equipment_row = $equipment_query->fetch_assoc()) {
-  $totalEquipment = $equipment_row['count'];
+// Get active members count (users with active approved memberships)
+$activeMembers = 0;
+$active_members_query = $conn->query("
+  SELECT COUNT(DISTINCT um.user_id) as count
+  FROM user_memberships um
+  WHERE um.request_status = 'approved'
+  AND um.end_date >= CURDATE()
+  AND (
+    um.payment_method = 'online'
+    OR (um.payment_method = 'cash' AND um.cash_payment_status = 'paid')
+  )
+");
+if ($active_members_query && $active_members_row = $active_members_query->fetch_assoc()) {
+  $activeMembers = $active_members_row['count'];
 }
 
-// Get equipment in maintenance
-$maintenanceEquipment = 0;
-$maintenance_query = $conn->query("SELECT COUNT(*) as count FROM equipment WHERE status = 'Maintenance'");
-if ($maintenance_query && $maintenance_row = $maintenance_query->fetch_assoc()) {
-  $maintenanceEquipment = $maintenance_row['count'];
-}
-
-// Get total products count
-$totalProducts = 0;
-$products_query = $conn->query("SELECT COUNT(*) as count FROM products");
-if ($products_query && $products_row = $products_query->fetch_assoc()) {
-  $totalProducts = $products_row['count'];
-}
-
-// Get out of stock products count (stock = 0)
-$outOfStockProducts = 0;
-$out_stock_products_query = $conn->query("SELECT COUNT(*) as count FROM products WHERE stock = 0");
-if ($out_stock_products_query && $out_stock_products_row = $out_stock_products_query->fetch_assoc()) {
-  $outOfStockProducts = $out_stock_products_row['count'];
-}
-
-// Get low stock products count (stock > 0 AND stock <= 10)
-$lowStockProducts = 0;
-$low_stock_products_query = $conn->query("SELECT COUNT(*) as count FROM products WHERE stock > 0 AND stock <= 10");
-if ($low_stock_products_query && $low_stock_products_row = $low_stock_products_query->fetch_assoc()) {
-  $lowStockProducts = $low_stock_products_row['count'];
+// Get today's sessions count
+$todaySessions = 0;
+$today_sessions_query = $conn->query("
+  SELECT COUNT(*) as count
+  FROM user_reservations
+  WHERE DATE(booking_date) = CURDATE()
+  AND booking_status = 'confirmed'
+");
+if ($today_sessions_query && $today_sessions_row = $today_sessions_query->fetch_assoc()) {
+  $todaySessions = $today_sessions_row['count'];
 }
 ?>
 <!DOCTYPE html>
@@ -134,26 +148,9 @@ if ($low_stock_products_query && $low_stock_products_row = $low_stock_products_q
       <p>Here’s an overview of your gym’s activity.</p>
     </header>
 
-    <!-- Dashboard Stats -->
+    <!-- Dashboard Stats - Key Metrics -->
     <section class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <i class="fa-solid fa-users"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $activeSubscribers ?></h3>
-          <p>Active Subscribers</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon green">
-          <i class="fa-solid fa-dumbbell"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $totalTrainers ?></h3>
-          <p>Active Trainers</p>
-        </div>
-      </div>
+      <!-- Action Items -->
       <div class="stat-card <?= $pendingSubs > 0 ? 'has-alert' : '' ?>">
         <div class="stat-icon orange">
           <i class="fa-solid fa-clock"></i>
@@ -164,20 +161,6 @@ if ($low_stock_products_query && $low_stock_products_row = $low_stock_products_q
         </div>
         <?php if ($pendingSubs > 0): ?>
           <a href="subscriptions.php" class="stat-action">
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        <?php endif; ?>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <i class="fa-solid fa-calendar-check"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $pendingRes ?></h3>
-          <p>Scheduled Sessions</p>
-        </div>
-        <?php if ($pendingRes > 0): ?>
-          <a href="reservations.php" class="stat-action">
             <i class="fa-solid fa-arrow-right"></i>
           </a>
         <?php endif; ?>
@@ -196,60 +179,34 @@ if ($low_stock_products_query && $low_stock_products_row = $low_stock_products_q
           </a>
         <?php endif; ?>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon purple">
-          <i class="fa-solid fa-user-group"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $totalMembers ?></h3>
-          <p>Total Members</p>
-        </div>
-      </div>
+      
+      <!-- Key Performance Metrics -->
       <div class="stat-card">
         <div class="stat-icon green">
-          <i class="fa-solid fa-dumbbell"></i>
+          <i class="fa-solid fa-peso-sign"></i>
         </div>
         <div class="stat-info">
-          <h3><?= $totalEquipment ?></h3>
-          <p>Total Equipment</p>
+          <h3>₱<?= number_format($monthlyRevenue, 2) ?></h3>
+          <p>Revenue This Month</p>
         </div>
-      </div>
-      <div class="stat-card <?= $maintenanceEquipment > 0 ? 'has-alert' : '' ?>">
-        <div class="stat-icon orange">
-          <i class="fa-solid fa-wrench"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $maintenanceEquipment ?></h3>
-          <p>Under Maintenance</p>
-        </div>
-        <?php if ($maintenanceEquipment > 0): ?>
-          <a href="equipment.php" class="stat-action">
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        <?php endif; ?>
       </div>
       <div class="stat-card">
         <div class="stat-icon blue">
-          <i class="fa-solid fa-store"></i>
+          <i class="fa-solid fa-user-check"></i>
         </div>
         <div class="stat-info">
-          <h3><?= $totalProducts ?></h3>
-          <p>Total Products</p>
+          <h3><?= $activeMembers ?></h3>
+          <p>Active Members</p>
         </div>
       </div>
-      <div class="stat-card <?= $outOfStockProducts > 0 ? 'has-alert' : '' ?>">
-        <div class="stat-icon red">
-          <i class="fa-solid fa-box-open"></i>
+      <div class="stat-card <?= $todaySessions > 0 ? '' : '' ?>">
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-calendar-day"></i>
         </div>
         <div class="stat-info">
-          <h3><?= $outOfStockProducts ?></h3>
-          <p>Out of Stock</p>
+          <h3><?= $todaySessions ?></h3>
+          <p>Today's Sessions</p>
         </div>
-        <?php if ($outOfStockProducts > 0): ?>
-          <a href="products.php" class="stat-action">
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        <?php endif; ?>
       </div>
     </section>
 
