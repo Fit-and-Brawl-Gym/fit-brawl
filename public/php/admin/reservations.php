@@ -1,3 +1,4 @@
+
 <?php
 include_once('../../../includes/init.php');
 require_once('../../../includes/csp_nonce.php');
@@ -343,7 +344,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                             <?php foreach ($bookings as $booking): ?>
                                 <tr class="booking-row" data-id="<?php echo $booking['id']; ?>">
                                     <td>
-                                        <input type="checkbox" class="booking-checkbox" value="<?php echo $booking['id']; ?>">
+                                        <input type="checkbox" class="bo  oking-checkbox" value="<?php echo $booking['id']; ?>">
                                     </td>
                                     <td>
                                         <div class="client-info">
