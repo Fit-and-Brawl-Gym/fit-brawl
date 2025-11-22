@@ -21,9 +21,9 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 switch ($action) {
     case 'getMemberships':
         $includeExpired = isset($_GET['include_expired']) && $_GET['include_expired'] === 'true';
-        
+
         // Base query - only approved memberships
-        $query = "SELECT 
+        $query = "SELECT
                     um.id,
                     um.user_id,
                     um.plan_id,
@@ -42,36 +42,37 @@ switch ($action) {
                 FROM user_memberships um
                 JOIN users u ON um.user_id = u.id
                 WHERE um.request_status = 'approved'
+                AND um.membership_status = 'active'
                 AND (
-                    um.payment_method = 'online' 
+                    um.payment_method = 'online'
                     OR (um.payment_method = 'cash' AND um.cash_payment_status = 'paid')
                 )";
-        
+
         if (!$includeExpired) {
             // Only active memberships (not expired) - filter by actual end date
             $query .= " AND um.end_date >= CURDATE()";
         }
-        
+
         // Order by end date to show expiring soon first
         $query .= " ORDER BY um.end_date ASC";
-        
+
         $stmt = $conn->prepare($query);
         if ($stmt) {
             $stmt->execute();
             $result = $stmt->get_result();
             $memberships = [];
-            
+
             while ($row = $result->fetch_assoc()) {
                 $memberships[] = $row;
             }
-            
+
             $stmt->close();
-            
+
             // Calculate statistics
             $stats = calculateStats($memberships);
-            
+
             echo json_encode([
-                'success' => true, 
+                'success' => true,
                 'data' => $memberships,
                 'stats' => $stats
             ]);
@@ -83,15 +84,15 @@ switch ($action) {
 
     case 'getMembershipDetails':
         $membershipId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-        
+
         if ($membershipId <= 0) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Invalid membership ID']);
             exit;
         }
-        
+
         // Get membership details
-        $membershipQuery = "SELECT 
+        $membershipQuery = "SELECT
                             um.*,
                             u.username,
                             u.email,
@@ -102,16 +103,16 @@ switch ($action) {
                         FROM user_memberships um
                         JOIN users u ON um.user_id = u.id
                         WHERE um.id = ?";
-        
+
         $stmt = $conn->prepare($membershipQuery);
         $stmt->bind_param('i', $membershipId);
-        
+
         if ($stmt->execute()) {
             $result = $stmt->get_result();
-            
+
             if ($result->num_rows > 0) {
                 $membership = $result->fetch_assoc();
-                
+
                 // Get user details
                 $userQuery = "SELECT * FROM users WHERE id = ?";
                 $userStmt = $conn->prepare($userQuery);
@@ -119,14 +120,14 @@ switch ($action) {
                 $userStmt->execute();
                 $userResult = $userStmt->get_result();
                 $user = $userResult->fetch_assoc();
-                
+
                 // Add name from membership table to user data
                 if ($user) {
                     $user['name'] = $membership['name'];
                 }
-                
+
                 $userStmt->close();
-                
+
                 echo json_encode([
                     'success' => true,
                     'data' => [
@@ -138,7 +139,7 @@ switch ($action) {
                 http_response_code(404);
                 echo json_encode(['success' => false, 'message' => 'Membership not found']);
             }
-            
+
             $stmt->close();
         } else {
             http_response_code(500);
@@ -148,13 +149,13 @@ switch ($action) {
 
     case 'getPaymentHistory':
         $membershipId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-        
+
         if ($membershipId <= 0) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Invalid membership ID']);
             exit;
         }
-        
+
         // Get membership details first
         $membershipQuery = "SELECT * FROM user_memberships WHERE id = ?";
         $stmt = $conn->prepare($membershipQuery);
@@ -163,16 +164,16 @@ switch ($action) {
         $result = $stmt->get_result();
         $membership = $result->fetch_assoc();
         $stmt->close();
-        
+
         if (!$membership) {
             http_response_code(404);
             echo json_encode(['success' => false, 'message' => 'Membership not found']);
             exit;
         }
-        
+
         // Build payment history from membership data
         $payments = [];
-        
+
         // Calculate amount based on plan - Real pricing from membership.php
         // Gladiator: ₱14,500/month or ₱43,500/quarter (48 hrs/week, Boxing & MMA)
         // Clash: ₱13,500/month or ₱40,500/quarter (36 hrs/week, MMA only)
@@ -187,11 +188,11 @@ switch ($action) {
             'Resolution Regular' => ['monthly' => 2200, 'quarterly' => 6600],
             'Resolution' => ['monthly' => 2200, 'quarterly' => 6600]
         ];
-        
+
         $planName = $membership['plan_name'];
         $billingType = $membership['billing_type'];
         $amount = $planPricing[$planName][$billingType] ?? 14500;
-        
+
         // Add the initial payment
         $payments[] = [
             'payment_date' => $membership['date_submitted'] ?? $membership['start_date'],
@@ -200,7 +201,7 @@ switch ($action) {
             'cash_payment_status' => $membership['cash_payment_status'],
             'reference_number' => $membership['payment_method'] === 'online' ? 'ONL-' . $membership['id'] : 'CASH-' . $membership['id']
         ];
-        
+
         echo json_encode([
             'success' => true,
             'data' => $payments
@@ -217,7 +218,7 @@ switch ($action) {
                 exit;
             }
         }
-        
+
         // Get form data
         $name = trim($_POST['memberName'] ?? '');
         $email = trim($_POST['memberEmail'] ?? '');
@@ -226,27 +227,27 @@ switch ($action) {
         $plan = trim($_POST['memberPlan'] ?? '');
         $billingType = trim($_POST['billingType'] ?? '');
         $startDate = trim($_POST['startDate'] ?? '');
-        
+
         // Validate required fields
         if (empty($name) || empty($email) || empty($contact) || empty($username) || empty($plan) || empty($billingType) || empty($startDate)) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'All fields are required']);
             exit;
         }
-        
+
         // Validate email format
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Invalid email format']);
             exit;
         }
-        
+
         // Check if username or email already exists
         $checkStmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
         $checkStmt->bind_param('ss', $username, $email);
         $checkStmt->execute();
         $checkResult = $checkStmt->get_result();
-        
+
         if ($checkResult->num_rows > 0) {
             $checkStmt->close();
             http_response_code(400);
@@ -254,48 +255,48 @@ switch ($action) {
             exit;
         }
         $checkStmt->close();
-        
+
         // Generate password (12-character alphanumeric)
         $password = generateRandomPassword(12);
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        
+
         // Generate user_id using the helper function
         $userId = generateFormattedUserId($conn, 'member');
-        
+
         // Calculate end date based on billing type
         $endDate = calculateEndDate($startDate, $billingType);
-        
+
         // Begin transaction
         $conn->begin_transaction();
-        
+
         try {
             // Insert user account
             $userStmt = $conn->prepare("INSERT INTO users (id, username, email, contact_number, password, role, account_status, is_verified) VALUES (?, ?, ?, ?, ?, 'member', 'active', 1)");
             $userStmt->bind_param('sssss', $userId, $username, $email, $contact, $hashedPassword);
-            
+
             if (!$userStmt->execute()) {
                 throw new Exception('Failed to create user account');
             }
             $userStmt->close();
-            
+
             // Get plan name based on plan value
             $planName = ucfirst($plan) . ' Plan';
-            
+
             // Insert membership with name
             $membershipStmt = $conn->prepare("INSERT INTO user_memberships (user_id, name, plan_name, billing_type, start_date, end_date, request_status, membership_status, payment_method, date_submitted, date_approved, admin_id) VALUES (?, ?, ?, ?, ?, ?, 'approved', 'active', 'cash', NOW(), NOW(), ?)");
             $membershipStmt->bind_param('sssssss', $userId, $name, $planName, $billingType, $startDate, $endDate, $adminId);
-            
+
             if (!$membershipStmt->execute()) {
                 throw new Exception('Failed to create membership');
             }
             $membershipStmt->close();
-            
+
             // Commit transaction
             $conn->commit();
-            
+
             // Send email with credentials
             $emailSent = sendCredentialsEmail($email, $name, $username, $password);
-            
+
             // Log activity
             ActivityLogger::log(
                 'membership_created',
@@ -303,13 +304,13 @@ switch ($action) {
                 $userId,
                 "Created new membership account for {$name} with {$planName} ({$billingType})"
             );
-            
+
             echo json_encode([
                 'success' => true,
                 'message' => 'Membership created successfully',
                 'email_sent' => $emailSent
             ]);
-            
+
         } catch (Exception $e) {
             // Rollback transaction on error
             $conn->rollback();
@@ -329,7 +330,7 @@ switch ($action) {
 function calculateStats($memberships) {
     $today = new DateTime();
     $thisMonthStart = new DateTime('first day of this month');
-    
+
     $stats = [
         'total_active' => 0,
         'expiring_soon' => 0,
@@ -337,26 +338,30 @@ function calculateStats($memberships) {
         'revenue_this_month' => 0,
         'renewal_rate' => 0
     ];
-    
+
     foreach ($memberships as $membership) {
         // Only count active memberships for stats
         if ($membership['membership_status'] === 'active') {
             $stats['total_active']++;
-            
+
             // Check if expiring soon (within 7 days)
             $endDate = new DateTime($membership['end_date']);
             $daysRemaining = $today->diff($endDate)->days;
-            
+
             if ($daysRemaining <= 7 && $endDate >= $today) {
                 $stats['expiring_soon']++;
             }
-            
-            // Check if new this month
+
+            // Check if new this month (membership started this month)
             $startDate = new DateTime($membership['start_date']);
-            if ($startDate >= $thisMonthStart) {
+            $startMonth = $startDate->format('Y-m');
+            $currentMonth = $today->format('Y-m');
+
+            if ($startMonth === $currentMonth) {
                 $stats['new_this_month']++;
-                
+
                 // Calculate revenue with real pricing from membership.php
+                // Only count revenue for memberships that started this month
                 $planPricing = [
                     'Gladiator' => ['monthly' => 14500, 'quarterly' => 43500],
                     'Clash' => ['monthly' => 13500, 'quarterly' => 40500],
@@ -365,7 +370,7 @@ function calculateStats($memberships) {
                     'Resolution Regular' => ['monthly' => 2200, 'quarterly' => 6600],
                     'Resolution' => ['monthly' => 2200, 'quarterly' => 6600]
                 ];
-                
+
                 $planName = $membership['plan_name'];
                 $billingType = $membership['billing_type'];
                 $amount = $planPricing[$planName][$billingType] ?? 14500;
@@ -373,11 +378,11 @@ function calculateStats($memberships) {
             }
         }
     }
-    
+
     // Calculate renewal rate (simplified - can be enhanced)
     // For now, just show 0% as placeholder
     $stats['renewal_rate'] = 0;
-    
+
     return $stats;
 }
 
@@ -386,13 +391,13 @@ function calculateStats($memberships) {
  */
 function calculateEndDate($startDate, $billingType) {
     $start = new DateTime($startDate);
-    
+
     if ($billingType === 'monthly') {
         $start->modify('+1 month');
     } else {
         $start->modify('+3 months');
     }
-    
+
     return $start->format('Y-m-d');
 }
 
@@ -402,11 +407,11 @@ function calculateEndDate($startDate, $billingType) {
 function generateRandomPassword($length = 12) {
     $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     $password = '';
-    
+
     for ($i = 0; $i < $length; $i++) {
         $password .= $chars[random_int(0, strlen($chars) - 1)];
     }
-    
+
     return $password;
 }
 
@@ -415,9 +420,9 @@ function generateRandomPassword($length = 12) {
  */
 function sendCredentialsEmail($toEmail, $toName, $username, $password) {
     require_once __DIR__ . '/../../../../includes/mail_config.php';
-    
+
     $mail = new PHPMailer(true);
-    
+
     try {
         // Server settings
         $mail->isSMTP();
@@ -427,15 +432,15 @@ function sendCredentialsEmail($toEmail, $toName, $username, $password) {
         $mail->Password = getenv('EMAIL_PASS');
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = getenv('EMAIL_PORT');
-        
+
         // Recipients
         $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
         $mail->addAddress($toEmail, $toName);
-        
+
         // Content
         $mail->isHTML(true);
         $mail->Subject = "Welcome to Fit & Brawl Gym - Your Account Credentials";
-        
+
         $message = "
     <html>
     <head>
@@ -457,23 +462,23 @@ function sendCredentialsEmail($toEmail, $toName, $username, $password) {
             <div class='content'>
                 <p>Dear <strong>" . htmlspecialchars($toName) . "</strong>,</p>
                 <p>Your membership account has been successfully created by our admin team. Below are your login credentials:</p>
-                
+
                 <div class='credentials'>
                         <p><strong>Username:</strong> " . htmlspecialchars($username) . "</p>
                     <p><strong>Password:</strong> " . htmlspecialchars($password) . "</p>
                 </div>
-                
+
                 <p><strong>Important Security Notes:</strong></p>
                 <ul>
                     <li>Please change your password after your first login</li>
                     <li>Do not share your credentials with anyone</li>
                     <li>Keep this email in a secure location</li>
                 </ul>
-                
+
                 <p>You can now log in to your account and start enjoying your membership benefits!</p>
-                
+
                 <p>If you have any questions, please don't hesitate to contact us.</p>
-                
+
                 <p>Best regards,<br>Fit & Brawl Gym Team</p>
             </div>
             <div class='footer'>
@@ -483,10 +488,10 @@ function sendCredentialsEmail($toEmail, $toName, $username, $password) {
     </body>
     </html>
     ";
-        
+
         $mail->Body = $message;
         $mail->AltBody = strip_tags($message);
-        
+
         $mail->send();
         return true;
     } catch (Exception $e) {

@@ -222,13 +222,9 @@ class MinHeap {
             const rightChild = 2 * index + 2;
 
             if (leftChild < this.heap.length &&
-
-            if (leftChild < this.heap.length &&
                 this.compareFunction(this.heap[leftChild], this.heap[smallest]) < 0) {
                 smallest = leftChild;
             }
-
-            if (rightChild < this.heap.length &&
 
             if (rightChild < this.heap.length &&
                 this.compareFunction(this.heap[rightChild], this.heap[smallest]) < 0) {
@@ -659,7 +655,7 @@ function renderUsersTable() {
     if (filteredUsers.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="empty-state">
+                <td colspan="6" class="empty-state">
                     <i class="fa-solid fa-users-slash"></i>
                     <h3>No Users Found</h3>
                     <p>No users match your current filters</p>
@@ -675,17 +671,16 @@ function renderUsersTable() {
 // Create user table row
 function createUserRow(user) {
     const roleBadge = getRoleBadge(user.role);
-    const statusBadge = getStatusBadge(user.account_status);
     const verifiedBadge = getVerifiedBadge(user.is_verified);
     const membershipBadge = getMembershipBadge(user.membership_status);
 
     // Determine avatar source with proper path logic
     let avatarSrc = '../../../images/account-icon.svg'; // Default icon
-    
-    if (user.avatar && 
-        user.avatar !== 'account-icon.svg' && 
-        user.avatar !== 'account-icon-white.svg' && 
-        user.avatar !== 'default-avatar.png' && 
+
+    if (user.avatar &&
+        user.avatar !== 'account-icon.svg' &&
+        user.avatar !== 'account-icon-white.svg' &&
+        user.avatar !== 'default-avatar.png' &&
         user.avatar.trim() !== '') {
         // User has uploaded a custom avatar
         avatarSrc = `../../../uploads/avatars/${user.avatar}`;
@@ -709,7 +704,6 @@ function createUserRow(user) {
                     ${membershipBadge}
                 </div>
             </td>
-            <td>${statusBadge}</td>
             <td>${verifiedBadge}</td>
             <td>${formatDate(user.created_at)}</td>
             <td>

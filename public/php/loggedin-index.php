@@ -436,7 +436,7 @@ $sessionHours = [
                     </div>
                     <?php if ($hoursUsed > 0): ?>
                         <div class="motivation-message">
-                            <?php 
+                            <?php
                             $usagePercent = ($totalMinutes / ($weeklyHourLimit * 60)) * 100;
                             if ($usagePercent >= 80): ?>
                                 <i class="fas fa-fire"></i> <span>Excellent dedication this week!</span>

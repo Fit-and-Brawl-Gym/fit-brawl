@@ -70,6 +70,7 @@ if ($unread_query && $unread_row = $unread_query->fetch_assoc()) {
 }
 
 // Get total revenue for this month (calculated based on plan pricing)
+// Only counts memberships that STARTED in the current month
 $monthlyRevenue = 0;
 $planPricing = [
   'Gladiator' => ['monthly' => 14500, 'quarterly' => 43500],
@@ -84,8 +85,13 @@ $revenue_query = $conn->query("
   SELECT plan_name, billing_type
   FROM user_memberships
   WHERE request_status = 'approved'
-  AND MONTH(start_date) = MONTH(CURDATE())
+  AND membership_status = 'active'
   AND YEAR(start_date) = YEAR(CURDATE())
+  AND MONTH(start_date) = MONTH(CURDATE())
+  AND (
+    payment_method = 'online'
+    OR (payment_method = 'cash' AND cash_payment_status = 'paid')
+  )
 ");
 
 if ($revenue_query) {
@@ -103,6 +109,7 @@ $active_members_query = $conn->query("
   SELECT COUNT(DISTINCT um.user_id) as count
   FROM user_memberships um
   WHERE um.request_status = 'approved'
+  AND um.membership_status = 'active'
   AND um.end_date >= CURDATE()
   AND (
     um.payment_method = 'online'
@@ -179,7 +186,7 @@ if ($today_sessions_query && $today_sessions_row = $today_sessions_query->fetch_
           </a>
         <?php endif; ?>
       </div>
-      
+
       <!-- Key Performance Metrics -->
       <div class="stat-card">
         <div class="stat-icon green">

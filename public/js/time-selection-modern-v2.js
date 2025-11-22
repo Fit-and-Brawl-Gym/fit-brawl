@@ -227,6 +227,8 @@ function isTimePast(timeString, selectedDate) {
     const parts = timeString.split(':');
     const slotMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
 
+    // Block times that are in the past or current time
+    // Must be strictly in the future to allow booking
     return slotMinutes <= currentMinutes;
 }
 
