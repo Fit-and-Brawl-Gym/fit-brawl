@@ -28,7 +28,7 @@ if (savedView === 'cards') {
     document.querySelector('.view-btn[data-view="cards"]').click();
 }
 
-// Search functionality
+// Search functionality with DSA Fuzzy Search
 const searchInput = document.getElementById('searchInput');
 const specializationFilter = document.getElementById('specializationFilter');
 const statusFilter = document.getElementById('statusFilter');
@@ -38,30 +38,79 @@ if (searchInput) {
     searchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            applyFilters();
-        }, 500);
+            applyFiltersClientSide();
+        }, 300); // Faster debounce for client-side
     });
 }
 
 if (specializationFilter) {
-    specializationFilter.addEventListener('change', applyFilters);
+    specializationFilter.addEventListener('change', applyFiltersClientSide);
 }
 
 if (statusFilter) {
-    statusFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFiltersClientSide);
 }
 
-function applyFilters() {
-    const search = searchInput ? searchInput.value : '';
+function applyFiltersClientSide() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
     const specialization = specializationFilter ? specializationFilter.value : 'all';
     const status = statusFilter ? statusFilter.value : 'all';
 
-    const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    if (specialization !== 'all') params.append('specialization', specialization);
-    if (status !== 'all') params.append('status', status);
+    // Use DSA utilities if available, fallback to basic filtering
+    const useDSA = window.DSA || window.DSAUtils;
+    const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
 
-    window.location.href = 'trainers.php' + (params.toString() ? '?' + params.toString() : '');
+    // Filter table rows
+    const tableRows = document.querySelectorAll('#tableView tbody tr');
+    tableRows.forEach(row => {
+        const nameCell = row.querySelector('td:nth-child(2)')?.textContent || '';
+        const emailCell = row.querySelector('td:nth-child(3)')?.textContent || '';
+        const phoneCell = row.querySelector('td:nth-child(4)')?.textContent || '';
+        const specializationCell = row.querySelector('td:nth-child(5)')?.textContent || '';
+        const statusCell = row.querySelector('.status-badge')?.textContent.trim() || '';
+
+        let matchesSearch = true;
+        if (searchTerm) {
+            const searchableText = `${nameCell} ${emailCell} ${phoneCell}`.toLowerCase();
+            if (fuzzySearch) {
+                // Use fuzzy search for typo tolerance
+                matchesSearch = fuzzySearch(searchTerm, searchableText);
+            } else {
+                // Fallback to includes
+                matchesSearch = searchableText.includes(searchTerm);
+            }
+        }
+
+        const matchesSpecialization = specialization === 'all' || specializationCell === specialization;
+        const matchesStatus = status === 'all' || statusCell === status;
+
+        row.style.display = (matchesSearch && matchesSpecialization && matchesStatus) ? '' : 'none';
+    });
+
+    // Filter cards
+    const cards = document.querySelectorAll('.trainer-card');
+    cards.forEach(card => {
+        const name = card.querySelector('.trainer-name')?.textContent || '';
+        const email = card.querySelector('.trainer-email')?.textContent || '';
+        const phone = card.querySelector('.trainer-phone')?.textContent || '';
+        const specializationBadge = card.querySelector('.specialization-badge')?.textContent || '';
+        const statusBadge = card.querySelector('.status-badge')?.textContent.trim() || '';
+
+        let matchesSearch = true;
+        if (searchTerm) {
+            const searchableText = `${name} ${email} ${phone}`.toLowerCase();
+            if (fuzzySearch) {
+                matchesSearch = fuzzySearch(searchTerm, searchableText);
+            } else {
+                matchesSearch = searchableText.includes(searchTerm);
+            }
+        }
+
+        const matchesSpecialization = specialization === 'all' || specializationBadge === specialization;
+        const matchesStatus = status === 'all' || statusBadge === status;
+
+        card.style.display = (matchesSearch && matchesSpecialization && matchesStatus) ? '' : 'none';
+    });
 }
 
 // Toggle Status

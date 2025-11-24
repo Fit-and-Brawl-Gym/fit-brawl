@@ -319,6 +319,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         const IMAGES_PATH = '<?= IMAGES_PATH ?>';
         const BASE_PATH = '<?= BASE_PATH ?>';
     </script>
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/active-memberships.js"></script>
 </body>

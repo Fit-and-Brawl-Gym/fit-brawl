@@ -143,6 +143,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
     // Pass PHP environment paths to JavaScript
     window.UPLOADS_PATH = '<?= UPLOADS_PATH ?>';
   </script>
+  <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
   <script src="<?= PUBLIC_PATH ?>/php/admin/js/subscriptions.js"></script>
 </body>

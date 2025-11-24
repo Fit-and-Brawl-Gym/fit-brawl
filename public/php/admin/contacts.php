@@ -123,6 +123,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         </div>
     </div>
 
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/contacts.js"></script>
 

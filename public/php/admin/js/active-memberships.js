@@ -156,10 +156,17 @@ function applyFilters() {
             }
         }
 
-        // Search Filter
+        // Search Filter with DSA Fuzzy Search
         if (searchTerm) {
             const searchableText = `${membership.name} ${membership.email} ${membership.contact_number}`.toLowerCase();
-            if (!searchableText.includes(searchTerm)) return false;
+            const useDSA = window.DSA || window.DSAUtils;
+            const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
+
+            if (fuzzySearch) {
+                if (!fuzzySearch(searchTerm, searchableText)) return false;
+            } else {
+                if (!searchableText.includes(searchTerm)) return false;
+            }
         }
 
         return true;
