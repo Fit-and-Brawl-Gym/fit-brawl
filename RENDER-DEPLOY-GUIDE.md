@@ -8,81 +8,40 @@ Complete guide to deploy your gym management system to Render.com with free HTTP
 
 1. GitHub account with this repository pushed
 2. Render.com account (free)
-3. Free MySQL database (we'll set this up)
+3. ✅ **Your existing AWS RDS MySQL database** (already set up!)
 
 ---
 
-## 🗄️ Step 1: Set Up Free MySQL Database
+## 🗄️ Step 1: Get Your AWS Database Credentials
 
-Render's free database is PostgreSQL only. Your app uses MySQL, so we'll use **TiDB Cloud** (100% MySQL compatible, generous free tier).
+You already have a MySQL database on AWS free tier! Just get these connection details from your AWS RDS console:
 
-### Option A: TiDB Cloud (Recommended)
-
-1. Go to [tidbcloud.com](https://tidbcloud.com)
-2. Sign up with GitHub
-3. Click **"Create Cluster"**
-4. Select **"Serverless"** (FREE tier)
-   - Cluster Name: `fitbrawl-db`
-   - Region: Choose closest to Singapore
-5. Click **"Create"**
-6. Once created, click **"Connect"** → **"General"**
-7. Note down these values:
+1. Go to [AWS RDS Console](https://console.aws.amazon.com/rds/)
+2. Click on your database instance
+3. Note down these values:
    ```
-   Host: gateway01.xxx.prod.aws.tidbcloud.com
-   Port: 4000
-   User: xxxxx.root
-   Password: (generate one)
-   Database: fit_and_brawl_gym
+   Endpoint (Host): your-db.xxxxxxxx.region.rds.amazonaws.com
+   Port: 3306
+   Database name: fit_and_brawl_gym
+   Master username: your_username
+   Password: your_password
    ```
 
-### Option B: Railway.app (Alternative)
+### ⚠️ Important: Make Sure AWS Allows External Connections
 
-1. Go to [railway.app](https://railway.app)
-2. Sign up with GitHub
-3. Click **"New Project"** → **"Database"** → **"MySQL"**
-4. Copy the connection variables from the Variables tab
+1. In RDS Console → Your DB → **Security Group**
+2. Edit **Inbound Rules**
+3. Add rule:
+   - Type: **MySQL/Aurora**
+   - Port: **3306**
+   - Source: **0.0.0.0/0** (allows all IPs - needed for Render)
+4. Save
 
-### Option C: PlanetScale (Alternative)
-
-1. Go to [planetscale.com](https://planetscale.com)
-2. Sign up and create a free database
-3. Note: PlanetScale requires SSL connection
-
----
-
-## 📤 Step 2: Import Your Database
-
-### Export from XAMPP
-
-```bash
-# Open terminal in XAMPP
-cd /c/xampp/mysql/bin
-
-# Export your database
-./mysqldump -u root fit_and_brawl_gym > fitbrawl_export.sql
-```
-
-Or use **phpMyAdmin**:
-1. Open http://localhost/phpmyadmin
-2. Select `fit_and_brawl_gym` database
-3. Click **Export** → **Go**
-4. Save the `.sql` file
-
-### Import to TiDB Cloud
-
-1. In TiDB Cloud dashboard, click **"Import"**
-2. Choose **"Local File"**
-3. Upload your `.sql` file
-4. Wait for import to complete
-
-**Or via command line:**
-```bash
-mysql -h gateway01.xxx.prod.aws.tidbcloud.com -P 4000 -u xxxxx.root -p fit_and_brawl_gym < fitbrawl_export.sql
-```
+> Note: For production, you'd want to whitelist specific IPs, but for a 1-month demo this is fine.
 
 ---
 
-## 🌐 Step 3: Deploy to Render
+## 🌐 Step 2: Deploy to Render
 
 ### Method 1: One-Click Deploy (Easiest)
 
@@ -120,23 +79,23 @@ mysql -h gateway01.xxx.prod.aws.tidbcloud.com -P 4000 -u xxxxx.root -p fit_and_b
 
 ---
 
-## ⚙️ Step 4: Configure Environment Variables
+## ⚙️ Step 3: Configure Environment Variables
 
 After deployment starts:
 
 1. Go to your service in Render dashboard
 2. Click **"Environment"** tab
-3. Add these variables:
+3. Add these variables with your **AWS RDS credentials**:
 
 | Key | Value | Example |
 |-----|-------|---------|
 | `APP_ENV` | `production` | `production` |
 | `BASE_PATH` | `/` | `/` |
-| `DB_HOST` | Your TiDB host | `gateway01.xxx.prod.aws.tidbcloud.com` |
-| `DB_PORT` | `4000` (TiDB) or `3306` | `4000` |
+| `DB_HOST` | Your AWS RDS endpoint | `fitbrawl.xxxxxxxx.ap-southeast-1.rds.amazonaws.com` |
+| `DB_PORT` | `3306` | `3306` |
 | `DB_NAME` | `fit_and_brawl_gym` | `fit_and_brawl_gym` |
-| `DB_USER` | Your TiDB user | `xxxxx.root` |
-| `DB_PASS` | Your TiDB password | `your-secure-password` |
+| `DB_USER` | Your RDS username | `admin` |
+| `DB_PASS` | Your RDS password | `your-secure-password` |
 
 4. Click **"Save Changes"**
 
@@ -144,7 +103,7 @@ After deployment starts:
 
 ---
 
-## ✅ Step 5: Verify Deployment
+## ✅ Step 4: Verify Deployment
 
 1. Wait for deployment to complete (5-10 minutes first time)
 
@@ -233,10 +192,10 @@ Render will automatically rebuild and deploy (3-5 minutes).
 
 ## 💰 Cost Summary
 
-| Service | Cost | Limit |
-|---------|------|-------|
+| Service | Cost | Note |
+|---------|------|------|
 | Render Web Service | FREE | 750 hrs/month |
-| TiDB Cloud Serverless | FREE | 5GB storage, 50M requests |
+| AWS RDS MySQL | FREE | You already have this! |
 | **Total** | **$0** | Perfect for 1-month demo |
 
 ---
@@ -256,10 +215,10 @@ Render will automatically rebuild and deploy (3-5 minutes).
 - 750 free hours/month
 - Limited to 512MB RAM
 
-### TiDB Free Tier
-- 5GB storage
-- 50 million Request Units/month
-- Auto-pauses after 7 days of no activity
+### AWS RDS Free Tier
+- 750 hours/month of db.t2.micro or db.t3.micro
+- 20GB storage
+- Valid for 12 months from signup
 
 **For a 1-month capstone demo, these limits are more than enough!**
 
