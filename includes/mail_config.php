@@ -28,17 +28,17 @@ function configureMailerSMTP(PHPMailer $mail): void
     $mail->SMTPAuth = true;
     $mail->Username = getenv('EMAIL_USER');
     $mail->Password = getenv('EMAIL_PASS');
-    
+
     $port = (int)(getenv('EMAIL_PORT') ?: 587);
     $mail->Port = $port;
-    
+
     // Use SSL for port 465, TLS for others (typically 587)
     if ($port === 465) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     } else {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     }
-    
+
     // Optimize for speed
     $mail->Timeout = 15; // 15 seconds timeout
     $mail->SMTPDebug = 0; // No debug output
@@ -49,7 +49,7 @@ function configureMailerSMTP(PHPMailer $mail): void
             'allow_self_signed' => true
         ]
     ];
-    
+
     $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
 }
 
@@ -229,14 +229,14 @@ function sendTrainerBookingNotification($trainer_email, $trainer_name, $member_n
 }
 
 function sendMemberBookingRescheduleOption(
-    $email, 
-    $member_name, 
-    $trainer_name, 
-    $date, 
-    $time_range,  
-    $class_type, 
+    $email,
+    $member_name,
+    $trainer_name,
+    $date,
+    $time_range,
+    $class_type,
     $reason = '',
-    $trainer_id = null 
+    $trainer_id = null
 ) {
     $mail = new PHPMailer(true);
 

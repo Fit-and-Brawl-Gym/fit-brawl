@@ -72,9 +72,9 @@ class EmailQueue {
     public static function queue($toEmail, $subject, $bodyHtml, $toName = null, $bodyText = null, $priority = 5) {
         // On Render/production without background workers, send immediately
         // This is more reliable than trying to queue + process in same request
-        $isProduction = getenv('APP_ENV') === 'production' || 
+        $isProduction = getenv('APP_ENV') === 'production' ||
                         (defined('ENVIRONMENT') && ENVIRONMENT === 'production');
-        
+
         // For high-priority emails (priority <= 2) or production, send immediately
         if ($priority <= 2 || $isProduction) {
             error_log("Sending email immediately to: $toEmail (priority: $priority, production: " . ($isProduction ? 'yes' : 'no') . ")");
@@ -117,28 +117,28 @@ class EmailQueue {
     public static function sendImmediately($toEmail, $subject, $bodyHtml, $toName = null) {
         // Use the new EmailService which supports HTTP APIs (works on Render)
         require_once __DIR__ . '/email_service.php';
-        
+
         // Wrap in email template
         $fullHtml = self::wrapInTemplate($bodyHtml);
-        
+
         $result = EmailService::send($toEmail, $subject, $fullHtml, $toName);
-        
+
         if ($result) {
             error_log("Email sent successfully to: $toEmail via " . EmailService::getProvider());
         } else {
             error_log("Failed to send email to: $toEmail via " . EmailService::getProvider());
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Wrap HTML content in email template
      */
     private static function wrapInTemplate($innerHtml) {
         $headerImg = 'https://fit-brawl.onrender.com/images/mail-header.png';
         $footerImg = 'https://fit-brawl.onrender.com/images/mail-footer.png';
-        
+
         return <<<HTML
 <!DOCTYPE html>
 <html>

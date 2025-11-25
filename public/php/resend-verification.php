@@ -96,7 +96,7 @@ try {
     applyEmailTemplate($mail, $html);
 
     error_log("Attempting to send verification email to: $email");
-    
+
     if ($mail->send()) {
         error_log("Verification email sent successfully to: $email");
         echo json_encode(['success' => true, 'message' => 'Verification email sent successfully!']);

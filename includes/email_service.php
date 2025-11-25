@@ -2,13 +2,13 @@
 /**
  * Email Service - Uses HTTP API instead of SMTP
  * Works on Render and other platforms that block SMTP ports
- * 
+ *
  * Supports: Resend, SendGrid, Mailgun (via HTTP API)
  */
 
 class EmailService {
     private static $provider = null;
-    
+
     /**
      * Send email using configured provider
      */
@@ -17,16 +17,16 @@ class EmailService {
         if (getenv('RESEND_API_KEY')) {
             return self::sendViaResend($to, $subject, $htmlBody, $toName);
         }
-        
+
         // Try SendGrid
         if (getenv('SENDGRID_API_KEY')) {
             return self::sendViaSendGrid($to, $subject, $htmlBody, $toName);
         }
-        
+
         // Fallback to SMTP (won't work on Render free tier)
         return self::sendViaSMTP($to, $subject, $htmlBody, $toName);
     }
-    
+
     /**
      * Send via Resend API (HTTPS - works on Render!)
      * Free tier: 3,000 emails/month
@@ -34,9 +34,11 @@ class EmailService {
      */
     private static function sendViaResend($to, $subject, $htmlBody, $toName = null) {
         $apiKey = getenv('RESEND_API_KEY');
-        $fromEmail = getenv('EMAIL_FROM') ?: getenv('EMAIL_USER') ?: 'noreply@fitxbrawl.com';
-        $fromName = getenv('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym';
         
+        // For Resend free tier, must use onboarding@resend.dev or verified domain
+        $fromEmail = getenv('EMAIL_FROM') ?: 'onboarding@resend.dev';
+        $fromName = getenv('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym';
+
         $data = [
             'from' => "$fromName <$fromEmail>",
             'to' => [$toName ? "$toName <$to>" : $to],
@@ -44,6 +46,8 @@ class EmailService {
             'html' => $htmlBody,
         ];
         
+        error_log("Resend: Sending email to $to from $fromEmail");
+
         $ch = curl_init('https://api.resend.com/emails');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -55,19 +59,19 @@ class EmailService {
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_TIMEOUT => 30,
         ]);
-        
+
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         curl_close($ch);
-        
+
         if ($error) {
             error_log("Resend curl error: $error");
             return false;
         }
-        
+
         $result = json_decode($response, true);
-        
+
         if ($httpCode >= 200 && $httpCode < 300) {
             error_log("Email sent via Resend to: $to (ID: " . ($result['id'] ?? 'unknown') . ")");
             return true;
@@ -76,7 +80,7 @@ class EmailService {
             return false;
         }
     }
-    
+
     /**
      * Send via SendGrid API
      * Free tier: 100 emails/day
@@ -85,7 +89,7 @@ class EmailService {
         $apiKey = getenv('SENDGRID_API_KEY');
         $fromEmail = getenv('EMAIL_FROM') ?: getenv('EMAIL_USER') ?: 'noreply@fitxbrawl.com';
         $fromName = getenv('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym';
-        
+
         $data = [
             'personalizations' => [[
                 'to' => [['email' => $to, 'name' => $toName ?? '']],
@@ -94,7 +98,7 @@ class EmailService {
             'from' => ['email' => $fromEmail, 'name' => $fromName],
             'content' => [['type' => 'text/html', 'value' => $htmlBody]],
         ];
-        
+
         $ch = curl_init('https://api.sendgrid.com/v3/mail/send');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -106,12 +110,12 @@ class EmailService {
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_TIMEOUT => 30,
         ]);
-        
+
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         curl_close($ch);
-        
+
         if ($httpCode >= 200 && $httpCode < 300) {
             error_log("Email sent via SendGrid to: $to");
             return true;
@@ -120,7 +124,7 @@ class EmailService {
             return false;
         }
     }
-    
+
     /**
      * Fallback: Send via SMTP (PHPMailer)
      * Note: Won't work on Render free tier due to blocked ports
@@ -128,21 +132,21 @@ class EmailService {
     private static function sendViaSMTP($to, $subject, $htmlBody, $toName = null) {
         require_once __DIR__ . '/mail_config.php';
         require_once __DIR__ . '/email_template.php';
-        
+
         try {
             $mail = new PHPMailer\PHPMailer\PHPMailer(true);
             configureMailerSMTP($mail);
-            
+
             if ($toName) {
                 $mail->addAddress($to, $toName);
             } else {
                 $mail->addAddress($to);
             }
-            
+
             $mail->isHTML(true);
             $mail->Subject = $subject;
             applyEmailTemplate($mail, $htmlBody);
-            
+
             $result = $mail->send();
             error_log("Email sent via SMTP to: $to");
             return $result;
@@ -151,7 +155,7 @@ class EmailService {
             return false;
         }
     }
-    
+
     /**
      * Get the current email provider being used
      */
