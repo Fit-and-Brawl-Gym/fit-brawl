@@ -17,20 +17,37 @@ include_once __DIR__ . '/email_template.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+/**
+ * Configure PHPMailer SMTP settings based on environment variables.
+ * Automatically selects SSL (port 465) or TLS (port 587) based on EMAIL_PORT.
+ */
+function configureMailerSMTP(PHPMailer $mail): void
+{
+    $mail->isSMTP();
+    $mail->Host = getenv('EMAIL_HOST') ?: 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = getenv('EMAIL_USER');
+    $mail->Password = getenv('EMAIL_PASS');
+    
+    $port = (int)(getenv('EMAIL_PORT') ?: 587);
+    $mail->Port = $port;
+    
+    // Use SSL for port 465, TLS for others (typically 587)
+    if ($port === 465) {
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    } else {
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    }
+    
+    $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+}
+
 function sendAccountLockNotification($email, $retryAfterSeconds, $ipAddress = 'unknown', $maxAttempts = 5)
 {
     $mail = new PHPMailer(true);
 
     try {
-        $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = getenv('EMAIL_PORT');
-
-        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+        configureMailerSMTP($mail);
         $mail->addAddress($email);
 
         $mail->isHTML(true);
@@ -60,17 +77,7 @@ function sendOTPEmail($email, $otp)
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = getenv('EMAIL_PORT');
-
-        // Recipients
-        $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl'); // Use same email as Username
+        configureMailerSMTP($mail);
         $mail->addAddress($email);
 
         // Content
@@ -93,17 +100,7 @@ function sendTrainerCredentialsEmail($email, $name, $username, $password)
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = getenv('EMAIL_PORT');
-
-        // Recipients
-        $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl');
+        configureMailerSMTP($mail);
         $mail->addAddress($email, $name);
 
         // Content
@@ -141,35 +138,7 @@ function sendContactReply($email, $subject, $replyMessage, $originalMessage = ''
     $mail = new PHPMailer(true);
 
     try {
-        // Get email credentials
-        $emailHost = getenv('EMAIL_HOST');
-        $emailUser = getenv('EMAIL_USER');
-        $emailPass = getenv('EMAIL_PASS');
-        $emailPort = getenv('EMAIL_PORT');
-
-        // Check if credentials are configured
-        if (!$emailHost || !$emailUser || !$emailPass) {
-            error_log("Email credentials not configured. Host: $emailHost, User: $emailUser");
-            throw new Exception('Email credentials are not configured. Please check your environment settings.');
-        }
-
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host = $emailHost;
-        $mail->SMTPAuth = true;
-        $mail->Username = $emailUser;
-        $mail->Password = $emailPass;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = $emailPort ?: 587; // Default to 587 if not set
-
-        // Enable verbose debug output for troubleshooting
-        // $mail->SMTPDebug = 2;
-        // $mail->Debugoutput = function($str, $level) {
-        //     error_log("SMTP Debug level $level; message: $str");
-        // };
-
-        // Recipients
-        $mail->setFrom($emailUser, 'Fit & Brawl Gym');
+        configureMailerSMTP($mail);
         $mail->addAddress($email);
 
         // Content
@@ -214,15 +183,7 @@ function sendContactReply($email, $subject, $replyMessage, $originalMessage = ''
 function sendTrainerBookingNotification($trainer_email, $trainer_name, $member_name, $date, $session_time, $class_type) {
     try {
         $mail = new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = getenv('EMAIL_PORT');
-
-        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+        configureMailerSMTP($mail);
         $mail->addAddress($trainer_email, $trainer_name);
 
         $formatted_date = date('l, F j, Y', strtotime($date));
@@ -269,19 +230,7 @@ function sendMemberBookingRescheduleOption(
     $mail = new PHPMailer(true);
 
     try {
-        // SMTP Setup
-        $mail->isSMTP();
-        $mail->Host       = getenv('EMAIL_HOST');
-        $mail->SMTPAuth   = true;
-        $mail->Username   = getenv('EMAIL_USER');
-        $mail->Password   = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = getenv('EMAIL_PORT');
-        $mail->SMTPDebug  = 0;
-        $mail->Debugoutput = 'error_log';
-
-        // Sender & recipient
-        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
+        configureMailerSMTP($mail);
         $mail->addAddress($email, $member_name);
 
         // Email subject
