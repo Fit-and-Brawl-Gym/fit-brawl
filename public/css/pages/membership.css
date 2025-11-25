@@ -1054,11 +1054,12 @@ body::before {
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease;
+    display: none; /* Hidden - using container::before instead on mobile */
 }
 
 @media (max-width: 767px) {
     .comparison-table-wrapper::after {
-        opacity: 1;
+        display: none; /* Hide duplicate scroll indicator on mobile */
     }
 }
 
