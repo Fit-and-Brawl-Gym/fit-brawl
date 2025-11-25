@@ -14,7 +14,7 @@
         // This prevents iOS from showing the security keyboard quirk
         function initPasswordMasking(input) {
             if (!input) return;
-            
+
             // Check if this is a password field (has data-password attribute)
             if (input.dataset.password === 'true') {
                 // Apply CSS masking class
@@ -25,9 +25,9 @@
 
         function togglePasswordMask(input, toggleIcon) {
             if (!input || !toggleIcon) return;
-            
+
             const isMasked = input.dataset.masked === 'true';
-            
+
             if (isMasked) {
                 // Show password
                 input.classList.remove('masked-password');
@@ -41,7 +41,7 @@
                 toggleIcon.classList.remove('fa-eye-slash');
                 toggleIcon.classList.add('fa-eye');
             }
-            
+
             // Refocus input
             input.focus();
         }

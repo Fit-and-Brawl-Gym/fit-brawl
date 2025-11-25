@@ -182,7 +182,7 @@ if (!isset($ogImage)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    
+
     <!-- CSRF Token for AJAX requests -->
     <?php if (isset($csrfToken)): ?>
     <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">

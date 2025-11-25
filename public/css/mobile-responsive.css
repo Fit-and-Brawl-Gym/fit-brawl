@@ -56,8 +56,6 @@ button {
     section {
         max-width: 100vw;
         overflow-x: hidden;
-        padding-left: 15px;
-        padding-right: 15px;
         box-sizing: border-box;
     }
 
@@ -193,7 +191,7 @@ button {
    =========================================== */
 @supports (-webkit-touch-callout: none) {
     /* iOS Safari specific fixes */
-    
+
     /* Prevent zoom on input focus */
     input, textarea, select {
         font-size: 16px !important;
@@ -282,7 +280,7 @@ button {
 }
 
 /* ===========================================
-   TRAINER PANEL MOBILE FIXES  
+   TRAINER PANEL MOBILE FIXES
    =========================================== */
 @media (max-width: 768px) {
     .trainer-dashboard,
@@ -370,11 +368,6 @@ button {
    =========================================== */
 @media (max-width: 768px) {
     /* Hero section */
-    .homepage-hero {
-        min-height: auto;
-        padding: 20px 15px 40px;
-    }
-    
     .hero-content {
         max-width: 100%;
         margin: 0;
@@ -394,38 +387,6 @@ button {
         box-sizing: border-box;
     }
 
-    /* Overview section - prevent title cutoff */
-    .gym-overview {
-        padding: 40px 15px;
-        overflow: visible;
-    }
-
-    .overview-container {
-        padding-top: 0;
-    }
-
-    .overview-title {
-        position: relative;
-        flex-wrap: nowrap;
-        overflow: hidden;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .title-with-line {
-        flex-shrink: 0;
-    }
-
-    .overview-subtitle {
-        margin-top: 20px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-
-    .overview-description {
-        text-align: left;
-    }
-
     /* Features grid */
     .features-grid {
         grid-template-columns: 1fr;
@@ -437,31 +398,6 @@ button {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
-    }
-}
-
-@media (max-width: 480px) {
-    .homepage-hero h1 {
-        font-size: 2rem;
-        line-height: 1.2;
-    }
-
-    .overview-title {
-        font-size: 1.25rem;
-        gap: 8px;
-    }
-
-    .overview-title::before {
-        width: 40px;
-        min-width: 40px;
-    }
-
-    .overview-title::after {
-        min-width: 20px;
-    }
-
-    .overview-subtitle {
-        font-size: 1.5rem;
     }
 }
 

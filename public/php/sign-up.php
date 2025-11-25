@@ -156,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
                 . "<p>Click the link below to verify your email:</p>"
                 . "<p><a href='" . htmlspecialchars($verificationLink) . "'>" . htmlspecialchars($verificationLink) . "</a></p>"
                 . "<p>This link will confirm your account registration.</p>";
-            
+
             // Queue email for background sending (returns immediately)
             EmailQueue::queue($email, 'Verify Your Email - FitXBrawl', $html, $name, null, 1);
 

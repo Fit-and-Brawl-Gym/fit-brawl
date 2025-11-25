@@ -299,7 +299,7 @@ main {
   width: 100%;
   text-align: left;
   position: relative;
-  padding-top: var(--spacing-8);
+  padding-top: 60px; /* Space for the absolute positioned title */
 }
 
 .overview-title {
@@ -314,8 +314,11 @@ main {
   justify-content: flex-start;
   padding-left: 0;
   gap: var(--spacing-8);
-  position: relative;
-  z-index: var(--z-dropdown);
+  position: absolute;
+  top: -120px;
+  left: 0;
+  right: 0;
+  z-index: 5;
   width: 100%;
   box-sizing: border-box;
 }
@@ -535,7 +538,7 @@ main {
   }
 
   .overview-title {
-    top: 40px;
+    top: -40px;
     gap: var(--spacing-5);
   }
 
@@ -601,10 +604,15 @@ main {
     padding-top: var(--spacing-16);
   }
 
+  .overview-container {
+    padding-top: 50px;
+  }
+
   .overview-title {
     font-size: var(--font-size-4xl);
     gap: var(--spacing-4);
     flex-wrap: nowrap;
+    top: -3px;
   }
 
   .overview-title::before {
@@ -613,7 +621,7 @@ main {
 
   .overview-subtitle {
     font-size: var(--font-size-4xl);
-    margin-top: var(--spacing-4);
+    margin-top: 0;
   }
 
   .overview-description {
@@ -652,7 +660,7 @@ main {
   }
 
   .homepage-hero h1 {
-    font-size: var(--font-size-5xl);
+    font-size: var(--font-size-4xl);
   }
 
   .hero-sub {
@@ -698,8 +706,6 @@ main {
     max-width: 300px;
   }
 
-
-
   .pricing-title {
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-3);
@@ -733,17 +739,22 @@ main {
     background: none;
     background-color: var(--color-bg-dark);
     margin-top: 0;
-    padding-top: var(--spacing-12);
+    padding-top: var(--spacing-8);
+  }
+
+  .overview-container {
+    padding-top: 45px;
   }
 
   .overview-title {
     font-size: var(--font-size-3xl);
     gap: var(--spacing-3);
     flex-wrap: nowrap;
+    top: -60px;
   }
 
   .overview-title::before {
-    width: 80px;
+    width: 60px;
     flex-shrink: 0;
   }
 
@@ -803,7 +814,7 @@ main {
   }
 
   .hero-sub {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-xs);
   }
 
   .hero-btn,
@@ -823,7 +834,11 @@ main {
   .gym-overview {
     background: none;
     background-color: var(--color-bg-dark);
-    padding-top: var(--spacing-8);
+    padding-top: var(--spacing-6);
+  }
+
+  .overview-container {
+    padding-top: 40px;
   }
 
   .overview-title {
@@ -832,7 +847,7 @@ main {
   }
 
   .overview-title::before {
-    width: 50px;
+    width: 40px;
   }
 
   .overview-subtitle {

@@ -14,7 +14,7 @@ $port = getenv('DB_PORT') ?: 3306;
 
 // Use persistent connection in production for faster subsequent requests
 // Prefix host with 'p:' to enable persistent connections
-$isProduction = (getenv('APP_ENV') === 'production') || 
+$isProduction = (getenv('APP_ENV') === 'production') ||
                 (defined('ENVIRONMENT') && ENVIRONMENT === 'production');
 
 if ($isProduction) {
@@ -27,16 +27,16 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 try {
     $conn = new mysqli($host, $user, $pass, $db, $port);
-    
+
     // Set character set to support UTF-8 (emojis, international characters)
     $conn->set_charset("utf8mb4");
-    
+
     // Set MySQL timezone to Philippine Time (UTC+8)
     $conn->query("SET time_zone = '+08:00'");
-    
+
     // Optimize MySQL session settings for performance
     $conn->query("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO'");
-    
+
 } catch (mysqli_sql_exception $e) {
     if (php_sapi_name() === 'cli') {
         // CLI: print error and exit
