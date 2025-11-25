@@ -10,12 +10,28 @@ class EmailService {
     private static $provider = null;
 
     /**
+     * Get environment variable (checks multiple sources)
+     */
+    private static function getEnvVar($key) {
+        // Try $_SERVER first (Render uses this)
+        if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') {
+            return $_SERVER[$key];
+        }
+        // Try $_ENV
+        if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
+            return $_ENV[$key];
+        }
+        // Try getenv() as fallback
+        return getenv($key);
+    }
+
+    /**
      * Send email using configured provider
      */
     public static function send($to, $subject, $htmlBody, $toName = null) {
-        // Debug: Check environment variables
-        $resendKey = getenv('RESEND_API_KEY');
-        $sendgridKey = getenv('SENDGRID_API_KEY');
+        // Debug: Check environment variables from multiple sources
+        $resendKey = self::getEnvVar('RESEND_API_KEY');
+        $sendgridKey = self::getEnvVar('SENDGRID_API_KEY');
         
         error_log("EmailService: Checking providers - Resend: " . ($resendKey ? 'yes' : 'no') . ", SendGrid: " . ($sendgridKey ? 'yes' : 'no'));
         
@@ -42,11 +58,11 @@ class EmailService {
      * https://resend.com
      */
     private static function sendViaResend($to, $subject, $htmlBody, $toName = null) {
-        $apiKey = getenv('RESEND_API_KEY');
+        $apiKey = self::getEnvVar('RESEND_API_KEY');
         
         // For Resend free tier, must use onboarding@resend.dev or verified domain
-        $fromEmail = getenv('EMAIL_FROM') ?: 'onboarding@resend.dev';
-        $fromName = getenv('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym';
+        $fromEmail = self::getEnvVar('EMAIL_FROM') ?: 'onboarding@resend.dev';
+        $fromName = self::getEnvVar('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym';
 
         $data = [
             'from' => "$fromName <$fromEmail>",
@@ -171,8 +187,8 @@ class EmailService {
      * Get the current email provider being used
      */
     public static function getProvider() {
-        if (getenv('RESEND_API_KEY')) return 'Resend';
-        if (getenv('SENDGRID_API_KEY')) return 'SendGrid';
+        if (self::getEnvVar('RESEND_API_KEY')) return 'Resend';
+        if (self::getEnvVar('SENDGRID_API_KEY')) return 'SendGrid';
         return 'SMTP';
     }
 }
