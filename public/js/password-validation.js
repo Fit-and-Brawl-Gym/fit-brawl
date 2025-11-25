@@ -10,45 +10,24 @@
         const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
         const passwordMatchMessage = document.getElementById('passwordMatchMessage');
 
-        // iOS password masking fix - use CSS-based masking instead of type="password"
-        // This prevents iOS from showing the security keyboard quirk
-        function initPasswordMasking(input) {
-            if (!input) return;
-
-            // Check if this is a password field (has data-password attribute)
-            if (input.dataset.password === 'true') {
-                // Apply CSS masking class
-                input.classList.add('masked-password');
-                input.dataset.masked = 'true';
-            }
-        }
-
-        function togglePasswordMask(input, toggleIcon) {
+        // Toggle password visibility
+        function togglePasswordVisibility(input, toggleIcon) {
             if (!input || !toggleIcon) return;
 
-            const isMasked = input.dataset.masked === 'true';
+            const isPassword = input.type === 'password';
 
-            if (isMasked) {
+            if (isPassword) {
                 // Show password
-                input.classList.remove('masked-password');
-                input.dataset.masked = 'false';
+                input.type = 'text';
                 toggleIcon.classList.remove('fa-eye');
                 toggleIcon.classList.add('fa-eye-slash');
             } else {
                 // Hide password
-                input.classList.add('masked-password');
-                input.dataset.masked = 'true';
+                input.type = 'password';
                 toggleIcon.classList.remove('fa-eye-slash');
                 toggleIcon.classList.add('fa-eye');
             }
-
-            // Refocus input
-            input.focus();
         }
-
-        // Initialize password masking for all password fields
-        initPasswordMasking(passwordInput);
-        initPasswordMasking(confirmPasswordInput);
 
         // Password validation patterns
         const patterns = {
@@ -241,16 +220,16 @@
             });
         }
 
-        // Toggle password visibility - iOS compatible (uses CSS masking)
+        // Toggle password visibility
         if (togglePassword && passwordInput) {
             togglePassword.addEventListener('click', () => {
-                togglePasswordMask(passwordInput, togglePassword);
+                togglePasswordVisibility(passwordInput, togglePassword);
             });
         }
 
         if (toggleConfirmPassword && confirmPasswordInput) {
             toggleConfirmPassword.addEventListener('click', () => {
-                togglePasswordMask(confirmPasswordInput, toggleConfirmPassword);
+                togglePasswordVisibility(confirmPasswordInput, toggleConfirmPassword);
             });
         }
 

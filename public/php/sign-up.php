@@ -297,11 +297,10 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <div class="input-group password-input-group">
                         <i class="fas fa-key"></i>
-                        <input type="text" id="passwordInput" name="password" placeholder="Password"
-                               class="password-field" data-password="true"
-                               autocomplete="off" autocapitalize="off" autocorrect="off"
-                               spellcheck="false" data-form-type="other" data-lpignore="true"
-                               inputmode="text" required>
+                        <input type="password" id="passwordInput" name="password" placeholder="Password"
+                               class="password-field"
+                               autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                               spellcheck="false" required>
                         <i class="fas fa-eye eye-toggle" id="togglePassword"></i>
 
                         <!-- Password Requirements Modal -->
@@ -342,11 +341,10 @@ require_once __DIR__ . '/../../includes/header.php';
 
                     <div class="input-group password-input-group">
                         <i class="fas fa-key"></i>
-                        <input type="text" id="confirmPasswordInput" name="confirm_password" placeholder="Confirm Password"
-                               class="password-field" data-password="true"
-                               autocomplete="off" autocapitalize="off" autocorrect="off"
-                               spellcheck="false" data-form-type="other" data-lpignore="true"
-                               inputmode="text" required>
+                        <input type="password" id="confirmPasswordInput" name="confirm_password" placeholder="Confirm Password"
+                               class="password-field"
+                               autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                               spellcheck="false" required>
                         <i class="fas fa-eye eye-toggle" id="toggleConfirmPassword"></i>
                     </div>
 
