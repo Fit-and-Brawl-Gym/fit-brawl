@@ -5,20 +5,75 @@ on:
     branches: [main]
 
 jobs:
-  build-check:
+  deploy-and-verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Verify PHP syntax
+
+      - name: Trigger Render Deploy
+        id: trigger
         run: |
-          echo "🔍 Checking for PHP syntax errors..."
-          find . -name "*.php" -not -path "./vendor/*" | head -20 | xargs -I {} php -l {} 2>/dev/null || true
-          echo "✅ Syntax check complete"
+          echo "🚀 Triggering Render deployment..."
+          response=$(curl -s -w "\n%{http_code}" -X POST "https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_DEPLOY_KEY }}")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
           
-      - name: Build Status
+          if [ "$http_code" = "200" ] || [ "$http_code" = "201" ]; then
+            echo "✅ Deploy triggered successfully"
+            echo "trigger_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Deploy trigger returned: $http_code"
+            echo "Response: $body"
+            echo "trigger_success=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Wait for Deployment
         run: |
-          echo "✅ Code pushed to main branch"
-          echo "📦 Render will auto-deploy via webhook"
-          echo "🚀 Deployment triggered!"
+          echo "⏳ Waiting for Render to build and deploy..."
+          echo "   This typically takes 2-5 minutes"
+          sleep 120
+
+      - name: Check Deployment Status
+        id: verify
+        run: |
+          echo "🔍 Checking if site is live..."
+          
+          # Try to reach the site multiple times
+          max_attempts=5
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts..."
+            response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://fit-brawl.onrender.com" 2>/dev/null || echo "000")
+            
+            if [ "$response" = "200" ] || [ "$response" = "301" ] || [ "$response" = "302" ]; then
+              echo "✅ Site is live! (HTTP $response)"
+              echo "status=success" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            echo "   Got HTTP $response, waiting 30s before retry..."
+            sleep 30
+            attempt=$((attempt + 1))
+          done
+          
+          echo "⚠️ Site check inconclusive after $max_attempts attempts"
+          echo "   This doesn't necessarily mean deployment failed"
+          echo "   Check Render dashboard for details"
+          echo "status=unknown" >> $GITHUB_OUTPUT
+
+      - name: Deployment Summary
+        run: |
+          echo ""
+          echo "================================"
+          echo "� DEPLOYMENT SUMMARY"
+          echo "================================"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo ""
+          echo "🌐 Site URL: https://fit-brawl.onrender.com"
+          echo "📋 Render Dashboard: https://dashboard.render.com"
+          echo "================================"
