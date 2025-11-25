@@ -10,20 +10,27 @@ jobs:
     steps:
       - name: Trigger Render Deploy
         id: deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}")
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "⚠️ RENDER_DEPLOY_HOOK secret not set, skipping deploy trigger"
+            echo "ℹ️ Add the secret in GitHub Settings → Secrets → Actions"
+            exit 0
+          fi
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$RENDER_DEPLOY_HOOK")
           if [ "$response" = "200" ] || [ "$response" = "201" ]; then
-            echo "Deploy triggered successfully"
+            echo "✅ Deploy triggered successfully (HTTP $response)"
             exit 0
           else
-            echo "Deploy trigger failed with status: $response"
+            echo "❌ Deploy trigger failed with status: $response"
             exit 1
           fi
         
       - name: Deploy Success
         if: success()
-        run: echo "✅ Render deployment triggered successfully!"
+        run: echo "✅ Workflow completed successfully!"
         
       - name: Deploy Failed
         if: failure()
-        run: echo "❌ Failed to trigger Render deployment"
+        run: echo "❌ Workflow failed"
