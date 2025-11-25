@@ -1,0 +1,29 @@
+name: Deploy Status
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy
+        id: deploy
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}")
+          if [ "$response" = "200" ] || [ "$response" = "201" ]; then
+            echo "Deploy triggered successfully"
+            exit 0
+          else
+            echo "Deploy trigger failed with status: $response"
+            exit 1
+          fi
+        
+      - name: Deploy Success
+        if: success()
+        run: echo "✅ Render deployment triggered successfully!"
+        
+      - name: Deploy Failed
+        if: failure()
+        run: echo "❌ Failed to trigger Render deployment"
