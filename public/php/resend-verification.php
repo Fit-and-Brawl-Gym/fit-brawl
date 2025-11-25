@@ -7,9 +7,6 @@ ini_set('log_errors', 1);
 // Ensure JSON response even on fatal errors
 header('Content-Type: application/json');
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 // Custom error handler
 set_error_handler(function($severity, $message, $file, $line) {
     error_log("PHP Error in resend-verification.php: $message in $file on line $line");
@@ -28,10 +25,9 @@ try {
     session_start();
     require_once __DIR__ . '/../../includes/db_connect.php';
     require_once __DIR__ . '/../../includes/config.php';
-    require_once __DIR__ . '/../../includes/mail_config.php';
     include_once __DIR__ . '/../../includes/env_loader.php';
     loadEnv(__DIR__ . '/../../.env');
-    require_once __DIR__ . '/../../includes/email_template.php';
+    require_once __DIR__ . '/../../includes/email_queue.php';
 
     // Check if email is provided in the request
     $input = json_decode(file_get_contents('php://input'), true);
@@ -81,28 +77,30 @@ try {
         $verificationLink = $protocol . '://' . $host . $publicPath . '/php/verify-email.php?token=' . $verificationToken;
     }
 
-    // Send verification email
-    $mail = new PHPMailer(true);
-    configureMailerSMTP($mail);
-    $mail->addAddress($email, $user['username']);
-    $mail->isHTML(true);
-    $mail->Subject = 'Verify Your Email - FitXBrawl';
-
+    // Send verification email using EmailQueue (supports Resend/SendGrid)
     $html = "<h2>Welcome to FitXBrawl, " . htmlspecialchars($user['username']) . "!</h2>"
         . "<p>Click the link below to verify your email:</p>"
         . "<p><a href='" . htmlspecialchars($verificationLink) . "'>" . htmlspecialchars($verificationLink) . "</a></p>"
         . "<p>This link will confirm your account registration.</p>";
 
-    applyEmailTemplate($mail, $html);
+    error_log("Attempting to resend verification email to: $email");
 
-    error_log("Attempting to send verification email to: $email");
+    // Use EmailQueue with priority 1 (sends immediately via EmailService)
+    $emailSent = EmailQueue::queue(
+        $email,
+        'Verify Your Email - FitXBrawl',
+        $html,
+        $user['username'],
+        null,
+        1
+    );
 
-    if ($mail->send()) {
-        error_log("Verification email sent successfully to: $email");
+    if ($emailSent) {
+        error_log("Verification email resent successfully to: $email");
         echo json_encode(['success' => true, 'message' => 'Verification email sent successfully!']);
     } else {
-        error_log("Failed to send email: " . $mail->ErrorInfo);
-        throw new Exception('Failed to send email: ' . $mail->ErrorInfo);
+        error_log("Failed to resend verification email to: $email");
+        throw new Exception('Failed to send verification email. Please try again.');
     }
 
     $stmt->close();
