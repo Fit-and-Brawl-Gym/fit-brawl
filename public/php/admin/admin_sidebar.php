@@ -41,7 +41,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/subscriptions.php" class="<?= $current_page == 'subscriptions.php' ? 'active' : '' ?>">
             <i class="fas fa-credit-card"></i>
-            <span>Subscriptions</span>
+            <span>Manage Subscriptions</span>
         </a>
 
         <!-- TRAINER & SCHEDULE MANAGEMENT -->
@@ -53,7 +53,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainer_availability.php" class="<?= $current_page == 'trainer_availability.php' ? 'active' : '' ?>">
             <i class="fa-solid fa-calendar-xmark"></i>
-            <span>Schedule Availability</span> </a>
+            <span>Trainers' Request Offs</span> </a>
         <a href="<?= PUBLIC_PATH ?>/php/admin/trainer_schedules.php" class="<?= $current_page == 'trainer_schedules.php' ? 'active' : '' ?>">
             <i class="fas fa-calendar-times"></i>
             <span>Trainer Schedules</span>

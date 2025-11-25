@@ -128,9 +128,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     <button class="filter-tab" data-status="active">
                         <i class="fas fa-check-circle"></i> Active
                     </button>
-                    <button class="filter-tab" data-status="suspended">
-                        <i class="fas fa-pause-circle"></i> Suspended
-                    </button>
                     <button class="filter-tab" data-status="pending">
                         <i class="fas fa-circle"></i> Pending
                     </button>
@@ -175,7 +172,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     </select>
                 </div>
             </div>
-            
+
             <div class="table-container">
                 <table class="users-table" id="usersTable">
                     <thead>
@@ -183,7 +180,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                             <th>User</th>
                             <th>Email</th>
                             <th>Role</th>
-                            <th>Status</th>
                             <th>Verified</th>
                             <th>Joined</th>
                             <th>Actions</th>
@@ -191,7 +187,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                     </thead>
                     <tbody id="usersTableBody">
                         <tr>
-                            <td colspan="7" class="loading-state">
+                            <td colspan="6" class="loading-state">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 <p>Loading users...</p>
                             </td>
@@ -218,6 +214,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         </div>
     </div>
 
+    <script>
+        const PUBLIC_PATH = '<?= PUBLIC_PATH ?>';
+        const IMAGES_PATH = '<?= IMAGES_PATH ?>';
+        const BASE_PATH = '<?= BASE_PATH ?>';
+    </script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/users-secure.js"></script>
 </body>

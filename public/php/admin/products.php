@@ -49,7 +49,6 @@ if (isset($_GET['api']) && $_GET['api'] === 'true') {
 
             }
 
-
             $products[] = $row;
         }
 
@@ -66,6 +65,17 @@ $sql = "SELECT * FROM products ORDER BY category, name";
 $result = $conn->query($sql);
 $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
+// Calculate stats
+$totalProducts = count($products);
+$inStockProducts = 0;
+$lowStockProducts = 0;
+$outOfStockProducts = 0;
+
+foreach ($products as $item) {
+  if ($item['stock'] > 10) $inStockProducts++;
+  elseif ($item['stock'] > 0 && $item['stock'] <= 10) $lowStockProducts++;
+  elseif ($item['stock'] == 0) $outOfStockProducts++;
+}
 
 unset($p);
 ?>
@@ -78,9 +88,11 @@ unset($p);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken) ?>">
     <title>Products Management - Fit & Brawl Gym</title>
-    <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
-    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
-    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/products.css">
+  <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/dashboard.css">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/products.css">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/products.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
@@ -92,9 +104,59 @@ unset($p);
         <header class="page-header">
             <div>
                 <h1>Products Management</h1>
-                <p class="subtitle">Manage gym store inventory and stock levels</p>
+                <p class="subtitle">Manage gym store products and inventory</p>
             </div>
         </header>
+
+        <!-- Stats Cards -->
+        <section class="stats-grid" style="margin-bottom: 24px; grid-template-columns: repeat(4, 1fr);">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fa-solid fa-box"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?= $totalProducts ?></h3>
+                    <p>Total Products</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?= $inStockProducts ?></h3>
+                    <p>In Stock</p>
+                </div>
+            </div>
+            <div class="stat-card <?= $lowStockProducts > 0 ? 'has-alert' : '' ?>">
+                <div class="stat-icon orange">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?= $lowStockProducts ?></h3>
+                    <p>Low Stock (≤10)</p>
+                </div>
+                <?php if ($lowStockProducts > 0): ?>
+                    <a href="#" class="stat-action" onclick="var sel = document.getElementById('statusFilter'); sel.value='low stock'; sel.dispatchEvent(new Event('change', {bubbles: true})); return false;">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div class="stat-card <?= $outOfStockProducts > 0 ? 'has-alert' : '' ?>">
+                <div class="stat-icon red">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?= $outOfStockProducts ?></h3>
+                    <p>Out of Stock</p>
+                </div>
+                <?php if ($outOfStockProducts > 0): ?>
+                    <a href="#" class="stat-action" onclick="var sel = document.getElementById('statusFilter'); sel.value='out of stock'; sel.dispatchEvent(new Event('change', {bubbles: true})); return false;">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </section>
 
         <!-- Toolbar -->
         <div class="toolbar">
@@ -111,9 +173,9 @@ unset($p);
             </select>
             <select id="statusFilter" class="filter-dropdown">
                 <option value="all">All Status</option>
-                <option value="In Stock">In Stock</option>
-                <option value="Low Stock">Low Stock</option>
-                <option value="Out of Stock">Out of Stock</option>
+                <option value="in stock">In Stock</option>
+                <option value="low stock">Low Stock</option>
+                <option value="out of stock">Out of Stock</option>
             </select>
             <div class="view-toggle">
                 <button class="view-btn active" data-view="table" title="Table View">

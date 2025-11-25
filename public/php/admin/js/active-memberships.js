@@ -13,7 +13,7 @@ let currentPage = 1;
 let itemsPerPage = 10;
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeEventListeners();
     loadMemberships();
 });
@@ -23,35 +23,54 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initializeEventListeners() {
     // Add Membership Modal
-    document.getElementById('addMembershipBtn').addEventListener('click', openAddMembershipModal);
-    document.getElementById('closeAddMembershipModal').addEventListener('click', closeAddMembershipModal);
-    document.getElementById('cancelAddMembership').addEventListener('click', closeAddMembershipModal);
-    document.getElementById('addMembershipForm').addEventListener('submit', handleAddMembership);
+    const addMembershipBtn = document.getElementById('addMembershipBtn');
+    const closeAddMembershipModalBtn = document.getElementById('closeAddMembershipModal');
+    const cancelAddMembershipBtn = document.getElementById('cancelAddMembership');
+    const addMembershipForm = document.getElementById('addMembershipForm');
+
+    if (addMembershipBtn) addMembershipBtn.addEventListener('click', openAddMembershipModal);
+    if (closeAddMembershipModalBtn) closeAddMembershipModalBtn.addEventListener('click', closeAddMembershipModal);
+    if (cancelAddMembershipBtn) cancelAddMembershipBtn.addEventListener('click', closeAddMembershipModal);
+    if (addMembershipForm) addMembershipForm.addEventListener('submit', handleAddMembership);
 
     // Payment History Modal
-    document.getElementById('closePaymentHistoryModal').addEventListener('click', closePaymentHistoryModal);
+    const closePaymentHistoryModalBtn = document.getElementById('closePaymentHistoryModal');
+    if (closePaymentHistoryModalBtn) closePaymentHistoryModalBtn.addEventListener('click', closePaymentHistoryModal);
 
     // Details Panel
-    document.getElementById('closeDetailsPanel').addEventListener('click', closeDetailsPanel);
+    const closeDetailsPanelBtn = document.getElementById('closeDetailsPanel');
+    if (closeDetailsPanelBtn) closeDetailsPanelBtn.addEventListener('click', closeDetailsPanel);
 
     // Filters
-    document.getElementById('billingTypeFilter').addEventListener('change', applyFilters);
-    document.getElementById('expirationFilter').addEventListener('change', applyFilters);
-    document.getElementById('paymentStatusFilter').addEventListener('change', applyFilters);
-    document.getElementById('searchFilter').addEventListener('input', applyFilters);
-    document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters);
-    document.getElementById('showExpiredToggle').addEventListener('change', toggleExpired);
+    const billingTypeFilter = document.getElementById('billingTypeFilter');
+    const expirationFilter = document.getElementById('expirationFilter');
+    const paymentStatusFilter = document.getElementById('paymentStatusFilter');
+    const searchFilter = document.getElementById('searchFilter');
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    const showExpiredToggle = document.getElementById('showExpiredToggle');
+
+    if (billingTypeFilter) billingTypeFilter.addEventListener('change', applyFilters);
+    if (expirationFilter) expirationFilter.addEventListener('change', applyFilters);
+    if (paymentStatusFilter) paymentStatusFilter.addEventListener('change', applyFilters);
+    if (searchFilter) searchFilter.addEventListener('input', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
+    if (showExpiredToggle) showExpiredToggle.addEventListener('change', toggleExpired);
 
     // Pagination
-    document.getElementById('itemsPerPageSelect').addEventListener('change', handleItemsPerPageChange);
-    document.getElementById('prevPageBtn').addEventListener('click', () => goToPage(currentPage - 1));
-    document.getElementById('nextPageBtn').addEventListener('click', () => goToPage(currentPage + 1));
+    const itemsPerPageSelect = document.getElementById('itemsPerPageSelect');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+
+    if (itemsPerPageSelect) itemsPerPageSelect.addEventListener('change', handleItemsPerPageChange);
+    if (prevPageBtn) prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+    if (nextPageBtn) nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
 
     // Close modals on outside click
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         const addModal = document.getElementById('addMembershipModal');
         const historyModal = document.getElementById('paymentHistoryModal');
-        
+
+
         if (event.target === addModal) {
             closeAddMembershipModal();
         }
@@ -68,16 +87,16 @@ async function loadMemberships() {
     try {
         const showExpired = document.getElementById('showExpiredToggle').checked;
         const response = await fetch(`${PUBLIC_PATH}/php/admin/api/active_memberships_api.php?action=getMemberships&include_expired=${showExpired}`);
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API Error Response:', errorText);
             throw new Error('Failed to fetch memberships: ' + response.status);
         }
-        
+
         const data = await response.json();
         console.log('API Response:', data);
-        
+
         if (data.success) {
             allMemberships = data.data;
             buildHashTable();
@@ -137,10 +156,17 @@ function applyFilters() {
             }
         }
 
-        // Search Filter
+        // Search Filter with DSA Fuzzy Search
         if (searchTerm) {
             const searchableText = `${membership.name} ${membership.email} ${membership.contact_number}`.toLowerCase();
-            if (!searchableText.includes(searchTerm)) return false;
+            const useDSA = window.DSA || window.DSAUtils;
+            const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
+
+            if (fuzzySearch) {
+                if (!fuzzySearch(searchTerm, searchableText)) return false;
+            } else {
+                if (!searchableText.includes(searchTerm)) return false;
+            }
         }
 
         return true;
@@ -182,7 +208,7 @@ function handleItemsPerPageChange(e) {
 function goToPage(page) {
     const totalPages = Math.ceil(filteredMemberships.length / itemsPerPage);
     if (page < 1 || page > totalPages) return;
-    
+
     currentPage = page;
     renderMembershipsTable();
 }
@@ -194,19 +220,19 @@ function updatePaginationControls(totalItems) {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-    
+
     // Update showing count
     document.getElementById('showingCount').textContent = totalItems === 0 ? 0 : `${startItem}-${endItem}`;
     document.getElementById('totalCount').textContent = totalItems;
-    
+
     // Update page info
     document.getElementById('currentPageSpan').textContent = totalPages === 0 ? 0 : currentPage;
     document.getElementById('totalPagesSpan').textContent = totalPages;
-    
+
     // Update button states
     document.getElementById('prevPageBtn').disabled = currentPage <= 1;
     document.getElementById('nextPageBtn').disabled = currentPage >= totalPages || totalPages === 0;
-    
+
     // Show/hide pagination
     const paginationContainer = document.getElementById('paginationContainer');
     if (totalPages <= 1) {
@@ -221,7 +247,7 @@ function updatePaginationControls(totalItems) {
  */
 function renderMembershipsTable() {
     const tbody = document.getElementById('membershipsTableBody');
-    
+
     if (filteredMemberships.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -243,18 +269,18 @@ function renderMembershipsTable() {
 
     // Calculate pagination
     const totalPages = Math.ceil(sortedMemberships.length / itemsPerPage);
-    
+
     // Reset to page 1 if current page is out of bounds
     if (currentPage > totalPages) {
         currentPage = Math.max(1, totalPages);
     }
-    
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedMemberships = sortedMemberships.slice(startIndex, endIndex);
 
     tbody.innerHTML = paginatedMemberships.map(membership => createMembershipRow(membership)).join('');
-    
+
     updatePaginationControls(sortedMemberships.length);
 }
 
@@ -339,15 +365,15 @@ function getStatusBadge(membership, daysRemaining) {
     if (daysRemaining < 0 && !isInGracePeriod(membership.end_date)) {
         return '<span class="badge badge-expired"><i class="fas fa-times-circle"></i> Expired</span>';
     }
-    
+
     if (isInGracePeriod(membership.end_date)) {
         return '<span class="badge badge-grace-period"><i class="fas fa-exclamation-triangle"></i> Grace Period</span>';
     }
-    
+
     if (daysRemaining <= 7 && daysRemaining >= 0) {
         return '<span class="badge badge-expiring-soon"><i class="fas fa-clock"></i> Expiring Soon</span>';
     }
-    
+
     return '<span class="badge badge-active"><i class="fas fa-check-circle"></i> Active</span>';
 }
 
@@ -391,17 +417,17 @@ function updateStatCards(stats) {
 async function viewMembershipDetails(membershipId) {
     const panel = document.getElementById('detailsPanel');
     const content = document.getElementById('detailsContent');
-    
+
     panel.classList.add('active');
     content.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Loading details...</div>';
 
     try {
         const response = await fetch(`${PUBLIC_PATH}/php/admin/api/active_memberships_api.php?action=getMembershipDetails&id=${membershipId}`);
-        
+
         if (!response.ok) throw new Error('Failed to fetch details');
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             renderMembershipDetails(data.data);
         } else {
@@ -421,7 +447,7 @@ function renderMembershipDetails(data) {
     const membership = data.membership;
     const user = data.user;
     const daysRemaining = calculateDaysRemaining(membership.end_date);
-    
+
     content.innerHTML = `
         <div class="detail-section">
             <h4>Member Information</h4>
@@ -561,17 +587,17 @@ function closeDetailsPanel() {
 async function viewPaymentHistory(membershipId) {
     const modal = document.getElementById('paymentHistoryModal');
     const tbody = document.getElementById('paymentHistoryTableBody');
-    
+
     modal.classList.add('active');
     tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading payment history...</td></tr>';
 
     try {
         const response = await fetch(`${PUBLIC_PATH}/php/admin/api/active_memberships_api.php?action=getPaymentHistory&id=${membershipId}`);
-        
+
         if (!response.ok) throw new Error('Failed to fetch payment history');
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             renderPaymentHistory(data.data);
         } else {
@@ -588,7 +614,7 @@ async function viewPaymentHistory(membershipId) {
  */
 function renderPaymentHistory(payments) {
     const tbody = document.getElementById('paymentHistoryTableBody');
-    
+
     if (payments.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No payment records found</td></tr>';
         return;

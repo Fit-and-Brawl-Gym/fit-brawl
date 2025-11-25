@@ -351,11 +351,11 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
         <!-- Header Section -->
         <header class="page-header">
             <div>
-                <h1>Trainer Schedule Management</h1>
+                <h1>Trainers' Day-Offs</h1>
                 <p class="subtitle">Mark trainer unavailability for vacations, meetings, and other events</p>
             </div>
             <button class="btn-primary" id="btnAddBlock">
-                <i class="fa-solid fa-calendar-xmark"></i> Mark Unavailable
+                <i class="fa-solid fa-calendar-xmark"></i> Schedule Day-Off
             </button>
         </header>
 

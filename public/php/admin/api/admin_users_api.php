@@ -131,7 +131,7 @@ function handleGetAllUsers($conn, $adminId)
         return;
     }
 
-    $query = "SELECT 
+    $query = "SELECT
                 u.id,
                 u.username,
                 u.email,
@@ -145,17 +145,19 @@ function handleGetAllUsers($conn, $adminId)
                 um.plan_name,
                 um.start_date as membership_start,
                 um.end_date as membership_end,
-                um.membership_status
+                um.membership_status,
+                t.photo as trainer_photo
               FROM users u
               LEFT JOIN (
                 SELECT user_id, name, plan_name, start_date, end_date, membership_status
                 FROM user_memberships
                 WHERE id IN (
-                    SELECT MAX(id) 
-                    FROM user_memberships 
+                    SELECT MAX(id)
+                    FROM user_memberships
                     GROUP BY user_id
                 )
               ) um ON u.id = um.user_id
+              LEFT JOIN trainers t ON u.email = t.email AND t.deleted_at IS NULL
               ORDER BY u.created_at DESC";
 
     $result = $conn->query($query);
@@ -194,7 +196,7 @@ function handleGetUserDetails($conn, $adminId)
         return;
     }
 
-    $stmt = $conn->prepare("SELECT 
+    $stmt = $conn->prepare("SELECT
                               u.*,
                               COALESCE(um.name, u.username) as full_name,
                               um.plan_name,
@@ -348,9 +350,9 @@ function handleSuspendUser($conn, $adminId)
     }
 
     // Get user info
-    $stmt = $conn->prepare("SELECT COALESCE(um.name, u.username) as name, u.account_status 
-                            FROM users u 
-                            LEFT JOIN user_memberships um ON u.id = um.user_id 
+    $stmt = $conn->prepare("SELECT COALESCE(um.name, u.username) as name, u.account_status
+                            FROM users u
+                            LEFT JOIN user_memberships um ON u.id = um.user_id
                             WHERE u.id = ?");
     $stmt->bind_param('s', $userId);
     $stmt->execute();
@@ -365,7 +367,7 @@ function handleSuspendUser($conn, $adminId)
     // Update account status
     $stmt = $conn->prepare("UPDATE users SET account_status = 'suspended' WHERE id = ?");
     $stmt->bind_param('s', $userId);
-    
+
     if (!$stmt->execute()) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Failed to suspend user']);
@@ -414,9 +416,9 @@ function handleActivateUser($conn, $adminId)
     }
 
     // Get user info
-    $stmt = $conn->prepare("SELECT COALESCE(um.name, u.username) as name, u.account_status 
-                            FROM users u 
-                            LEFT JOIN user_memberships um ON u.id = um.user_id 
+    $stmt = $conn->prepare("SELECT COALESCE(um.name, u.username) as name, u.account_status
+                            FROM users u
+                            LEFT JOIN user_memberships um ON u.id = um.user_id
                             WHERE u.id = ?");
     $stmt->bind_param('s', $userId);
     $stmt->execute();
@@ -431,7 +433,7 @@ function handleActivateUser($conn, $adminId)
     // Update account status
     $stmt = $conn->prepare("UPDATE users SET account_status = 'active' WHERE id = ?");
     $stmt->bind_param('s', $userId);
-    
+
     if (!$stmt->execute()) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Failed to activate user']);
@@ -480,9 +482,9 @@ function handleDeleteUser($conn, $adminId)
     }
 
     // Get user info before deletion
-    $stmt = $conn->prepare("SELECT COALESCE(um.name, u.username) as name 
-                            FROM users u 
-                            LEFT JOIN user_memberships um ON u.id = um.user_id 
+    $stmt = $conn->prepare("SELECT COALESCE(um.name, u.username) as name
+                            FROM users u
+                            LEFT JOIN user_memberships um ON u.id = um.user_id
                             WHERE u.id = ?");
     $stmt->bind_param('s', $userId);
     $stmt->execute();
@@ -508,7 +510,7 @@ function handleDeleteUser($conn, $adminId)
     // Delete user (cascades to related records based on foreign keys)
     $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
     $stmt->bind_param('s', $userId);
-    
+
     if (!$stmt->execute()) {
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Failed to delete user']);
@@ -612,9 +614,9 @@ function handleGetUserNotifications($conn, $adminId)
         return;
     }
 
-    $stmt = $conn->prepare("SELECT * FROM user_notifications 
-                            WHERE user_id = ? 
-                            ORDER BY created_at DESC 
+    $stmt = $conn->prepare("SELECT * FROM user_notifications
+                            WHERE user_id = ?
+                            ORDER BY created_at DESC
                             LIMIT 20");
     $stmt->bind_param('s', $userId);
     $stmt->execute();
@@ -637,8 +639,8 @@ function handleGetUserNotifications($conn, $adminId)
  */
 function notifyUser($conn, $userId, $title, $message, $adminIdentifier)
 {
-    $stmt = $conn->prepare("INSERT INTO user_notifications 
-                            (user_id, notification_type, title, message, admin_identifier, sent_via_email) 
+    $stmt = $conn->prepare("INSERT INTO user_notifications
+                            (user_id, notification_type, title, message, admin_identifier, sent_via_email)
                             VALUES (?, 'ADMIN_ACTION', ?, ?, ?, 1)");
     $stmt->bind_param('ssss', $userId, $title, $message, $adminIdentifier);
     $stmt->execute();

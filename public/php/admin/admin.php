@@ -23,49 +23,113 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 // Fetch dashboard stats
 $activeSubscribers = $totalTrainers = $pendingSubs = $pendingRes = 0;
 
-// Active Subscribers (members with active memberships)
-$result = $conn->query("SELECT COUNT(DISTINCT u.id) AS total FROM users u INNER JOIN user_memberships um ON u.id = um.user_id WHERE u.role = 'member' AND um.membership_status = 'active'");
+// Active Subscribers (approved memberships that are paid and not expired)
+// Matches the logic from active_memberships_api.php
+$result = $conn->query("
+  SELECT COUNT(DISTINCT um.user_id) AS total
+  FROM user_memberships um
+  WHERE um.request_status = 'approved'
+  AND um.end_date >= CURDATE()
+  AND (
+    um.payment_method = 'online'
+    OR (um.payment_method = 'cash' AND um.cash_payment_status = 'paid')
+  )
+");
 if ($result)
   $activeSubscribers = $result->fetch_assoc()['total'];
 
-// Total Trainers
-$result = $conn->query("SELECT COUNT(*) AS total FROM users WHERE role = 'trainer'");
+// Total Trainers (from trainers table, excluding deleted ones - matches trainers.php)
+$result = $conn->query("SELECT COUNT(*) AS total FROM trainers WHERE deleted_at IS NULL");
 if ($result)
   $totalTrainers = $result->fetch_assoc()['total'];
 
-// Pending Subscriptions: prefer `subscriptions` table if present, otherwise safely use `user_memberships`
-$pendingSubs = 0;
-if ($conn->query("SHOW TABLES LIKE 'subscriptions'")->num_rows) {
-  $result = $conn->query("SELECT COUNT(*) AS total FROM subscriptions WHERE status = 'Pending'");
-  if ($result)
-    $pendingSubs = $result->fetch_assoc()['total'];
-} elseif ($conn->query("SHOW TABLES LIKE 'user_memberships'")->num_rows) {
-  // Inspect which status-like columns exist
-  $has_request_status = ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'request_status'")->num_rows > 0);
-  $has_membership_status = ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'membership_status'")->num_rows > 0);
-  $has_status = ($conn->query("SHOW COLUMNS FROM user_memberships LIKE 'status'")->num_rows > 0);
+// Pending Subscriptions - memberships awaiting admin approval
+// This matches the subscriptions.php page logic for pending requests
+$result = $conn->query("
+  SELECT COUNT(*) AS total
+  FROM user_memberships
+  WHERE request_status = 'pending'
+");
+if ($result)
+  $pendingSubs = $result->fetch_assoc()['total'];
 
-  if ($has_request_status) {
-    $result = $conn->query("SELECT COUNT(*) AS total FROM user_memberships WHERE request_status = 'pending'");
-    if ($result)
-      $pendingSubs = $result->fetch_assoc()['total'];
-  } elseif ($has_status) {
-    $result = $conn->query("SELECT COUNT(*) AS total FROM user_memberships WHERE status IN ('Pending','pending')");
-    if ($result)
-      $pendingSubs = $result->fetch_assoc()['total'];
-  } elseif ($has_membership_status) {
-    // Approximate pending requests: submitted but not approved/activated
-    $result = $conn->query("SELECT COUNT(*) AS total FROM user_memberships WHERE membership_status IS NULL AND date_submitted IS NOT NULL AND date_approved IS NULL");
-    if ($result)
-      $pendingSubs = $result->fetch_assoc()['total'];
+// Upcoming Scheduled Sessions - count confirmed bookings (matches reservations.php)
+$result = $conn->query("
+  SELECT COUNT(*) AS total
+  FROM user_reservations
+  WHERE booking_status = 'confirmed'
+");
+if ($result)
+  $pendingRes = $result->fetch_assoc()['total'];
+
+// Get unread contact count
+$unreadContacts = 0;
+$unread_query = $conn->query("SELECT COUNT(*) as count FROM contact WHERE status = 'unread' AND (archived = 0 OR archived IS NULL) AND deleted_at IS NULL");
+if ($unread_query && $unread_row = $unread_query->fetch_assoc()) {
+  $unreadContacts = $unread_row['count'];
+}
+
+// Get total revenue for this month (calculated based on plan pricing)
+// Only counts memberships that STARTED in the current month
+$monthlyRevenue = 0;
+$planPricing = [
+  'Gladiator' => ['monthly' => 14500, 'quarterly' => 43500],
+  'Clash' => ['monthly' => 13500, 'quarterly' => 40500],
+  'Brawler' => ['monthly' => 11500, 'quarterly' => 34500],
+  'Champion' => ['monthly' => 7000, 'quarterly' => 21000],
+  'Resolution Regular' => ['monthly' => 2200, 'quarterly' => 6600],
+  'Resolution' => ['monthly' => 2200, 'quarterly' => 6600]
+];
+
+$revenue_query = $conn->query("
+  SELECT plan_name, billing_type
+  FROM user_memberships
+  WHERE request_status = 'approved'
+  AND membership_status = 'active'
+  AND YEAR(start_date) = YEAR(CURDATE())
+  AND MONTH(start_date) = MONTH(CURDATE())
+  AND (
+    payment_method = 'online'
+    OR (payment_method = 'cash' AND cash_payment_status = 'paid')
+  )
+");
+
+if ($revenue_query) {
+  while ($row = $revenue_query->fetch_assoc()) {
+    $planName = $row['plan_name'];
+    $billingType = $row['billing_type'];
+    $amount = $planPricing[$planName][$billingType] ?? 14500;
+    $monthlyRevenue += $amount;
   }
 }
 
-// Pending/Upcoming Reservations - count confirmed bookings in the future
-if ($conn->query("SHOW TABLES LIKE 'user_reservations'")->num_rows) {
-  $result = $conn->query("SELECT COUNT(*) AS total FROM user_reservations WHERE booking_status = 'confirmed' AND booking_date >= CURDATE()");
-  if ($result)
-    $pendingRes = $result->fetch_assoc()['total'];
+// Get active members count (users with active approved memberships)
+$activeMembers = 0;
+$active_members_query = $conn->query("
+  SELECT COUNT(DISTINCT um.user_id) as count
+  FROM user_memberships um
+  WHERE um.request_status = 'approved'
+  AND um.membership_status = 'active'
+  AND um.end_date >= CURDATE()
+  AND (
+    um.payment_method = 'online'
+    OR (um.payment_method = 'cash' AND um.cash_payment_status = 'paid')
+  )
+");
+if ($active_members_query && $active_members_row = $active_members_query->fetch_assoc()) {
+  $activeMembers = $active_members_row['count'];
+}
+
+// Get today's sessions count
+$todaySessions = 0;
+$today_sessions_query = $conn->query("
+  SELECT COUNT(*) as count
+  FROM user_reservations
+  WHERE DATE(booking_date) = CURDATE()
+  AND booking_status = 'confirmed'
+");
+if ($today_sessions_query && $today_sessions_row = $today_sessions_query->fetch_assoc()) {
+  $todaySessions = $today_sessions_row['count'];
 }
 ?>
 <!DOCTYPE html>
@@ -91,26 +155,9 @@ if ($conn->query("SHOW TABLES LIKE 'user_reservations'")->num_rows) {
       <p>Here’s an overview of your gym’s activity.</p>
     </header>
 
-    <!-- Dashboard Stats -->
+    <!-- Dashboard Stats - Key Metrics -->
     <section class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <i class="fa-solid fa-users"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $activeSubscribers ?></h3>
-          <p>Active Subscribers</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon green">
-          <i class="fa-solid fa-dumbbell"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $totalTrainers ?></h3>
-          <p>Active Trainers</p>
-        </div>
-      </div>
+      <!-- Action Items -->
       <div class="stat-card <?= $pendingSubs > 0 ? 'has-alert' : '' ?>">
         <div class="stat-icon orange">
           <i class="fa-solid fa-clock"></i>
@@ -125,28 +172,6 @@ if ($conn->query("SHOW TABLES LIKE 'user_reservations'")->num_rows) {
           </a>
         <?php endif; ?>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon blue">
-          <i class="fa-solid fa-calendar-check"></i>
-        </div>
-        <div class="stat-info">
-          <h3><?= $pendingRes ?></h3>
-          <p>Scheduled Sessions</p>
-        </div>
-        <?php if ($pendingRes > 0): ?>
-          <a href="reservations.php" class="stat-action">
-            <i class="fa-solid fa-arrow-right"></i>
-          </a>
-        <?php endif; ?>
-      </div>
-      <?php
-      // Get unread contact count
-      $unreadContacts = 0;
-      $unread_query = $conn->query("SELECT COUNT(*) as count FROM contact WHERE status = 'unread' AND (archived = 0 OR archived IS NULL) AND deleted_at IS NULL");
-      if ($unread_query && $unread_row = $unread_query->fetch_assoc()) {
-        $unreadContacts = $unread_row['count'];
-      }
-      ?>
       <div class="stat-card <?= $unreadContacts > 0 ? 'has-alert' : '' ?>">
         <div class="stat-icon red">
           <i class="fa-solid fa-envelope"></i>
@@ -160,6 +185,35 @@ if ($conn->query("SHOW TABLES LIKE 'user_reservations'")->num_rows) {
             <i class="fa-solid fa-arrow-right"></i>
           </a>
         <?php endif; ?>
+      </div>
+
+      <!-- Key Performance Metrics -->
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fa-solid fa-peso-sign"></i>
+        </div>
+        <div class="stat-info">
+          <h3>₱<?= number_format($monthlyRevenue, 2) ?></h3>
+          <p>Revenue This Month</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-user-check"></i>
+        </div>
+        <div class="stat-info">
+          <h3><?= $activeMembers ?></h3>
+          <p>Active Members</p>
+        </div>
+      </div>
+      <div class="stat-card <?= $todaySessions > 0 ? '' : '' ?>">
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-calendar-day"></i>
+        </div>
+        <div class="stat-info">
+          <h3><?= $todaySessions ?></h3>
+          <p>Today's Sessions</p>
+        </div>
       </div>
     </section>
 

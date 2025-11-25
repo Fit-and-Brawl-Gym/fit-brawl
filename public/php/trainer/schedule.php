@@ -58,25 +58,64 @@ if (isset($_SESSION['user_id'])) {
         $stmt->close();
           // Fetch bookings by status
     function getTrainerBookings($conn, $trainer_id, $status) {
-        $bookings = [];
-        $query = "SELECT ur.*, u.username AS member_name, u.email AS member_email
-                  FROM user_reservations ur
-                  JOIN users u ON ur.user_id = u.id
-                  WHERE ur.trainer_id=? AND ur.booking_status=? ";
-        if ($status === 'confirmed') $query .= "AND ur.booking_date >= CURDATE() ";
-        $query .= "ORDER BY ur.booking_date ASC, FIELD(ur.session_time,'Morning','Afternoon','Evening')";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("is", $trainer_id, $status);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) $bookings[] = $row;
-        $stmt->close();
-        return $bookings;
+    $bookings = [];
+
+    // Base query
+    $query = "SELECT ur.*, u.username AS member_name, u.email AS member_email
+              FROM user_reservations ur
+              JOIN users u ON ur.user_id = u.id
+              WHERE ur.trainer_id=? ";
+
+    // If status is array → use IN (...)
+    if (is_array($status)) {
+
+        // create placeholders "?, ?, ?"
+        $placeholders = implode(',', array_fill(0, count($status), '?'));
+
+        $query .= "AND ur.booking_status IN ($placeholders) ";
+
+    } else {
+        // single status
+        $query .= "AND ur.booking_status=? ";
     }
 
-    $upcoming_bookings = getTrainerBookings($conn, $trainer_id, 'confirmed');
-    $past_bookings = getTrainerBookings($conn, $trainer_id, 'completed');
-    $cancelled_bookings = getTrainerBookings($conn, $trainer_id, 'cancelled');
+    // confirmed filter logic remains the same
+    if ($status === 'confirmed') {
+        $query .= "AND ur.booking_date >= CURDATE() ";
+    }
+
+    $query .= "ORDER BY ur.booking_date ASC, FIELD(ur.session_time,'Morning','Afternoon','Evening')";
+
+    // ---- Prepare Statement ----
+    $stmt = $conn->prepare($query);
+
+    // build bind_param values
+    if (is_array($status)) {
+        $types = "i" . str_repeat("s", count($status)); // e.g., "iss"
+        $params = array_merge([$types, $trainer_id], $status);
+        $stmt->bind_param(...$params);
+
+    } else {
+        $stmt->bind_param("is", $trainer_id, $status);
+    }
+
+    // Execute
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $bookings[] = $row;
+    }
+
+    $stmt->close();
+    return $bookings;
+}
+$upcoming_bookings = getTrainerBookings($conn, $trainer_id, 'confirmed');
+$past_bookings     = getTrainerBookings($conn, $trainer_id, 'completed');
+
+$statuses = ['cancelled', 'blocked'];
+$cancelled_bookings = getTrainerBookings($conn, $trainer_id, $statuses);
+
     }
     
 $upcoming_bookings = [];
@@ -181,7 +220,7 @@ require_once '../../../includes/trainer_header.php';
                     </div>
             <div class="bookings-tabs">
                 <button class="tab-btn active" data-tab="upcoming">
-                    Upcoming <span class="tab-count"><?= count($upcoming_bookings) ?></span>
+                    Booked <span class="tab-count"><?= count($upcoming_bookings) ?></span>
                 </button>
                 <button class="tab-btn" data-tab="past">
                     Past <span class="tab-count"><?= count($past_bookings) ?></span>
@@ -197,7 +236,7 @@ require_once '../../../includes/trainer_header.php';
         <!-- Upcoming Bookings -->
         
        <div class="bookings-list upcoming active" id="upcomingBookings">
-        <h3 class="booking-section-title">Upcoming Bookings</h3>
+        <h3 class="booking-section-title">Bookings</h3>
             <?php if (!empty($upcoming_bookings)): ?>
                 <?php foreach ($upcoming_bookings as $b): ?>
                     <div class="booking-card">
@@ -240,7 +279,7 @@ require_once '../../../includes/trainer_header.php';
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p class="no-bookings"><i class="fas fa-calendar-times"></i> No upcoming bookings.</p>
+                <p class="no-bookings"><i class="fas fa-calendar-times"></i> No pending bookings.</p>
             <?php endif; ?>
         </div>
 

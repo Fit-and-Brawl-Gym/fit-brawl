@@ -11,33 +11,75 @@ document.querySelectorAll('.view-btn').forEach(btn => {
     });
 });
 
-// Filters
+// Filters with DSA Fuzzy Search
 let filterTimeout;
 document.getElementById('searchInput').addEventListener('input', () => {
     clearTimeout(filterTimeout);
-    filterTimeout = setTimeout(applyFilters, 500);
+    filterTimeout = setTimeout(applyFiltersClientSide, 300);
 });
 
-document.getElementById('statusFilter').addEventListener('change', applyFilters);
-document.getElementById('trainerFilter').addEventListener('change', applyFilters);
-document.getElementById('dateFrom').addEventListener('change', applyFilters);
-document.getElementById('dateTo').addEventListener('change', applyFilters);
+document.getElementById('statusFilter').addEventListener('change', applyFiltersClientSide);
+document.getElementById('trainerFilter').addEventListener('change', applyFiltersClientSide);
+document.getElementById('dateFrom').addEventListener('change', applyFiltersClientSide);
+document.getElementById('dateTo').addEventListener('change', applyFiltersClientSide);
 
-function applyFilters() {
-    const params = new URLSearchParams();
-    const search = document.getElementById('searchInput').value;
-    const status = document.getElementById('statusFilter').value;
-    const trainer = document.getElementById('trainerFilter').value;
+function applyFiltersClientSide() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const selectedStatus = document.getElementById('statusFilter').value;
+    const selectedTrainer = document.getElementById('trainerFilter').value;
     const dateFrom = document.getElementById('dateFrom').value;
     const dateTo = document.getElementById('dateTo').value;
 
-    if (search) params.append('search', search);
-    if (status !== 'all') params.append('status', status);
-    if (trainer !== 'all') params.append('trainer', trainer);
-    if (dateFrom) params.append('date_from', dateFrom);
-    if (dateTo) params.append('date_to', dateTo);
+    // Use DSA fuzzy search if available
+    const useDSA = window.DSA || window.DSAUtils;
+    const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
 
-    window.location.href = 'reservations.php' + (params.toString() ? '?' + params.toString() : '');
+    // Filter table rows
+    const tableRows = document.querySelectorAll('.reservations-table tbody tr');
+    let visibleCount = 0;
+
+    tableRows.forEach(row => {
+        const userName = row.querySelector('td:nth-child(1)')?.textContent || '';
+        const userEmail = row.querySelector('td:nth-child(2)')?.textContent || '';
+        const trainerName = row.querySelector('td:nth-child(3)')?.textContent || '';
+        const bookingDate = row.querySelector('td:nth-child(4)')?.textContent || '';
+        const statusBadge = row.querySelector('.status-badge')?.dataset.status || '';
+
+        // Search filter with fuzzy matching
+        let matchesSearch = true;
+        if (searchTerm) {
+            const searchableText = `${userName} ${userEmail} ${trainerName}`.toLowerCase();
+            if (fuzzySearch) {
+                matchesSearch = fuzzySearch(searchTerm, searchableText);
+            } else {
+                matchesSearch = searchableText.includes(searchTerm);
+            }
+        }
+
+        // Status filter
+        const matchesStatus = selectedStatus === 'all' || statusBadge === selectedStatus;
+
+        // Trainer filter
+        const matchesTrainer = selectedTrainer === 'all' || trainerName === selectedTrainer;
+
+        // Date range filter
+        let matchesDateRange = true;
+        if (dateFrom || dateTo) {
+            const rowDate = new Date(bookingDate);
+            if (dateFrom && rowDate < new Date(dateFrom)) matchesDateRange = false;
+            if (dateTo && rowDate > new Date(dateTo)) matchesDateRange = false;
+        }
+
+        const isVisible = matchesSearch && matchesStatus && matchesTrainer && matchesDateRange;
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) visibleCount++;
+    });
+
+    // Update results count if element exists
+    const resultsCount = document.getElementById('resultsCount');
+    if (resultsCount) {
+        resultsCount.textContent = `${visibleCount} reservation${visibleCount !== 1 ? 's' : ''}`;
+    }
 }
 
 // Status inline edit

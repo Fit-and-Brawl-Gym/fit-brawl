@@ -5,9 +5,27 @@
 /* Stats Grid - Modern horizontal card layout */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--admin-gap-lg);
     margin-bottom: var(--admin-section-margin);
+}
+
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .stat-card {
@@ -55,6 +73,10 @@
     background: var(--admin-gradient-orange);
 }
 
+.stat-icon.purple {
+    background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+}
+
 .stat-info {
     flex: 1;
 }
@@ -64,12 +86,14 @@
     margin: 0 0 4px 0;
     color: #222;
     font-weight: var(--admin-font-weight-bold);
+    text-align: center;
 }
 
 .stat-info p {
     margin: 0;
     color: var(--admin-text-muted);
     font-size: var(--admin-font-size-md);
+    text-align: center;
 }
 
 /* Alert Cards with Actions */
@@ -143,7 +167,7 @@
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: var(--admin-gap-md);
     }
-    
+
     .stat-card {
         padding: 1rem;
     }

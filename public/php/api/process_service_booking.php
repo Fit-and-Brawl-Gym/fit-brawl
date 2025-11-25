@@ -1,5 +1,8 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once '../../../includes/db_connect.php';
 require_once __DIR__ . '/../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../includes/csrf_protection.php';

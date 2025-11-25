@@ -621,6 +621,7 @@ if (!$stats) {
             document.getElementById('credentialsModal').classList.remove('active');
         }
     </script>
+    <script src="<?= PUBLIC_PATH ?>/js/dsa/dsa-utils.js?v=<?= time() ?>"></script>
     <script src="<?= PUBLIC_PATH ?>/php/admin/js/sidebar.js"></script>
 </body>
 

@@ -232,16 +232,84 @@
       modalReasonInput.focus();
       return;
     }
+    
+    // Find the row to update live
+    const row = findRowById(id);
+    const actionCell = row ? row.querySelector('td:last-child') : null;
+    const originalContent = actionCell ? actionCell.innerHTML : '';
+    
     try {
       setModalProcessing(true);
+      
+      // Show processing state in the row if found
+      if (actionCell) {
+        actionCell.innerHTML = '<span class="status-badge status-processing">PROCESSING...</span>';
+      }
+      
       await performAction(action, id, reason);
       closeModal();
+      
+      // Update the row live based on action type
+      if (row && actionCell) {
+        if (action === 'mark_cash_paid') {
+          // Update cash payment row
+          const statusCell = row.querySelector('td:nth-child(5)');
+          if (statusCell) {
+            statusCell.innerHTML = '<span class="status-badge status-paid">Paid</span>';
+          }
+          const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          actionCell.innerHTML = `<span class="muted">Payment received ${today}</span>`;
+        } else if (action === 'approve' || action === 'reject') {
+          // Remove online payment row with fade out
+          row.style.transition = 'opacity 0.3s ease-out';
+          row.style.opacity = '0';
+          setTimeout(() => {
+            row.remove();
+            // Check if table is empty
+            const tbody = row.closest('tbody');
+            if (tbody && tbody.querySelectorAll('tr').length === 0) {
+              const colspan = action === 'approve' || action === 'reject' ? 6 : 5;
+              tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; color:#999;">No pending online payments.</td></tr>`;
+            }
+          }, 300);
+        }
+      }
+      
+      // Refresh sections in background
+      cache.delete('processing');
+      cache.delete('rejected');
+      loadProcessingTables(true).catch(console.error);
+      if (action === 'reject') {
+        loadRejectedTable(true).catch(console.error);
+      }
     } catch (error) {
       console.error('Subscription update failed:', error);
       alert(error.message || 'Unable to complete the action.');
       setModalProcessing(false);
+      // Restore original content on error
+      if (actionCell) {
+        actionCell.innerHTML = originalContent;
+      }
     }
   });
+
+  function findRowById(id) {
+    // Search in both cash and online tables
+    const cashTable = document.getElementById(CASH_TABLE_ID);
+    const onlineTable = document.getElementById(ONLINE_TABLE_ID);
+    
+    for (const tbody of [cashTable, onlineTable]) {
+      if (!tbody) continue;
+      const rows = tbody.querySelectorAll('tr');
+      for (const row of rows) {
+        const firstCell = row.querySelector('td:first-child');
+        if (firstCell && firstCell.textContent.trim() === String(id)) {
+          return row;
+        }
+      }
+    }
+    return null;
+  }
 
   async function performAction(action, id, reason = '') {
     const formData = new FormData();
@@ -262,8 +330,6 @@
     if (!response.ok || !result.success) {
       throw new Error(result.message || `HTTP ${response.status}`);
     }
-
-    await refreshAll(true);
   }
 
   window.updateSubscription = function (id, status) {
@@ -271,32 +337,14 @@
     openActionModal(action, id);
   };
 
-  window.markCashAsPaid = async function (id) {
-    if (!confirm('Mark this cash payment as received?')) {
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('id', id);
-      if (window.CSRF_TOKEN) {
-        formData.append('csrf_token', window.CSRF_TOKEN);
-      }
-
-      const response = await fetch(`${API_URL}?action=mark_cash_paid`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || `HTTP ${response.status}`);
-      }
-
-      await refreshAll(true);
-    } catch (error) {
-      console.error('Failed to mark cash payment:', error);
-      alert(error.message || 'Unable to update payment status.');
-    }
+  window.markCashAsPaid = function (id) {
+    // Use modal for confirmation instead of confirm()
+    pendingAction = { action: 'mark_cash_paid', id };
+    modalTitle.textContent = 'Mark Cash Payment as Paid';
+    modalMessage.textContent = 'Confirm that this member has paid at the gym?';
+    modalReasonWrap.style.display = 'none';
+    modalReasonInput.value = '';
+    setModalProcessing(false);
+    modal.classList.add('show');
   };
 })();

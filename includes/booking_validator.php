@@ -2,7 +2,7 @@
 /**
  * Booking Validation Helper Functions
  * Handles all validation logic for time-based booking system
- * 
+ *
  * Features:
  * - 30-minute time slot granularity (7:00 AM - 10:00 PM PHT)
  * - Trainer shift enforcement (morning/afternoon/night)
@@ -40,16 +40,16 @@ class BookingValidator
             // Table doesn't exist yet, use defaults
             return;
         }
-        
+
         $stmt = $this->conn->prepare("SELECT config_key, config_value FROM booking_config");
         if (!$stmt) {
             // Query failed, use defaults
             return;
         }
-        
+
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         while ($row = $result->fetch_assoc()) {
             switch ($row['config_key']) {
                 case 'buffer_minutes':
@@ -82,6 +82,12 @@ class BookingValidator
             $end = TimezoneHelper::create($end_time);
         } catch (Exception $e) {
             return ['valid' => false, 'message' => 'Invalid datetime format'];
+        }
+
+        // Check if booking time is in the past (for same-day bookings)
+        $now = TimezoneHelper::now();
+        if ($start <= $now) {
+            return ['valid' => false, 'message' => 'Cannot book a time slot in the past. Please select a future time.'];
         }
 
         // Check 30-minute alignment
@@ -186,11 +192,11 @@ class BookingValidator
                 'afternoon' => ['11:00:00', '19:00:00'],  // 11am - 7pm
                 'night' => ['15:00:00', '22:00:00']       // 3pm - 10pm
             ];
-            
+
             if (!isset($shift_times[$shift['shift_type']])) {
                 return ['valid' => false, 'message' => 'Invalid shift type'];
             }
-            
+
             $shift_start = $booking_date . ' ' . $shift_times[$shift['shift_type']][0];
             $shift_end = $booking_date . ' ' . $shift_times[$shift['shift_type']][1];
         }
@@ -235,7 +241,7 @@ class BookingValidator
                     'message' => "Cannot end training during break time ({$break_display})"
                 ];
             }
-            
+
             // Spanning across break is allowed (start before break, end after break)
         }
 
@@ -262,17 +268,17 @@ class BookingValidator
         if ($result->num_rows > 0) {
             $shift = $result->fetch_assoc();
             $stmt->close();
-            
+
             // Day-off if shift_type is 'none' or is_active is 0
             if ($shift['shift_type'] === 'none' || $shift['is_active'] == 0) {
                 return ['valid' => false, 'message' => 'Trainer is not available on ' . $day_of_week . 's'];
             }
-            
+
             return ['valid' => true];
         }
 
         $stmt->close();
-        
+
         // Fallback: Check legacy trainer_day_offs table
         $fallback_stmt = $this->conn->prepare("
             SELECT is_day_off
@@ -374,13 +380,13 @@ class BookingValidator
             $stmt = $this->conn->prepare($query);
             $buffer_end_str = TimezoneHelper::toMySQLDateTime($buffer_end);
             $buffer_start_str = TimezoneHelper::toMySQLDateTime($buffer_start);
-            $stmt->bind_param("issssi", $trainer_id, $buffer_end_str, $buffer_start_str, 
+            $stmt->bind_param("issssi", $trainer_id, $buffer_end_str, $buffer_start_str,
                              $buffer_start_str, $buffer_end_str, $exclude_booking_id);
         } else {
             $stmt = $this->conn->prepare($query);
             $buffer_end_str = TimezoneHelper::toMySQLDateTime($buffer_end);
             $buffer_start_str = TimezoneHelper::toMySQLDateTime($buffer_start);
-            $stmt->bind_param("issss", $trainer_id, $buffer_end_str, $buffer_start_str, 
+            $stmt->bind_param("issss", $trainer_id, $buffer_end_str, $buffer_start_str,
                              $buffer_start_str, $buffer_end_str);
         }
 
@@ -390,7 +396,7 @@ class BookingValidator
         if ($result->num_rows > 0) {
             $conflict = $result->fetch_assoc();
             $stmt->close();
-            
+
             $conflict_time = TimezoneHelper::formatTimeRange($conflict['start_time'], $conflict['end_time'], true);
             return [
                 'valid' => false,
@@ -419,28 +425,28 @@ class BookingValidator
             ORDER BY um.end_date DESC
             LIMIT 1
         ";
-        
+
         $stmt = $this->conn->prepare($membership_query);
         $stmt->bind_param("s", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         $membership = $result->fetch_assoc();
         $stmt->close();
-        
+
         if (!$membership) {
             return [
                 'valid' => false,
                 'message' => 'No active membership found'
             ];
         }
-        
+
         $weekly_hour_limit = (int)$membership['weekly_hours_limit'];
         $plan_name = $membership['plan_name'];
-        
+
         $start = TimezoneHelper::create($start_time);
         $end = TimezoneHelper::create($end_time);
         $week_info = TimezoneHelper::getWeekNumber($start);
-        
+
         // Calculate week boundaries (Sunday to Saturday)
         $week_start = clone $start;
         $week_start->modify('Sunday this week')->setTime(0, 0, 0);
@@ -487,9 +493,9 @@ class BookingValidator
             $minutes_used = $total_minutes % 60;
             $hours_remaining = floor(($limit_minutes - $total_minutes) / 60);
             $minutes_remaining = ($limit_minutes - $total_minutes) % 60;
-            
+
             $week_display = $week_start->format('M j') . ' - ' . $week_end->format('M j');
-            
+
             return [
                 'valid' => false,
                 'message' => "Weekly limit exceeded. Your {$plan_name} plan allows {$weekly_hour_limit}h/week. You have {$hours_used}h {$minutes_used}m booked this week ({$week_display}). Only {$hours_remaining}h {$minutes_remaining}m remaining.",
@@ -673,8 +679,8 @@ class BookingValidator
 
         // Allow cancellation of confirmed bookings only (not completed, cancelled, or blocked)
         if (!in_array($booking['booking_status'], ['confirmed'])) {
-            $statusMessage = $booking['booking_status'] === 'blocked' 
-                ? 'This session is no longer available. The trainer blocked this time slot after your booking.' 
+            $statusMessage = $booking['booking_status'] === 'blocked'
+                ? 'This session is no longer available. The trainer blocked this time slot after your booking.'
                 : 'Only confirmed bookings can be cancelled. Current status: ' . $booking['booking_status'];
             return ['valid' => false, 'message' => $statusMessage];
         }
@@ -690,7 +696,7 @@ class BookingValidator
                 'Afternoon' => '12:00:00',
                 'Evening' => '17:00:00'
             ];
-            
+
             $session_time = $booking['session_time'] ?? 'Morning';
             $session_datetime = $booking['booking_date'] . ' ' . $session_starts[$session_time];
             $session_timestamp = strtotime($session_datetime);
@@ -712,7 +718,7 @@ class BookingValidator
 
     /**
      * Run all validations for a time-based booking
-     * 
+     *
      * @param string $user_id User ID
      * @param int $trainer_id Trainer ID
      * @param string $class_type Class type (Boxing, Muay Thai, MMA, Gym)
@@ -724,7 +730,7 @@ class BookingValidator
     public function validateBooking($user_id, $trainer_id, $class_type, $start_time, $end_time, $exclude_booking_id = null, $skip_weekly_limit = false)
     {
         $booking_date = date('Y-m-d', strtotime($start_time));
-        
+
         $validations = [
             'time_format' => $this->validateTimeFormat($start_time, $end_time),
             'membership' => $this->validateMembership($user_id),
@@ -735,7 +741,7 @@ class BookingValidator
             'trainer_available' => $this->validateTrainerAvailability($trainer_id, $start_time, $end_time, $exclude_booking_id),
             'user_double_booking' => $this->validateUserDoubleBooking($user_id, $start_time, $end_time, $exclude_booking_id),
         ];
-        
+
         // Only check weekly limit if not overridden (e.g., by admin)
         if (!$skip_weekly_limit) {
             $validations['weekly_limit'] = $this->validateWeeklyLimit($user_id, $start_time, $end_time, $exclude_booking_id);

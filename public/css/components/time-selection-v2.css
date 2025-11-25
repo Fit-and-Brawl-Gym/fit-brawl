@@ -2,8 +2,20 @@
  * Time Selection V2 - Start/End Time Pickers with Availability Sidebar
  */
 
-/* ===================================
-   TIME SELECTION LAYOUT (TWO COLUMNS)
+/* ==================================.time-select-dropdown option:disabled {
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-style: italic;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    background: rgba(100, 100, 100, 0.2) !important;
+    opacity: 0.7;
+}
+
+.time-select-dropdown option:disabled:hover {
+    background: rgba(100, 100, 100, 0.2) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    cursor: not-allowed !important;
+}ECTION LAYOUT (TWO COLUMNS)
    =================================== */
 .time-selection-layout {
     display: grid;
@@ -25,6 +37,7 @@
     border: 1px solid rgba(255, 206, 0, 0.2);
     border-radius: 12px;
     padding: 28px;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -121,14 +134,30 @@
 }
 
 .time-select-dropdown option:disabled {
-    color: rgba(255, 255, 255, 0.3);
+    color: gray !important;
     font-style: italic;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    background-color: #0a232d !important;
+    opacity: .74;
+    text-decoration: line-through;
 }
 
-.time-select-dropdown option:checked {
+.time-select-dropdown option:disabled:hover {
+    background: rgba(30, 60, 90, 1) !important;
+    color: rgba(200, 220, 240, 1) !important;
+    cursor: not-allowed !important;
+}
+
+.time-select-dropdown option:checked:not(:disabled) {
     background: linear-gradient(135deg, #FFCE00, #FFB700);
     color: #0a232d;
     font-weight: 700;
+}
+
+.time-select-dropdown option:not(:disabled):hover {
+    background: rgba(65, 63, 56, 0.2);
+    cursor: pointer;
 }
 
 .time-picker-hint {
@@ -212,6 +241,7 @@
     border: 1px solid rgba(255, 206, 0, 0.2);
     border-radius: 12px;
     padding: 24px;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     max-height: 600px;
     display: flex;
@@ -393,6 +423,8 @@
 .timeline-slot-break {
     background: rgba(255, 206, 0, 0.1);
     border-color: rgba(255, 206, 0, 0.2);
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .timeline-slot-break .slot-status {
@@ -409,6 +441,8 @@
     background: rgba(158, 158, 158, 0.1);
     border-color: rgba(158, 158, 158, 0.2);
     opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .timeline-slot-booked .slot-status {
@@ -424,6 +458,8 @@
     background: rgba(158, 158, 158, 0.05);
     border-color: rgba(158, 158, 158, 0.1);
     opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .timeline-slot-unavailable .slot-status {
@@ -449,7 +485,7 @@
         grid-template-columns: 1fr;
         gap: 24px;
     }
-    
+
     .availability-sidebar {
         max-height: 400px;
     }
@@ -460,28 +496,28 @@
     .availability-sidebar {
         padding: 20px;
     }
-    
+
     .time-picker-input {
         padding: 14px 16px;
         font-size: 1rem;
     }
-    
+
     .duration-display {
         padding: 16px;
     }
-    
+
     .duration-value {
         font-size: 1.2rem;
     }
-    
+
     .timeline-slot {
         padding: 10px 12px;
     }
-    
+
     .slot-time {
         font-size: 0.9rem;
     }
-    
+
     .slot-status {
         font-size: 0.8rem;
     }

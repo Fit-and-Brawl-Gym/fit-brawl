@@ -90,12 +90,25 @@ function filterAndRenderContacts(explicitSearchTerm) {
         filtered = filtered.filter(contact => contact.status === currentFilter);
     }
 
+    // Use DSA fuzzy search if available
     if (searchTerm) {
         const query = searchTerm.toLowerCase();
-        filtered = filtered.filter(contact => (
-            `${contact.first_name} ${contact.last_name}`.toLowerCase().includes(query) ||
-            contact.email.toLowerCase().includes(query)
-        ));
+        const useDSA = window.DSA || window.DSAUtils;
+        const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
+
+        filtered = filtered.filter(contact => {
+            const fullName = `${contact.first_name} ${contact.last_name}`.toLowerCase();
+            const email = contact.email.toLowerCase();
+            const searchableText = `${fullName} ${email}`;
+
+            if (fuzzySearch) {
+                // Use fuzzy search for typo tolerance
+                return fuzzySearch(query, searchableText);
+            } else {
+                // Fallback to includes
+                return fullName.includes(query) || email.includes(query);
+            }
+        });
     }
 
     renderContacts(filtered, { isArchivedView });

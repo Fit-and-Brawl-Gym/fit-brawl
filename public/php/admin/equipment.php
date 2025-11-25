@@ -40,6 +40,18 @@ foreach ($equipment as &$it) {
   }
 }
 unset($it);
+
+// Calculate stats
+$totalEquipment = count($equipment);
+$availableEquipment = 0;
+$maintenanceEquipment = 0;
+$outOfOrderEquipment = 0;
+
+foreach ($equipment as $item) {
+  if ($item['status'] === 'Available') $availableEquipment++;
+  elseif ($item['status'] === 'Maintenance') $maintenanceEquipment++;
+  elseif ($item['status'] === 'Out of Order') $outOfOrderEquipment++;
+}
 ?>
 
 <!DOCTYPE html>
@@ -52,6 +64,7 @@ unset($it);
   <title>Equipment Management - Fit & Brawl Gym</title>
   <link rel="icon" type="image/png" href="<?= IMAGES_PATH ?>/favicon-admin.png">
   <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/admin.css">
+  <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/dashboard.css">
   <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/php/admin/css/equipment.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -67,6 +80,56 @@ unset($it);
         <p class="subtitle">Manage gym equipment inventory and status</p>
       </div>
     </header>
+
+    <!-- Stats Cards -->
+    <section class="stats-grid" style="margin-bottom: 24px; grid-template-columns: repeat(4, 1fr);">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-dumbbell"></i>
+        </div>
+        <div class="stat-info">
+          <h3><?= $totalEquipment ?></h3>
+          <p>Total Equipment</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="stat-info">
+          <h3><?= $availableEquipment ?></h3>
+          <p>Available</p>
+        </div>
+      </div>
+      <div class="stat-card <?= $maintenanceEquipment > 0 ? 'has-alert' : '' ?>">
+        <div class="stat-icon orange">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
+        <div class="stat-info">
+          <h3><?= $maintenanceEquipment ?></h3>
+          <p>Under Maintenance</p>
+        </div>
+        <?php if ($maintenanceEquipment > 0): ?>
+          <a href="#" class="stat-action" onclick="document.getElementById('statusFilter').value='Maintenance'; filterEquipment(); return false;">
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        <?php endif; ?>
+      </div>
+      <div class="stat-card <?= $outOfOrderEquipment > 0 ? 'has-alert' : '' ?>">
+        <div class="stat-icon red">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="stat-info">
+          <h3><?= $outOfOrderEquipment ?></h3>
+          <p>Out of Order</p>
+        </div>
+        <?php if ($outOfOrderEquipment > 0): ?>
+          <a href="#" class="stat-action" onclick="document.getElementById('statusFilter').value='Out of Order'; filterEquipment(); return false;">
+            <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        <?php endif; ?>
+      </div>
+    </section>
 
     <!-- Search, Filter & Add Button -->
     <div class="toolbar">

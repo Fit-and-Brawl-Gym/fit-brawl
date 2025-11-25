@@ -6,13 +6,12 @@ body {
 }
 
 main {
-    max-width: 600px;
+    max-width: 1000px;
     margin: 100px auto;
     padding: var(--spacing-8);
     background: rgba(15, 79, 82, 0.3);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
-    text-align: center;
 }
 
 h2 {
@@ -26,8 +25,7 @@ p {
 }
 
 .status-message.pending {
-    border-left: 6px solid var(--color-warning);
-    padding-left: var(--spacing-4);
+    padding: 0;
 }
 
 .status-message.rejected {
@@ -38,6 +36,7 @@ p {
 .status-message.none {
     border-left: 6px solid #5bc0de;
     padding-left: var(--spacing-4);
+    text-align: center;
 }
 
 /* Button Group */
@@ -102,10 +101,15 @@ p {
 }
 
 /* Responsive */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     main {
+        max-width: 100%;
         margin: 50px var(--spacing-5);
         padding: var(--spacing-5);
+    }
+
+    .status-message.pending [style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
     }
 
     .button-group {
