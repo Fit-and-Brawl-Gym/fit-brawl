@@ -13,17 +13,26 @@ class EmailService {
      * Send email using configured provider
      */
     public static function send($to, $subject, $htmlBody, $toName = null) {
+        // Debug: Check environment variables
+        $resendKey = getenv('RESEND_API_KEY');
+        $sendgridKey = getenv('SENDGRID_API_KEY');
+        
+        error_log("EmailService: Checking providers - Resend: " . ($resendKey ? 'yes' : 'no') . ", SendGrid: " . ($sendgridKey ? 'yes' : 'no'));
+        
         // Try Resend first (recommended for Render)
-        if (getenv('RESEND_API_KEY')) {
+        if ($resendKey) {
+            error_log("EmailService: Using Resend provider");
             return self::sendViaResend($to, $subject, $htmlBody, $toName);
         }
 
         // Try SendGrid
-        if (getenv('SENDGRID_API_KEY')) {
+        if ($sendgridKey) {
+            error_log("EmailService: Using SendGrid provider");
             return self::sendViaSendGrid($to, $subject, $htmlBody, $toName);
         }
 
         // Fallback to SMTP (won't work on Render free tier)
+        error_log("EmailService: Falling back to SMTP (likely to fail on Render)");
         return self::sendViaSMTP($to, $subject, $htmlBody, $toName);
     }
 

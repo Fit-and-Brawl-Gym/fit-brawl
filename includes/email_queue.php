@@ -115,24 +115,27 @@ class EmailQueue {
      * Send email immediately (fallback or for high-priority emails)
      */
     public static function sendImmediately($toEmail, $subject, $bodyHtml, $toName = null) {
-        // Use the new EmailService which supports HTTP APIs (works on Render)
-        require_once __DIR__ . '/email_service.php';
-
+        // Load EmailService if not already loaded
+        if (!class_exists('EmailService')) {
+            require_once __DIR__ . '/email_service.php';
+        }
+        
         // Wrap in email template
         $fullHtml = self::wrapInTemplate($bodyHtml);
-
+        
+        error_log("EmailQueue: Sending to $toEmail, Provider: " . EmailService::getProvider());
+        error_log("EmailQueue: RESEND_API_KEY set: " . (getenv('RESEND_API_KEY') ? 'yes' : 'no'));
+        
         $result = EmailService::send($toEmail, $subject, $fullHtml, $toName);
-
+        
         if ($result) {
             error_log("Email sent successfully to: $toEmail via " . EmailService::getProvider());
         } else {
             error_log("Failed to send email to: $toEmail via " . EmailService::getProvider());
         }
-
+        
         return $result;
-    }
-
-    /**
+    }    /**
      * Wrap HTML content in email template
      */
     private static function wrapInTemplate($innerHtml) {

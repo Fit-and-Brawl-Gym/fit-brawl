@@ -149,7 +149,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
             $verificationLink = $protocol . '://' . $host . PUBLIC_PATH . '/php/verify-email.php?token=' . $verificationToken;
         }
 
-        $mail = new PHPMailer(true);
         try {
             // Use email queue for faster response (email sends in background)
             $html = "<h2>Welcome to FitXBrawl, " . htmlspecialchars($name) . "!</h2>"
@@ -157,15 +156,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
                 . "<p><a href='" . htmlspecialchars($verificationLink) . "'>" . htmlspecialchars($verificationLink) . "</a></p>"
                 . "<p>This link will confirm your account registration.</p>";
 
+            error_log("Signup: Attempting to send verification email to: $email");
+            
             // Queue email for background sending (returns immediately)
-            EmailQueue::queue($email, 'Verify Your Email - FitXBrawl', $html, $name, null, 1);
-
-            $_SESSION['success_message'] = "Account created! Please check your email to verify your account.";
+            $emailSent = EmailQueue::queue($email, 'Verify Your Email - FitXBrawl', $html, $name, null, 1);
+            
+            if ($emailSent) {
+                error_log("Signup: Verification email queued successfully for: $email");
+                $_SESSION['success_message'] = "Account created! Please check your email to verify your account.";
+            } else {
+                error_log("Signup: Failed to queue verification email for: $email");
+                $_SESSION['success_message'] = "Account created! However, there was an issue sending the verification email. Please use the resend option.";
+            }
+            
             $_SESSION['verification_email'] = $email; // Store email for resend functionality
             header("Location: sign-up.php");
             exit();
 
         } catch (Exception $e) {
+            error_log("Signup: Exception sending verification email: " . $e->getMessage());
             $_SESSION['register_error'] = "Account created but verification email could not be sent. Error: " . $e->getMessage();
             header("Location: sign-up.php");
             exit();
