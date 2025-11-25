@@ -1800,3 +1800,4 @@ function createTrainerCard(trainer) {
 # Testing auto-deployment with secrets
 # Final deployment test
 # Test deployment with GitHub Secrets configured
+# Auto-deploy test
