@@ -58,6 +58,8 @@ class EmailService {
             ],
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_TIMEOUT => 30,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
         ]);
 
         $response = curl_exec($ch);
