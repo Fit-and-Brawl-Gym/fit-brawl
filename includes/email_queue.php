@@ -210,37 +210,29 @@ HTML;
         $emails = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
-        require_once __DIR__ . '/mail_config.php';
-        require_once __DIR__ . '/email_template.php';
-
-        // Create single mailer instance for connection reuse
-        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-        configureMailerSMTP($mail);
-        $mail->SMTPKeepAlive = true;
+        // Load EmailService if not already loaded
+        if (!class_exists('EmailService')) {
+            require_once __DIR__ . '/email_service.php';
+        }
 
         foreach ($emails as $email) {
             // Mark as processing
             self::updateStatus($email['id'], 'processing');
 
             try {
-                $mail->clearAddresses();
-                $mail->clearAllRecipients();
+                // Use sendImmediately which uses EmailService (Resend)
+                $success = self::sendImmediately(
+                    $email['to_email'],
+                    $email['subject'],
+                    $email['body_html'],
+                    $email['to_name']
+                );
 
-                if ($email['to_name']) {
-                    $mail->addAddress($email['to_email'], $email['to_name']);
-                } else {
-                    $mail->addAddress($email['to_email']);
-                }
-
-                $mail->isHTML(true);
-                $mail->Subject = $email['subject'];
-                applyEmailTemplate($mail, $email['body_html']);
-
-                if ($mail->send()) {
+                if ($success) {
                     self::updateStatus($email['id'], 'sent');
                     $results['sent']++;
                 } else {
-                    throw new Exception($mail->ErrorInfo);
+                    throw new Exception('Failed to send email via EmailService');
                 }
             } catch (Exception $e) {
                 $attempts = $email['attempts'] + 1;
@@ -250,8 +242,6 @@ HTML;
                 $results['errors'][] = $e->getMessage();
             }
         }
-
-        $mail->smtpClose();
 
         return $results;
     }
