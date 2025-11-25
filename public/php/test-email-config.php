@@ -36,9 +36,23 @@ $config = [
 if (isset($_GET['test']) && isset($_GET['email'])) {
     $testEmail = filter_var($_GET['email'], FILTER_VALIDATE_EMAIL);
     if ($testEmail) {
-        $html = "<h2>Test Email</h2><p>This is a test email from Fit & Brawl.</p><p>If you received this, email is working!</p>";
-        $result = EmailService::send($testEmail, 'Test Email - Fit & Brawl', $html);
-        $config['test_result'] = $result ? 'SUCCESS - Email sent!' : 'FAILED - Check logs';
+        try {
+            $html = "<h2>Test Email</h2><p>This is a test email from Fit & Brawl.</p><p>If you received this, email is working!</p>";
+            
+            error_log("Test email: Attempting to send to $testEmail");
+            $result = EmailService::send($testEmail, 'Test Email - Fit & Brawl', $html);
+            
+            if ($result) {
+                $config['test_result'] = 'SUCCESS - Email sent!';
+                error_log("Test email: Successfully sent to $testEmail");
+            } else {
+                $config['test_result'] = 'FAILED - Check Render logs for details';
+                error_log("Test email: Failed to send to $testEmail");
+            }
+        } catch (Exception $e) {
+            $config['test_result'] = 'ERROR: ' . $e->getMessage();
+            error_log("Test email exception: " . $e->getMessage());
+        }
     } else {
         $config['test_result'] = 'Invalid email address';
     }
