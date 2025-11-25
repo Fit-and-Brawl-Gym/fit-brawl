@@ -1,0 +1,30 @@
+# Render.com Blueprint for Fit & Brawl Gym
+# This deploys the web service only
+# For MySQL, use a free external service like:
+# - TiDB Cloud (free tier, MySQL compatible)
+# - PlanetScale (free tier, MySQL compatible)
+# - Railway.app (free tier, includes MySQL)
+
+services:
+  - type: web
+    name: fit-brawl
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: BASE_PATH
+        value: /
+      # Set these manually in Render dashboard after creating external MySQL
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
