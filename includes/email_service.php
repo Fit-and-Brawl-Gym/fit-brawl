@@ -35,16 +35,17 @@ class EmailService {
         
         error_log("EmailService: Checking providers - Resend: " . ($resendKey ? 'yes' : 'no') . ", SendGrid: " . ($sendgridKey ? 'yes' : 'no'));
         
-        // Try Resend first (recommended for Render)
-        if ($resendKey) {
-            error_log("EmailService: Using Resend provider");
-            return self::sendViaResend($to, $subject, $htmlBody, $toName);
-        }
-
-        // Try SendGrid
+        // Try SendGrid first if both are available (SendGrid has no domain requirement)
+        // If only one is set, use that one
         if ($sendgridKey) {
             error_log("EmailService: Using SendGrid provider");
             return self::sendViaSendGrid($to, $subject, $htmlBody, $toName);
+        }
+
+        // Try Resend as fallback
+        if ($resendKey) {
+            error_log("EmailService: Using Resend provider");
+            return self::sendViaResend($to, $subject, $htmlBody, $toName);
         }
 
         // Fallback to SMTP (won't work on Render free tier)
@@ -113,9 +114,11 @@ class EmailService {
      * Free tier: 100 emails/day
      */
     private static function sendViaSendGrid($to, $subject, $htmlBody, $toName = null) {
-        $apiKey = getenv('SENDGRID_API_KEY');
-        $fromEmail = getenv('EMAIL_FROM') ?: getenv('EMAIL_USER') ?: 'noreply@fitxbrawl.com';
-        $fromName = getenv('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym';
+        $apiKey = self::getEnvVar('SENDGRID_API_KEY');
+        $fromEmail = self::getEnvVar('EMAIL_FROM') ?: self::getEnvVar('EMAIL_USER') ?: 'noreply@fitxbrawl.com';
+        $fromName = self::getEnvVar('EMAIL_FROM_NAME') ?: 'Fit & Brawl Gym';
+        
+        error_log("SendGrid: Sending email to $to from $fromEmail");
 
         $data = [
             'personalizations' => [[
@@ -187,8 +190,9 @@ class EmailService {
      * Get the current email provider being used
      */
     public static function getProvider() {
-        if (self::getEnvVar('RESEND_API_KEY')) return 'Resend';
+        // Prioritize SendGrid (no domain requirement)
         if (self::getEnvVar('SENDGRID_API_KEY')) return 'SendGrid';
+        if (self::getEnvVar('RESEND_API_KEY')) return 'Resend';
         return 'SMTP';
     }
 }
