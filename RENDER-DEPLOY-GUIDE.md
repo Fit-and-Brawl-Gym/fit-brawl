@@ -20,11 +20,11 @@ You already have a MySQL database on AWS free tier! Just get these connection de
 2. Click on your database instance
 3. Note down these values:
    ```
-   Endpoint (Host): your-db.xxxxxxxx.region.rds.amazonaws.com
+   Endpoint (Host): fitbrawl-db.carwg0m6glw6.us-east-1.rds.amazonaws.com
    Port: 3306
-   Database name: fit_and_brawl_gym
-   Master username: your_username
-   Password: your_password
+   Database name: fitbrawl-db
+   Master username: Mikell_Admin
+   Password: Mikedefender#12
    ```
 
 ### ⚠️ Important: Make Sure AWS Allows External Connections
