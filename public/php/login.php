@@ -172,13 +172,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             SessionTracker::registerSession($user['id'], session_id());
                         }
 
-                        clearLoginAttempts($conn, $rateLimitIdentifier);
-
-                        // Also clear attempts for account identifiers if they exist
-                        if (!empty($accountIdentifiers)) {
-                            foreach ($accountIdentifiers as $id) {
-                                clearLoginAttempts($conn, $id);
-                            }
+                        // Clear login attempts for all identifiers
+                        foreach (!empty($accountIdentifiers) ? $accountIdentifiers : $rateLimitIdentifiers as $id) {
+                            clearLoginAttempts($conn, $id);
                         }
 
                         // Remember Me
