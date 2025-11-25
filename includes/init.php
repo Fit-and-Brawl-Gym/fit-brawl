@@ -9,8 +9,14 @@
  *  - Database connection
  *  - Session handling
  *  - Logging helper include
+ *  - Performance optimizations
  * --------------------------------------------------------
  */
+
+// Performance: Enable output buffering for faster response
+if (!ob_get_level()) {
+    ob_start();
+}
 
 // Use __DIR__ to make includes absolute (never breaks)
 require_once __DIR__ . '/config.php';           // Load configuration constants FIRST
@@ -20,8 +26,11 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/log_action.php';
 require_once __DIR__ . '/security_headers.php';
 
-// Safe session start
+// Safe session start with optimized settings
 if (session_status() === PHP_SESSION_NONE) {
+    // Optimize session settings
+    ini_set('session.gc_probability', 1);
+    ini_set('session.gc_divisor', 100);
     session_start();
 }
 

@@ -9,6 +9,7 @@ require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/rate_limiter.php';
 require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
 require_once __DIR__ . '/../../includes/mail_config.php'; // Use shared mail config with configureMailerSMTP
+require_once __DIR__ . '/../../includes/email_queue.php'; // Fast email queue
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
@@ -16,6 +17,9 @@ use PHPMailer\PHPMailer\Exception;
 require __DIR__ . '/../../vendor/autoload.php';
 // Email template helper (adds header/footer and AltBody)
 require_once __DIR__ . '/../../includes/email_template.php';
+
+// Initialize email queue
+EmailQueue::init($conn);
 
 // Generate CSP nonces for this request
 CSPNonce::generate();
@@ -147,17 +151,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 
         $mail = new PHPMailer(true);
         try {
-            configureMailerSMTP($mail);
-            $mail->addAddress($email, $name);
-            $mail->isHTML(true);
-            $mail->Subject = 'Verify Your Email - FitXBrawl';
+            // Use email queue for faster response (email sends in background)
             $html = "<h2>Welcome to FitXBrawl, " . htmlspecialchars($name) . "!</h2>"
                 . "<p>Click the link below to verify your email:</p>"
                 . "<p><a href='" . htmlspecialchars($verificationLink) . "'>" . htmlspecialchars($verificationLink) . "</a></p>"
                 . "<p>This link will confirm your account registration.</p>";
-            applyEmailTemplate($mail, $html);
-
-            $mail->send();
+            
+            // Queue email for background sending (returns immediately)
+            EmailQueue::queue($email, 'Verify Your Email - FitXBrawl', $html, $name, null, 1);
 
             $_SESSION['success_message'] = "Account created! Please check your email to verify your account.";
             $_SESSION['verification_email'] = $email; // Store email for resend functionality
@@ -165,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
             exit();
 
         } catch (Exception $e) {
-            $_SESSION['register_error'] = "Account created but verification email could not be sent. Error: " . $mail->ErrorInfo;
+            $_SESSION['register_error'] = "Account created but verification email could not be sent. Error: " . $e->getMessage();
             header("Location: sign-up.php");
             exit();
         }
