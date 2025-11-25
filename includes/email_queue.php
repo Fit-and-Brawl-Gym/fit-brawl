@@ -58,7 +58,8 @@ class EmailQueue {
 
     /**
      * Queue an email for sending
-     * Returns immediately, email will be sent by background process
+     * For production on Render: sends immediately (no background workers)
+     * For better performance with background workers: use actual queue
      *
      * @param string $toEmail
      * @param string $subject
@@ -69,6 +70,18 @@ class EmailQueue {
      * @return bool
      */
     public static function queue($toEmail, $subject, $bodyHtml, $toName = null, $bodyText = null, $priority = 5) {
+        // On Render/production without background workers, send immediately
+        // This is more reliable than trying to queue + process in same request
+        $isProduction = getenv('APP_ENV') === 'production' || 
+                        (defined('ENVIRONMENT') && ENVIRONMENT === 'production');
+        
+        // For high-priority emails (priority <= 2) or production, send immediately
+        if ($priority <= 2 || $isProduction) {
+            error_log("Sending email immediately to: $toEmail (priority: $priority, production: " . ($isProduction ? 'yes' : 'no') . ")");
+            return self::sendImmediately($toEmail, $subject, $bodyHtml, $toName);
+        }
+
+        // For local development with database, try to queue
         if (!self::$conn) {
             self::init();
         }
@@ -87,8 +100,8 @@ class EmailQueue {
             $result = $stmt->execute();
             $stmt->close();
 
-            // Try to process queue immediately in a non-blocking way
-            self::triggerBackgroundProcess();
+            // Process queue in same request for now
+            self::processQueue(1);
 
             return $result;
         } catch (Exception $e) {
@@ -110,8 +123,9 @@ class EmailQueue {
             configureMailerSMTP($mail);
 
             // Optimize SMTP settings for speed
-            $mail->Timeout = 10; // Reduce timeout
-            $mail->SMTPKeepAlive = true; // Keep connection open for multiple emails
+            $mail->Timeout = 15; // 15 second timeout
+            $mail->SMTPKeepAlive = false; // Close after sending
+            $mail->SMTPDebug = 0; // No debug output
 
             if ($toName) {
                 $mail->addAddress($toEmail, $toName);
@@ -123,9 +137,11 @@ class EmailQueue {
             $mail->Subject = $subject;
             applyEmailTemplate($mail, $bodyHtml);
 
-            return $mail->send();
+            $result = $mail->send();
+            error_log("Email sent successfully to: $toEmail");
+            return $result;
         } catch (Exception $e) {
-            error_log("EmailQueue::sendImmediately error: " . $e->getMessage());
+            error_log("EmailQueue::sendImmediately error to $toEmail: " . $e->getMessage());
             return false;
         }
     }

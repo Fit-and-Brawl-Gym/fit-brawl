@@ -39,6 +39,17 @@ function configureMailerSMTP(PHPMailer $mail): void
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     }
     
+    // Optimize for speed
+    $mail->Timeout = 15; // 15 seconds timeout
+    $mail->SMTPDebug = 0; // No debug output
+    $mail->SMTPOptions = [
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true
+        ]
+    ];
+    
     $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Gym');
 }
 
