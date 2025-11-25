@@ -1,3 +1,22 @@
+/* ===========================================
+   PASSWORD MASKING (iOS-compatible)
+   Uses CSS text-security instead of type="password"
+   to prevent iOS security keyboard quirk
+   =========================================== */
+.password-field.masked-password {
+    -webkit-text-security: disc;
+    text-security: disc;
+    font-family: text-security-disc, 'Verdana', sans-serif;
+}
+
+/* Fallback for browsers that don't support text-security */
+@supports not (-webkit-text-security: disc) {
+    .password-field.masked-password {
+        font-family: 'Verdana', sans-serif;
+        letter-spacing: 0.3em;
+    }
+}
+
 .signup-main {
     min-height: 0;
     height: auto;

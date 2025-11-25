@@ -500,10 +500,6 @@
         padding: var(--spacing-3) var(--spacing-3);
     }
 
-    .wrapper .title .logo-title {
-        margin-bottom: -12px;
-    }
-
     .hamburger-menu span {
         height: 2.5px;
         transition: none;

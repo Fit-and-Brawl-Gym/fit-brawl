@@ -1,0 +1,390 @@
+/* ===========================================
+   MOBILE RESPONSIVENESS FIXES
+   Ensures all pages work properly on mobile devices
+   - No overflowing input boxes
+   - Proper touch targets
+   - Consistent spacing
+   =========================================== */
+
+/* ===========================================
+   GLOBAL INPUT/FORM FIXES
+   =========================================== */
+
+/* Prevent input overflow on all devices */
+input,
+textarea,
+select,
+button {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure form elements don't overflow their containers */
+.input-group,
+.form-group,
+.form-control {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.input-group input,
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ===========================================
+   MOBILE BREAKPOINTS
+   =========================================== */
+
+/* Tablets and smaller (max-width: 768px) */
+@media (max-width: 768px) {
+    /* Prevent horizontal scroll */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    /* Container constraints */
+    .container,
+    .container-fluid,
+    .container-xl,
+    main,
+    section {
+        max-width: 100vw;
+        overflow-x: hidden;
+        padding-left: 15px;
+        padding-right: 15px;
+        box-sizing: border-box;
+    }
+
+    /* Form inputs - prevent overflow */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="search"],
+    input[type="url"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    textarea,
+    select {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 16px !important; /* Prevents iOS zoom */
+    }
+
+    /* Modals and overlays */
+    .modal,
+    .modal-content,
+    .modal-dialog,
+    [class*="modal"] {
+        max-width: 100vw;
+        margin: 0 auto;
+    }
+
+    /* Tables - make scrollable */
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+
+    /* Cards and panels */
+    .card,
+    .panel,
+    .glass-card,
+    [class*="card"] {
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Buttons - full width on mobile */
+    .btn-block-mobile,
+    .signup-btn,
+    .login-btn,
+    .submit-btn {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* Phones (max-width: 480px) */
+@media (max-width: 480px) {
+    /* Even tighter container padding */
+    .container,
+    .container-fluid,
+    main {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* Reduce form padding */
+    .signup-modal,
+    .login-modal,
+    .form-container,
+    [class*="form-wrapper"] {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    /* Stack form elements */
+    .form-row,
+    .input-row,
+    .form-inline {
+        flex-direction: column;
+    }
+
+    .form-row > *,
+    .input-row > * {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    /* Reduce heading sizes */
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+
+    /* Password requirements modal - fit screen */
+    .password-requirements-modal {
+        max-width: calc(100vw - 40px);
+        left: 20px;
+        right: 20px;
+        transform: none;
+    }
+}
+
+/* Very small phones (max-width: 360px) */
+@media (max-width: 360px) {
+    .container,
+    .container-fluid,
+    main {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    /* Even smaller form elements */
+    .input-group input,
+    .form-group input {
+        padding: 10px 12px 10px 40px;
+        font-size: 14px !important;
+    }
+
+    /* Smaller buttons */
+    button,
+    .btn,
+    [class*="btn"] {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}
+
+/* ===========================================
+   iOS SPECIFIC FIXES
+   =========================================== */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific fixes */
+    
+    /* Prevent zoom on input focus */
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+
+    /* Fix iOS input styling */
+    input,
+    textarea {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border-radius: 0;
+    }
+
+    /* Improve touch targets */
+    button,
+    input[type="submit"],
+    input[type="button"],
+    a.btn,
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Fix iOS scroll issues */
+    .modal-body,
+    .scroll-container,
+    [class*="scroll"] {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ===========================================
+   ADMIN PANEL MOBILE FIXES
+   =========================================== */
+@media (max-width: 768px) {
+    /* Admin sidebar collapse */
+    .admin-sidebar,
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        width: 280px;
+        transition: left 0.3s ease;
+        z-index: 1000;
+    }
+
+    .admin-sidebar.open,
+    .sidebar.open {
+        left: 0;
+    }
+
+    /* Admin content full width */
+    .admin-content,
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Admin tables - scrollable */
+    .admin-table-container,
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Admin forms */
+    .admin-form input,
+    .admin-form select,
+    .admin-form textarea {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Admin action buttons */
+    .admin-actions,
+    .action-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .admin-actions .btn,
+    .action-buttons .btn {
+        flex: 1 1 auto;
+        min-width: 100px;
+    }
+}
+
+/* ===========================================
+   TRAINER PANEL MOBILE FIXES  
+   =========================================== */
+@media (max-width: 768px) {
+    .trainer-dashboard,
+    .trainer-content {
+        padding: 15px;
+    }
+
+    .trainer-card,
+    .session-card {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .trainer-schedule-grid {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* ===========================================
+   USER DASHBOARD MOBILE FIXES
+   =========================================== */
+@media (max-width: 768px) {
+    .user-dashboard,
+    .dashboard-content {
+        padding: 15px;
+    }
+
+    .dashboard-card,
+    .booking-card,
+    .membership-card {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    /* Booking form */
+    .booking-form {
+        padding: 15px;
+    }
+
+    .booking-form .form-row {
+        flex-direction: column;
+    }
+
+    .booking-form input,
+    .booking-form select {
+        width: 100%;
+    }
+}
+
+/* ===========================================
+   NAVIGATION MOBILE FIXES
+   =========================================== */
+@media (max-width: 768px) {
+    /* Mobile nav menu */
+    .nav-menu,
+    .navbar-nav {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-item,
+    .nav-link {
+        width: 100%;
+        padding: 12px 15px;
+    }
+
+    /* Hamburger menu */
+    .navbar-toggler,
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: inherit;
+    }
+}
+
+/* ===========================================
+   PRINT STYLES (optional)
+   =========================================== */
+@media print {
+    .no-print,
+    .sidebar,
+    .navbar,
+    .footer,
+    button,
+    .btn {
+        display: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+    }
+
+    .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+}

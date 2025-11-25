@@ -217,6 +217,7 @@ if (!isset($ogImage)) {
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/global.css">
+    <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/mobile-responsive.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/footer.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/header.css">
     <link rel="stylesheet" href="<?= PUBLIC_PATH ?>/css/components/member-nav.css">
