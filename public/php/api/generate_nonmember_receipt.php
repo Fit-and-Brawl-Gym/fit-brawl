@@ -5,11 +5,11 @@ ob_start();
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 ini_set('log_errors', 1);
-require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/db_connect.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_security_middleware.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/api_rate_limiter.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/csrf_protection.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/fit-brawl/includes/phone_utils.php';
+require_once __DIR__ . '/../../../includes/db_connect.php';
+require_once __DIR__ . '/../../../includes/api_security_middleware.php';
+require_once __DIR__ . '/../../../includes/api_rate_limiter.php';
+require_once __DIR__ . '/../../../includes/csrf_protection.php';
+require_once __DIR__ . '/../../../includes/phone_utils.php';
 $csrfToken = $_POST['csrf_token'] ?? '';
 if (!CSRFProtection::validateToken($csrfToken)) {
     ApiSecurityMiddleware::sendJsonResponse(['success' => false, 'message' => 'Invalid CSRF token.'], 403);
