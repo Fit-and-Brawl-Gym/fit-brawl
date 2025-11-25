@@ -4,13 +4,14 @@ require_once __DIR__ . '/../../../../includes/api_security_middleware.php';
 require_once __DIR__ . '/../../../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../../../includes/input_validator.php';
 require_once __DIR__ . '/../../../../includes/activity_logger.php';
+require_once __DIR__ . '/../../../../includes/mail_config.php';
 
 // Initialize activity logger
 ActivityLogger::init($conn);
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-require '../../vendor/autoload.php';
+require __DIR__ . '/../../../../vendor/autoload.php';
 
 // Ensure email template is available to wrap replies
 include_once __DIR__ . '/../../../../includes/email_template.php';
@@ -237,15 +238,7 @@ if ($action === 'reply') {
 
     $mail = new PHPMailer(true);
     try {
-        $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-
-        $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl');
+        configureMailerSMTP($mail);
         $mail->addAddress($email);
         $mail->isHTML(true);
         $mail->Subject = $subject;

@@ -307,15 +307,7 @@ class UserProfileService
         $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
         try {
-            $mail->isSMTP();
-            $mail->Host = getenv('EMAIL_HOST');
-            $mail->SMTPAuth = true;
-            $mail->Username = getenv('EMAIL_USER');
-            $mail->Password = getenv('EMAIL_PASS');
-            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = getenv('EMAIL_PORT');
-
-            $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl Account');
+            configureMailerSMTP($mail);
             $mail->addAddress($result['email']);
 
             $mail->isHTML(true);

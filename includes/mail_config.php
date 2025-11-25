@@ -257,8 +257,13 @@ function sendMemberBookingRescheduleOption(
             <ul>";
 
         if ($trainer_id) {
+            // Build URL dynamically based on environment
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'fit-brawl.onrender.com';
+            $basePath = defined('ENVIRONMENT') && ENVIRONMENT === 'production' ? '' : '/fit-brawl/public';
+            $rescheduleUrl = $protocol . '://' . $host . $basePath . '/php/reservations.php?trainer_id=' . urlencode($trainer_id) . '&date=' . urlencode($date) . '&time=' . urlencode($time_range);
             $html .= "
-                <li><a href='localhost/fit-brawl/public/php/reservations.php?trainer_id=" . urlencode($trainer_id) . "&date=" . urlencode($date) . "&time=" . urlencode($time_range) . "'>Reschedule your session</a></li>";
+                <li><a href='" . htmlspecialchars($rescheduleUrl) . "'>Reschedule your session</a></li>";
         }
 
         $html .= "

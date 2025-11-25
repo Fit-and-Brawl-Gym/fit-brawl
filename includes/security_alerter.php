@@ -4,6 +4,8 @@
  * Sends alerts for critical and high-severity security events
  */
 
+require_once __DIR__ . '/mail_config.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -150,16 +152,7 @@ class SecurityAlerter {
             require_once __DIR__ . '/email_template.php';
 
             $mail = new PHPMailer(true);
-
-            $mail->isSMTP();
-            $mail->Host = getenv('EMAIL_HOST');
-            $mail->SMTPAuth = true;
-            $mail->Username = getenv('EMAIL_USER');
-            $mail->Password = getenv('EMAIL_PASS');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = getenv('EMAIL_PORT');
-
-            $mail->setFrom(getenv('EMAIL_USER'), 'Fit & Brawl Security System');
+            configureMailerSMTP($mail);
 
             // Add all admin emails
             foreach (self::$adminEmails as $email) {

@@ -8,12 +8,12 @@ require_once __DIR__ . '/../../includes/csp_nonce.php';
 require_once __DIR__ . '/../../includes/csrf_protection.php';
 require_once __DIR__ . '/../../includes/rate_limiter.php';
 require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
+require_once __DIR__ . '/../../includes/mail_config.php'; // Use shared mail config with configureMailerSMTP
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 require __DIR__ . '/../../vendor/autoload.php';
-require '../../vendor/autoload.php';
 // Email template helper (adds header/footer and AltBody)
 require_once __DIR__ . '/../../includes/email_template.php';
 
@@ -147,15 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['signup'])) {
 
         $mail = new PHPMailer(true);
         try {
-            $mail->isSMTP();
-            $mail->Host = getenv('EMAIL_HOST');
-            $mail->SMTPAuth = true;
-            $mail->Username = getenv('EMAIL_USER');
-            $mail->Password = getenv('EMAIL_PASS');
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = getenv('EMAIL_PORT');
-
-            $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl');
+            configureMailerSMTP($mail);
             $mail->addAddress($email, $name);
             $mail->isHTML(true);
             $mail->Subject = 'Verify Your Email - FitXBrawl';

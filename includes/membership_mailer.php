@@ -26,6 +26,8 @@ include_once __DIR__ . '/env_loader.php';
 loadEnv(__DIR__ . '/env');
 // Email template helper
 include_once __DIR__ . '/email_template.php';
+// Shared mail config for configureMailerSMTP
+require_once __DIR__ . '/mail_config.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -41,15 +43,7 @@ use PHPMailer\PHPMailer\Exception;
 function sendMembershipApplicationEmail($email, $name, $plan, $status = 'pending') {
     $mail = new PHPMailer(true);
     try {
-        $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = getenv('EMAIL_PORT');
-
-    $mail->setFrom(getenv('EMAIL_USER'), getenv('EMAIL_FROM_NAME') ?: 'FitXBrawl');
+        configureMailerSMTP($mail);
         $mail->addAddress($email, $name);
 
         $mail->isHTML(true);
@@ -89,15 +83,7 @@ function sendMembershipApplicationEmail($email, $name, $plan, $status = 'pending
 function sendMembershipDecisionEmail($email, $name, $plan, $accepted = false, $start_date = null, $end_date = null, $remarks = null, $perks = []) {
     $mail = new PHPMailer(true);
     try {
-        $mail->isSMTP();
-        $mail->Host = getenv('EMAIL_HOST');
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = getenv('EMAIL_PORT');
-
-    $mail->setFrom(getenv('EMAIL_USER'), getenv('EMAIL_FROM_NAME') ?: 'FitXBrawl');
+        configureMailerSMTP($mail);
         $mail->addAddress($email, $name);
 
         $mail->isHTML(true);

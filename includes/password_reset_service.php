@@ -235,16 +235,7 @@ class PasswordResetService
         $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
         try {
-            // Server settings
-            $mail->isSMTP();
-            $mail->Host = getenv('EMAIL_HOST');
-            $mail->SMTPAuth = true;
-            $mail->Username = getenv('EMAIL_USER');
-            $mail->Password = getenv('EMAIL_PASS');
-            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = getenv('EMAIL_PORT');
-
-            $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl Security');
+            configureMailerSMTP($mail);
             $mail->addAddress($email);
 
             $mail->isHTML(true);
@@ -333,15 +324,7 @@ class PasswordResetService
         $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
         try {
-            $mail->isSMTP();
-            $mail->Host = getenv('EMAIL_HOST');
-            $mail->SMTPAuth = true;
-            $mail->Username = getenv('EMAIL_USER');
-            $mail->Password = getenv('EMAIL_PASS');
-            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = getenv('EMAIL_PORT');
-
-            $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl Security');
+            configureMailerSMTP($mail);
             $mail->addAddress($user['email']);
 
             $mail->isHTML(true);

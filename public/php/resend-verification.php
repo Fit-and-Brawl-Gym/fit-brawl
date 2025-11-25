@@ -3,6 +3,7 @@ session_start();
 require_once __DIR__ . '/../../includes/db_connect.php';
 require_once __DIR__ . '/../../includes/config.php';
 require_once __DIR__ . '/../../includes/encryption.php'; // Add encryption support
+require_once __DIR__ . '/../../includes/mail_config.php'; // Use shared mail config
 include_once __DIR__ . '/../../includes/env_loader.php';
 loadEnv(__DIR__ . '/../../.env');
 
@@ -63,15 +64,7 @@ try {
 
     // Send verification email
     $mail = new PHPMailer(true);
-    $mail->isSMTP();
-    $mail->Host = getenv('EMAIL_HOST');
-    $mail->SMTPAuth = true;
-    $mail->Username = getenv('EMAIL_USER');
-    $mail->Password = getenv('EMAIL_PASS');
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = getenv('EMAIL_PORT');
-
-    $mail->setFrom(getenv('EMAIL_USER'), 'FitXBrawl');
+    configureMailerSMTP($mail);
     $mail->addAddress($email, $user['username']);
     $mail->isHTML(true);
     $mail->Subject = 'Verify Your Email - FitXBrawl';
