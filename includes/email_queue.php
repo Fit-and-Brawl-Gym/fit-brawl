@@ -115,35 +115,64 @@ class EmailQueue {
      * Send email immediately (fallback or for high-priority emails)
      */
     public static function sendImmediately($toEmail, $subject, $bodyHtml, $toName = null) {
-        require_once __DIR__ . '/mail_config.php';
-        require_once __DIR__ . '/email_template.php';
-
-        try {
-            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-            configureMailerSMTP($mail);
-
-            // Optimize SMTP settings for speed
-            $mail->Timeout = 15; // 15 second timeout
-            $mail->SMTPKeepAlive = false; // Close after sending
-            $mail->SMTPDebug = 0; // No debug output
-
-            if ($toName) {
-                $mail->addAddress($toEmail, $toName);
-            } else {
-                $mail->addAddress($toEmail);
-            }
-
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            applyEmailTemplate($mail, $bodyHtml);
-
-            $result = $mail->send();
-            error_log("Email sent successfully to: $toEmail");
-            return $result;
-        } catch (Exception $e) {
-            error_log("EmailQueue::sendImmediately error to $toEmail: " . $e->getMessage());
-            return false;
+        // Use the new EmailService which supports HTTP APIs (works on Render)
+        require_once __DIR__ . '/email_service.php';
+        
+        // Wrap in email template
+        $fullHtml = self::wrapInTemplate($bodyHtml);
+        
+        $result = EmailService::send($toEmail, $subject, $fullHtml, $toName);
+        
+        if ($result) {
+            error_log("Email sent successfully to: $toEmail via " . EmailService::getProvider());
+        } else {
+            error_log("Failed to send email to: $toEmail via " . EmailService::getProvider());
         }
+        
+        return $result;
+    }
+    
+    /**
+     * Wrap HTML content in email template
+     */
+    private static function wrapInTemplate($innerHtml) {
+        $headerImg = 'https://fit-brawl.onrender.com/images/mail-header.png';
+        $footerImg = 'https://fit-brawl.onrender.com/images/mail-footer.png';
+        
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#1a1a2e;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a2e;">
+        <tr>
+            <td align="center" style="padding:20px;">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color:#16213e;border-radius:10px;overflow:hidden;">
+                    <tr>
+                        <td>
+                            <img src="{$headerImg}" alt="Fit & Brawl" style="width:100%;display:block;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:30px;color:#ffffff;font-size:16px;line-height:1.6;">
+                            {$innerHtml}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="{$footerImg}" alt="Fit & Brawl Footer" style="width:100%;display:block;">
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
     }
 
     /**
