@@ -300,7 +300,7 @@ var statusFilterEl = document.getElementById('statusFilter');
 if (statusFilterEl) statusFilterEl.addEventListener('change', filterEquipment);
 
 function filterEquipment() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const searchTerm = document.getElementById('searchInput').value.trim();
     const selectedCategory = document.getElementById('categoryFilter').value;
     const statusFilter = (document.getElementById('statusFilter') && document.getElementById('statusFilter').value) || 'all';
 
@@ -309,7 +309,8 @@ function filterEquipment() {
     
     if (useDSA) {
         // DSA-POWERED FILTERING (Fast O(n) with early exit optimization)
-        const fuzzySearch = useDSA.FuzzySearch;
+        const fuzzySearch = useDSA.fuzzySearch || useDSA.FuzzySearch;
+        console.log('🔍 Fuzzy search available:', typeof fuzzySearch);
         const filterBuilder = new useDSA.FilterBuilder();
         
         // Build filter conditions (case-insensitive)
@@ -345,7 +346,8 @@ function filterEquipment() {
             if (passesFilter) matchCount++;
             
             // Apply fuzzy search (more forgiving than includes())
-            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
+            const matchesSearch = !searchTerm || fuzzySearch(name, searchTerm);
+            if (searchTerm) console.log('Equipment:', name, 'Search:', searchTerm, 'Match:', matchesSearch);
             
             card.style.display = (matchesSearch && passesFilter) ? 'block' : 'none';
         });
@@ -363,7 +365,7 @@ function filterEquipment() {
             const equipmentData = { name, category, status };
             
             const passesFilter = filterBuilder.test(equipmentData);
-            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
+            const matchesSearch = !searchTerm || fuzzySearch(name, searchTerm);
             
             row.style.display = (matchesSearch && passesFilter) ? '' : 'none';
         });
@@ -373,10 +375,10 @@ function filterEquipment() {
         // FALLBACK: Basic filtering
         const cards = document.querySelectorAll('.equipment-card');
         cards.forEach(card => {
-            const name = card.querySelector('.equipment-name').textContent.toLowerCase();
+            const name = card.querySelector('.equipment-name').textContent;
             const category = (card.dataset.category || '').toString();
             const status = (card.dataset.status || '').toString();
-            const matchesSearch = name.includes(searchTerm);
+            const matchesSearch = !searchTerm || name.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
             const matchesStatus = statusFilter === 'all' || status.toLowerCase() === statusFilter.toLowerCase();
             card.style.display = (matchesSearch && matchesCategory && matchesStatus) ? 'block' : 'none';

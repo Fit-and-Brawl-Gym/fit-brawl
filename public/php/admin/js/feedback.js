@@ -67,23 +67,29 @@ function filterByDate(feedbacks, filter) {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     return feedbacks.filter(feedback => {
-        const feedbackDate = new Date(feedback.date || feedback.created_at);
+        // Parse feedback date and normalize to midnight
+        const feedbackDateStr = feedback.date || feedback.created_at;
+        const feedbackDate = new Date(feedbackDateStr);
+        const normalizedFeedbackDate = new Date(
+            feedbackDate.getFullYear(),
+            feedbackDate.getMonth(),
+            feedbackDate.getDate()
+        );
 
         switch (filter) {
             case 'today':
-                return feedbackDate >= today;
+                return normalizedFeedbackDate >= today;
             case 'week':
                 const weekAgo = new Date(today);
                 weekAgo.setDate(weekAgo.getDate() - 7);
-                return feedbackDate >= weekAgo;
+                return normalizedFeedbackDate >= weekAgo;
             case 'month':
-                const monthAgo = new Date(today);
-                monthAgo.setMonth(monthAgo.getMonth() - 1);
-                return feedbackDate >= monthAgo;
+                // Only show feedback from current month
+                return feedbackDate.getMonth() === now.getMonth() && 
+                       feedbackDate.getFullYear() === now.getFullYear();
             case 'year':
-                const yearAgo = new Date(today);
-                yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-                return feedbackDate >= yearAgo;
+                // Only show feedback from current year
+                return feedbackDate.getFullYear() === now.getFullYear();
             default:
                 return true;
         }
@@ -275,15 +281,7 @@ function createFeedbackCard(feedback) {
     `;
 }
 
-// Date filter change event
-document.addEventListener('DOMContentLoaded', function () {
-    const dateFilter = document.getElementById('dateFilter');
-    if (dateFilter) {
-        dateFilter.addEventListener('change', function () {
-            loadFeedback(this.value);
-        });
-    }
-});
+// Date filter event listener is set up at the bottom of the file
 
 // Helper functions
 function getInitials(name) {
@@ -426,19 +424,14 @@ document.querySelectorAll('.view-btn').forEach(btn => {
     });
 });
 
-// Update date filter to also update table view
-document.getElementById('dateFilter').addEventListener('change', function() {
-    loadFeedback(this.value);
-
-    // Also update table if in table view
-    const tableView = document.getElementById('tableView');
-    if (tableView.classList.contains('active')) {
-        fetch('api/get_feedback.php')
-            .then(res => res.json())
-            .then(data => {
-                const feedbacks = data.feedbacks || [];
-                const filtered = filterByDate(feedbacks, this.value);
-                renderFeedbackTable(filtered);
-            });
+// Date filter change event
+document.addEventListener('DOMContentLoaded', function () {
+    const dateFilter = document.getElementById('dateFilter');
+    if (dateFilter) {
+        dateFilter.addEventListener('change', function () {
+            const filterValue = this.value;
+            console.log('Date filter changed to:', filterValue);
+            loadFeedback(filterValue);
+        });
     }
 });

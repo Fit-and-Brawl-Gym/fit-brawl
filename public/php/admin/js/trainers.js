@@ -28,7 +28,7 @@ if (savedView === 'cards') {
     document.querySelector('.view-btn[data-view="cards"]').click();
 }
 
-// Search functionality with DSA Fuzzy Search
+// Search functionality with substring matching
 const searchInput = document.getElementById('searchInput');
 const specializationFilter = document.getElementById('specializationFilter');
 const statusFilter = document.getElementById('statusFilter');
@@ -52,37 +52,25 @@ if (statusFilter) {
 }
 
 function applyFiltersClientSide() {
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const searchTerm = searchInput ? searchInput.value.trim() : '';
     const specialization = specializationFilter ? specializationFilter.value : 'all';
     const status = statusFilter ? statusFilter.value : 'all';
-
-    // Use DSA utilities if available, fallback to basic filtering
-    const useDSA = window.DSA || window.DSAUtils;
-    const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
 
     // Filter table rows
     const tableRows = document.querySelectorAll('#tableView tbody tr');
     tableRows.forEach(row => {
-        const nameCell = row.querySelector('td:nth-child(2)')?.textContent || '';
-        const emailCell = row.querySelector('td:nth-child(3)')?.textContent || '';
-        const phoneCell = row.querySelector('td:nth-child(4)')?.textContent || '';
-        const specializationCell = row.querySelector('td:nth-child(5)')?.textContent || '';
-        const statusCell = row.querySelector('.status-badge')?.textContent.trim() || '';
+        const nameCell = row.querySelector('td:nth-child(1)')?.textContent || '';
+        const contactCell = row.querySelector('td:nth-child(2)')?.textContent || '';
+        const specializationCell = row.querySelector('td:nth-child(3) .specialization-badge')?.textContent.trim() || '';
 
         let matchesSearch = true;
         if (searchTerm) {
-            const searchableText = `${nameCell} ${emailCell} ${phoneCell}`.toLowerCase();
-            if (fuzzySearch) {
-                // Use fuzzy search for typo tolerance
-                matchesSearch = fuzzySearch(searchTerm, searchableText);
-            } else {
-                // Fallback to includes
-                matchesSearch = searchableText.includes(searchTerm);
-            }
+            const searchableText = `${nameCell} ${contactCell}`.toLowerCase();
+            matchesSearch = searchableText.includes(searchTerm.toLowerCase());
         }
 
-        const matchesSpecialization = specialization === 'all' || specializationCell === specialization;
-        const matchesStatus = status === 'all' || statusCell === status;
+        const matchesSpecialization = specialization === 'all' || specialization === '' || specializationCell === specialization;
+        const matchesStatus = status === 'all' || status === '';
 
         row.style.display = (matchesSearch && matchesSpecialization && matchesStatus) ? '' : 'none';
     });
@@ -93,21 +81,17 @@ function applyFiltersClientSide() {
         const name = card.querySelector('.trainer-name')?.textContent || '';
         const email = card.querySelector('.trainer-email')?.textContent || '';
         const phone = card.querySelector('.trainer-phone')?.textContent || '';
-        const specializationBadge = card.querySelector('.specialization-badge')?.textContent || '';
+        const specializationBadge = card.querySelector('.specialization-badge')?.textContent.trim() || '';
         const statusBadge = card.querySelector('.status-badge')?.textContent.trim() || '';
 
         let matchesSearch = true;
         if (searchTerm) {
             const searchableText = `${name} ${email} ${phone}`.toLowerCase();
-            if (fuzzySearch) {
-                matchesSearch = fuzzySearch(searchTerm, searchableText);
-            } else {
-                matchesSearch = searchableText.includes(searchTerm);
-            }
+            matchesSearch = searchableText.includes(searchTerm.toLowerCase());
         }
 
-        const matchesSpecialization = specialization === 'all' || specializationBadge === specialization;
-        const matchesStatus = status === 'all' || statusBadge === status;
+        const matchesSpecialization = specialization === 'all' || specialization === '' || specializationBadge === specialization;
+        const matchesStatus = status === 'all' || status === '' || statusBadge === status;
 
         card.style.display = (matchesSearch && matchesSpecialization && matchesStatus) ? '' : 'none';
     });

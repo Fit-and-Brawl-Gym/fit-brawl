@@ -262,7 +262,7 @@ document.getElementById('categoryFilter').addEventListener('change', filterProdu
 document.getElementById('statusFilter').addEventListener('change', filterProducts);
 
 function filterProducts() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const searchTerm = document.getElementById('searchInput').value.trim();
     const selectedCategory = document.getElementById('categoryFilter').value;
     const selectedStatus = document.getElementById('statusFilter').value;
 
@@ -271,7 +271,8 @@ function filterProducts() {
     
     if (useDSA) {
         // DSA-POWERED FILTERING (Fast O(n) with fuzzy search)
-        const fuzzySearch = useDSA.FuzzySearch;
+        const fuzzySearch = useDSA.fuzzySearch || useDSA.FuzzySearch;
+        console.log('🔍 Fuzzy search available:', typeof fuzzySearch);
         const filterBuilder = new useDSA.FilterBuilder();
         
         // Build filter conditions
@@ -292,7 +293,8 @@ function filterProducts() {
             const productData = { name, category, status };
             
             const passesFilter = filterBuilder.test(productData);
-            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
+            const matchesSearch = !searchTerm || fuzzySearch(name, searchTerm);
+            if (searchTerm) console.log('Product:', name, 'Search:', searchTerm, 'Match:', matchesSearch);
 
             row.style.display = (matchesSearch && passesFilter) ? '' : 'none';
         });
@@ -307,7 +309,7 @@ function filterProducts() {
             const productData = { name, category, status };
             
             const passesFilter = filterBuilder.test(productData);
-            const matchesSearch = !searchTerm || fuzzySearch(searchTerm, name.toLowerCase());
+            const matchesSearch = !searchTerm || fuzzySearch(name, searchTerm);
 
             card.style.display = (matchesSearch && passesFilter) ? '' : 'none';
         });
@@ -317,11 +319,11 @@ function filterProducts() {
         // FALLBACK: Basic filtering
         const rows = document.querySelectorAll('#productsTableBody tr');
         rows.forEach(row => {
-            const name = (row.querySelector('.product-name') && row.querySelector('.product-name').textContent.toLowerCase()) || '';
+            const name = (row.querySelector('.product-name') && row.querySelector('.product-name').textContent) || '';
             const category = (row.dataset.category || '').toString();
             const status = (row.dataset.status || '').toString();
 
-            const matchesSearch = name.includes(searchTerm);
+            const matchesSearch = !searchTerm || name.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
             const matchesStatus = selectedStatus === 'all' || status.toLowerCase() === selectedStatus.toLowerCase();
 

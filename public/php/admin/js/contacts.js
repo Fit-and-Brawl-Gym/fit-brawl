@@ -90,24 +90,15 @@ function filterAndRenderContacts(explicitSearchTerm) {
         filtered = filtered.filter(contact => contact.status === currentFilter);
     }
 
-    // Use DSA fuzzy search if available
+    // Apply substring search filter
     if (searchTerm) {
         const query = searchTerm.toLowerCase();
-        const useDSA = window.DSA || window.DSAUtils;
-        const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
 
         filtered = filtered.filter(contact => {
-            const fullName = `${contact.first_name} ${contact.last_name}`.toLowerCase();
-            const email = contact.email.toLowerCase();
-            const searchableText = `${fullName} ${email}`;
-
-            if (fuzzySearch) {
-                // Use fuzzy search for typo tolerance
-                return fuzzySearch(query, searchableText);
-            } else {
-                // Fallback to includes
-                return fullName.includes(query) || email.includes(query);
-            }
+            const fullName = `${contact.first_name} ${contact.last_name}`;
+            const email = contact.email;
+            const searchableText = `${fullName} ${email}`.toLowerCase();
+            return searchableText.includes(query);
         });
     }
 

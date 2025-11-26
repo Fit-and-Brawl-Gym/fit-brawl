@@ -342,7 +342,7 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                             </tr>
                         <?php else: ?>
                             <?php foreach ($bookings as $booking): ?>
-                                <tr class="booking-row" data-id="<?php echo $booking['id']; ?>">
+                                <tr class="booking-row" data-id="<?php echo $booking['id']; ?>" data-trainer-id="<?php echo $booking['trainer_id']; ?>">
                                     <td>
                                         <input type="checkbox" class="bo  oking-checkbox" value="<?php echo $booking['id']; ?>">
                                     </td>

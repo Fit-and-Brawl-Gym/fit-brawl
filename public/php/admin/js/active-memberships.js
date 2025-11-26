@@ -128,8 +128,11 @@ function applyFilters() {
     const billingType = document.getElementById('billingTypeFilter').value;
     const expiration = document.getElementById('expirationFilter').value;
     const paymentStatus = document.getElementById('paymentStatusFilter').value;
-    const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+    const searchTerm = document.getElementById('searchFilter').value.trim().toLowerCase();
     const showExpired = document.getElementById('showExpiredToggle').checked;
+
+    console.log('Search term:', searchTerm);
+    console.log('Total memberships:', allMemberships.length);
 
     filteredMemberships = allMemberships.filter(membership => {
         // Check if expired (unless showing expired)
@@ -156,21 +159,17 @@ function applyFilters() {
             }
         }
 
-        // Search Filter with DSA Fuzzy Search
+        // Search Filter with substring matching
         if (searchTerm) {
-            const searchableText = `${membership.name} ${membership.email} ${membership.contact_number}`.toLowerCase();
-            const useDSA = window.DSA || window.DSAUtils;
-            const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
-
-            if (fuzzySearch) {
-                if (!fuzzySearch(searchTerm, searchableText)) return false;
-            } else {
-                if (!searchableText.includes(searchTerm)) return false;
-            }
+            const searchableText = `${membership.name || ''} ${membership.email || ''} ${membership.contact_number || ''}`.toLowerCase();
+            console.log('Searching:', searchableText, 'for:', searchTerm, 'match:', searchableText.includes(searchTerm));
+            if (!searchableText.includes(searchTerm)) return false;
         }
 
         return true;
     });
+
+    console.log('Filtered memberships:', filteredMemberships.length);
 
     renderMembershipsTable();
 }

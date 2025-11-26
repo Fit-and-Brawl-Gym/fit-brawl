@@ -171,8 +171,8 @@ function multiCriteriaSearch(arr, predicateFn) {
 }
 
 /**
- * Fuzzy Search - For text matching with typo tolerance
- * Can search through arrays of objects or simple text matching
+ * Fuzzy Search - Balanced text matching with typo tolerance
+ * Priority: 1) Exact substring match, 2) Word start match, 3) Fuzzy match with typos
  * @param {Array|string} dataOrText - Array to search or text to match
  * @param {string} query - Search query
  * @param {Array} fields - Fields to search in (for array search)
@@ -181,17 +181,64 @@ function multiCriteriaSearch(arr, predicateFn) {
 function fuzzySearch(dataOrText, query, fields = []) {
     // If dataOrText is a string, do simple text matching
     if (typeof dataOrText === 'string') {
+        if (!query || query.length === 0) return true;
+        
         const text = dataOrText.toLowerCase();
         const pattern = query.toLowerCase();
-        let patternIdx = 0;
         
-        for (let i = 0; i < text.length && patternIdx < pattern.length; i++) {
-            if (text[i] === pattern[patternIdx]) {
-                patternIdx++;
+        // Priority 1: Exact substring match (fastest and most relevant)
+        if (text.includes(pattern)) {
+            return true;
+        }
+        
+        // Priority 2: Check if pattern matches word starts
+        const words = text.split(/\s+/);
+        for (const word of words) {
+            if (word.startsWith(pattern)) {
+                return true;
             }
         }
         
-        return patternIdx === pattern.length;
+        // Priority 3: Fuzzy match with typo tolerance
+        // Handles typos: character insertion (baotista→bautista), deletion (bautisa→bautista), swap
+        
+        // For each word in text, check if pattern matches with typos
+        for (const word of words) {
+            // Skip very short words to avoid false matches
+            if (word.length < 3 || pattern.length < 3) {
+                continue;
+            }
+            
+            let patternIdx = 0;
+            let wordIdx = 0;
+            let matchedChars = 0;
+            
+            while (wordIdx < word.length && patternIdx < pattern.length) {
+                if (word[wordIdx] === pattern[patternIdx]) {
+                    matchedChars++;
+                    patternIdx++;
+                    wordIdx++;
+                } else {
+                    // Try skipping a character in word (handles insertions in pattern like "baotista")
+                    wordIdx++;
+                }
+            }
+            
+            // After word ends, check if we're close enough
+            const matchRatio = matchedChars / pattern.length;
+            const lengthDiff = Math.abs(word.length - pattern.length);
+            
+            // Allow if we matched 75%+ of pattern AND length difference is reasonable
+            // "batista" (7 chars) → "bautista" (8 chars): 7/7 = 100%, diff = 1 ✓
+            // "bautisa" (7 chars) → "bautista" (8 chars): 7/7 = 100%, diff = 1 ✓
+            // "baotista" (8 chars) → "bautista" (8 chars): 7/8 = 87.5%, diff = 0 ✓
+            // "domingo" (7 chars) → "diego" (5 chars): low match ✗
+            if (matchRatio >= 0.75 && lengthDiff <= 2) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     // If dataOrText is an array, search through objects

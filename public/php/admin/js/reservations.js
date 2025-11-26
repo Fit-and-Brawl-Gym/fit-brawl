@@ -24,50 +24,64 @@ document.getElementById('dateFrom').addEventListener('change', applyFiltersClien
 document.getElementById('dateTo').addEventListener('change', applyFiltersClientSide);
 
 function applyFiltersClientSide() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const searchTerm = document.getElementById('searchInput').value.trim();
     const selectedStatus = document.getElementById('statusFilter').value;
     const selectedTrainer = document.getElementById('trainerFilter').value;
     const dateFrom = document.getElementById('dateFrom').value;
     const dateTo = document.getElementById('dateTo').value;
-
-    // Use DSA fuzzy search if available
-    const useDSA = window.DSA || window.DSAUtils;
-    const fuzzySearch = useDSA ? (useDSA.fuzzySearch || useDSA.FuzzySearch) : null;
 
     // Filter table rows
     const tableRows = document.querySelectorAll('.reservations-table tbody tr');
     let visibleCount = 0;
 
     tableRows.forEach(row => {
-        const userName = row.querySelector('td:nth-child(1)')?.textContent || '';
-        const userEmail = row.querySelector('td:nth-child(2)')?.textContent || '';
-        const trainerName = row.querySelector('td:nth-child(3)')?.textContent || '';
-        const bookingDate = row.querySelector('td:nth-child(4)')?.textContent || '';
+        // Skip the "no results" row
+        if (row.querySelector('.no-results')) return;
+
+        // Column 2: Client info (username and email)
+        const clientCell = row.querySelector('td:nth-child(2)')?.textContent || '';
+        // Column 3: Trainer name
+        const trainerName = row.querySelector('td:nth-child(3)')?.textContent.trim() || '';
+        // Data attribute: Trainer ID
+        const trainerId = row.dataset.trainerId || '';
+        // Column 5: Date & Time
+        const dateCell = row.querySelector('td:nth-child(5) .booking-date')?.textContent.trim() || '';
+        // Column 6: Status badge
         const statusBadge = row.querySelector('.status-badge')?.dataset.status || '';
 
-        // Search filter with fuzzy matching
+        // Search filter with substring matching
         let matchesSearch = true;
         if (searchTerm) {
-            const searchableText = `${userName} ${userEmail} ${trainerName}`.toLowerCase();
-            if (fuzzySearch) {
-                matchesSearch = fuzzySearch(searchTerm, searchableText);
-            } else {
-                matchesSearch = searchableText.includes(searchTerm);
-            }
+            const searchableText = `${clientCell} ${trainerName}`.toLowerCase();
+            matchesSearch = searchableText.includes(searchTerm.toLowerCase());
         }
 
         // Status filter
-        const matchesStatus = selectedStatus === 'all' || statusBadge === selectedStatus;
+        const matchesStatus = selectedStatus === 'all' || selectedStatus === '' || statusBadge === selectedStatus;
 
-        // Trainer filter
-        const matchesTrainer = selectedTrainer === 'all' || trainerName === selectedTrainer;
+        // Trainer filter - compare by trainer ID from data attribute
+        const matchesTrainer = selectedTrainer === 'all' || selectedTrainer === '' || trainerId === selectedTrainer;
 
         // Date range filter
         let matchesDateRange = true;
         if (dateFrom || dateTo) {
-            const rowDate = new Date(bookingDate);
-            if (dateFrom && rowDate < new Date(dateFrom)) matchesDateRange = false;
-            if (dateTo && rowDate > new Date(dateTo)) matchesDateRange = false;
+            // Parse the date from format "Mon dd, yyyy"
+            if (dateCell && dateCell !== 'No date set') {
+                const rowDate = new Date(dateCell);
+                if (dateFrom) {
+                    const fromDate = new Date(dateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    rowDate.setHours(0, 0, 0, 0);
+                    if (rowDate < fromDate) matchesDateRange = false;
+                }
+                if (dateTo) {
+                    const toDate = new Date(dateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (rowDate > toDate) matchesDateRange = false;
+                }
+            } else {
+                matchesDateRange = false;
+            }
         }
 
         const isVisible = matchesSearch && matchesStatus && matchesTrainer && matchesDateRange;

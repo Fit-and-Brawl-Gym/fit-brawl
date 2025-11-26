@@ -529,10 +529,36 @@ function applyFilters() {
         resultSet = setIntersection(resultSet, membershipSet);
     }
 
-    // Apply search filter using Trie - O(p) where p is prefix length
+    // Apply search filter with case-insensitive substring matching
     if (currentFilters.search && currentFilters.search.trim()) {
-        const searchResults = searchTrie.searchPrefix(currentFilters.search.trim());
-        resultSet = setIntersection(resultSet, searchResults);
+        const searchTerm = currentFilters.search.trim().toLowerCase();
+        
+        // Try Trie first for exact prefix matches (fastest)
+        const trieResults = searchTrie.searchPrefix(searchTerm);
+        
+        if (trieResults.size === 0) {
+            // If Trie finds nothing, use substring search
+            const substringResults = new Set();
+            for (const userId of resultSet) {
+                const user = userHashTable.get(userId);
+                const searchableText = [
+                    user.full_name || '',
+                    user.username || '',
+                    user.email || '',
+                    String(user.id)
+                ].join(' ').toLowerCase();
+                
+                if (searchableText.includes(searchTerm)) {
+                    substringResults.add(userId);
+                }
+            }
+            resultSet = setIntersection(resultSet, substringResults);
+            console.log('✅ Substring search applied');
+        } else {
+            // Use Trie results for exact prefix matches
+            resultSet = setIntersection(resultSet, trieResults);
+            console.log('✅ Trie prefix search applied (exact match)');
+        }
     }
 
     // Convert result set to user objects using HashTable - O(k)
