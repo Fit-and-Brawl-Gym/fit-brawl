@@ -344,16 +344,24 @@ $trainers = $conn->query("SELECT id, name FROM trainers WHERE deleted_at IS NULL
                             <?php foreach ($bookings as $booking): ?>
                                 <tr class="booking-row" data-id="<?php echo $booking['id']; ?>" data-trainer-id="<?php echo $booking['trainer_id']; ?>">
                                     <td>
-                                        <input type="checkbox" class="bo  oking-checkbox" value="<?php echo $booking['id']; ?>">
+                                        <input type="checkbox" class="booking-checkbox" value="<?php echo $booking['id']; ?>">
                                     </td>
                                     <td>
                                         <div class="client-info">
                                             <?php
-                                            // Fix avatar path - use environment-aware paths
-                                            $default_avatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 24 24' fill='%23ddd'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
-                                            $avatar_path = !empty($booking['avatar']) ? UPLOADS_PATH . '/avatars/' . htmlspecialchars($booking['avatar']) : $default_avatar;
+                                            // Default avatar fallback - use relative path
+                                            $default_avatar_path = IMAGES_PATH . '/default-avatar.png';
+                                            
+                                            if (!empty($booking['avatar'])) {
+                                                $avatar_path = UPLOADS_PATH . '/avatars/' . htmlspecialchars($booking['avatar']);
+                                            } else {
+                                                $avatar_path = $default_avatar_path;
+                                            }
                                             ?>
-                                            <img src="<?php echo $avatar_path; ?>" alt="Avatar" class="client-avatar" onerror="this.src='<?php echo $default_avatar; ?>'">
+                                            <img src="<?php echo $avatar_path; ?>" 
+                                                 alt="<?php echo htmlspecialchars($booking['username']); ?>" 
+                                                 class="client-avatar" 
+                                                 onerror="this.onerror=null; this.src='<?php echo $default_avatar_path; ?>';">
                                             <div class="client-details">
                                                 <h4><?php echo htmlspecialchars($booking['username']); ?></h4>
                                                 <p><?php echo htmlspecialchars($booking['email']); ?></p>

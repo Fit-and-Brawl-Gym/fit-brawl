@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
 
             // IMPORTANT: Update trainer_shifts table to reflect actual availability
             // First, get the trainer's current shift patterns (before day-offs)
-            $get_shifts = "SELECT day_of_week, shift_type FROM trainer_shifts 
+            $get_shifts = "SELECT day_of_week, shift_type FROM trainer_shifts
                           WHERE trainer_id = ? AND shift_type != 'none'";
             $stmt = $conn->prepare($get_shifts);
             $stmt->bind_param("i", $trainer_id);
@@ -53,11 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
             }
 
             // Set all shifts to active and restore original shift types
-            $update_shifts_all = "UPDATE trainer_shifts 
-                                 SET is_active = 1, 
-                                     shift_type = CASE 
+            $update_shifts_all = "UPDATE trainer_shifts
+                                 SET is_active = 1,
+                                     shift_type = CASE
                                          WHEN shift_type = 'none' THEN 'morning'
-                                         ELSE shift_type 
+                                         ELSE shift_type
                                      END
                                  WHERE trainer_id = ?";
             $stmt = $conn->prepare($update_shifts_all);
@@ -67,8 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
             // Set day-off shifts to 'none' and inactive
             if (!empty($day_offs)) {
                 $placeholders = implode(',', array_fill(0, count($day_offs), '?'));
-                $update_shifts_off = "UPDATE trainer_shifts 
-                                     SET shift_type = 'none', 
+                $update_shifts_off = "UPDATE trainer_shifts
+                                     SET shift_type = 'none',
                                          is_active = 0,
                                          custom_start_time = NULL,
                                          custom_end_time = NULL,
@@ -203,13 +203,7 @@ $stats = $conn->query($stats_query)->fetch_assoc();
                     ?>
                         <option value="<?= htmlspecialchars($spec['specialization']) ?>">
                             <?= htmlspecialchars($spec['specialization']) ?>
-                        </option>
-                    <?php endwhile; ?>
-                </select>
-                <select id="sortBy" class="filter-select">
-                    <option value="name">Sort by Name</option>
-                    <option value="days_off">Sort by Days Off</option>
-                    <option value="status">Sort by Status</option>
+                     <?php endwhile; ?>
                 </select>
             </div>
         </div>
