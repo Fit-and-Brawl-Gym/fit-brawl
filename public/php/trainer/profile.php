@@ -206,16 +206,61 @@ require_once '../../../includes/trainer_header.php';
                 <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>" required>
             </div>
 
+            <!-- Current Password (required to change password) -->
+            <div class="form-group password-field full-width" id="currentPasswordGroup" style="display: none;">
+                <label for="current_password">Current Password (Required to change password)</label>
+                <input type="password" name="current_password" id="current_password" placeholder="Enter current password">
+                <div class="current-password-warning" id="currentPasswordWarning" aria-live="polite"></div>
+            </div>
+
             <!-- New Password -->
-            <div class="form-group">
+            <div class="form-group password-field new-password">
                 <label for="new_password">New Password (Leave blank to keep current)</label>
-                <input type="password" name="new_password" id="new_password" placeholder="Enter new password">
+                <div class="input-group-wrapper">
+                    <input type="password" name="new_password" id="new_password" placeholder="Enter new password"
+                           class="password-field" autocomplete="new-password" autocapitalize="off" autocorrect="off"
+                           spellcheck="false">
+                    <div class="password-requirements-modal" id="profilePasswordRequirements" aria-hidden="true">
+                        <div class="password-requirements-header">
+                            <h4>Password Requirements</h4>
+                        </div>
+                        <div class="password-requirements-list">
+                            <div class="requirement-item" data-req="length">
+                                <span class="requirement-icon">•</span>
+                                <span class="requirement-text">At least 12 characters</span>
+                            </div>
+                            <div class="requirement-item" data-req="uppercase">
+                                <span class="requirement-icon">•</span>
+                                <span class="requirement-text">One uppercase letter</span>
+                            </div>
+                            <div class="requirement-item" data-req="lowercase">
+                                <span class="requirement-icon">•</span>
+                                <span class="requirement-text">One lowercase letter</span>
+                            </div>
+                            <div class="requirement-item" data-req="number">
+                                <span class="requirement-icon">•</span>
+                                <span class="requirement-text">One number</span>
+                            </div>
+                            <div class="requirement-item" data-req="special">
+                                <span class="requirement-icon">•</span>
+                                <span class="requirement-text">One special (!@#$%^&*)</span>
+                            </div>
+                            <div class="same-as-current-warning" id="sameAsCurrentWarning">
+                                ⚠️ Cannot be the same as current password
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Confirm Password -->
-            <div class="form-group">
+            <div class="form-group password-field confirm-password">
                 <label for="confirm_password">Confirm New Password</label>
-                <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password">
+                <div class="input-group-wrapper">
+                    <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm new password"
+                           autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false">
+                    <div class="password-match-message" id="profilePasswordMatch" aria-hidden="true"></div>
+                </div>
             </div>
 
             <!-- Form Actions -->
