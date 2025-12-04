@@ -34,8 +34,35 @@ uploads/receipts/*
 Thumbs.db
 desktop.ini
 
-# Database files
+# Database files (but keep schema.sql for setup)
 *.sql
+!docs/database/schema.sql
 *.sqlite
 *.db
 composer-setup.php
+
+# Backup SQL files
+backup_*.sql
+seed_*.sql
+fix_*.sql
+update_*.sql
+test-*.sql
+
+# Logs and temporary files
+logs/
+*.log
+error_log
+debug.log
+
+# Additional uploads
+uploads/equipment/*
+uploads/products/*
+uploads/trainers/*
+!uploads/equipment/.gitkeep
+!uploads/products/.gitkeep
+!uploads/trainers/.gitkeep
+
+# Cache and session files
+tmp/
+cache/
+sessions/
