@@ -489,7 +489,108 @@ require_once '../includes/config.php';
 </html>
 ```
 
-## Step 8: Final Verification
+## Step 8: Install Composer (If Not Already Installed)
+
+### Check if Composer is installed:
+
+```powershell
+composer --version
+```
+
+If Composer is not found, install it locally:
+
+### Option A: Install Composer Locally (Quick Method)
+
+```powershell
+# Add PHP to PATH for current session
+$env:Path += ";C:\xampp\php"
+
+# Verify PHP is accessible
+php --version
+
+# Download and install Composer
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+# Verify installation
+php composer.phar --version
+```
+
+### Option B: Install Composer Globally (Recommended)
+
+Download the installer from: https://getcomposer.org/download/
+
+- Run `Composer-Setup.exe`
+- Follow the installation wizard
+- Restart PowerShell after installation
+
+### Enable ZIP Extension (Required)
+
+If you get "zip extension missing" errors:
+
+1. Open `php.ini`:
+
+   ```powershell
+   notepad C:\xampp\php\php.ini
+   ```
+
+2. Find this line (press Ctrl+F to search):
+
+   ```
+   ;extension=zip
+   ```
+
+3. Remove the semicolon to enable it:
+
+   ```
+   extension=zip
+   ```
+
+4. Save and close
+
+5. Restart Apache in XAMPP Control Panel
+
+6. Verify ZIP is enabled:
+   ```powershell
+   php -m | Select-String "zip"
+   ```
+
+## Step 9: Install Dependencies
+
+### Install PHP Dependencies:
+
+```powershell
+# If Composer is installed globally:
+composer install
+
+# If using local composer.phar:
+php composer.phar install
+```
+
+This will download:
+
+- PHPMailer (email functionality)
+- TCPDF (PDF generation)
+- PHP QR Code library
+- PHPUnit (testing framework)
+- All other dependencies
+
+### Install Node.js Dependencies:
+
+```powershell
+cd server-renderer
+npm install
+cd ..
+```
+
+This will download:
+
+- Express (web server)
+- Puppeteer (PDF rendering)
+- Other Node.js packages
+
+## Step 10: Final Verification
 
 ```powershell
 # Check folder structure
@@ -498,14 +599,16 @@ tree /F
 # Verify no .env exists (only .env.example)
 Test-Path .env  # Should return False
 
-# Verify no vendor/ folder
-Test-Path vendor  # Should return False
+# Verify vendor/ folder WAS created (after composer install)
+Test-Path vendor  # Should return True (if you ran composer install)
 
-# Verify no node_modules/ folder
-Test-Path server-renderer\node_modules  # Should return False
+# Verify node_modules/ WAS created (after npm install)
+Test-Path server-renderer\node_modules  # Should return True (if you ran npm install)
 ```
 
-## Step 9: Create Quick Setup Script
+**Note:** For demo purposes, you might want to delete `vendor/` and `node_modules/` folders before recording so you can show the installation process live.
+
+## Step 11: Create Quick Setup Script
 
 ```powershell
 New-Item quick-setup.bat -ItemType File
@@ -547,7 +650,7 @@ echo ========================================
 pause
 ```
 
-## Step 10: Push to GitHub
+## Step 12: Push to GitHub
 
 ```powershell
 # Add remote (replace with your repo URL)
@@ -584,11 +687,20 @@ Before recording:
 git clone https://github.com/Fit-and-Brawl-Gym/fit-brawl.git
 cd fit-brawl
 
+# Add PHP to PATH (if not permanent)
+$env:Path += ";C:\xampp\php"
+
 # Copy environment file
 copy .env.example .env
 
-# Install dependencies
+# Install PHP dependencies
+# Option 1: If Composer is installed globally
 composer install
+
+# Option 2: If using local composer.phar
+php composer.phar install
+
+# Install Node.js dependencies
 cd server-renderer
 npm install
 cd ..
